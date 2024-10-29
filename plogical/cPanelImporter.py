@@ -522,7 +522,7 @@ class cPanelImporter:
                             SOACheck = 1
                             continue
 
-                        if SOACheck == 1 and items.find(')') > -1:
+                        if (SOACheck == 1 and items.find(')') > -1) or (SOACheck == 1 and items.find('NS') > -1 and items.find(zone.name) > -1):
                             SOACheck = 0
                             start = 1
                             continue
@@ -530,6 +530,9 @@ class cPanelImporter:
                             pass
 
                         if start == 1:
+                            if os.path.exists(ProcessUtilities.debugPath):
+                                message = f'Current DNS record we are creating for {zone.name} is {items}'
+                                logging.statusWriter(self.logFile, message, 1)
                             if len(items) > 3:
                                 if items.find("DKIM1") > -1:
                                     continue
