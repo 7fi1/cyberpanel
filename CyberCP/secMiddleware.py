@@ -63,7 +63,7 @@ class secMiddleware:
         # if os.path.exists(ProcessUtilities.debugPath):
         #     logging.writeToFile(f'Final actual URL without QS {FinalURL}')
 
-        if request.method == 'POST':
+        if request.method == 'POST' or request.method == 'OPTIONS':
             try:
 
                 # logging.writeToFile(request.body)
