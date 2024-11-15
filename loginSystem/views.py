@@ -120,7 +120,7 @@ def verifyLogin(request):
 
                 if ipAddr.find(':') > -1:
                     ipAddr = ipAddr.split(':')[:3]
-                    request.session['ipAddr'] = ''.join(ipAddr)
+                    request.session['ipAddr'] = ipAddr
                 else:
                     request.session['ipAddr'] = request.META.get('HTTP_CF_CONNECTING_IP')
                     if request.session['ipAddr'] is None:
