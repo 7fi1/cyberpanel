@@ -3568,6 +3568,7 @@ pm.max_spare_servers = 3
                 "/etc/csf/csf.ignore",
                 "/etc/csf/csf.rignore",
                 "/etc/csf/csf.blocklists",
+                "/etc/csf/csf.dyndns"
             ]
 
             # Directory for backups
