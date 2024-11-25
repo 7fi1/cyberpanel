@@ -3015,8 +3015,8 @@ class ApplicationInstaller(multi.Thread):
             from managePHP.phpManager import PHPManager
             from websiteFunctions.website import WebsiteManager
             from packages.models import Package
-            import pysftp
-            import pysftp as sftp
+            #import pysftp
+            #import pysftp as sftp
             import boto3
 
             if os.path.exists(ProcessUtilities.debugPath):
