@@ -548,6 +548,7 @@ fi
 
 # shellcheck disable=SC1091
 . /usr/local/CyberPanel/bin/activate
+pip install --upgrade setuptools packaging
 
 Download_Requirement
 
