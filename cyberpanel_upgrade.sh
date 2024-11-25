@@ -692,6 +692,7 @@ if [ "$Server_OS" = "Ubuntu" ]; then
   # shellcheck disable=SC1091
   . /usr/local/CyberCP/bin/activate
     Check_Return
+  pip install --upgrade setuptools packaging
   pip3 install --default-timeout=3600 --ignore-installed -r /usr/local/requirments.txt
     Check_Return
 else
