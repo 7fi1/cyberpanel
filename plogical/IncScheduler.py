@@ -1389,9 +1389,7 @@ Automatic backup failed for %s on %s.
 
     @staticmethod
     def SendTORemote(FileName, RemoteBackupID):
-        import pysftp
         import json
-        import pysftp as sftp
         from websiteFunctions.models import RemoteBackupConfig
 
         try:
