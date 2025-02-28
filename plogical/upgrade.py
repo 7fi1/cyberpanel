@@ -3589,8 +3589,11 @@ pm.max_spare_servers = 3
                 for file in FILES:
                     backup_file = os.path.join(BACKUP_DIR, os.path.basename(file))
                     if os.path.exists(backup_file):
-                        shutil.copy(backup_file, file)
-                        print(f"Restored: {file}")
+                        try:
+                            shutil.copy(backup_file, file)
+                            print(f"Restored: {file}")
+                        except:
+                            pass
                     else:
                         print(f"Backup not found for: {file}")
 
