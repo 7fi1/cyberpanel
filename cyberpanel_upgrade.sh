@@ -541,9 +541,54 @@ if [[ -f /usr/local/CyberPanel/bin/python2 ]]; then
 elif [[ -d /usr/local/CyberPanel/bin/ ]]; then
   echo -e "\nNo need to re-setup virtualenv at /usr/local/CyberPanel...\n"
 else
-  echo -e "\nNothing found, need fresh setup...\n"
-  virtualenv -p /usr/bin/python3 --system-site-packages /usr/local/CyberPanel
-  Check_Return
+  #!/bin/bash
+
+echo -e "\nNothing found, need fresh setup...\n"
+
+# Attempt to create a virtual environment
+virtualenv -p /usr/bin/python3 --system-site-packages /usr/local/CyberPanel
+
+# Check if the virtualenv command failed
+if [ $? -ne 0 ]; then
+    echo "virtualenv command failed."
+
+    # Check if the operating system is AlmaLinux
+    if grep -q "AlmaLinux" /etc/os-release; then
+        echo "Operating system is AlmaLinux."
+
+        # Check if the 'packaging' module is installed via RPM
+        if rpm -q python3-packaging >/dev/null 2>&1; then
+            echo "'packaging' module installed via RPM. Proceeding with uninstallation."
+
+            # Uninstall the 'packaging' module using RPM
+            sudo dnf remove python3-packaging -y
+
+            # Check if uninstallation was successful
+            if [ $? -eq 0 ]; then
+                echo "Successfully uninstalled 'packaging' module."
+
+                # Install and upgrade 'packaging' using pip
+                pip install --upgrade packaging
+
+                # Verify the installation
+                if [ $? -eq 0 ]; then
+                    echo "'packaging' module reinstalled and upgraded successfully."
+                    virtualenv -p /usr/bin/python3 --system-site-packages /usr/local/CyberPanel
+                else
+                    echo "Failed to install 'packaging' module using pip."
+                fi
+            else
+                echo "Failed to uninstall 'packaging' module using RPM."
+            fi
+        else
+            echo "'packaging' module is not installed via RPM. No action taken."
+        fi
+    else
+        echo "Operating system is not AlmaLinux. No action taken."
+    fi
+else
+    echo "virtualenv command executed successfully."
+fi
 fi
 
 # shellcheck disable=SC1091
