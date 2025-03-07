@@ -1813,9 +1813,9 @@ milter_default_action = accept
                 else:
                     return redirect("https://cyberpanel.net/cyberpanel-addons")
             else:
-                template = 'baseTemplate/EmailLimits.html'
+                template = 'mailServer/EmailLimits.html'
         except BaseException as msg:
-            template = 'baseTemplate/EmailLimits.html'
+            template = 'mailServer/EmailLimits.html'
 
 
         proc = httpProc(self.request, template,
