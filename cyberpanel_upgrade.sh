@@ -16,6 +16,23 @@ Sudo_Test=$(set)
 
 Set_Default_Variables() {
 
+
+#### this is temp code for csf
+
+rm -Rfv /usr/local/CyberCP/configservercsf
+rm -fv /home/cyberpanel/plugins/configservercsf
+rm -Rfv /usr/local/CyberCP/public/static/configservercsf
+
+sed -i "/configservercsf/d" /usr/local/CyberCP/CyberCP/settings.py
+sed -i "/configservercsf/d" /usr/local/CyberCP/CyberCP/urls.py
+if [ ! -e /etc/cxs/cxs.pl ]; then
+    sed -i "/configserver/d" /usr/local/CyberCP/baseTemplate/templates/baseTemplate/index.html
+fi
+#systemctl restart lscpd
+### this is temp code for csf
+
+
+
 export LC_CTYPE=en_US.UTF-8
 echo -e "\nFetching latest data from CyberPanel server...\n"
 echo -e "This may take few seconds..."
@@ -893,21 +910,6 @@ systemctl restart lscpd
 }
 
 Post_Install_Display_Final_Info() {
-
-#### this is temp code for csf
-
-rm -Rfv /usr/local/CyberCP/configservercsf
-rm -fv /home/cyberpanel/plugins/configservercsf
-rm -Rfv /usr/local/CyberCP/public/static/configservercsf
-
-sed -i "/configservercsf/d" /usr/local/CyberCP/CyberCP/settings.py
-sed -i "/configservercsf/d" /usr/local/CyberCP/CyberCP/urls.py
-if [ ! -e /etc/cxs/cxs.pl ]; then
-    sed -i "/configserver/d" /usr/local/CyberCP/baseTemplate/templates/baseTemplate/index.html
-fi
-#systemctl restart lscpd
-### this is temp code for csf
-
 
 Panel_Port=$(cat /usr/local/lscp/conf/bind.conf)
 if [[ $Panel_Port = "" ]] ; then
