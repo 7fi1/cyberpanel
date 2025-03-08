@@ -3471,9 +3471,9 @@ pm.max_spare_servers = 3
 
         ##
 
-        execPath = "sudo /usr/local/CyberCP/bin/python /usr/local/CyberCP/plogical/csf.py"
-        execPath = execPath + " removeCSF"
-        Upgrade.executioner(execPath, 'fix csf if there', 0)
+        # execPath = "sudo /usr/local/CyberCP/bin/python /usr/local/CyberCP/plogical/csf.py"
+        # execPath = execPath + " removeCSF"
+        # Upgrade.executioner(execPath, 'fix csf if there', 0)
 
         Upgrade.downloadAndUpgrade(versionNumbring, branch)
         versionNumbring = Upgrade.downloadLink()
