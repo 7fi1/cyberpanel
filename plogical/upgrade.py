@@ -3609,8 +3609,8 @@ pm.max_spare_servers = 3
             execPath = execPath + " removeCSF"
             Upgrade.executioner(execPath, 'fix csf if there', 0)
 
-            # execPath = "sudo /usr/local/CyberCP/bin/python /usr/local/CyberCP/plogical/csf.py"
-            # execPath = execPath + " installCSF"
+            execPath = "sudo /usr/local/CyberCP/bin/python /usr/local/CyberCP/plogical/csf.py"
+            execPath = execPath + " installCSF"
 
             # Restore the files
             print("Restoring files...")
