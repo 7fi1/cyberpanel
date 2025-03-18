@@ -14,7 +14,20 @@ class PanelInfo(CLMain):
         initial = {
             "name": "CyberPanel",
             "version": "%s.%s" % (self.version, self.build),
-            "user_login_url": "https://%s:8090/" % (self.ipAddress)
+            "user_login_url": "https://%s:8090/" % (self.ipAddress),
+            "supported_cl_features": {
+                "php_selector": False,
+                "ruby_selector": False,
+                "python_selector": False,
+                "nodejs_selector": False,
+                "mod_lsapi": False,
+                "mysql_governor": False,
+                "cagefs": True,
+                "reseller_limits": True,
+                "xray": False,
+                "accelerate_wp": False,
+                "autotracing": False
+            }
         }
 
         final = {'data': initial, 'metadata': self.initialMeta}
