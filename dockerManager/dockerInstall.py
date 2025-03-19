@@ -30,7 +30,7 @@ class DockerInstall:
                 if ProcessUtilities.decideDistro() in [ProcessUtilities.cent8, ProcessUtilities.centos]:  #  
                     ServerStatusUtil.executioner("dnf remove -y podman", statusFile)  #  
                 else:  # Debian-based  
-                    ServerStatusUtil.executioner("apt-get remove -y podman", statusFile)  #  
+                    ServerStatusUtil.executioner("DEBIAN_FRONTEND=noninteractive apt-get remove -y podman", statusFile)  #
 
                 # Remove leftover Podman directories (NEW LINES)
                 ServerStatusUtil.executioner("rm -rf /var/lib/containers", statusFile)  #  

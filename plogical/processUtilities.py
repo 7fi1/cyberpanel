@@ -181,7 +181,8 @@ class ProcessUtilities(multi.Thread):
         else:
             if open('/etc/redhat-release', 'r').read().find('CentOS Linux release 8') > -1 or open('/etc/redhat-release', 'r').read().find('AlmaLinux release 8') > -1 \
                     or open('/etc/redhat-release', 'r').read().find('Rocky Linux release 8') > -1 \
-                    or open('/etc/redhat-release', 'r').read().find('Rocky Linux release 9') > -1 or open('/etc/redhat-release', 'r').read().find('AlmaLinux release 9') > -1:
+                    or open('/etc/redhat-release', 'r').read().find('Rocky Linux release 9') > -1 or open('/etc/redhat-release', 'r').read().find('AlmaLinux release 9') > -1 or \
+                    open('/etc/redhat-release', 'r').read().find('CloudLinux release 9') > -1 or open('/etc/redhat-release', 'r').read().find('CloudLinux release 8') > -1:
                 ## this is check only
                 if open(distroPathAlma, 'r').read().find('AlmaLinux release 9') > -1 or open(distroPathAlma, 'r').read().find('Rocky Linux release 9') > -1:
                     ProcessUtilities.alma9check = 1
