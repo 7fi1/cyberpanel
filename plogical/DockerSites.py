@@ -838,6 +838,7 @@ services:
       - N8N_HOST={self.data['finalURL']}
       - NODE_ENV=production
       - WEBHOOK_URL=https://{self.data['finalURL']}
+      - N8N_PUSH_BACKEND=sse  # Use Server-Sent Events instead of WebSockets
     ports:
       - "{self.data['port']}:5678"
     links:
