@@ -908,8 +908,8 @@ services:
 
             ### it means less then two containers which means something went wrong
             if len(containers) < 2:
-                logging.writeToFile(f'Unkonwn error, containers not running. [DeployN8NContainer]')
-                logging.statusWriter(self.JobID, f'Unkonwn error, containers not running. [DeployN8NContainer]')
+                logging.writeToFile(f'Unkonwn error, containers not running. [DeployN8NContainer] . [404]')
+                logging.statusWriter(self.JobID, f'Unkonwn error, containers not running. [DeployN8NContainer] . [404]')
                 return 0
 
             ### Set up Proxy
