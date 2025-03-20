@@ -849,7 +849,17 @@ if [[ $Server_OS = "CentOS" ]] ; then
       dnf install libxcrypt-compat -y
     fi
 
-    subscription-manager repos --enable codeready-builder-for-rhel-9-$(arch)-rpms || yum config-manager --set-enabled crb > /dev/null 2>&1
+    # check if OS is AlmaLinux
+    if grep -q -E "AlmaLinux|Rocky Linux" /etc/os-release ; then
+      # check and install dnf-plugins-core if not installed
+      rpm -q dnf-plugins-core > /dev/null 2>&1 || dnf install -y dnf-plugins-core
+      # enable codeready-builder repo for AlmaLinux
+      dnf config-manager --set-enabled crb > /dev/null 2>&1
+    else
+      # enable codeready-builder repo for Other RHEL Based OS
+      subscription-manager repos --enable codeready-builder-for-rhel-9-$(arch)-rpms > /dev/null 2>&1
+    fi
+
     yum install -y https://cyberpanel.sh/dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm
       Check_Return "yum repo" "no_exit"
     yum install -y https://rpms.remirepo.net/enterprise/remi-release-9.rpm
