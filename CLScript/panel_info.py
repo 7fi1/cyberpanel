@@ -16,17 +16,17 @@ class PanelInfo(CLMain):
             "version": "%s.%s" % (self.version, self.build),
             "user_login_url": "https://%s:8090/" % (self.ipAddress),
             "supported_cl_features": {
-                "php_selector": False,
-                "ruby_selector": False,
-                "python_selector": False,
-                "nodejs_selector": False,
-                "mod_lsapi": False,
-                "mysql_governor": False,
+                "php_selector": True,
+                "ruby_selector": True,
+                "python_selector": True,
+                "nodejs_selector": True,
+                "mod_lsapi": True,
+                "mysql_governor": True,
                 "cagefs": True,
                 "reseller_limits": True,
-                "xray": False,
-                "accelerate_wp": False,
-                "autotracing": False
+                "xray": True,
+                "accelerate_wp": True,
+                "autotracing": True
             }
         }
 
