@@ -133,7 +133,7 @@ def verifyLogin(request):
                 return response
 
             else:
-                data = {'userID': 0, 'loginStatus': 0, 'error_message': "wrong-password"}
+                data = {'userID': 0, 'loginStatus': 0, 'error_message': "login failed."}
                 json_data = json.dumps(data)
                 response.write(json_data)
                 return response
