@@ -857,7 +857,7 @@ if [[ $Server_OS = "CentOS" ]] ; then
       dnf config-manager --set-enabled crb > /dev/null 2>&1
     else
       # enable codeready-builder repo for Other RHEL Based OS
-      subscription-manager repos --enable codeready-builder-for-rhel-9-$(arch)-rpms > /dev/null 2>&1
+      dnf config-manager --set-enabled crb
     fi
 
     yum install -y https://cyberpanel.sh/dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm
