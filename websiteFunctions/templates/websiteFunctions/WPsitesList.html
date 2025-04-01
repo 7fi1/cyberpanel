@@ -62,10 +62,39 @@
                 );
             };
 
-            // Initialize tooltips
-            angular.element(document).ready(function() {
-                $('[data-toggle="tooltip"]').tooltip();
-            });
+            // Function to fetch plugin data
+            function fetchPluginData(site) {
+                var data = { WPid: site.id };
+                GLobalAjaxCall($http, "{% url 'GetCurrentPlugins' %}", data,
+                    function(response) {
+                        if (response.data.status === 1) {
+                            var plugins = JSON.parse(response.data.plugins);
+                            site.activePlugins = plugins.filter(function(p) { return p.status === 'active'; }).length;
+                            site.totalPlugins = plugins.length;
+                        }
+                    },
+                    function(response) {
+                        site.activePlugins = 'Error';
+                    }
+                );
+            }
+
+            // Function to fetch theme data
+            function fetchThemeData(site) {
+                var data = { WPid: site.id };
+                GLobalAjaxCall($http, "{% url 'GetCurrentThemes' %}", data,
+                    function(response) {
+                        if (response.data.status === 1) {
+                            var themes = JSON.parse(response.data.themes);
+                            site.activeTheme = themes.find(function(t) { return t.status === 'active'; }).name;
+                            site.totalThemes = themes.length;
+                        }
+                    },
+                    function(response) {
+                        site.activeTheme = 'Error';
+                    }
+                );
+            }
 
             // Fetch site data for each site
             function fetchSiteData(site) {
@@ -75,6 +104,9 @@
                     function(response) {
                         if (response.data.status === 1) {
                             angular.extend(site, response.data.ret_data);
+                            // After getting basic site data, fetch plugins and themes
+                            fetchPluginData(site);
+                            fetchThemeData(site);
                         }
                     },
                     function(response) {
@@ -90,6 +122,11 @@
             if ($scope.wpSites) {
                 $scope.wpSites.forEach(fetchSiteData);
             }
+
+            // Initialize tooltips
+            angular.element(document).ready(function() {
+                $('[data-toggle="tooltip"]').tooltip();
+            });
         });
     </script>
 {% endblock %}
