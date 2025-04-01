@@ -142,7 +142,8 @@ class WebsiteManager:
 
         admin = Administrator.objects.get(pk=userID)
         data = {}
-        data['wp'] = ACLManager.GetALLWPObjects(currentACL, userID)
+        wp_sites = ACLManager.GetALLWPObjects(currentACL, userID)
+        data['wp'] = wp_sites
 
         try:
             if DeleteID != None:
@@ -164,8 +165,18 @@ class WebsiteManager:
                 'production_status': True  # You can modify this based on your needs
             })
 
-        proc = httpProc(request, 'websiteFunctions/WPsitesList.html',
-                        {"wpsite": sites})
+        context = {
+            "wpsite": sites,
+            "status": 1,
+            "total_sites": len(sites),
+            "debug_info": {
+                "user_id": userID,
+                "is_admin": currentACL.get('admin', 0),
+                "wp_sites_count": wp_sites.count()
+            }
+        }
+
+        proc = httpProc(request, 'websiteFunctions/WPsitesList.html', context)
         return proc.render()
 
     def WPHome(self, request=None, userID=None, WPid=None, DeleteID=None):

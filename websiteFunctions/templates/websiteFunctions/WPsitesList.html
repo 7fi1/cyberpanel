@@ -304,13 +304,24 @@
     </style>
 
 
-    <div ng-controller="listWebsites" class="container">
+    <div class="container">
+        {% if debug_info %}
+        <div class="alert alert-info">
+            <h4>Debug Information</h4>
+            <p>Total WordPress Sites: {{ total_sites }}</p>
+            <p>User ID: {{ debug_info.user_id }}</p>
+            <p>Is Admin: {{ debug_info.is_admin }}</p>
+            <p>WP Sites Count: {{ debug_info.wp_sites_count }}</p>
+        </div>
+        {% endif %}
+
         {% if not wpsite %}
             <div class="alert alert-info">
                 No WordPress sites found. <a href="{% url 'createWordpress' %}" class="alert-link">Install WordPress</a> to get started.
             </div>
         {% endif %}
 
+        {% if wpsite %}
         <div class="top-actions">
             <h2>WordPress Toolkit {% if help_url %}<a href="{{ help_url }}" class="btn-tool">Help</a>{% endif %}</h2>
             <div>
@@ -331,7 +342,7 @@
                     <a href="{% url 'WPHome' %}?ID={{ site.id }}" class="btn-tool">
                         <i class="fas fa-cog"></i> Manage
                     </a>
-                    <button type="button" class="btn-tool" onclick="DeleteWPNow('{% url 'ListWPSites' %}?DeleteID={{ site.id }}')">
+                    <button type="button" class="btn-tool" onclick="DeleteWPNow('{% url "ListWPSites" %}', '{{ site.id }}')">
                         <i class="fas fa-trash"></i> Delete
                     </button>
                 </div>
@@ -593,9 +604,9 @@
             }
         });
 
-        function DeleteWPNow(url) {
+        function DeleteWPNow(baseUrl, siteId) {
             if (confirm('Are you sure you want to delete this WordPress site? This action cannot be undone.')) {
-                window.location.href = url;
+                window.location.href = baseUrl + '?DeleteID=' + siteId;
             }
         }
     </script>
