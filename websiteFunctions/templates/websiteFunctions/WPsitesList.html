@@ -87,18 +87,33 @@
             border-radius: 8px;
             margin-bottom: 20px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+        }
+
+        .wp-site-card:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
 
         .wp-site-header {
-            padding: 15px;
+            padding: 15px 20px;
             border-bottom: 1px solid #f0f0f0;
             display: flex;
             align-items: center;
             justify-content: space-between;
+            background: #f8f9fa;
+            border-radius: 8px 8px 0 0;
+        }
+
+        .wp-site-header a {
+            color: #2196F3;
+            text-decoration: none;
+            font-weight: 500;
         }
 
         .wp-site-content {
             padding: 20px;
+            display: flex;
+            gap: 20px;
         }
 
         .wp-site-preview {
@@ -107,34 +122,45 @@
             object-fit: cover;
             border-radius: 4px;
             border: 1px solid #e0e0e0;
-            float: left;
-            margin-right: 20px;
         }
 
         .wp-site-info {
-            margin-left: 220px;
+            flex: 1;
+        }
+
+        .wp-site-info h3 {
+            margin: 0 0 20px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
         .status-section {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
             margin-bottom: 20px;
         }
 
         .tools-section {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
         }
 
         .status-item, .tool-item {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 8px;
+            padding: 10px 15px;
             background: #f8f9fa;
-            border-radius: 4px;
+            border-radius: 6px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .status-item span:first-child, .tool-item span:first-child {
+            font-weight: 500;
+            color: #555;
         }
 
         .toggle-switch {
@@ -188,39 +214,62 @@
         }
 
         .btn-tool {
-            padding: 5px 10px;
+            padding: 6px 12px;
             border: 1px solid #ddd;
             border-radius: 4px;
             background: white;
             color: #333;
             text-decoration: none;
-            font-size: 12px;
+            font-size: 13px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.2s ease;
         }
 
         .btn-tool:hover {
-            background: #f8f9fa;
+            background: #f0f0f0;
+            border-color: #ccc;
         }
 
-        .warning-badge {
-            background: #ffc107;
-            color: #000;
-            padding: 2px 8px;
+        .btn-tool i {
+            font-size: 14px;
+        }
+
+        .badge {
+            padding: 4px 8px;
             border-radius: 12px;
             font-size: 12px;
+            font-weight: 500;
+        }
+
+        .bg-primary {
+            background-color: #2196F3;
+            color: white;
         }
 
         .top-actions {
-            margin-bottom: 20px;
+            margin-bottom: 30px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
 
         .search-box {
-            padding: 8px;
+            padding: 8px 15px;
             border: 1px solid #ddd;
             border-radius: 4px;
             width: 300px;
+            margin-right: 10px;
+        }
+
+        .site-selector {
+            margin-right: 10px;
         }
     </style>
 
@@ -247,7 +296,7 @@
                     <a href="{% url 'WPHome' %}?ID={{ site.id }}" class="btn-tool">
                         <i class="fas fa-cog"></i> Manage
                     </a>
-                    <button onclick="DeleteWPNow('{% url 'ListWPSites' %}', '{{ site.id }}')" class="btn-tool">
+                    <button onclick="DeleteWPNow('{% url 'ListWPSites' %}?DeleteID={{ site.id }}')" class="btn-tool">
                         <i class="fas fa-trash"></i> Delete
                     </button>
                 </div>
@@ -319,22 +368,66 @@
         document.addEventListener('DOMContentLoaded', function() {
             // Function to fetch and update site data
             function updateSiteData(siteId) {
-                fetch(`/FetchWPdata?WPid=${siteId}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.status === 1) {
-                            const site = data.ret_data;
-                            
-                            // Update version
-                            document.querySelector(`.wp-version[data-site-id="${siteId}"]`).textContent = site.version;
-                            
-                            // Update toggles
-                            document.querySelector(`.search-indexing[data-site-id="${siteId}"]`).checked = site.searchIndex === 1;
-                            document.querySelector(`.debugging[data-site-id="${siteId}"]`).checked = site.debugging === 1;
-                            document.querySelector(`.password-protection[data-site-id="${siteId}"]`).checked = site.passwordprotection === 1;
-                            document.querySelector(`.maintenance-mode[data-site-id="${siteId}"]`).checked = site.maintenanceMode === 1;
+                fetch('/websiteFunctions/FetchWPdata', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify({
+                        WPid: siteId
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 1) {
+                        const site = data.ret_data;
+                        
+                        // Update version info
+                        document.querySelector(`.wp-version[data-site-id="${siteId}"]`).textContent = 
+                            site.version || 'Unknown';
+                        document.querySelector(`.plugin-status[data-site-id="${siteId}"]`).textContent = 
+                            `${site.activePlugins || 0} active`;
+                        document.querySelector(`.theme-status[data-site-id="${siteId}"]`).textContent = 
+                            `${site.activeTheme || 'Unknown'}`;
+                        document.querySelector(`.php-version[data-site-id="${siteId}"]`).textContent = 
+                            site.phpVersion || 'Unknown';
+                        
+                        // Update toggles
+                        document.querySelector(`.search-indexing[data-site-id="${siteId}"]`).checked = 
+                            site.searchIndex === 1;
+                        document.querySelector(`.debugging[data-site-id="${siteId}"]`).checked = 
+                            site.debugging === 1;
+                        document.querySelector(`.password-protection[data-site-id="${siteId}"]`).checked = 
+                            site.passwordprotection === 1;
+                        document.querySelector(`.maintenance-mode[data-site-id="${siteId}"]`).checked = 
+                            site.maintenanceMode === 1;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching site data:', error);
+                    document.querySelectorAll(`[data-site-id="${siteId}"]`).forEach(el => {
+                        if (el.tagName !== 'INPUT') {
+                            el.textContent = 'Error loading';
                         }
                     });
+                });
+            }
+
+            // Get CSRF token from cookies
+            function getCookie(name) {
+                let cookieValue = null;
+                if (document.cookie && document.cookie !== '') {
+                    const cookies = document.cookie.split(';');
+                    for (let i = 0; i < cookies.length; i++) {
+                        const cookie = cookies[i].trim();
+                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
             }
 
             // Update data for all sites
@@ -350,17 +443,30 @@
                     const setting = this.className;
                     const value = this.checked ? 1 : 0;
 
-                    // Send update to server (you'll need to implement these endpoints)
-                    fetch(`/UpdateWPSettings`, {
+                    fetch('/websiteFunctions/UpdateWPSettings', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
+                            'X-CSRFToken': getCookie('csrftoken')
                         },
                         body: JSON.stringify({
                             siteId: siteId,
                             setting: setting,
                             value: value
                         })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (!data.status) {
+                            // Revert toggle if update failed
+                            this.checked = !this.checked;
+                            alert('Failed to update setting: ' + (data.error || 'Unknown error'));
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error updating setting:', error);
+                        this.checked = !this.checked;
+                        alert('Failed to update setting. Please try again.');
                     });
                 });
             });
