@@ -334,7 +334,7 @@
                         <a href="{% url 'WPHome' %}?ID={$ site.id $}" class="btn-tool">
                             <i class="fas fa-cog"></i> Manage
                         </a>
-                        <button type="button" class="btn-tool" onclick="DeleteWPNow('{% url 'ListWPSites' %}?DeleteID={$ site.id $}')">
+                        <button type="button" class="btn-tool" ng-click="deleteWPSite(site)">
                             <i class="fas fa-trash"></i> Delete
                         </button>
                     </div>
@@ -414,6 +414,12 @@
     </div>
 
     <script>
+        function DeleteWPNow(url) {
+            if (confirm('Are you sure you want to delete this WordPress site? This action cannot be undone.')) {
+                window.location.href = url;
+            }
+        }
+
         app.controller('listWordPressSites', function($scope, $http) {
             // Initialize scope variables
             $scope.wpSites = {{ wpsite|safe }};
@@ -422,6 +428,10 @@
             $scope.userId = {{ debug_info.user_id|default:"0"|safe }};
             $scope.isAdmin = {{ debug_info.is_admin|default:"0"|safe }};
             $scope.wpSitesCount = {{ debug_info.wp_sites_count|default:"0"|safe }};
+
+            $scope.deleteWPSite = function(site) {
+                DeleteWPNow("{% url 'ListWPSites' %}?DeleteID=" + site.id);
+            };
 
             $scope.updateSetting = function(site, setting) {
                 var data = {
