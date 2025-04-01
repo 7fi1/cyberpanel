@@ -13,7 +13,6 @@
 
         // Now add our controller to the module
         angular.module('CyberCP').controller('listWordPressSites', function($scope, $http) {
-            // Initialize scope variables with pre-serialized JSON
             $scope.wpSites = {{ wpsite|safe }};
             $scope.debug = {{ debug_info|safe }};
             $scope.totalSites = {{ total_sites }};
@@ -131,11 +130,7 @@
                         }
                     },
                     function(response) {
-                        new PNotify({
-                            title: 'Operation Failed!',
-                            text: 'Could not fetch site data, please refresh the page.',
-                            type: 'error'
-                        });
+                        console.log('Failed to fetch site data');
                     }
                 );
             }
@@ -148,91 +143,105 @@
 {% endblock %}
 
 {% block content %}
-    <div ng-controller="listWordPressSites">
-        <div class="card">
-            <div class="card-header">
-                <div class="row">
-                    <div class="col-md-6">
-                        <h3 class="card-title">WordPress Sites</h3>
-                    </div>
-                    <div class="col-md-6 text-right">
-                        <input type="text" class="form-control-sm" ng-model="searchTerm" placeholder="Search WordPress installations...">
-                        <a href="{% url 'createWordpress' %}" class="btn btn-success btn-sm">Install WordPress</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="card" ng-repeat="site in wpSites">
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-3">
-                        <div class="site-preview">
-                            <img ng-src="https://api.microlink.io/?url={$ getFullUrl(site.url) $}&screenshot=true&meta=false&embed=screenshot.url" 
-                                 alt="{$ site.title $}" 
-                                 class="img-fluid"
-                                 loading="lazy"
-                                 onerror="this.onerror=null; this.src='https://s.wordpress.org/style/images/about/WordPress-logotype-standard.png';">
-                            <a ng-href="{$ getFullUrl(site.url) $}" target="_blank" class="btn btn-outline-secondary btn-sm mt-2">
-                                Visit Site
-                            </a>
-                        </div>
-                    </div>
-                    <div class="col-md-9">
-                        <div class="d-flex justify-content-between">
-                            <h4>{$ site.title $}</h4>
-                            <div>
-                                <a ng-href="{% url 'WPHome' %}?ID={$ site.id $}" class="btn btn-primary btn-sm">Manage</a>
-                                <button class="btn btn-danger btn-sm" ng-click="deleteWPSite(site)">Delete</button>
+    <div class="container" ng-controller="listWordPressSites">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <h3 class="panel-title">{% trans "WordPress Sites" %}</h3>
+                            </div>
+                            <div class="col-sm-6 text-right">
+                                <a href="{% url 'createWordpress' %}" class="btn btn-success btn-sm">Install WordPress</a>
                             </div>
                         </div>
-
-                        <div class="row mt-3">
-                            <div class="col-md-3">
-                                <small>WordPress</small>
-                                <div>{$ site.version $}</div>
-                            </div>
-                            <div class="col-md-3">
-                                <small>Plugins</small>
-                                <div>{$ site.activePlugins || 0 $} active</div>
-                            </div>
-                            <div class="col-md-3">
-                                <small>Theme</small>
-                                <div>{$ site.activeTheme || 'Loading...' $}</div>
-                            </div>
-                            <div class="col-md-3">
-                                <small>PHP Version</small>
-                                <div>{$ site.phpVersion || 'Loading...' $}</div>
-                            </div>
-                        </div>
-
-                        <div class="row mt-3">
-                            <div class="col-md-6">
-                                <div class="custom-control custom-switch">
-                                    <input type="checkbox" class="custom-control-input" id="search-indexing-{$ site.id $}" 
-                                           ng-model="site.searchIndex" 
-                                           ng-change="updateSetting(site, 'search-indexing')">
-                                    <label class="custom-control-label" for="search-indexing-{$ site.id $}">Search engine indexing</label>
-                                </div>
-                                <div class="custom-control custom-switch">
-                                    <input type="checkbox" class="custom-control-input" id="debugging-{$ site.id $}" 
-                                           ng-model="site.debugging" 
-                                           ng-change="updateSetting(site, 'debugging')">
-                                    <label class="custom-control-label" for="debugging-{$ site.id $}">Debugging</label>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="custom-control custom-switch">
-                                    <input type="checkbox" class="custom-control-input" id="password-protection-{$ site.id $}" 
-                                           ng-model="site.passwordProtection" 
-                                           ng-change="updateSetting(site, 'password-protection')">
-                                    <label class="custom-control-label" for="password-protection-{$ site.id $}">Password protection</label>
-                                </div>
-                                <div class="custom-control custom-switch">
-                                    <input type="checkbox" class="custom-control-input" id="maintenance-mode-{$ site.id $}" 
-                                           ng-model="site.maintenanceMode" 
-                                           ng-change="updateSetting(site, 'maintenance-mode')">
-                                    <label class="custom-control-label" for="maintenance-mode-{$ site.id $}">Maintenance mode</label>
+                    </div>
+                    <div class="panel-body">
+                        <div ng-repeat="site in wpSites" class="wp-site-item">
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <div class="wp-site-header">
+                                        <div class="row">
+                                            <div class="col-sm-8">
+                                                <h4>{$ site.title $}</h4>
+                                            </div>
+                                            <div class="col-sm-4 text-right">
+                                                <a ng-href="{% url 'WPHome' %}?ID={$ site.id $}" class="btn btn-primary btn-sm">Manage</a>
+                                                <button class="btn btn-danger btn-sm" ng-click="deleteWPSite(site)">Delete</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="wp-site-content">
+                                        <div class="row">
+                                            <div class="col-sm-3">
+                                                <img ng-src="https://api.microlink.io/?url={$ getFullUrl(site.url) $}&screenshot=true&meta=false&embed=screenshot.url" 
+                                                     alt="{$ site.title $}" 
+                                                     class="img-responsive"
+                                                     style="max-width: 100%; margin-bottom: 10px;"
+                                                     onerror="this.onerror=null; this.src='https://s.wordpress.org/style/images/about/WordPress-logotype-standard.png';">
+                                                <a ng-href="{$ getFullUrl(site.url) $}" target="_blank" class="btn btn-default btn-sm btn-block">Visit Site</a>
+                                            </div>
+                                            <div class="col-sm-9">
+                                                <div class="row">
+                                                    <div class="col-sm-3">
+                                                        <div class="info-box">
+                                                            <label>WordPress</label>
+                                                            <span>{$ site.version $}</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-sm-3">
+                                                        <div class="info-box">
+                                                            <label>PHP Version</label>
+                                                            <span>{$ site.phpVersion || 'Loading...' $}</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-sm-3">
+                                                        <div class="info-box">
+                                                            <label>Theme</label>
+                                                            <span>{$ site.activeTheme || 'twentytwentyfive' $}</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-sm-3">
+                                                        <div class="info-box">
+                                                            <label>Plugins</label>
+                                                            <span>{$ site.activePlugins || '1' $} active</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="row mt-3">
+                                                    <div class="col-sm-6">
+                                                        <div class="checkbox">
+                                                            <label>
+                                                                <input type="checkbox" ng-model="site.searchIndex" ng-change="updateSetting(site, 'search-indexing')">
+                                                                Search engine indexing
+                                                            </label>
+                                                        </div>
+                                                        <div class="checkbox">
+                                                            <label>
+                                                                <input type="checkbox" ng-model="site.debugging" ng-change="updateSetting(site, 'debugging')">
+                                                                Debugging
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-sm-6">
+                                                        <div class="checkbox">
+                                                            <label>
+                                                                <input type="checkbox" ng-model="site.passwordProtection" ng-change="updateSetting(site, 'password-protection')">
+                                                                Password protection
+                                                            </label>
+                                                        </div>
+                                                        <div class="checkbox">
+                                                            <label>
+                                                                <input type="checkbox" ng-model="site.maintenanceMode" ng-change="updateSetting(site, 'maintenance-mode')">
+                                                                Maintenance mode
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -241,6 +250,38 @@
             </div>
         </div>
     </div>
+
+    <style>
+        .wp-site-item {
+            border: 1px solid #ddd;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+        .wp-site-header {
+            padding: 15px;
+            border-bottom: 1px solid #ddd;
+            background: #f5f5f5;
+        }
+        .wp-site-content {
+            padding: 15px;
+        }
+        .info-box {
+            margin-bottom: 15px;
+        }
+        .info-box label {
+            display: block;
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        .info-box span {
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .checkbox {
+            margin-bottom: 10px;
+        }
+    </style>
 {% endblock content %}
 
 
