@@ -138,6 +138,7 @@ class WebsiteManager:
             return redirect(reverse('pricing'))
 
     def ListWPSites(self, request=None, userID=None, DeleteID=None):
+        import json
         currentACL = ACLManager.loadedACL(userID)
 
         admin = Administrator.objects.get(pk=userID)
@@ -166,14 +167,14 @@ class WebsiteManager:
             })
 
         context = {
-            "wpsite": sites,
+            "wpsite": json.dumps(sites),
             "status": 1,
             "total_sites": len(sites),
-            "debug_info": {
+            "debug_info": json.dumps({
                 "user_id": userID,
-                "is_admin": currentACL.get('admin', 0),
+                "is_admin": bool(currentACL.get('admin', 0)),
                 "wp_sites_count": wp_sites.count()
-            }
+            })
         }
 
         proc = httpProc(request, 'websiteFunctions/WPsitesList.html', context)

@@ -13,13 +13,13 @@
 
         // Now add our controller to the module
         angular.module('CyberCP').controller('listWordPressSites', function($scope, $http) {
-            // Initialize scope variables
-            $scope.wpSites = JSON.parse('{{ wpsite|escapejs }}');
-            $scope.debug = JSON.parse('{{ debug_info|default:"false"|escapejs }}');
-            $scope.totalSites = parseInt('{{ total_sites|default:"0"|escapejs }}');
-            $scope.userId = parseInt('{{ debug_info.user_id|default:"0"|escapejs }}');
-            $scope.isAdmin = JSON.parse('{{ debug_info.is_admin|default:"false"|escapejs }}');
-            $scope.wpSitesCount = parseInt('{{ debug_info.wp_sites_count|default:"0"|escapejs }}');
+            // Initialize scope variables with pre-serialized JSON
+            $scope.wpSites = {{ wpsite|safe }};
+            $scope.debug = {{ debug_info|safe }};
+            $scope.totalSites = {{ total_sites }};
+            $scope.userId = $scope.debug.user_id;
+            $scope.isAdmin = $scope.debug.is_admin;
+            $scope.wpSitesCount = $scope.debug.wp_sites_count;
 
             $scope.deleteWPSite = function(site) {
                 if (confirm('Are you sure you want to delete this WordPress site? This action cannot be undone.')) {
