@@ -3,7 +3,6 @@
 {% block title %}{% trans "WordPress Toolkit - CyberPanel" %}{% endblock %}
 
 {% block header_scripts %}
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <script>
         // Create or get the CyberCP module
         try {
@@ -115,7 +114,7 @@
             // Fetch site data for each site
             function fetchSiteData(site) {
                 var data = { WPid: site.id };
-                site.fullUrl = $scope.getFullUrl(site.url); // Add full URL to site object
+                site.fullUrl = $scope.getFullUrl(site.url);
 
                 GLobalAjaxCall($http, "{% url 'FetchWPdata' %}", data,
                     function(response) {
@@ -144,402 +143,96 @@
             if ($scope.wpSites) {
                 $scope.wpSites.forEach(fetchSiteData);
             }
-
-            // Initialize tooltips
-            angular.element(document).ready(function() {
-                $('[data-toggle="tooltip"]').tooltip();
-            });
         });
     </script>
 {% endblock %}
 
-{% block styles %}
-    <style>
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        .wp-site-card {
-            background: white;
-            border: 1px solid #e6e6e6;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-            transition: all 0.2s ease;
-        }
-
-        .wp-site-card:hover {
-            box-shadow: 0 2px 6px rgba(0,0,0,0.12);
-        }
-
-        .wp-site-header {
-            padding: 12px 20px;
-            border-bottom: 1px solid #f0f0f0;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background: #f8f9fa;
-            border-radius: 8px 8px 0 0;
-        }
-
-        .wp-site-header a {
-            color: #0051c3;
-            text-decoration: none;
-            font-weight: 500;
-            margin-left: 8px;
-        }
-
-        .wp-site-content {
-            padding: 24px;
-            display: grid;
-            grid-template-columns: 200px 1fr;
-            gap: 24px;
-        }
-
-        .wp-site-preview {
-            width: 200px;
-            height: 150px;
-            object-fit: cover;
-            border-radius: 6px;
-            border: 1px solid #e6e6e6;
-            background: #f8f9fa;
-        }
-
-        .wp-site-info {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .wp-site-info h3 {
-            margin: 0;
-            font-size: 18px;
-            color: #1a1a1a;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .status-section {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 16px;
-            margin-bottom: 24px;
-        }
-
-        .tools-section {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 16px;
-        }
-
-        .status-item, .tool-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 12px 16px;
-            background: #f8f9fa;
-            border-radius: 6px;
-            border: 1px solid #e6e6e6;
-            min-height: 48px;
-        }
-
-        .status-item span:first-child, .tool-item span:first-child {
-            font-weight: 500;
-            color: #444;
-            font-size: 13px;
-        }
-
-        .status-item span:last-child {
-            color: #666;
-            font-size: 13px;
-        }
-
-        .toggle-switch {
-            position: relative;
-            display: inline-block;
-            width: 44px;
-            height: 22px;
-        }
-
-        .toggle-switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #ccc;
-            transition: .3s;
-            border-radius: 22px;
-        }
-
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 18px;
-            width: 18px;
-            left: 2px;
-            bottom: 2px;
-            background-color: white;
-            transition: .3s;
-            border-radius: 50%;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-        }
-
-        input:checked + .slider {
-            background-color: #00847c;
-        }
-
-        input:checked + .slider:before {
-            transform: translateX(22px);
-        }
-
-        .action-buttons {
-            display: flex;
-            gap: 8px;
-        }
-
-        .btn-tool {
-            padding: 6px 12px;
-            border: 1px solid #e6e6e6;
-            border-radius: 4px;
-            background: white;
-            color: #444;
-            text-decoration: none;
-            font-size: 13px;
-            font-weight: 500;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            transition: all 0.2s ease;
-            height: 32px;
-            line-height: 20px;
-        }
-
-        .btn-tool:hover {
-            background: #f5f5f5;
-            border-color: #d9d9d9;
-            color: #1a1a1a;
-        }
-
-        .btn-tool i {
-            font-size: 14px;
-            color: #666;
-        }
-
-        .badge {
-            padding: 3px 8px;
-            border-radius: 12px;
-            font-size: 11px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
-        }
-
-        .bg-primary {
-            background-color: #00847c;
-            color: white;
-        }
-
-        .top-actions {
-            margin-bottom: 24px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 16px 24px;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-        }
-
-        .top-actions h2 {
-            font-size: 20px;
-            color: #1a1a1a;
-            margin: 0;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .search-box {
-            padding: 8px 16px;
-            border: 1px solid #e6e6e6;
-            border-radius: 4px;
-            width: 300px;
-            margin-right: 12px;
-            font-size: 14px;
-            color: #444;
-            transition: border-color 0.2s;
-        }
-
-        .search-box:focus {
-            outline: none;
-            border-color: #00847c;
-        }
-
-        .btn-primary {
-            background: #00847c;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 4px;
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-
-        .btn-primary:hover {
-            background: #006d66;
-        }
-
-        .site-selector {
-            margin-right: 8px;
-            width: 16px;
-            height: 16px;
-            vertical-align: middle;
-        }
-
-        /* Loading state styling */
-        .loading {
-            color: #888;
-            font-style: italic;
-        }
-
-        /* Error state styling */
-        .error {
-            color: #dc3545;
-            font-size: 12px;
-        }
-
-        /* Tooltip styling */
-        [data-toggle="tooltip"] {
-            position: relative;
-        }
-
-        .tooltip {
-            background: rgba(0,0,0,0.8);
-            color: white;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 12px;
-            position: absolute;
-            z-index: 1000;
-            display: none;
-        }
-
-        [data-toggle="tooltip"]:hover .tooltip {
-            display: block;
-        }
-    </style>
-{% endblock %}
-
 {% block content %}
-    <div class="container-fluid py-4" ng-controller="listWordPressSites">
-        <div class="row mb-4">
-            <div class="col-12">
-                <div class="card">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0">WordPress Sites</h5>
-                        <div class="d-flex gap-2">
-                            <input type="text" class="form-control" ng-model="searchTerm" placeholder="Search WordPress installations...">
-                            <a href="{% url 'createWordpress' %}" class="btn btn-primary">Install WordPress</a>
-                        </div>
+    <div ng-controller="listWordPressSites">
+        <div class="card">
+            <div class="card-header">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h3 class="card-title">WordPress Sites</h3>
+                    </div>
+                    <div class="col-md-6 text-right">
+                        <input type="text" class="form-control-sm" ng-model="searchTerm" placeholder="Search WordPress installations...">
+                        <a href="{% url 'createWordpress' %}" class="btn btn-success btn-sm">Install WordPress</a>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="row">
-            <div class="col-12">
-                <div class="card mb-4" ng-repeat="site in wpSites">
-                    <div class="card-body">
-                        <div class="row">
+        <div class="card" ng-repeat="site in wpSites">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="site-preview">
+                            <img ng-src="https://api.microlink.io/?url={$ getFullUrl(site.url) $}&screenshot=true&meta=false&embed=screenshot.url" 
+                                 alt="{$ site.title $}" 
+                                 class="img-fluid"
+                                 loading="lazy"
+                                 onerror="this.onerror=null; this.src='https://s.wordpress.org/style/images/about/WordPress-logotype-standard.png';">
+                            <a ng-href="{$ getFullUrl(site.url) $}" target="_blank" class="btn btn-outline-secondary btn-sm mt-2">
+                                Visit Site
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-md-9">
+                        <div class="d-flex justify-content-between">
+                            <h4>{$ site.title $}</h4>
+                            <div>
+                                <a ng-href="{% url 'WPHome' %}?ID={$ site.id $}" class="btn btn-primary btn-sm">Manage</a>
+                                <button class="btn btn-danger btn-sm" ng-click="deleteWPSite(site)">Delete</button>
+                            </div>
+                        </div>
+
+                        <div class="row mt-3">
                             <div class="col-md-3">
-                                <div class="site-preview">
-                                    <div class="preview-placeholder rounded overflow-hidden" style="background-color: #f8f9fa; min-height: 200px;">
-                                        <img ng-src="https://api.microlink.io/?url={$ getFullUrl(site.url) $}&screenshot=true&meta=false&embed=screenshot.url" 
-                                             alt="{$ site.title $}" 
-                                             class="img-fluid w-100"
-                                             loading="lazy"
-                                             onerror="this.onerror=null; this.src='https://s.wordpress.org/style/images/about/WordPress-logotype-standard.png';">
-                                    </div>
-                                    <a ng-href="{$ getFullUrl(site.url) $}" target="_blank" class="btn btn-sm btn-outline-primary mt-2 w-100">
-                                        <i class="fas fa-external-link-alt"></i> Visit Site
-                                    </a>
+                                <small>WordPress</small>
+                                <div>{$ site.version $}</div>
+                            </div>
+                            <div class="col-md-3">
+                                <small>Plugins</small>
+                                <div>{$ site.activePlugins || 0 $} active</div>
+                            </div>
+                            <div class="col-md-3">
+                                <small>Theme</small>
+                                <div>{$ site.activeTheme || 'Loading...' $}</div>
+                            </div>
+                            <div class="col-md-3">
+                                <small>PHP Version</small>
+                                <div>{$ site.phpVersion || 'Loading...' $}</div>
+                            </div>
+                        </div>
+
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <div class="custom-control custom-switch">
+                                    <input type="checkbox" class="custom-control-input" id="search-indexing-{$ site.id $}" 
+                                           ng-model="site.searchIndex" 
+                                           ng-change="updateSetting(site, 'search-indexing')">
+                                    <label class="custom-control-label" for="search-indexing-{$ site.id $}">Search engine indexing</label>
+                                </div>
+                                <div class="custom-control custom-switch">
+                                    <input type="checkbox" class="custom-control-input" id="debugging-{$ site.id $}" 
+                                           ng-model="site.debugging" 
+                                           ng-change="updateSetting(site, 'debugging')">
+                                    <label class="custom-control-label" for="debugging-{$ site.id $}">Debugging</label>
                                 </div>
                             </div>
-                            <div class="col-md-9">
-                                <div class="d-flex justify-content-between align-items-start mb-3">
-                                    <h5 class="card-title">{$ site.title $}</h5>
-                                    <div class="btn-group">
-                                        <a ng-href="{% url 'WPHome' %}?ID={$ site.id $}" class="btn btn-primary btn-sm">
-                                            <i class="fas fa-cog"></i> Manage
-                                        </a>
-                                        <button class="btn btn-danger btn-sm" ng-click="deleteWPSite(site)">
-                                            <i class="fas fa-trash"></i> Delete
-                                        </button>
-                                    </div>
+                            <div class="col-md-6">
+                                <div class="custom-control custom-switch">
+                                    <input type="checkbox" class="custom-control-input" id="password-protection-{$ site.id $}" 
+                                           ng-model="site.passwordProtection" 
+                                           ng-change="updateSetting(site, 'password-protection')">
+                                    <label class="custom-control-label" for="password-protection-{$ site.id $}">Password protection</label>
                                 </div>
-
-                                <div class="row mb-4">
-                                    <div class="col-md-3">
-                                        <small class="text-muted d-block">WordPress</small>
-                                        <strong>{$ site.version $}</strong>
-                                    </div>
-                                    <div class="col-md-3">
-                                        <small class="text-muted d-block">Plugins</small>
-                                        <strong>{$ site.activePlugins || 0 $} active</strong>
-                                    </div>
-                                    <div class="col-md-3">
-                                        <small class="text-muted d-block">Theme</small>
-                                        <strong>{$ site.activeTheme || 'Loading...' $}</strong>
-                                    </div>
-                                    <div class="col-md-3">
-                                        <small class="text-muted d-block">PHP Version</small>
-                                        <strong>{$ site.phpVersion || 'Loading...' $}</strong>
-                                    </div>
-                                </div>
-
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="form-check form-switch mb-2">
-                                            <input type="checkbox" class="form-check-input" id="search-indexing-{$ site.id $}" 
-                                                   ng-model="site.searchIndex" 
-                                                   ng-change="updateSetting(site, 'search-indexing')">
-                                            <label class="form-check-label" for="search-indexing-{$ site.id $}">Search engine indexing</label>
-                                        </div>
-                                        <div class="form-check form-switch">
-                                            <input type="checkbox" class="form-check-input" id="debugging-{$ site.id $}" 
-                                                   ng-model="site.debugging" 
-                                                   ng-change="updateSetting(site, 'debugging')">
-                                            <label class="form-check-label" for="debugging-{$ site.id $}">Debugging</label>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="form-check form-switch mb-2">
-                                            <input type="checkbox" class="form-check-input" id="password-protection-{$ site.id $}" 
-                                                   ng-model="site.passwordProtection" 
-                                                   ng-change="updateSetting(site, 'password-protection')">
-                                            <label class="form-check-label" for="password-protection-{$ site.id $}">Password protection</label>
-                                        </div>
-                                        <div class="form-check form-switch">
-                                            <input type="checkbox" class="form-check-input" id="maintenance-mode-{$ site.id $}" 
-                                                   ng-model="site.maintenanceMode" 
-                                                   ng-change="updateSetting(site, 'maintenance-mode')">
-                                            <label class="form-check-label" for="maintenance-mode-{$ site.id $}">Maintenance mode</label>
-                                        </div>
-                                    </div>
+                                <div class="custom-control custom-switch">
+                                    <input type="checkbox" class="custom-control-input" id="maintenance-mode-{$ site.id $}" 
+                                           ng-model="site.maintenanceMode" 
+                                           ng-change="updateSetting(site, 'maintenance-mode')">
+                                    <label class="custom-control-label" for="maintenance-mode-{$ site.id $}">Maintenance mode</label>
                                 </div>
                             </div>
                         </div>
