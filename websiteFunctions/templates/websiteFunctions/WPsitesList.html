@@ -1,19 +1,8 @@
 {% extends "baseTemplate/index.html" %}
 {% load i18n %}
 {% block title %}{% trans "WordPress Toolkit - CyberPanel" %}{% endblock %}
-{% block content %}
 
-    {% load static %}
-    {% get_current_language as LANGUAGE_CODE %}
-    <!-- Current language: {{ LANGUAGE_CODE }} -->
-    {% csrf_token %}
-
-    <script>
-        $(document).ready(function () {
-            $('[data-toggle="tooltip"]').tooltip();
-        });
-    </script>
-
+{% block styles %}
     <style>
         .container {
             max-width: 1200px;
@@ -302,315 +291,181 @@
             display: block;
         }
     </style>
+{% endblock %}
 
+{% block content %}
+    {% load static %}
+    {% csrf_token %}
 
-    <div class="container">
-        {% if debug_info %}
-        <div class="alert alert-info">
+    <div class="container" ng-controller="listWordPressSites">
+        <div class="alert alert-info" ng-if="debug">
             <h4>Debug Information</h4>
-            <p>Total WordPress Sites: {{ total_sites }}</p>
-            <p>User ID: {{ debug_info.user_id }}</p>
-            <p>Is Admin: {{ debug_info.is_admin }}</p>
-            <p>WP Sites Count: {{ debug_info.wp_sites_count }}</p>
-        </div>
-        {% endif %}
-
-        {% if not wpsite %}
-            <div class="alert alert-info">
-                No WordPress sites found. <a href="{% url 'createWordpress' %}" class="alert-link">Install WordPress</a> to get started.
-            </div>
-        {% endif %}
-
-        {% if wpsite %}
-        <div class="top-actions">
-            <h2>WordPress Toolkit {% if help_url %}<a href="{{ help_url }}" class="btn-tool">Help</a>{% endif %}</h2>
-            <div>
-                <input type="text" class="search-box" placeholder="Search WordPress installations...">
-                <a href="{% url 'createWordpress' %}" class="btn btn-primary">Install WordPress</a>
-            </div>
+            <p>Total WordPress Sites: [[totalSites]]</p>
+            <p>User ID: [[userId]]</p>
+            <p>Is Admin: [[isAdmin]]</p>
+            <p>WP Sites Count: [[wpSitesCount]]</p>
         </div>
 
-        {% for site in wpsite %}
-        <div class="wp-site-card" data-site-id="{{ site.id }}">
-            <div class="wp-site-header">
+        <div class="alert alert-info" ng-if="!wpSites || wpSites.length === 0">
+            No WordPress sites found. <a href="{% url 'createWordpress' %}" class="alert-link">Install WordPress</a> to get started.
+        </div>
+
+        <div ng-if="wpSites && wpSites.length > 0">
+            <div class="top-actions">
+                <h2>WordPress Toolkit {% if help_url %}<a href="{{ help_url }}" class="btn-tool">Help</a>{% endif %}</h2>
                 <div>
-                    <input type="checkbox" class="site-selector">
-                    <a href="{{ site.url }}" target="_blank">{{ site.url }}</a>
-                    {% if site.production_status %}<span class="badge bg-primary">PRODUCTION</span>{% endif %}
-                </div>
-                <div class="action-buttons">
-                    <a href="{% url 'WPHome' %}?ID={{ site.id }}" class="btn-tool">
-                        <i class="fas fa-cog"></i> Manage
-                    </a>
-                    <button type="button" class="btn-tool" onclick="DeleteWPNow('{% url "ListWPSites" %}', '{{ site.id }}')">
-                        <i class="fas fa-trash"></i> Delete
-                    </button>
+                    <input type="text" class="search-box" ng-model="searchTerm" placeholder="Search WordPress installations...">
+                    <a href="{% url 'createWordpress' %}" class="btn btn-primary">Install WordPress</a>
                 </div>
             </div>
-            <div class="wp-site-content">
-                <img src="{% if site.screenshot %}{{ site.screenshot }}{% else %}{% static 'websiteFunctions/images/wp-default.png' %}{% endif %}" 
-                     class="wp-site-preview" alt="{{ site.title }}">
-                
-                <div class="wp-site-info">
-                    <h3>{{ site.title }} <a href="{% url 'AutoLogin' %}?id={{ site.id }}" target="_blank" class="btn-tool">Login</a></h3>
-                    
-                    <div class="status-section">
-                        <div class="status-item">
-                            <span>WordPress</span>
-                            <span class="wp-version loading" data-site-id="{{ site.id }}">
-                                <i class="fas fa-circle-notch fa-spin"></i> Loading...
-                            </span>
-                        </div>
-                        <div class="status-item">
-                            <span>Plugins</span>
-                            <span class="plugin-status loading" data-site-id="{{ site.id }}">
-                                <i class="fas fa-circle-notch fa-spin"></i> Loading...
-                            </span>
-                        </div>
-                        <div class="status-item">
-                            <span>Themes</span>
-                            <span class="theme-status loading" data-site-id="{{ site.id }}">
-                                <i class="fas fa-circle-notch fa-spin"></i> Loading...
-                            </span>
-                        </div>
-                        <div class="status-item">
-                            <span>PHP</span>
-                            <span class="php-version loading" data-site-id="{{ site.id }}">
-                                <i class="fas fa-circle-notch fa-spin"></i> Loading...
-                            </span>
-                        </div>
-                    </div>
 
-                    <div class="tools-section">
-                        <div class="tool-item" data-toggle="tooltip" title="Allow search engines to index this site">
-                            <span>Search engine indexing</span>
-                            <label class="toggle-switch">
-                                <input type="checkbox" class="search-indexing" data-site-id="{{ site.id }}" disabled>
-                                <span class="slider"></span>
-                            </label>
+            <div class="wp-site-card" ng-repeat="site in wpSites | filter:searchTerm" data-site-id="[[site.id]]">
+                <div class="wp-site-header">
+                    <div>
+                        <input type="checkbox" class="site-selector">
+                        <a href="[[site.url]]" target="_blank">[[site.url]]</a>
+                        <span class="badge bg-primary" ng-if="site.production_status">PRODUCTION</span>
+                    </div>
+                    <div class="action-buttons">
+                        <a href="{% url 'WPHome' %}?ID=[[site.id]]" class="btn-tool">
+                            <i class="fas fa-cog"></i> Manage
+                        </a>
+                        <button type="button" class="btn-tool" ng-click="deleteWPSite(site)">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
+                    </div>
+                </div>
+                <div class="wp-site-content">
+                    <img ng-src="[[site.screenshot || '{% static 'websiteFunctions/images/wp-default.png' %}' ]]" 
+                         class="wp-site-preview" alt="[[site.title]]">
+                    
+                    <div class="wp-site-info">
+                        <h3>[[site.title]] <a href="{% url 'AutoLogin' %}?id=[[site.id]]" target="_blank" class="btn-tool">Login</a></h3>
+                        
+                        <div class="status-section">
+                            <div class="status-item">
+                                <span>WordPress</span>
+                                <span class="wp-version" ng-class="{loading: !site.version}">
+                                    <i class="fas fa-circle-notch fa-spin" ng-if="!site.version"></i>
+                                    [[site.version || 'Loading...']]
+                                </span>
+                            </div>
+                            <div class="status-item">
+                                <span>Plugins</span>
+                                <span class="plugin-status" ng-class="{loading: !site.activePlugins}">
+                                    <i class="fas fa-circle-notch fa-spin" ng-if="!site.activePlugins"></i>
+                                    [[site.activePlugins || 'Loading...']]
+                                </span>
+                            </div>
+                            <div class="status-item">
+                                <span>Themes</span>
+                                <span class="theme-status" ng-class="{loading: !site.activeTheme}">
+                                    <i class="fas fa-circle-notch fa-spin" ng-if="!site.activeTheme"></i>
+                                    [[site.activeTheme || 'Loading...']]
+                                </span>
+                            </div>
+                            <div class="status-item">
+                                <span>PHP</span>
+                                <span class="php-version" ng-class="{loading: !site.phpVersion}">
+                                    <i class="fas fa-circle-notch fa-spin" ng-if="!site.phpVersion"></i>
+                                    [[site.phpVersion || 'Loading...']]
+                                </span>
+                            </div>
                         </div>
-                        <div class="tool-item" data-toggle="tooltip" title="Enable WordPress debug mode">
-                            <span>Debugging</span>
-                            <label class="toggle-switch">
-                                <input type="checkbox" class="debugging" data-site-id="{{ site.id }}" disabled>
-                                <span class="slider"></span>
-                            </label>
-                        </div>
-                        <div class="tool-item" data-toggle="tooltip" title="Protect site with password">
-                            <span>Password protection</span>
-                            <label class="toggle-switch">
-                                <input type="checkbox" class="password-protection" data-site-id="{{ site.id }}" disabled>
-                                <span class="slider"></span>
-                            </label>
-                        </div>
-                        <div class="tool-item" data-toggle="tooltip" title="Enable maintenance mode">
-                            <span>Maintenance mode</span>
-                            <label class="toggle-switch">
-                                <input type="checkbox" class="maintenance-mode" data-site-id="{{ site.id }}" disabled>
-                                <span class="slider"></span>
-                            </label>
+
+                        <div class="tools-section">
+                            <div class="tool-item" data-toggle="tooltip" title="Allow search engines to index this site">
+                                <span>Search engine indexing</span>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" ng-model="site.searchIndex" ng-change="updateSetting(site, 'search-indexing')">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            <div class="tool-item" data-toggle="tooltip" title="Enable WordPress debug mode">
+                                <span>Debugging</span>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" ng-model="site.debugging" ng-change="updateSetting(site, 'debugging')">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            <div class="tool-item" data-toggle="tooltip" title="Protect site with password">
+                                <span>Password protection</span>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" ng-model="site.passwordProtection" ng-change="updateSetting(site, 'password-protection')">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            <div class="tool-item" data-toggle="tooltip" title="Enable maintenance mode">
+                                <span>Maintenance mode</span>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" ng-model="site.maintenanceMode" ng-change="updateSetting(site, 'maintenance-mode')">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        {% endfor %}
-
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Function to update element state
-            function updateElementState(element, isLoading, value) {
-                if (element) {
-                    if (isLoading) {
-                        element.classList.add('loading');
-                        element.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Loading...';
-                    } else {
-                        element.classList.remove('loading');
-                        element.textContent = value;
-                    }
-                }
-            }
-
-            // Function to enable/disable toggles
-            function updateToggles(siteId, enable) {
-                document.querySelectorAll(`input[data-site-id="${siteId}"]`).forEach(toggle => {
-                    toggle.disabled = !enable;
-                });
-            }
-
-            // Function to fetch and update site data
-            function updateSiteData(siteId) {
-                const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-                
-                // Set loading state
-                document.querySelectorAll(`[data-site-id="${siteId}"]`).forEach(el => {
-                    if (el.tagName !== 'INPUT') {
-                        updateElementState(el, true);
-                    }
-                });
-                
-                fetch('{% url "FetchWPdata" %}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': csrfToken
-                    },
-                    body: JSON.stringify({
-                        WPid: siteId
-                    })
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    if (data.status === 1) {
-                        const site = data.ret_data;
-                        
-                        // Update version info
-                        updateElementState(
-                            document.querySelector(`.wp-version[data-site-id="${siteId}"]`),
-                            false,
-                            site.version || 'Unknown'
-                        );
-                        updateElementState(
-                            document.querySelector(`.plugin-status[data-site-id="${siteId}"]`),
-                            false,
-                            `${site.activePlugins || 0} active`
-                        );
-                        updateElementState(
-                            document.querySelector(`.theme-status[data-site-id="${siteId}"]`),
-                            false,
-                            site.activeTheme || 'Unknown'
-                        );
-                        updateElementState(
-                            document.querySelector(`.php-version[data-site-id="${siteId}"]`),
-                            false,
-                            site.phpVersion || 'Unknown'
-                        );
-                        
-                        // Update toggles
-                        const toggles = {
-                            'search-indexing': site.searchIndex === 1,
-                            'debugging': site.debugging === 1,
-                            'password-protection': site.passwordprotection === 1,
-                            'maintenance-mode': site.maintenanceMode === 1
-                        };
-                        
-                        Object.entries(toggles).forEach(([className, value]) => {
-                            const toggle = document.querySelector(`.${className}[data-site-id="${siteId}"]`);
-                            if (toggle) {
-                                toggle.checked = value;
-                            }
-                        });
-                        
-                        // Enable toggles
-                        updateToggles(siteId, true);
-                    } else {
-                        console.error('Error in response:', data);
-                        document.querySelectorAll(`[data-site-id="${siteId}"]`).forEach(el => {
-                            if (el.tagName !== 'INPUT') {
-                                updateElementState(el, false, 'Error loading');
-                            }
-                        });
-                    }
-                })
-                .catch(error => {
-                    console.error('Error fetching site data:', error);
-                    document.querySelectorAll(`[data-site-id="${siteId}"]`).forEach(el => {
-                        if (el.tagName !== 'INPUT') {
-                            updateElementState(el, false, 'Error loading');
-                        }
-                    });
-                });
-            }
-
-            // Initialize tooltips
-            $('[data-toggle="tooltip"]').tooltip();
-
-            // Add CSRF token to the page
-            const csrfToken = '{% csrf_token %}';
-            document.body.insertAdjacentHTML('beforeend', csrfToken);
-
-            // Update data for all sites
-            document.querySelectorAll('.wp-site-card').forEach(card => {
-                const siteId = card.dataset.siteId;
-                updateSiteData(siteId);
-            });
-
-            // Handle toggle changes
-            document.querySelectorAll('.toggle-switch input').forEach(toggle => {
-                toggle.addEventListener('change', function() {
-                    const siteId = this.dataset.siteId;
-                    const setting = this.className;
-                    const value = this.checked ? 1 : 0;
-                    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-
-                    // Disable toggle while updating
-                    this.disabled = true;
-
-                    fetch('{% url "UpdateWPSettings" %}', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRFToken': csrfToken
-                        },
-                        body: JSON.stringify({
-                            siteId: siteId,
-                            setting: setting,
-                            value: value
-                        })
-                    })
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error('Network response was not ok');
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        if (!data.status) {
-                            // Revert toggle if update failed
-                            this.checked = !this.checked;
-                            alert('Failed to update setting: ' + (data.error || 'Unknown error'));
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error updating setting:', error);
-                        this.checked = !this.checked;
-                        alert('Failed to update setting. Please try again.');
-                    })
-                    .finally(() => {
-                        // Re-enable toggle
-                        this.disabled = false;
-                    });
-                });
-            });
-
-            // Handle search functionality
-            const searchBox = document.querySelector('.search-box');
-            if (searchBox) {
-                searchBox.addEventListener('input', function() {
-                    const searchTerm = this.value.toLowerCase();
-                    document.querySelectorAll('.wp-site-card').forEach(card => {
-                        const title = card.querySelector('h3').textContent.toLowerCase();
-                        const url = card.querySelector('.wp-site-header a').textContent.toLowerCase();
-                        card.style.display = (title.includes(searchTerm) || url.includes(searchTerm)) ? '' : 'none';
-                    });
-                });
-            }
+        var app = angular.module('CyberCP', []);
+        app.config(function($interpolateProvider) {
+            $interpolateProvider.startSymbol('[[');
+            $interpolateProvider.endSymbol(']]');
         });
 
-        function DeleteWPNow(baseUrl, siteId) {
-            if (confirm('Are you sure you want to delete this WordPress site? This action cannot be undone.')) {
-                window.location.href = baseUrl + '?DeleteID=' + siteId;
-            }
-        }
-    </script>
+        app.controller('listWordPressSites', function($scope, $http) {
+            $scope.wpSites = {{ wpsite|safe }};
+            $scope.debug = {{ debug_info|default:"false"|safe }};
+            $scope.totalSites = {{ total_sites|default:"0"|safe }};
+            $scope.userId = {{ debug_info.user_id|default:"0"|safe }};
+            $scope.isAdmin = {{ debug_info.is_admin|default:"0"|safe }};
+            $scope.wpSitesCount = {{ debug_info.wp_sites_count|default:"0"|safe }};
 
-{% endblock %}
+            $scope.deleteWPSite = function(site) {
+                if (confirm('Are you sure you want to delete this WordPress site? This action cannot be undone.')) {
+                    window.location.href = "{% url 'ListWPSites' %}?DeleteID=" + site.id;
+                }
+            };
+
+            $scope.updateSetting = function(site, setting) {
+                var data = {
+                    siteId: site.id,
+                    setting: setting,
+                    value: site[setting] ? 1 : 0
+                };
+
+                $http.post("{% url 'UpdateWPSettings' %}", data)
+                    .then(function(response) {
+                        if (!response.data.status) {
+                            site[setting] = !site[setting];
+                            alert('Failed to update setting: ' + (response.data.error || 'Unknown error'));
+                        }
+                    })
+                    .catch(function(error) {
+                        site[setting] = !site[setting];
+                        alert('Failed to update setting. Please try again.');
+                    });
+            };
+
+            // Initialize tooltips
+            $(document).ready(function() {
+                $('[data-toggle="tooltip"]').tooltip();
+            });
+
+            // Fetch site data for each site
+            $scope.wpSites.forEach(function(site) {
+                $http.post("{% url 'FetchWPdata' %}", { WPid: site.id })
+                    .then(function(response) {
+                        if (response.data.status === 1) {
+                            angular.extend(site, response.data.ret_data);
+                        }
+                    });
+            });
+        });
+    </script>
+{% endblock content %}
 
 
