@@ -1,6 +1,6 @@
 {% extends "baseTemplate/index.html" %}
 {% load i18n %}
-{% block title %}{% trans "WordPress Sites - CyberPanel" %}{% endblock %}
+{% block title %}{% trans "WordPress Toolkit - CyberPanel" %}{% endblock %}
 {% block content %}
 
     {% load static %}
@@ -81,151 +81,290 @@
             border-radius: 0px 20px 20px 0px;
         }
 
+        .wp-site-card {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .wp-site-header {
+            padding: 15px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .wp-site-content {
+            padding: 20px;
+        }
+
+        .wp-site-preview {
+            width: 200px;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 4px;
+            border: 1px solid #e0e0e0;
+            float: left;
+            margin-right: 20px;
+        }
+
+        .wp-site-info {
+            margin-left: 220px;
+        }
+
+        .status-section {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .tools-section {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .status-item, .tool-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 24px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: #2196F3;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-tool {
+            padding: 5px 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: white;
+            color: #333;
+            text-decoration: none;
+            font-size: 12px;
+        }
+
+        .btn-tool:hover {
+            background: #f8f9fa;
+        }
+
+        .warning-badge {
+            background: #ffc107;
+            color: #000;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+        }
+
+        .top-actions {
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .search-box {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 300px;
+        }
     </style>
 
 
     <div ng-controller="listWebsites" class="container">
 
-        <div id="page-title">
-            <h2 id="domainNamePage">{% trans "List WordPress Websites" %}
-                <a class="pull-right btn btn-primary"
-                   href="{% url "createWordpress" %}">{% trans "Create WordPress Website" %}</a>
-                <a style="margin-right: 1%" class="pull-right btn btn-primary"
-                   data-toggle="modal"
-                                data-target="#scaningmodal"
-                   href="#">{% trans "Scan WordPress " %}</a>
-            </h2>
-            <img ng-hide="cyberPanelLoading" id="cyberPanelLoading" src="{% static 'images/loading.gif' %}">
-            <p>{% trans "On this page you can launch, list, modify and delete Wordpress Sites from your server." %}</p>
+        <div class="top-actions">
+            <h2>WordPress Toolkit {% if help_url %}<a href="{{ help_url }}" class="btn-tool">Help</a>{% endif %}</h2>
+            <div>
+                <input type="text" class="search-box" placeholder="Search WordPress installations...">
+                <a href="{% url 'createWordpress' %}" class="btn btn-primary">Install WordPress</a>
+            </div>
         </div>
 
-
-        <table class="table-spacing" style="width: 100%">
-            <thead style="color: white; background-color: #0a6ebd">
-            <tr>
-                <th style="padding: 18px; color: white; width: 161px; font-size: 12px;">WordPress Site Title</th>
-                <th style="padding: 18px; color: white; width: 161px; font-size: 12px;">Login</th>
-                <th style="padding: 18px; color: white; width: 161px; font-size: 12px;">Domain</th>
-                <th style="padding: 18px; color: white; width: 161px; font-size: 12px;">Action</th>
-            </tr>
-            </thead>
-
-            <tbody style="background-color: #d9eefa">
-            {% for sub in wpsite %}
-
-                <tr>
-                    <td style="padding: 13px;">
-                        <a href="{% url 'WPHome' %}?ID={{ sub.id }}">
-                            <p style="font-weight: bold; text-transform: uppercase; ">{{ sub.title }}</p>
-                        </a>
-
-                    </td>
-                    <td style="padding: 13px;">
-                        <a title="Auto Login" style="margin-right: 2%; margin-left: 10px;"
-                           target="_blank"
-                           href="{% url 'AutoLogin' %}?id={{ sub.id }}">
-                            <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img" width="1.5em"
-                                 style="margin: 3px;" height="1.5em" preserveAspectRatio="xMidYMid meet"
-                                 viewBox="0 0 16 16">
-                                <g fill="#006600">
-                                    <path d="M12.633 7.653c0-.848-.305-1.435-.566-1.892l-.08-.13c-.317-.51-.594-.958-.594-1.48c0-.63.478-1.218 1.152-1.218c.02 0 .039.002.058.003l.031.003A6.838 6.838 0 0 0 8 1.137A6.855 6.855 0 0 0 2.266 4.23c.16.005.313.009.442.009c.717 0 1.828-.087 1.828-.087c.37-.022.414.521.044.565c0 0-.371.044-.785.065l2.5 7.434l1.5-4.506l-1.07-2.929c-.369-.022-.719-.065-.719-.065c-.37-.022-.326-.588.043-.566c0 0 1.134.087 1.808.087c.718 0 1.83-.087 1.83-.087c.37-.022.413.522.043.566c0 0-.372.043-.785.065l2.48 7.377l.684-2.287l.054-.173c.27-.86.469-1.495.469-2.046zM1.137 8a6.864 6.864 0 0 0 3.868 6.176L1.73 5.206A6.837 6.837 0 0 0 1.137 8z"></path>
-                                    <path d="M6.061 14.583L8.121 8.6l2.109 5.78c.014.033.03.064.049.094a6.854 6.854 0 0 1-4.218.109zm7.96-9.876c.03.219.047.453.047.706c0 .696-.13 1.479-.522 2.458l-2.096 6.06a6.86 6.86 0 0 0 2.572-9.224z"></path>
-                                    <path fill-rule="evenodd"
-                                          d="M0 8c0-4.411 3.589-8 8-8c4.41 0 8 3.589 8 8s-3.59 8-8 8c-4.411 0-8-3.589-8-8zm.367 0c0 4.209 3.424 7.633 7.633 7.633c4.208 0 7.632-3.424 7.632-7.633C15.632 3.79 12.208.367 8 .367C3.79.367.367 3.79.367 8z"></path>
-                                </g>
-                            </svg>
-                        </a>
-                    </td>
-                    <td style="padding: 13px;">
-                        <a target="_blank" style="color: #6aa7ff"
-                           href="http://{{ sub.url }}">Visit
-                            <i class="glyph-icon icon-external-link-square" title="{{ sub.url }}"></i></a>
-                    </td>
-
-                    <td style="padding: 13px;">
-
-                        <button
-                                data-toggle="modal"
-                                data-target="#DeleteMember" aria-label=""
-                                onclick="DeleteWPNow('{% url 'ListWPSites' %}?DeleteID={{ sub.id }}')"
-                                type="button" class="btn btn-border btn-alt border-red btn-link font-red">
-                            Delete
-                        </button>
-                        <div id="DeleteMember" class="modal fade" role="dialog">
-                            <div class="modal-dialog">
-                                <!-- Modal content-->
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <button type="button" class="close" data-dismiss="modal">&times;
-                                        </button>
-                                        <h4 class="modal-title">Delete WordPress Site
-                                            <img ng-hide="$parent.cyberPanelLoading"
-                                                 src="/static/images/loading.gif"
-                                                 style="display: none;">
-                                        </h4>
-                                    </div>
-                                    <div class="modal-body">
-                                        <form name="DeleteDocumentRootForm" action="/"
-                                              class="form-horizontal">
-
-                                            <span>Do you want to delete the site?</span>
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-primary"
-                                                onclick="FinalDeleteWPNow()">Yes
-                                        </button>
-                                        <button type="button" ng-disabled="savingSettings"
-                                                class="btn btn-default" data-dismiss="modal">
-                                            Cancel
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
+        {% for site in wpsite %}
+        <div class="wp-site-card" data-site-id="{{ site.id }}">
+            <div class="wp-site-header">
+                <div>
+                    <input type="checkbox" class="site-selector">
+                    <a href="{{ site.url }}" target="_blank">{{ site.url }}</a>
+                    {% if site.production_status %}<span class="badge bg-primary">PRODUCTION</span>{% endif %}
+                </div>
+                <div class="action-buttons">
+                    <a href="{% url 'WPHome' %}?ID={{ site.id }}" class="btn-tool">
+                        <i class="fas fa-cog"></i> Manage
+                    </a>
+                    <button onclick="DeleteWPNow('{% url 'ListWPSites' %}?DeleteID={{ site.id }}')" class="btn-tool">
+                        <i class="fas fa-trash"></i> Delete
+                    </button>
+                </div>
+            </div>
+            <div class="wp-site-content">
+                <img src="{% if site.screenshot %}{{ site.screenshot }}{% else %}{% static 'images/wp-default.png' %}{% endif %}" 
+                     class="wp-site-preview" alt="{{ site.title }}">
+                
+                <div class="wp-site-info">
+                    <h3>{{ site.title }} <a href="{% url 'AutoLogin' %}?id={{ site.id }}" target="_blank" class="btn-tool">Login</a></h3>
+                    
+                    <div class="status-section">
+                        <div class="status-item">
+                            <span>WordPress</span>
+                            <span class="wp-version" data-site-id="{{ site.id }}">Loading...</span>
                         </div>
-
-
-                    </td>
-
-
-                </tr>
-            {% endfor %}
-
-            </tbody>
-        </table>
-
-
-        <!------------Start scaning wordpress Modal --->
-        <div id="scaningmodal" class="modal fade" role="dialog">
-            <div class="modal-dialog">
-                <!-- Modal content-->
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <button type="button" class="close" data-dismiss="modal">&times;
-                        </button>
-                        <h4 class="modal-title">Scan WordPress Sites
-                            <img ng-hide="$parent.cyberPanelLoading"
-                                 src="/static/images/loading.gif"
-                                 style="display: none;">
-                        </h4>
+                        <div class="status-item">
+                            <span>Plugins</span>
+                            <span class="plugin-status" data-site-id="{{ site.id }}">Loading...</span>
+                        </div>
+                        <div class="status-item">
+                            <span>Themes</span>
+                            <span class="theme-status" data-site-id="{{ site.id }}">Loading...</span>
+                        </div>
+                        <div class="status-item">
+                            <span>PHP</span>
+                            <span class="php-version" data-site-id="{{ site.id }}">Loading...</span>
+                        </div>
                     </div>
-                    <div class="modal-body">
-                        <span>Do you want to Scan Worpress site?</span>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-primary"
-                                ng-click="ScanWordpressSite()">Yes
-                        </button>
-                        <button type="button" ng-disabled="savingSettings"
-                                class="btn btn-default" data-dismiss="modal">
-                            Cancel
-                        </button>
+
+                    <div class="tools-section">
+                        <div class="tool-item">
+                            <span>Search engine indexing</span>
+                            <label class="toggle-switch">
+                                <input type="checkbox" class="search-indexing" data-site-id="{{ site.id }}">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="tool-item">
+                            <span>Debugging</span>
+                            <label class="toggle-switch">
+                                <input type="checkbox" class="debugging" data-site-id="{{ site.id }}">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="tool-item">
+                            <span>Password protection</span>
+                            <label class="toggle-switch">
+                                <input type="checkbox" class="password-protection" data-site-id="{{ site.id }}">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="tool-item">
+                            <span>Maintenance mode</span>
+                            <label class="toggle-switch">
+                                <input type="checkbox" class="maintenance-mode" data-site-id="{{ site.id }}">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-        <!------------End scaning wordpress Modal --->
-
+        {% endfor %}
 
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Function to fetch and update site data
+            function updateSiteData(siteId) {
+                fetch(`/FetchWPdata?WPid=${siteId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 1) {
+                            const site = data.ret_data;
+                            
+                            // Update version
+                            document.querySelector(`.wp-version[data-site-id="${siteId}"]`).textContent = site.version;
+                            
+                            // Update toggles
+                            document.querySelector(`.search-indexing[data-site-id="${siteId}"]`).checked = site.searchIndex === 1;
+                            document.querySelector(`.debugging[data-site-id="${siteId}"]`).checked = site.debugging === 1;
+                            document.querySelector(`.password-protection[data-site-id="${siteId}"]`).checked = site.passwordprotection === 1;
+                            document.querySelector(`.maintenance-mode[data-site-id="${siteId}"]`).checked = site.maintenanceMode === 1;
+                        }
+                    });
+            }
+
+            // Update data for all sites
+            document.querySelectorAll('.wp-site-card').forEach(card => {
+                const siteId = card.dataset.siteId;
+                updateSiteData(siteId);
+            });
+
+            // Handle toggle changes
+            document.querySelectorAll('.toggle-switch input').forEach(toggle => {
+                toggle.addEventListener('change', function() {
+                    const siteId = this.dataset.siteId;
+                    const setting = this.className;
+                    const value = this.checked ? 1 : 0;
+
+                    // Send update to server (you'll need to implement these endpoints)
+                    fetch(`/UpdateWPSettings`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            siteId: siteId,
+                            setting: setting,
+                            value: value
+                        })
+                    });
+                });
+            });
+        });
+    </script>
 
 {% endblock %}
