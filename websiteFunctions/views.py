@@ -622,21 +622,10 @@ def GetCurrentThemes(request):
 def UpdateWPSettings(request):
     try:
         userID = request.session['userID']
-
-        result = pluginManager.preWebsiteCreation(request)
-
-        if  result != 200:
-            return result
-
+        data = json.loads(request.body)
+        
         wm = WebsiteManager()
-        coreResult = wm.UpdateWPSettings(userID, json.loads(request.body))
-
-        result = pluginManager.postWebsiteCreation(request, coreResult)
-        if result != 200:
-            return result
-
-        return coreResult
-
+        return wm.UpdateWPSettings(userID, data)
     except KeyError:
         return redirect(loadLoginPage)
 

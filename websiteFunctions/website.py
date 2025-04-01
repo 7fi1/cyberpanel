@@ -42,6 +42,7 @@ from plogical.vhostConfs import vhostConfs
 from plogical.cronUtil import CronUtil
 from .StagingSetup import StagingSetup
 import validators
+from django.http import JsonResponse
 
 
 class WebsiteManager:
@@ -1925,170 +1926,83 @@ class WebsiteManager:
 
     def UpdateWPSettings(self, userID=None, data=None):
         try:
-
             currentACL = ACLManager.loadedACL(userID)
             admin = Administrator.objects.get(pk=userID)
-
-            WPManagerID = data['WPid']
+            
+            siteId = data['siteId']
             setting = data['setting']
-
-            if setting == 'PasswordProtection':
-                PPUsername = data['PPUsername']
-                PPPassword = data['PPPassword']
-            else:
-                settingValue = data['settingValue']
-
-            wpsite = WPSites.objects.get(pk=WPManagerID)
-
-            if ACLManager.checkOwnership(wpsite.owner.domain, admin, currentACL) == 1:
-                pass
-            else:
+            value = data['value']
+            
+            wpsite = WPSites.objects.get(pk=siteId)
+            
+            if ACLManager.checkOwnership(wpsite.owner.domain, admin, currentACL) != 1:
                 return ACLManager.loadError()
-
-            path = wpsite.path
-
+                
+            # Get PHP version and path
             Webobj = Websites.objects.get(pk=wpsite.owner_id)
-
             Vhuser = Webobj.externalApp
             PHPVersion = Webobj.phpSelection
             php = ACLManager.getPHPString(PHPVersion)
             FinalPHPPath = '/usr/local/lsws/lsphp%s/bin/php' % (php)
 
-            if setting == 'lscache':
-                if settingValue:
-
-                    command = "sudo -u %s %s -d error_reporting=0 /usr/bin/wp plugin install litespeed-cache --path=%s --skip-plugins --skip-themes" % (
-                        Vhuser, FinalPHPPath, path)
-                    stdoutput = ProcessUtilities.outputExecutioner(command)
-
-                    command = "sudo -u %s %s -d error_reporting=0 /usr/bin/wp plugin activate litespeed-cache --path=%s --skip-plugins --skip-themes" % (
-                        Vhuser, FinalPHPPath, path)
-                    stdoutput = ProcessUtilities.outputExecutioner(command)
-
-
-                else:
-                    command = 'sudo -u %s %s -d error_reporting=0 /usr/bin/wp plugin deactivate litespeed-cache --path=%s --skip-plugins --skip-themes' % (
-                        Vhuser, FinalPHPPath, path)
-                    stdoutput = ProcessUtilities.outputExecutioner(command)
+            # Update the appropriate setting based on the setting type
+            if setting == 'search-indexing':
+                # Update search engine indexing
+                command = f'sudo -u {Vhuser} {FinalPHPPath} -d error_reporting=0 /usr/bin/wp option update blog_public {value} --skip-plugins --skip-themes --path={wpsite.path}'
             elif setting == 'debugging':
-
-                command = "sudo -u %s %s -d error_reporting=0 /usr/bin/wp litespeed-purge all --path=%s --skip-plugins --skip-themes" % (
-                    Vhuser, FinalPHPPath, path)
-                stdoutput = ProcessUtilities.outputExecutioner(command)
-
-                if settingValue:
-                    command = "sudo -u %s %s -d error_reporting=0 /usr/bin/wp config set WP_DEBUG true --path=%s --skip-plugins --skip-themes" % (
-                        Vhuser, FinalPHPPath, path)
-                    stdoutput = ProcessUtilities.outputExecutioner(command)
-                    logging.CyberCPLogFileWriter.writeToFile("Debugging mk true 1  output:" + str(stdoutput))
-
-                    command = 'sudo -u %s %s -d error_reporting=0 /usr/bin/wp config list --skip-plugins --skip-themes --path=%s' % (
-                        Vhuser, FinalPHPPath, path)
-                    stdout = ProcessUtilities.outputExecutioner(command)
-                    logging.CyberCPLogFileWriter.writeToFile("Debugging output:" + str(stdout))
-
-
+                # Update debugging in wp-config.php
+                if value:
+                    command = f'sudo -u {Vhuser} {FinalPHPPath} -d error_reporting=0 /usr/bin/wp config set WP_DEBUG true --raw --skip-plugins --skip-themes --path={wpsite.path}'
                 else:
-                    command = "sudo -u %s %s -d error_reporting=0 /usr/bin/wp config set WP_DEBUG false --path=%s --skip-plugins --skip-themes" % (
-                        Vhuser, FinalPHPPath, path)
-                    stdoutput = ProcessUtilities.outputExecutioner(command)
-                    logging.CyberCPLogFileWriter.writeToFile("Debugging mk false 0  output:" + str(stdoutput))
-
-                    command = 'sudo -u %s %s -d error_reporting=0 /usr/bin/wp config list --skip-plugins --skip-themes --path=%s' % (
-                        Vhuser, FinalPHPPath, path)
-                    stdout = ProcessUtilities.outputExecutioner(command)
-                    logging.CyberCPLogFileWriter.writeToFile("Debugging output:" + str(stdout))
-            elif setting == 'searchIndex':
-
-                command = "sudo -u %s %s -d error_reporting=0 /usr/bin/wp litespeed-purge all --path=%s --skip-plugins --skip-themes" % (
-                    Vhuser, FinalPHPPath, path)
-                stdoutput = ProcessUtilities.outputExecutioner(command)
-
-                if settingValue:
-                    command = "sudo -u %s %s -d error_reporting=0 /usr/bin/wp option update blog_public 1 --path=%s --skip-plugins --skip-themes" % (
-                        Vhuser, FinalPHPPath, path)
-                    stdoutput = ProcessUtilities.outputExecutioner(command)
-
-
+                    command = f'sudo -u {Vhuser} {FinalPHPPath} -d error_reporting=0 /usr/bin/wp config set WP_DEBUG false --raw --skip-plugins --skip-themes --path={wpsite.path}'
+            elif setting == 'password-protection':
+                vhostName = wpsite.owner.domain
+                vhostPassDir = f'/home/{vhostName}'
+                path = f'{vhostPassDir}/{siteId}'
+                if value:
+                    # Enable password protection
+                    if not os.path.exists(path):
+                        os.makedirs(path)
+                        htpasswd = f'{path}/.htpasswd'
+                        htaccess = f'{wpsite.path}/.htaccess'
+                        password = randomPassword.generate_pass(12)
+                        
+                        # Create .htpasswd file
+                        command = f"htpasswd -cb {htpasswd} admin {password}"
+                        ProcessUtilities.executioner(command)
+                        
+                        # Create .htaccess file
+                        htaccess_content = f"""AuthType Basic
+AuthName "Restricted Access"
+AuthUserFile {htpasswd}
+Require valid-user"""
+                        with open(htaccess, 'w') as f:
+                            f.write(htaccess_content)
                 else:
-                    command = "sudo -u %s %s -d error_reporting=0 /usr/bin/wp option update blog_public 0 --path=%s --skip-plugins --skip-themes" % (
-                        Vhuser, FinalPHPPath, path)
-                    stdoutput = ProcessUtilities.outputExecutioner(command)
-            elif setting == 'maintenanceMode':
-
-                command = "sudo -u %s %s -d error_reporting=0 /usr/bin/wp litespeed-purge all --path=%s --skip-plugins --skip-themes" % (
-                    Vhuser, FinalPHPPath, path)
-                stdoutput = ProcessUtilities.outputExecutioner(command)
-
-                if settingValue:
-
-                    command = "sudo -u %s %s -d error_reporting=0 /usr/bin/wp maintenance-mode activate --path=%s --skip-plugins --skip-themes" % (
-                        Vhuser, FinalPHPPath, path)
-                    stdoutput = ProcessUtilities.outputExecutioner(command)
-
-
+                    # Disable password protection
+                    if os.path.exists(path):
+                        import shutil
+                        shutil.rmtree(path)
+                    htaccess = f'{wpsite.path}/.htaccess'
+                    if os.path.exists(htaccess):
+                        os.remove(htaccess)
+                return JsonResponse({'status': 1, 'error_message': 'None'})
+            elif setting == 'maintenance-mode':
+                if value:
+                    command = f'sudo -u {Vhuser} {FinalPHPPath} -d error_reporting=0 /usr/bin/wp maintenance-mode activate --skip-plugins --skip-themes --path={wpsite.path}'
                 else:
-                    command = "sudo -u %s %s -d error_reporting=0 /usr/bin/wp maintenance-mode deactivate --path=%s --skip-plugins --skip-themes" % (
-                        Vhuser, FinalPHPPath, path)
-                    stdoutput = ProcessUtilities.outputExecutioner(command)
-            elif setting == 'PasswordProtection':
-                execPath = f"/usr/local/CyberCP/bin/python {virtualHostUtilities.cyberPanel}/plogical/virtualHostUtilities.py"
-                execPath = f"{execPath} EnableDisablePP --username '{PPUsername}' --password '{PPPassword}' " \
-                           f"--virtualHostName {Webobj.domain} --path {path} --wpid {str(wpsite.id)} --virtualHostUser {Webobj.externalApp}"
-                ProcessUtilities.executioner(execPath)
-
-            elif setting == 'Wpcron':
-
-                command = "sudo -u %s %s -d error_reporting=0 /usr/bin/wp litespeed-purge all --path=%s --skip-plugins --skip-themes" % (
-                    Vhuser, FinalPHPPath, path)
-
-                stdoutput = ProcessUtilities.outputExecutioner(command)
-
-                if settingValue:
-
-                    command = "sudo -u %s %s -d error_reporting=0 /usr/bin/wp config set DISABLE_WP_CRON true --path=%s --skip-plugins --skip-themes" % (
-                        Vhuser, FinalPHPPath, path)
-
-                    stdoutput = ProcessUtilities.outputExecutioner(command)
-
-                    logging.CyberCPLogFileWriter.writeToFile("Debugging mk true 1  output:" + str(stdoutput))
-
-                    command = 'sudo -u %s %s -d error_reporting=0 /usr/bin/wp config list --skip-plugins --skip-themes --path=%s' % (
-
-                        Vhuser, FinalPHPPath, path)
-
-                    stdout = ProcessUtilities.outputExecutioner(command)
-
-                    logging.CyberCPLogFileWriter.writeToFile("Debugging output:" + str(stdout))
-
-
-
-                else:
-
-                    command = "sudo -u %s %s -d error_reporting=0 /usr/bin/wp config set DISABLE_WP_CRON false --path=%s --skip-plugins --skip-themes" % (
-                        Vhuser, FinalPHPPath, path)
-
-                    stdoutput = ProcessUtilities.outputExecutioner(command)
-
-                    logging.CyberCPLogFileWriter.writeToFile("Debugging mk false 0  output:" + str(stdoutput))
-
-                    command = 'sudo -u %s %s -d error_reporting=0 /usr/bin/wp config list --skip-plugins --skip-themes --path=%s' % (
-
-                        Vhuser, FinalPHPPath, path)
-
-                    stdout = ProcessUtilities.outputExecutioner(command)
-
-                    logging.CyberCPLogFileWriter.writeToFile("Debugging output:" + str(stdout))
-
-            data_ret = {'status': 1, 'error_message': 'None'}
-            json_data = json.dumps(data_ret)
-            return HttpResponse(json_data)
-
+                    command = f'sudo -u {Vhuser} {FinalPHPPath} -d error_reporting=0 /usr/bin/wp maintenance-mode deactivate --skip-plugins --skip-themes --path={wpsite.path}'
+            else:
+                return JsonResponse({'status': 0, 'error_message': 'Invalid setting type'})
+            
+            result = ProcessUtilities.outputExecutioner(command)
+            if result.find('Error:') > -1:
+                return JsonResponse({'status': 0, 'error_message': result})
+                
+            return JsonResponse({'status': 1, 'error_message': 'None'})
 
         except BaseException as msg:
-            data_ret = {'status': 0, 'installStatus': 0, 'error_message': str(msg)}
-            json_data = json.dumps(data_ret)
-            return HttpResponse(json_data)
+            return JsonResponse({'status': 0, 'error_message': str(msg)})
 
     def submitWorpressCreation(self, userID=None, data=None):
         try:

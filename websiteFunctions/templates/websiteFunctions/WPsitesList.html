@@ -247,7 +247,7 @@
                     <a href="{% url 'WPHome' %}?ID={{ site.id }}" class="btn-tool">
                         <i class="fas fa-cog"></i> Manage
                     </a>
-                    <button onclick="DeleteWPNow('{% url 'ListWPSites' %}?DeleteID={{ site.id }}')" class="btn-tool">
+                    <button onclick="DeleteWPNow('{% url 'ListWPSites' %}', '{{ site.id }}')" class="btn-tool">
                         <i class="fas fa-trash"></i> Delete
                     </button>
                 </div>
@@ -365,6 +365,12 @@
                 });
             });
         });
+
+        function DeleteWPNow(url, siteId) {
+            if (confirm('Are you sure you want to delete this WordPress site?')) {
+                window.location.href = `${url}?DeleteID=${siteId}`;
+            }
+        }
     </script>
 
 {% endblock %}
