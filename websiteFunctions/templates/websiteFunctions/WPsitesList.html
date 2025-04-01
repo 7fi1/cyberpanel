@@ -2,9 +2,7 @@
 {% load i18n %}
 {% block title %}{% trans "WordPress Toolkit - CyberPanel" %}{% endblock %}
 
-{% block header_scripts %}
-    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.5/angular.min.js"></script>
-{% endblock %}
+{% block header_scripts %}{% endblock %}
 
 {% block styles %}
     <style>
@@ -301,7 +299,7 @@
     {% load static %}
     {% csrf_token %}
 
-    <div class="container" ng-controller="listWordPressSites">
+    <div class="container" ng-app="CyberCP" ng-controller="listWordPressSites">
         <div class="alert alert-info" ng-if="debug">
             <h4>Debug Information</h4>
             <p>Total WordPress Sites: {$ totalSites $}</p>
@@ -420,14 +418,15 @@
             }
         }
 
+        // Add our controller to the existing CyberCP app
         app.controller('listWordPressSites', function($scope, $http) {
             // Initialize scope variables
-            $scope.wpSites = {{ wpsite|safe }};
-            $scope.debug = {{ debug_info|default:"false"|safe }};
-            $scope.totalSites = {{ total_sites|default:"0"|safe }};
-            $scope.userId = {{ debug_info.user_id|default:"0"|safe }};
-            $scope.isAdmin = {{ debug_info.is_admin|default:"0"|safe }};
-            $scope.wpSitesCount = {{ debug_info.wp_sites_count|default:"0"|safe }};
+            $scope.wpSites = JSON.parse('{{ wpsite|escapejs }}');
+            $scope.debug = JSON.parse('{{ debug_info|default:"false"|escapejs }}');
+            $scope.totalSites = parseInt('{{ total_sites|default:"0"|escapejs }}');
+            $scope.userId = parseInt('{{ debug_info.user_id|default:"0"|escapejs }}');
+            $scope.isAdmin = JSON.parse('{{ debug_info.is_admin|default:"false"|escapejs }}');
+            $scope.wpSitesCount = parseInt('{{ debug_info.wp_sites_count|default:"0"|escapejs }}');
 
             $scope.deleteWPSite = function(site) {
                 DeleteWPNow("{% url 'ListWPSites' %}?DeleteID=" + site.id);
