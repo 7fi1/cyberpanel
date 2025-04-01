@@ -28,16 +28,23 @@
             };
 
             $scope.updateSetting = function(site, setting) {
+                var settingMap = {
+                    'search-indexing': 'searchIndex',
+                    'debugging': 'debugging',
+                    'password-protection': 'passwordprotection',
+                    'maintenance-mode': 'maintenanceMode'
+                };
+
                 var data = {
                     siteId: site.id,
                     setting: setting,
-                    value: site[setting] ? 1 : 0
+                    value: site[settingMap[setting]] ? 1 : 0
                 };
 
                 GLobalAjaxCall($http, "{% url 'UpdateWPSettings' %}", data, 
                     function(response) {
                         if (!response.data.status) {
-                            site[setting] = !site[setting];
+                            site[settingMap[setting]] = !site[settingMap[setting]];
                             new PNotify({
                                 title: 'Operation Failed!',
                                 text: response.data.error_message || 'Unknown error',
@@ -52,7 +59,7 @@
                         }
                     }, 
                     function(response) {
-                        site[setting] = !site[setting];
+                        site[settingMap[setting]] = !site[settingMap[setting]];
                         new PNotify({
                             title: 'Operation Failed!',
                             text: 'Could not connect to server, please try again.',
@@ -103,7 +110,13 @@
                 GLobalAjaxCall($http, "{% url 'FetchWPdata' %}", data,
                     function(response) {
                         if (response.data.status === 1) {
-                            angular.extend(site, response.data.ret_data);
+                            var data = response.data.ret_data;
+                            site.version = data.version;
+                            site.phpVersion = site.phpVersion || 'PHP ' + site.php_version;
+                            site.searchIndex = data.searchIndex === 1;
+                            site.debugging = data.debugging === 1;
+                            site.passwordProtection = data.passwordprotection === 1;
+                            site.maintenanceMode = data.maintenanceMode === 1;
                             // After getting basic site data, fetch plugins and themes
                             fetchPluginData(site);
                             fetchThemeData(site);
