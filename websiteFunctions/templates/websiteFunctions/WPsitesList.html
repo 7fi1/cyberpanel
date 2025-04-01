@@ -299,7 +299,7 @@
     {% load static %}
     {% csrf_token %}
 
-    <div class="container" ng-app="CyberCP" ng-controller="listWordPressSites">
+    <div class="container" ng-controller="listWordPressSites">
         <div class="alert alert-info" ng-if="debug">
             <h4>Debug Information</h4>
             <p>Total WordPress Sites: {$ totalSites $}</p>
