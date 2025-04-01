@@ -158,12 +158,27 @@ class WebsiteManager:
 
         sites = []
         for site in data['wp']:
+            screenshot_path = f'/home/{site.owner.domain}/public_html/wp-content/cyberpanel-screenshots/{site.id}.png'
+            
+            if not os.path.exists(screenshot_path) or (time.time() - os.path.getmtime(screenshot_path)) > 86400:
+                # Generate screenshot if it doesn't exist or is older than 24 hours
+                try:
+                    screenshot_dir = os.path.dirname(screenshot_path)
+                    if not os.path.exists(screenshot_dir):
+                        ProcessUtilities.executioner(f'mkdir -p {screenshot_dir}')
+                    
+                    command = f'wkhtmltoimage --quality 80 --width 800 {site.FinalURL} {screenshot_path}'
+                    ProcessUtilities.executioner(command)
+                    ProcessUtilities.executioner(f'chown {site.owner.externalApp}:{site.owner.externalApp} {screenshot_path}')
+                except:
+                    pass
+
             sites.append({
                 'id': site.id,
                 'title': site.title,
                 'url': site.FinalURL,
-                'screenshot': site.screenshot if hasattr(site, 'screenshot') else None,
-                'production_status': True  # You can modify this based on your needs
+                'screenshot': f'/wp-content/cyberpanel-screenshots/{site.id}.png' if os.path.exists(screenshot_path) else None,
+                'production_status': True
             })
 
         context = {

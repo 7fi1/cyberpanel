@@ -461,88 +461,92 @@
                 </div>
             </div>
 
-            <div class="wp-site-card" ng-repeat="site in wpSites | filter:searchTerm" data-site-id="{$ site.id $}">
-                <div class="wp-site-header">
-                    <div>
-                        <input type="checkbox" class="site-selector">
-                        <a href="{$ site.url $}" target="_blank">{$ site.url $}</a>
-                        <span class="badge bg-primary" ng-if="site.production_status">PRODUCTION</span>
-                    </div>
-                    <div class="action-buttons">
-                        <a href="{% url 'WPHome' %}?ID={$ site.id $}" class="btn-tool">
-                            <i class="fas fa-cog"></i> Manage
-                        </a>
-                        <button type="button" class="btn-tool" ng-click="deleteWPSite(site)">
-                            <i class="fas fa-trash"></i> Delete
-                        </button>
-                    </div>
-                </div>
-                <div class="wp-site-content">
-                    <img ng-src="{$ site.screenshot || '{% static 'websiteFunctions/images/wp-default.png' %}' $}" 
-                         class="wp-site-preview" alt="{$ site.title $}">
-                    
-                    <div class="wp-site-info">
-                        <h3>{$ site.title $} <a href="{% url 'AutoLogin' %}?id={$ site.id $}" target="_blank" class="btn-tool">Login</a></h3>
-                        
-                        <div class="status-section">
-                            <div class="status-item">
-                                <span>WordPress</span>
-                                <span class="wp-version" ng-class="{loading: !site.version}">
-                                    <i class="fas fa-circle-notch fa-spin" ng-if="!site.version"></i>
-                                    {$ site.version || 'Loading...' $}
-                                </span>
-                            </div>
-                            <div class="status-item">
-                                <span>Plugins</span>
-                                <span class="plugin-status" ng-class="{loading: !site.activePlugins}">
-                                    <i class="fas fa-circle-notch fa-spin" ng-if="!site.activePlugins"></i>
-                                    {$ site.activePlugins || 'Loading...' $}
-                                </span>
-                            </div>
-                            <div class="status-item">
-                                <span>Themes</span>
-                                <span class="theme-status" ng-class="{loading: !site.activeTheme}">
-                                    <i class="fas fa-circle-notch fa-spin" ng-if="!site.activeTheme"></i>
-                                    {$ site.activeTheme || 'Loading...' $}
-                                </span>
-                            </div>
-                            <div class="status-item">
-                                <span>PHP</span>
-                                <span class="php-version" ng-class="{loading: !site.phpVersion}">
-                                    <i class="fas fa-circle-notch fa-spin" ng-if="!site.phpVersion"></i>
-                                    {$ site.phpVersion || 'Loading...' $}
-                                </span>
+            <div class="card mb-3" ng-repeat="site in wpSites">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="site-preview">
+                                <div class="preview-placeholder" style="background-color: #f8f9fa; min-height: 200px; display: flex; align-items: center; justify-content: center; border-radius: 8px; overflow: hidden;">
+                                    <img ng-src="https://api.microlink.io/?url={$ site.url $}&screenshot=true&meta=false&embed=screenshot.url" 
+                                         alt="{$ site.title $}" 
+                                         style="max-width: 100%; height: auto;"
+                                         loading="lazy"
+                                         onerror="this.onerror=null; this.src='https://s.wordpress.org/style/images/about/WordPress-logotype-standard.png';">
+                                </div>
+                                <a href="{$ site.url $}" target="_blank" class="btn btn-sm btn-outline-primary mt-2">
+                                    <i class="fas fa-external-link-alt"></i> Visit Site
+                                </a>
                             </div>
                         </div>
+                        <div class="col-md-9">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <h5 class="card-title mb-3">{$ site.title $}</h5>
+                                <div>
+                                    <button class="btn btn-primary btn-sm" ng-click="window.location.href='{% url 'Manage' %}?WPid=' + site.id">
+                                        <i class="fas fa-cog"></i> Manage
+                                    </button>
+                                    <button class="btn btn-danger btn-sm" ng-click="deleteWPSite(site)">
+                                        <i class="fas fa-trash"></i> Delete
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-3">
+                                    <small class="text-muted">WordPress</small>
+                                    <div>{$ site.version $}</div>
+                                </div>
+                                <div class="col-md-3">
+                                    <small class="text-muted">Plugins</small>
+                                    <div>{$ site.activePlugins || 0 $} active</div>
+                                </div>
+                                <div class="col-md-3">
+                                    <small class="text-muted">Theme</small>
+                                    <div>{$ site.activeTheme || 'Loading...' $}</div>
+                                </div>
+                                <div class="col-md-3">
+                                    <small class="text-muted">PHP Version</small>
+                                    <div>{$ site.phpVersion || 'Loading...' $}</div>
+                                </div>
+                            </div>
 
-                        <div class="tools-section">
-                            <div class="tool-item" data-toggle="tooltip" title="Allow search engines to index this site">
-                                <span>Search engine indexing</span>
-                                <label class="toggle-switch">
-                                    <input type="checkbox" ng-model="site.searchIndex" ng-change="updateSetting(site, 'search-indexing')">
-                                    <span class="slider"></span>
-                                </label>
-                            </div>
-                            <div class="tool-item" data-toggle="tooltip" title="Enable WordPress debug mode">
-                                <span>Debugging</span>
-                                <label class="toggle-switch">
-                                    <input type="checkbox" ng-model="site.debugging" ng-change="updateSetting(site, 'debugging')">
-                                    <span class="slider"></span>
-                                </label>
-                            </div>
-                            <div class="tool-item" data-toggle="tooltip" title="Protect site with password">
-                                <span>Password protection</span>
-                                <label class="toggle-switch">
-                                    <input type="checkbox" ng-model="site.passwordProtection" ng-change="updateSetting(site, 'password-protection')">
-                                    <span class="slider"></span>
-                                </label>
-                            </div>
-                            <div class="tool-item" data-toggle="tooltip" title="Enable maintenance mode">
-                                <span>Maintenance mode</span>
-                                <label class="toggle-switch">
-                                    <input type="checkbox" ng-model="site.maintenanceMode" ng-change="updateSetting(site, 'maintenance-mode')">
-                                    <span class="slider"></span>
-                                </label>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <div class="custom-control custom-switch">
+                                            <input type="checkbox" class="custom-control-input" id="search-indexing-{$ site.id $}" 
+                                                   ng-model="site.searchIndex" 
+                                                   ng-change="updateSetting(site, 'search-indexing')">
+                                            <label class="custom-control-label" for="search-indexing-{$ site.id $}">Search engine indexing</label>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <div class="custom-control custom-switch">
+                                            <input type="checkbox" class="custom-control-input" id="debugging-{$ site.id $}" 
+                                                   ng-model="site.debugging" 
+                                                   ng-change="updateSetting(site, 'debugging')">
+                                            <label class="custom-control-label" for="debugging-{$ site.id $}">Debugging</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <div class="custom-control custom-switch">
+                                            <input type="checkbox" class="custom-control-input" id="password-protection-{$ site.id $}" 
+                                                   ng-model="site.passwordProtection" 
+                                                   ng-change="updateSetting(site, 'password-protection')">
+                                            <label class="custom-control-label" for="password-protection-{$ site.id $}">Password protection</label>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <div class="custom-control custom-switch">
+                                            <input type="checkbox" class="custom-control-input" id="maintenance-mode-{$ site.id $}" 
+                                                   ng-model="site.maintenanceMode" 
+                                                   ng-change="updateSetting(site, 'maintenance-mode')">
+                                            <label class="custom-control-label" for="maintenance-mode-{$ site.id $}">Maintenance mode</label>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
