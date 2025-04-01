@@ -4,7 +4,14 @@
 
 {% block header_scripts %}
     <script>
-        // Get the existing CyberCP module instead of trying to create it
+        // Create or get the CyberCP module
+        try {
+            angular.module('CyberCP');
+        } catch(err) {
+            angular.module('CyberCP', []);
+        }
+
+        // Now add our controller to the module
         angular.module('CyberCP').controller('listWordPressSites', function($scope, $http) {
             // Initialize scope variables
             $scope.wpSites = JSON.parse('{{ wpsite|escapejs }}');
