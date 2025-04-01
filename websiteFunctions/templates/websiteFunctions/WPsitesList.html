@@ -305,6 +305,11 @@
 
 
     <div ng-controller="listWebsites" class="container">
+        {% if not wpsite %}
+            <div class="alert alert-info">
+                No WordPress sites found. <a href="{% url 'createWordpress' %}" class="alert-link">Install WordPress</a> to get started.
+            </div>
+        {% endif %}
 
         <div class="top-actions">
             <h2>WordPress Toolkit {% if help_url %}<a href="{{ help_url }}" class="btn-tool">Help</a>{% endif %}</h2>

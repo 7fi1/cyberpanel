@@ -141,10 +141,8 @@ class WebsiteManager:
         currentACL = ACLManager.loadedACL(userID)
 
         admin = Administrator.objects.get(pk=userID)
-        tata = {}
-        tata['wp'] = []
-        tata['wpsites'] = []
-        tata['wp'] = ACLManager.GetALLWPObjects(currentACL, userID)
+        data = {}
+        data['wp'] = ACLManager.GetALLWPObjects(currentACL, userID)
 
         try:
             if DeleteID != None:
@@ -156,14 +154,18 @@ class WebsiteManager:
         except BaseException as msg:
             pass
 
-        for sub in tata['wp']:
-            tata['wpsites'].append({'id': sub.id,
-                                    'title': sub.title,
-                                    'url': sub.FinalURL
-                                    })
+        sites = []
+        for site in data['wp']:
+            sites.append({
+                'id': site.id,
+                'title': site.title,
+                'url': site.FinalURL,
+                'screenshot': site.screenshot if hasattr(site, 'screenshot') else None,
+                'production_status': True  # You can modify this based on your needs
+            })
 
         proc = httpProc(request, 'websiteFunctions/WPsitesList.html',
-                        {"wpsite": tata['wpsites']})
+                        {"wpsite": sites})
         return proc.render()
 
     def WPHome(self, request=None, userID=None, WPid=None, DeleteID=None):
