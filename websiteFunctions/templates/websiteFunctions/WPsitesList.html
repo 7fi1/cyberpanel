@@ -2,7 +2,90 @@
 {% load i18n %}
 {% block title %}{% trans "WordPress Toolkit - CyberPanel" %}{% endblock %}
 
-{% block header_scripts %}{% endblock %}
+{% block header_scripts %}
+    <script>
+        // Get the existing CyberCP module instead of trying to create it
+        angular.module('CyberCP').controller('listWordPressSites', function($scope, $http) {
+            // Initialize scope variables
+            $scope.wpSites = JSON.parse('{{ wpsite|escapejs }}');
+            $scope.debug = JSON.parse('{{ debug_info|default:"false"|escapejs }}');
+            $scope.totalSites = parseInt('{{ total_sites|default:"0"|escapejs }}');
+            $scope.userId = parseInt('{{ debug_info.user_id|default:"0"|escapejs }}');
+            $scope.isAdmin = JSON.parse('{{ debug_info.is_admin|default:"false"|escapejs }}');
+            $scope.wpSitesCount = parseInt('{{ debug_info.wp_sites_count|default:"0"|escapejs }}');
+
+            $scope.deleteWPSite = function(site) {
+                if (confirm('Are you sure you want to delete this WordPress site? This action cannot be undone.')) {
+                    window.location.href = "{% url 'ListWPSites' %}?DeleteID=" + site.id;
+                }
+            };
+
+            $scope.updateSetting = function(site, setting) {
+                var data = {
+                    siteId: site.id,
+                    setting: setting,
+                    value: site[setting] ? 1 : 0
+                };
+
+                GLobalAjaxCall($http, "{% url 'UpdateWPSettings' %}", data, 
+                    function(response) {
+                        if (!response.data.status) {
+                            site[setting] = !site[setting];
+                            new PNotify({
+                                title: 'Operation Failed!',
+                                text: response.data.error_message || 'Unknown error',
+                                type: 'error'
+                            });
+                        } else {
+                            new PNotify({
+                                title: 'Success!',
+                                text: 'Setting updated successfully.',
+                                type: 'success'
+                            });
+                        }
+                    }, 
+                    function(response) {
+                        site[setting] = !site[setting];
+                        new PNotify({
+                            title: 'Operation Failed!',
+                            text: 'Could not connect to server, please try again.',
+                            type: 'error'
+                        });
+                    }
+                );
+            };
+
+            // Initialize tooltips
+            angular.element(document).ready(function() {
+                $('[data-toggle="tooltip"]').tooltip();
+            });
+
+            // Fetch site data for each site
+            function fetchSiteData(site) {
+                var data = { WPid: site.id };
+
+                GLobalAjaxCall($http, "{% url 'FetchWPdata' %}", data,
+                    function(response) {
+                        if (response.data.status === 1) {
+                            angular.extend(site, response.data.ret_data);
+                        }
+                    },
+                    function(response) {
+                        new PNotify({
+                            title: 'Operation Failed!',
+                            text: 'Could not fetch site data, please refresh the page.',
+                            type: 'error'
+                        });
+                    }
+                );
+            }
+
+            if ($scope.wpSites) {
+                $scope.wpSites.forEach(fetchSiteData);
+            }
+        });
+    </script>
+{% endblock %}
 
 {% block styles %}
     <style>
@@ -410,93 +493,6 @@
             </div>
         </div>
     </div>
-
-    <script>
-        function DeleteWPNow(url) {
-            if (confirm('Are you sure you want to delete this WordPress site? This action cannot be undone.')) {
-                window.location.href = url;
-            }
-        }
-
-        // Add our controller to the existing CyberCP app
-        app.controller('listWordPressSites', function($scope, $http) {
-            // Initialize scope variables
-            $scope.wpSites = JSON.parse('{{ wpsite|escapejs }}');
-            $scope.debug = JSON.parse('{{ debug_info|default:"false"|escapejs }}');
-            $scope.totalSites = parseInt('{{ total_sites|default:"0"|escapejs }}');
-            $scope.userId = parseInt('{{ debug_info.user_id|default:"0"|escapejs }}');
-            $scope.isAdmin = JSON.parse('{{ debug_info.is_admin|default:"false"|escapejs }}');
-            $scope.wpSitesCount = parseInt('{{ debug_info.wp_sites_count|default:"0"|escapejs }}');
-
-            $scope.deleteWPSite = function(site) {
-                DeleteWPNow("{% url 'ListWPSites' %}?DeleteID=" + site.id);
-            };
-
-            $scope.updateSetting = function(site, setting) {
-                var data = {
-                    siteId: site.id,
-                    setting: setting,
-                    value: site[setting] ? 1 : 0
-                };
-
-                GLobalAjaxCall($http, "{% url 'UpdateWPSettings' %}", data, 
-                    function(response) {
-                        if (!response.data.status) {
-                            site[setting] = !site[setting];
-                            new PNotify({
-                                title: 'Operation Failed!',
-                                text: response.data.error_message || 'Unknown error',
-                                type: 'error'
-                            });
-                        } else {
-                            new PNotify({
-                                title: 'Success!',
-                                text: 'Setting updated successfully.',
-                                type: 'success'
-                            });
-                        }
-                    }, 
-                    function(response) {
-                        site[setting] = !site[setting];
-                        new PNotify({
-                            title: 'Operation Failed!',
-                            text: 'Could not connect to server, please try again.',
-                            type: 'error'
-                        });
-                    }
-                );
-            };
-
-            // Initialize tooltips
-            angular.element(document).ready(function() {
-                $('[data-toggle="tooltip"]').tooltip();
-            });
-
-            // Fetch site data for each site
-            function fetchSiteData(site) {
-                var data = { WPid: site.id };
-
-                GLobalAjaxCall($http, "{% url 'FetchWPdata' %}", data,
-                    function(response) {
-                        if (response.data.status === 1) {
-                            angular.extend(site, response.data.ret_data);
-                        }
-                    },
-                    function(response) {
-                        new PNotify({
-                            title: 'Operation Failed!',
-                            text: 'Could not fetch site data, please refresh the page.',
-                            type: 'error'
-                        });
-                    }
-                );
-            }
-
-            if ($scope.wpSites) {
-                $scope.wpSites.forEach(fetchSiteData);
-            }
-        });
-    </script>
 {% endblock content %}
 
 
