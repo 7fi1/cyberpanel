@@ -19,6 +19,32 @@
             $scope.userId = $scope.debug.user_id;
             $scope.isAdmin = $scope.debug.is_admin;
             $scope.wpSitesCount = $scope.debug.wp_sites_count;
+            $scope.currentPage = 1;
+            $scope.recordsToShow = 10;
+
+            $scope.updatePagination = function() {
+                var filteredSites = $scope.wpSites;
+                if ($scope.searchText) {
+                    filteredSites = $scope.wpSites.filter(function(site) {
+                        return site.title.toLowerCase().includes($scope.searchText.toLowerCase()) ||
+                               site.url.toLowerCase().includes($scope.searchText.toLowerCase());
+                    });
+                }
+                $scope.totalPages = Math.ceil(filteredSites.length / $scope.recordsToShow);
+                if ($scope.currentPage > $scope.totalPages) {
+                    $scope.currentPage = 1;
+                }
+            };
+
+            $scope.$watch('searchText', function() {
+                $scope.updatePagination();
+            });
+
+            $scope.$watch('recordsToShow', function() {
+                $scope.updatePagination();
+            });
+
+            $scope.updatePagination();
 
             $scope.getFullUrl = function(url) {
                 if (!url) return '';
@@ -139,6 +165,21 @@
                 $scope.wpSites.forEach(fetchSiteData);
             }
         });
+
+        // Add a range filter for pagination
+        angular.module('CyberCP').filter('range', function() {
+            return function(input, start, end) {
+                start = parseInt(start);
+                end = parseInt(end);
+                var direction = (start <= end) ? 1 : -1;
+                while (start != end) {
+                    input.push(start);
+                    start += direction;
+                }
+                input.push(end);
+                return input;
+            };
+        });
     </script>
 {% endblock %}
 
@@ -158,7 +199,20 @@
                         </div>
                     </div>
                     <div class="panel-body">
-                        <div ng-repeat="site in wpSites" class="wp-site-item">
+                        <div class="row mb-3">
+                            <div class="col-sm-10">
+                                <input ng-model="searchText" placeholder="Search..." class="form-control">
+                            </div>
+                            <div class="col-sm-2">
+                                <select ng-model="recordsToShow" class="form-control" ng-change="updatePagination()">
+                                    <option>10</option>
+                                    <option>50</option>
+                                    <option>100</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div ng-repeat="site in filteredSites = (wpSites | filter:searchText | limitTo:recordsToShow:(currentPage-1)*recordsToShow)" class="wp-site-item">
                             <div class="row">
                                 <div class="col-sm-12">
                                     <div class="wp-site-header">
@@ -240,6 +294,22 @@
                                                     </div>
                                                 </div>
                                             </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 2%" class="row">
+                            <div class="col-md-12">
+                                <div class="row">
+                                    <div class="col-md-9">
+                                        <span>Showing {$ ((currentPage-1)*recordsToShow) + 1 $} to {$ ((currentPage-1)*recordsToShow) + filteredSites.length $} of {$ (wpSites | filter:searchText).length $} sites</span>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <select ng-model="currentPage" class="form-control" ng-options="page for page in [] | range:1:totalPages">
+                                            </select>
                                         </div>
                                     </div>
                                 </div>
