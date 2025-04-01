@@ -120,7 +120,7 @@
                         if (response.data.status === 1) {
                             var data = response.data.ret_data;
                             site.version = data.version;
-                            site.phpVersion = site.phpVersion || 'PHP ' + site.php_version;
+                            site.phpVersion = site.owner.phpSelection;
                             site.searchIndex = data.searchIndex === 1;
                             site.debugging = data.debugging === 1;
                             site.passwordProtection = data.passwordprotection === 1;
