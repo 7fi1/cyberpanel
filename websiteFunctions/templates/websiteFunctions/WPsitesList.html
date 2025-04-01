@@ -2,6 +2,10 @@
 {% load i18n %}
 {% block title %}{% trans "WordPress Toolkit - CyberPanel" %}{% endblock %}
 
+{% block header_scripts %}
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.5/angular.min.js"></script>
+{% endblock %}
+
 {% block styles %}
     <style>
         .container {
@@ -300,10 +304,10 @@
     <div class="container" ng-controller="listWordPressSites">
         <div class="alert alert-info" ng-if="debug">
             <h4>Debug Information</h4>
-            <p>Total WordPress Sites: [[totalSites]]</p>
-            <p>User ID: [[userId]]</p>
-            <p>Is Admin: [[isAdmin]]</p>
-            <p>WP Sites Count: [[wpSitesCount]]</p>
+            <p>Total WordPress Sites: {$ totalSites $}</p>
+            <p>User ID: {$ userId $}</p>
+            <p>Is Admin: {$ isAdmin $}</p>
+            <p>WP Sites Count: {$ wpSitesCount $}</p>
         </div>
 
         <div class="alert alert-info" ng-if="!wpSites || wpSites.length === 0">
@@ -319,56 +323,56 @@
                 </div>
             </div>
 
-            <div class="wp-site-card" ng-repeat="site in wpSites | filter:searchTerm" data-site-id="[[site.id]]">
+            <div class="wp-site-card" ng-repeat="site in wpSites | filter:searchTerm" data-site-id="{$ site.id $}">
                 <div class="wp-site-header">
                     <div>
                         <input type="checkbox" class="site-selector">
-                        <a href="[[site.url]]" target="_blank">[[site.url]]</a>
+                        <a href="{$ site.url $}" target="_blank">{$ site.url $}</a>
                         <span class="badge bg-primary" ng-if="site.production_status">PRODUCTION</span>
                     </div>
                     <div class="action-buttons">
-                        <a href="{% url 'WPHome' %}?ID=[[site.id]]" class="btn-tool">
+                        <a href="{% url 'WPHome' %}?ID={$ site.id $}" class="btn-tool">
                             <i class="fas fa-cog"></i> Manage
                         </a>
-                        <button type="button" class="btn-tool" ng-click="deleteWPSite(site)">
+                        <button type="button" class="btn-tool" onclick="DeleteWPNow('{% url 'ListWPSites' %}?DeleteID={$ site.id $}')">
                             <i class="fas fa-trash"></i> Delete
                         </button>
                     </div>
                 </div>
                 <div class="wp-site-content">
-                    <img ng-src="[[site.screenshot || '{% static 'websiteFunctions/images/wp-default.png' %}' ]]" 
-                         class="wp-site-preview" alt="[[site.title]]">
+                    <img ng-src="{$ site.screenshot || '{% static 'websiteFunctions/images/wp-default.png' %}' $}" 
+                         class="wp-site-preview" alt="{$ site.title $}">
                     
                     <div class="wp-site-info">
-                        <h3>[[site.title]] <a href="{% url 'AutoLogin' %}?id=[[site.id]]" target="_blank" class="btn-tool">Login</a></h3>
+                        <h3>{$ site.title $} <a href="{% url 'AutoLogin' %}?id={$ site.id $}" target="_blank" class="btn-tool">Login</a></h3>
                         
                         <div class="status-section">
                             <div class="status-item">
                                 <span>WordPress</span>
                                 <span class="wp-version" ng-class="{loading: !site.version}">
                                     <i class="fas fa-circle-notch fa-spin" ng-if="!site.version"></i>
-                                    [[site.version || 'Loading...']]
+                                    {$ site.version || 'Loading...' $}
                                 </span>
                             </div>
                             <div class="status-item">
                                 <span>Plugins</span>
                                 <span class="plugin-status" ng-class="{loading: !site.activePlugins}">
                                     <i class="fas fa-circle-notch fa-spin" ng-if="!site.activePlugins"></i>
-                                    [[site.activePlugins || 'Loading...']]
+                                    {$ site.activePlugins || 'Loading...' $}
                                 </span>
                             </div>
                             <div class="status-item">
                                 <span>Themes</span>
                                 <span class="theme-status" ng-class="{loading: !site.activeTheme}">
                                     <i class="fas fa-circle-notch fa-spin" ng-if="!site.activeTheme"></i>
-                                    [[site.activeTheme || 'Loading...']]
+                                    {$ site.activeTheme || 'Loading...' $}
                                 </span>
                             </div>
                             <div class="status-item">
                                 <span>PHP</span>
                                 <span class="php-version" ng-class="{loading: !site.phpVersion}">
                                     <i class="fas fa-circle-notch fa-spin" ng-if="!site.phpVersion"></i>
-                                    [[site.phpVersion || 'Loading...']]
+                                    {$ site.phpVersion || 'Loading...' $}
                                 </span>
                             </div>
                         </div>
@@ -410,25 +414,14 @@
     </div>
 
     <script>
-        var app = angular.module('CyberCP', []);
-        app.config(function($interpolateProvider) {
-            $interpolateProvider.startSymbol('[[');
-            $interpolateProvider.endSymbol(']]');
-        });
-
         app.controller('listWordPressSites', function($scope, $http) {
+            // Initialize scope variables
             $scope.wpSites = {{ wpsite|safe }};
             $scope.debug = {{ debug_info|default:"false"|safe }};
             $scope.totalSites = {{ total_sites|default:"0"|safe }};
             $scope.userId = {{ debug_info.user_id|default:"0"|safe }};
             $scope.isAdmin = {{ debug_info.is_admin|default:"0"|safe }};
             $scope.wpSitesCount = {{ debug_info.wp_sites_count|default:"0"|safe }};
-
-            $scope.deleteWPSite = function(site) {
-                if (confirm('Are you sure you want to delete this WordPress site? This action cannot be undone.')) {
-                    window.location.href = "{% url 'ListWPSites' %}?DeleteID=" + site.id;
-                }
-            };
 
             $scope.updateSetting = function(site, setting) {
                 var data = {
@@ -437,33 +430,62 @@
                     value: site[setting] ? 1 : 0
                 };
 
-                $http.post("{% url 'UpdateWPSettings' %}", data)
-                    .then(function(response) {
+                GLobalAjaxCall($http, "{% url 'UpdateWPSettings' %}", data, 
+                    function(response) {
                         if (!response.data.status) {
                             site[setting] = !site[setting];
-                            alert('Failed to update setting: ' + (response.data.error || 'Unknown error'));
+                            new PNotify({
+                                title: 'Operation Failed!',
+                                text: response.data.error_message || 'Unknown error',
+                                type: 'error'
+                            });
+                        } else {
+                            new PNotify({
+                                title: 'Success!',
+                                text: 'Setting updated successfully.',
+                                type: 'success'
+                            });
                         }
-                    })
-                    .catch(function(error) {
+                    }, 
+                    function(response) {
                         site[setting] = !site[setting];
-                        alert('Failed to update setting. Please try again.');
-                    });
+                        new PNotify({
+                            title: 'Operation Failed!',
+                            text: 'Could not connect to server, please try again.',
+                            type: 'error'
+                        });
+                    }
+                );
             };
 
             // Initialize tooltips
-            $(document).ready(function() {
+            angular.element(document).ready(function() {
                 $('[data-toggle="tooltip"]').tooltip();
             });
 
             // Fetch site data for each site
-            $scope.wpSites.forEach(function(site) {
-                $http.post("{% url 'FetchWPdata' %}", { WPid: site.id })
-                    .then(function(response) {
+            function fetchSiteData(site) {
+                var data = { WPid: site.id };
+
+                GLobalAjaxCall($http, "{% url 'FetchWPdata' %}", data,
+                    function(response) {
                         if (response.data.status === 1) {
                             angular.extend(site, response.data.ret_data);
                         }
-                    });
-            });
+                    },
+                    function(response) {
+                        new PNotify({
+                            title: 'Operation Failed!',
+                            text: 'Could not fetch site data, please refresh the page.',
+                            type: 'error'
+                        });
+                    }
+                );
+            }
+
+            if ($scope.wpSites) {
+                $scope.wpSites.forEach(fetchSiteData);
+            }
         });
     </script>
 {% endblock content %}
