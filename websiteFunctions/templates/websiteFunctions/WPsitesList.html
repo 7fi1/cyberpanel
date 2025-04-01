@@ -15,88 +15,27 @@
     </script>
 
     <style>
-        table { /* tables still need 'cellspacing="0"' in the markup */
-            border-collapse: separate;
-            border-spacing: 0;
-        }
-
-        .table-spacing {
-            border-spacing: 0em .9em;
-        }
-
-        table th:nth-child(1) {
-
-            /* Safari 3-4, iOS 1-3.2, Android 1.6- */
-            -webkit-border-radius: 3px 0px 0px 3px;
-
-            /* Firefox 1-3.6 */
-            -moz-border-radius: 3px 0px 0px 3px;
-
-            /* Opera 10.5, IE 9, Safari 5, Chrome, Firefox 4, iOS 4, Android 2.1+ */
-            border-radius: 3px 0px 0px 3px;
-        }
-
-        table th:nth-child(1) {
-
-            /* Safari 3-4, iOS 1-3.2, Android 1.6- */
-            -webkit-border-radius: 20px 0px 0px 20px;
-
-            /* Firefox 1-3.6 */
-            -moz-border-radius: 20px 0px 0px 20px;
-
-            /* Opera 10.5, IE 9, Safari 5, Chrome, Firefox 4, iOS 4, Android 2.1+ */
-            border-radius: 20px 0px 0px 20px;
-        }
-
-        table th:nth-last-child(1) {
-            /* Safari 3-4, iOS 1-3.2, Android 1.6- */
-            -webkit-border-radius: 0px 20px 20px 0px;
-
-            /* Firefox 1-3.6 */
-            -moz-border-radius: 0px 20px 20px 0px;
-
-            /* Opera 10.5, IE 9, Safari 5, Chrome, Firefox 4, iOS 4, Android 2.1+ */
-            border-radius: 0px 20px 20px 0px;
-        }
-
-        table td:nth-child(1) {
-
-            /* Safari 3-4, iOS 1-3.2, Android 1.6- */
-            -webkit-border-radius: 20px 0px 0px 20px;
-
-            /* Firefox 1-3.6 */
-            -moz-border-radius: 20px 0px 0px 20px;
-
-            /* Opera 10.5, IE 9, Safari 5, Chrome, Firefox 4, iOS 4, Android 2.1+ */
-            border-radius: 20px 0px 0px 20px;
-        }
-
-        table td:nth-last-child(1) {
-            /* Safari 3-4, iOS 1-3.2, Android 1.6- */
-            -webkit-border-radius: 0px 20px 20px 0px;
-
-            /* Firefox 1-3.6 */
-            -moz-border-radius: 0px 20px 20px 0px;
-
-            /* Opera 10.5, IE 9, Safari 5, Chrome, Firefox 4, iOS 4, Android 2.1+ */
-            border-radius: 0px 20px 20px 0px;
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
         }
 
         .wp-site-card {
             background: white;
-            border: 1px solid #e0e0e0;
+            border: 1px solid #e6e6e6;
             border-radius: 8px;
             margin-bottom: 20px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            transition: all 0.3s ease;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            transition: all 0.2s ease;
         }
 
         .wp-site-card:hover {
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.12);
         }
 
         .wp-site-header {
-            padding: 15px 20px;
+            padding: 12px 20px;
             border-bottom: 1px solid #f0f0f0;
             display: flex;
             align-items: center;
@@ -106,69 +45,83 @@
         }
 
         .wp-site-header a {
-            color: #2196F3;
+            color: #0051c3;
             text-decoration: none;
             font-weight: 500;
+            margin-left: 8px;
         }
 
         .wp-site-content {
-            padding: 20px;
-            display: flex;
-            gap: 20px;
+            padding: 24px;
+            display: grid;
+            grid-template-columns: 200px 1fr;
+            gap: 24px;
         }
 
         .wp-site-preview {
             width: 200px;
             height: 150px;
             object-fit: cover;
-            border-radius: 4px;
-            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            border: 1px solid #e6e6e6;
+            background: #f8f9fa;
         }
 
         .wp-site-info {
-            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
         }
 
         .wp-site-info h3 {
-            margin: 0 0 20px 0;
+            margin: 0;
+            font-size: 18px;
+            color: #1a1a1a;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
         }
 
         .status-section {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-bottom: 20px;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
         }
 
         .tools-section {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 15px;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
         }
 
         .status-item, .tool-item {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 10px 15px;
+            padding: 12px 16px;
             background: #f8f9fa;
             border-radius: 6px;
-            border: 1px solid #e0e0e0;
+            border: 1px solid #e6e6e6;
+            min-height: 48px;
         }
 
         .status-item span:first-child, .tool-item span:first-child {
             font-weight: 500;
-            color: #555;
+            color: #444;
+            font-size: 13px;
+        }
+
+        .status-item span:last-child {
+            color: #666;
+            font-size: 13px;
         }
 
         .toggle-switch {
             position: relative;
             display: inline-block;
-            width: 50px;
-            height: 24px;
+            width: 44px;
+            height: 22px;
         }
 
         .toggle-switch input {
@@ -185,92 +138,168 @@
             right: 0;
             bottom: 0;
             background-color: #ccc;
-            transition: .4s;
-            border-radius: 24px;
+            transition: .3s;
+            border-radius: 22px;
         }
 
         .slider:before {
             position: absolute;
             content: "";
-            height: 16px;
-            width: 16px;
-            left: 4px;
-            bottom: 4px;
+            height: 18px;
+            width: 18px;
+            left: 2px;
+            bottom: 2px;
             background-color: white;
-            transition: .4s;
+            transition: .3s;
             border-radius: 50%;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
         }
 
         input:checked + .slider {
-            background-color: #2196F3;
+            background-color: #00847c;
         }
 
         input:checked + .slider:before {
-            transform: translateX(26px);
+            transform: translateX(22px);
         }
 
         .action-buttons {
             display: flex;
-            gap: 10px;
+            gap: 8px;
         }
 
         .btn-tool {
             padding: 6px 12px;
-            border: 1px solid #ddd;
+            border: 1px solid #e6e6e6;
             border-radius: 4px;
             background: white;
-            color: #333;
+            color: #444;
             text-decoration: none;
             font-size: 13px;
+            font-weight: 500;
             cursor: pointer;
             display: inline-flex;
             align-items: center;
-            gap: 5px;
+            gap: 6px;
             transition: all 0.2s ease;
+            height: 32px;
+            line-height: 20px;
         }
 
         .btn-tool:hover {
-            background: #f0f0f0;
-            border-color: #ccc;
+            background: #f5f5f5;
+            border-color: #d9d9d9;
+            color: #1a1a1a;
         }
 
         .btn-tool i {
             font-size: 14px;
+            color: #666;
         }
 
         .badge {
-            padding: 4px 8px;
+            padding: 3px 8px;
             border-radius: 12px;
-            font-size: 12px;
-            font-weight: 500;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
         }
 
         .bg-primary {
-            background-color: #2196F3;
+            background-color: #00847c;
             color: white;
         }
 
         .top-actions {
-            margin-bottom: 30px;
+            margin-bottom: 24px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 20px;
+            padding: 16px 24px;
             background: white;
             border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+
+        .top-actions h2 {
+            font-size: 20px;
+            color: #1a1a1a;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
 
         .search-box {
-            padding: 8px 15px;
-            border: 1px solid #ddd;
+            padding: 8px 16px;
+            border: 1px solid #e6e6e6;
             border-radius: 4px;
             width: 300px;
-            margin-right: 10px;
+            margin-right: 12px;
+            font-size: 14px;
+            color: #444;
+            transition: border-color 0.2s;
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: #00847c;
+        }
+
+        .btn-primary {
+            background: #00847c;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-primary:hover {
+            background: #006d66;
         }
 
         .site-selector {
-            margin-right: 10px;
+            margin-right: 8px;
+            width: 16px;
+            height: 16px;
+            vertical-align: middle;
+        }
+
+        /* Loading state styling */
+        .loading {
+            color: #888;
+            font-style: italic;
+        }
+
+        /* Error state styling */
+        .error {
+            color: #dc3545;
+            font-size: 12px;
+        }
+
+        /* Tooltip styling */
+        [data-toggle="tooltip"] {
+            position: relative;
+        }
+
+        .tooltip {
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            position: absolute;
+            z-index: 1000;
+            display: none;
+        }
+
+        [data-toggle="tooltip"]:hover .tooltip {
+            display: block;
         }
     </style>
 
@@ -297,7 +326,7 @@
                     <a href="{% url 'WPHome' %}?ID={{ site.id }}" class="btn-tool">
                         <i class="fas fa-cog"></i> Manage
                     </a>
-                    <button onclick="DeleteWPNow('{% url 'ListWPSites' %}?DeleteID={{ site.id }}')" class="btn-tool">
+                    <button type="button" class="btn-tool" onclick="DeleteWPNow('{% url 'ListWPSites' %}?DeleteID={{ site.id }}')">
                         <i class="fas fa-trash"></i> Delete
                     </button>
                 </div>
@@ -312,48 +341,56 @@
                     <div class="status-section">
                         <div class="status-item">
                             <span>WordPress</span>
-                            <span class="wp-version" data-site-id="{{ site.id }}">Loading...</span>
+                            <span class="wp-version loading" data-site-id="{{ site.id }}">
+                                <i class="fas fa-circle-notch fa-spin"></i> Loading...
+                            </span>
                         </div>
                         <div class="status-item">
                             <span>Plugins</span>
-                            <span class="plugin-status" data-site-id="{{ site.id }}">Loading...</span>
+                            <span class="plugin-status loading" data-site-id="{{ site.id }}">
+                                <i class="fas fa-circle-notch fa-spin"></i> Loading...
+                            </span>
                         </div>
                         <div class="status-item">
                             <span>Themes</span>
-                            <span class="theme-status" data-site-id="{{ site.id }}">Loading...</span>
+                            <span class="theme-status loading" data-site-id="{{ site.id }}">
+                                <i class="fas fa-circle-notch fa-spin"></i> Loading...
+                            </span>
                         </div>
                         <div class="status-item">
                             <span>PHP</span>
-                            <span class="php-version" data-site-id="{{ site.id }}">Loading...</span>
+                            <span class="php-version loading" data-site-id="{{ site.id }}">
+                                <i class="fas fa-circle-notch fa-spin"></i> Loading...
+                            </span>
                         </div>
                     </div>
 
                     <div class="tools-section">
-                        <div class="tool-item">
+                        <div class="tool-item" data-toggle="tooltip" title="Allow search engines to index this site">
                             <span>Search engine indexing</span>
                             <label class="toggle-switch">
-                                <input type="checkbox" class="search-indexing" data-site-id="{{ site.id }}">
+                                <input type="checkbox" class="search-indexing" data-site-id="{{ site.id }}" disabled>
                                 <span class="slider"></span>
                             </label>
                         </div>
-                        <div class="tool-item">
+                        <div class="tool-item" data-toggle="tooltip" title="Enable WordPress debug mode">
                             <span>Debugging</span>
                             <label class="toggle-switch">
-                                <input type="checkbox" class="debugging" data-site-id="{{ site.id }}">
+                                <input type="checkbox" class="debugging" data-site-id="{{ site.id }}" disabled>
                                 <span class="slider"></span>
                             </label>
                         </div>
-                        <div class="tool-item">
+                        <div class="tool-item" data-toggle="tooltip" title="Protect site with password">
                             <span>Password protection</span>
                             <label class="toggle-switch">
-                                <input type="checkbox" class="password-protection" data-site-id="{{ site.id }}">
+                                <input type="checkbox" class="password-protection" data-site-id="{{ site.id }}" disabled>
                                 <span class="slider"></span>
                             </label>
                         </div>
-                        <div class="tool-item">
+                        <div class="tool-item" data-toggle="tooltip" title="Enable maintenance mode">
                             <span>Maintenance mode</span>
                             <label class="toggle-switch">
-                                <input type="checkbox" class="maintenance-mode" data-site-id="{{ site.id }}">
+                                <input type="checkbox" class="maintenance-mode" data-site-id="{{ site.id }}" disabled>
                                 <span class="slider"></span>
                             </label>
                         </div>
@@ -367,9 +404,36 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Function to update element state
+            function updateElementState(element, isLoading, value) {
+                if (element) {
+                    if (isLoading) {
+                        element.classList.add('loading');
+                        element.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Loading...';
+                    } else {
+                        element.classList.remove('loading');
+                        element.textContent = value;
+                    }
+                }
+            }
+
+            // Function to enable/disable toggles
+            function updateToggles(siteId, enable) {
+                document.querySelectorAll(`input[data-site-id="${siteId}"]`).forEach(toggle => {
+                    toggle.disabled = !enable;
+                });
+            }
+
             // Function to fetch and update site data
             function updateSiteData(siteId) {
                 const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                
+                // Set loading state
+                document.querySelectorAll(`[data-site-id="${siteId}"]`).forEach(el => {
+                    if (el.tagName !== 'INPUT') {
+                        updateElementState(el, true);
+                    }
+                });
                 
                 fetch('{% url "FetchWPdata" %}', {
                     method: 'POST',
@@ -392,29 +456,49 @@
                         const site = data.ret_data;
                         
                         // Update version info
-                        document.querySelector(`.wp-version[data-site-id="${siteId}"]`).textContent = 
-                            site.version || 'Unknown';
-                        document.querySelector(`.plugin-status[data-site-id="${siteId}"]`).textContent = 
-                            `${site.activePlugins || 0} active`;
-                        document.querySelector(`.theme-status[data-site-id="${siteId}"]`).textContent = 
-                            `${site.activeTheme || 'Unknown'}`;
-                        document.querySelector(`.php-version[data-site-id="${siteId}"]`).textContent = 
-                            site.phpVersion || 'Unknown';
+                        updateElementState(
+                            document.querySelector(`.wp-version[data-site-id="${siteId}"]`),
+                            false,
+                            site.version || 'Unknown'
+                        );
+                        updateElementState(
+                            document.querySelector(`.plugin-status[data-site-id="${siteId}"]`),
+                            false,
+                            `${site.activePlugins || 0} active`
+                        );
+                        updateElementState(
+                            document.querySelector(`.theme-status[data-site-id="${siteId}"]`),
+                            false,
+                            site.activeTheme || 'Unknown'
+                        );
+                        updateElementState(
+                            document.querySelector(`.php-version[data-site-id="${siteId}"]`),
+                            false,
+                            site.phpVersion || 'Unknown'
+                        );
                         
                         // Update toggles
-                        document.querySelector(`.search-indexing[data-site-id="${siteId}"]`).checked = 
-                            site.searchIndex === 1;
-                        document.querySelector(`.debugging[data-site-id="${siteId}"]`).checked = 
-                            site.debugging === 1;
-                        document.querySelector(`.password-protection[data-site-id="${siteId}"]`).checked = 
-                            site.passwordprotection === 1;
-                        document.querySelector(`.maintenance-mode[data-site-id="${siteId}"]`).checked = 
-                            site.maintenanceMode === 1;
+                        const toggles = {
+                            'search-indexing': site.searchIndex === 1,
+                            'debugging': site.debugging === 1,
+                            'password-protection': site.passwordprotection === 1,
+                            'maintenance-mode': site.maintenanceMode === 1
+                        };
+                        
+                        Object.entries(toggles).forEach(([className, value]) => {
+                            const toggle = document.querySelector(`.${className}[data-site-id="${siteId}"]`);
+                            if (toggle) {
+                                toggle.checked = value;
+                            }
+                        });
+                        
+                        // Enable toggles
+                        updateToggles(siteId, true);
                     } else {
                         console.error('Error in response:', data);
                         document.querySelectorAll(`[data-site-id="${siteId}"]`).forEach(el => {
                             if (el.tagName !== 'INPUT') {
-                                el.textContent = 'Error loading';
+                                updateElementState(el, false, 'Error loading');
                             }
                         });
                     }
@@ -423,11 +507,14 @@
                     console.error('Error fetching site data:', error);
                     document.querySelectorAll(`[data-site-id="${siteId}"]`).forEach(el => {
                         if (el.tagName !== 'INPUT') {
-                            el.textContent = 'Error loading';
+                            updateElementState(el, false, 'Error loading');
                         }
                     });
                 });
             }
+
+            // Initialize tooltips
+            $('[data-toggle="tooltip"]').tooltip();
 
             // Add CSRF token to the page
             const csrfToken = '{% csrf_token %}';
@@ -446,6 +533,9 @@
                     const setting = this.className;
                     const value = this.checked ? 1 : 0;
                     const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+                    // Disable toggle while updating
+                    this.disabled = true;
 
                     fetch('{% url "UpdateWPSettings" %}', {
                         method: 'POST',
@@ -476,16 +566,35 @@
                         console.error('Error updating setting:', error);
                         this.checked = !this.checked;
                         alert('Failed to update setting. Please try again.');
+                    })
+                    .finally(() => {
+                        // Re-enable toggle
+                        this.disabled = false;
                     });
                 });
             });
+
+            // Handle search functionality
+            const searchBox = document.querySelector('.search-box');
+            if (searchBox) {
+                searchBox.addEventListener('input', function() {
+                    const searchTerm = this.value.toLowerCase();
+                    document.querySelectorAll('.wp-site-card').forEach(card => {
+                        const title = card.querySelector('h3').textContent.toLowerCase();
+                        const url = card.querySelector('.wp-site-header a').textContent.toLowerCase();
+                        card.style.display = (title.includes(searchTerm) || url.includes(searchTerm)) ? '' : 'none';
+                    });
+                });
+            }
         });
 
         function DeleteWPNow(url) {
-            if (confirm('Are you sure you want to delete this WordPress site?')) {
+            if (confirm('Are you sure you want to delete this WordPress site? This action cannot be undone.')) {
                 window.location.href = url;
             }
         }
     </script>
 
 {% endblock %}
+
+
