@@ -240,9 +240,13 @@
                                                      class="img-responsive"
                                                      style="max-width: 100%; margin-bottom: 10px;"
                                                      onerror="this.onerror=null; this.src='https://s.wordpress.org/style/images/about/WordPress-logotype-standard.png';">
-                                                <div class="btn-group btn-group-justified">
-                                                    <a ng-href="{$ getFullUrl(site.url) $}" target="_blank" class="btn btn-default btn-sm">Visit Site</a>
-                                                    <a ng-href="{$ getFullUrl(site.url) + '/wp-admin' $}" target="_blank" class="btn btn-primary btn-sm">WP Login</a>
+                                                <div class="text-center">
+                                                    <a ng-href="{$ getFullUrl(site.url) $}" target="_blank" class="btn btn-default">
+                                                        <i class="fa fa-external-link"></i> Visit Site
+                                                    </a>
+                                                    <a href="{% url 'AutoLogin' %}?id={$ site.id $}" target="_blank" class="btn btn-primary">
+                                                        <i class="fa fa-wordpress"></i> WP Login
+                                                    </a>
                                                 </div>
                                             </div>
                                             <div class="col-sm-9">
@@ -368,6 +372,15 @@
         }
         .panel-body {
             padding: 20px;
+        }
+        .btn {
+            margin: 0 2px;
+        }
+        .btn i {
+            margin-right: 5px;
+        }
+        .text-center .btn {
+            min-width: 100px;
         }
     </style>
 {% endblock content %}
