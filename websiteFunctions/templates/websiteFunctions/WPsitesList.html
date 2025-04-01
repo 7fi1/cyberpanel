@@ -482,7 +482,7 @@
                             <div class="d-flex justify-content-between align-items-start">
                                 <h5 class="card-title mb-3">{$ site.title $}</h5>
                                 <div>
-                                    <button class="btn btn-primary btn-sm" ng-click="window.location.href='{% url 'Manage' %}?WPid=' + site.id">
+                                    <button class="btn btn-primary btn-sm" ng-click="window.location.href='{% url 'WPHome' %}?ID=' + site.id">
                                         <i class="fas fa-cog"></i> Manage
                                     </button>
                                     <button class="btn btn-danger btn-sm" ng-click="deleteWPSite(site)">
