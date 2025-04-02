@@ -2425,7 +2425,17 @@ Require valid-user"""
             return HttpResponse(json_data)
 
     def findWebsitesListJson(self, websites):
+        try:
+            ipFile = "/etc/cyberpanel/machineIP"
+            f = open(ipFile)
+            ipData = f.read()
+            ipAddress = ipData.split('\n', 1)[0]
+        except BaseException as msg:
+            logging.CyberCPLogFileWriter.writeToFile("Failed to read machine IP, error:" + str(msg))
+            ipAddress = "192.168.100.1"
+
         json_data = []
+
         for website in websites:
             wp_sites = []
             try:
@@ -2445,10 +2455,9 @@ Require valid-user"""
                 'adminEmail': website.adminEmail,
                 'phpVersion': website.phpSelection,
                 'state': website.state,
-                'ipAddress': website.ipAddress,
-                'diskUsed': website.diskUsed,
-                'package': website.package,
-                'admin': website.admin,
+                'ipAddress': ipAddress,
+                'package': website.package.packageName,
+                'admin': website.admin.userName,
                 'wp_sites': wp_sites
             })
         return json.dumps(json_data)
