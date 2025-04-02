@@ -146,7 +146,7 @@
                         if (response.data.status === 1) {
                             var data = response.data.ret_data;
                             site.version = data.version;
-                            site.phpVersion = site.owner.phpSelection;
+                            site.phpVersion = data.phpVersion || site.owner.phpSelection;
                             site.searchIndex = data.searchIndex === 1;
                             site.debugging = data.debugging === 1;
                             site.passwordProtection = data.passwordprotection === 1;
@@ -242,10 +242,10 @@
                                                      onerror="this.onerror=null; this.src='https://s.wordpress.org/style/images/about/WordPress-logotype-standard.png';">
                                                 <div class="text-center">
                                                     <a ng-href="{$ getFullUrl(site.url) $}" target="_blank" class="btn btn-default">
-                                                        <i class="fa fa-external-link"></i> Visit Site
+                                                        <i class="fas fa-globe"></i> Visit Site
                                                     </a>
                                                     <a href="{% url 'AutoLogin' %}?id={$ site.id $}" target="_blank" class="btn btn-primary">
-                                                        <i class="fa fa-wordpress"></i> WP Login
+                                                        <i class="fab fa-wordpress"></i> WP Login
                                                     </a>
                                                 </div>
                                             </div>
