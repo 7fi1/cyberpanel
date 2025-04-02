@@ -142,23 +142,27 @@
             function fetchSiteData(site) {
                 var data = { WPid: site.id };
                 site.fullUrl = $scope.getFullUrl(site.url);
-                site.phpVersion = site.owner.phpSelection; // Set initial PHP version
+                site.phpVersion = 'Loading...'; // Set initial loading state
 
                 GLobalAjaxCall($http, "{% url 'FetchWPdata' %}", data,
                     function(response) {
                         if (response.data.status === 1) {
                             var data = response.data.ret_data;
                             site.version = data.version;
-                            site.phpVersion = data.phpVersion || site.owner.phpSelection;
+                            site.phpVersion = data.phpVersion || 'PHP 7.4'; // Default to PHP 7.4 if not set
                             site.searchIndex = data.searchIndex === 1;
                             site.debugging = data.debugging === 1;
                             site.passwordProtection = data.passwordprotection === 1;
                             site.maintenanceMode = data.maintenanceMode === 1;
                             fetchPluginData(site);
                             fetchThemeData(site);
+                        } else {
+                            site.phpVersion = 'PHP 7.4'; // Default value on error
+                            console.log('Failed to fetch site data:', response.data.error_message);
                         }
                     },
                     function(response) {
+                        site.phpVersion = 'PHP 7.4'; // Default value on error
                         console.log('Failed to fetch site data');
                     }
                 );
