@@ -3,6 +3,8 @@
 {% block title %}{% trans "WordPress Toolkit - CyberPanel" %}{% endblock %}
 
 {% block header_scripts %}
+    <!-- Add Font Awesome CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <script>
         // Create or get the CyberCP module
         try {
@@ -136,10 +138,11 @@
                 );
             }
 
-            // Fetch site data for each site
+            // Function to fetch site data
             function fetchSiteData(site) {
                 var data = { WPid: site.id };
                 site.fullUrl = $scope.getFullUrl(site.url);
+                site.phpVersion = site.owner.phpSelection; // Set initial PHP version
 
                 GLobalAjaxCall($http, "{% url 'FetchWPdata' %}", data,
                     function(response) {
@@ -241,10 +244,10 @@
                                                      style="max-width: 100%; margin-bottom: 10px;"
                                                      onerror="this.onerror=null; this.src='https://s.wordpress.org/style/images/about/WordPress-logotype-standard.png';">
                                                 <div class="text-center">
-                                                    <a ng-href="{$ getFullUrl(site.url) $}" target="_blank" class="btn btn-default">
-                                                        <i class="fas fa-globe"></i> Visit Site
+                                                    <a ng-href="{$ getFullUrl(site.url) $}" target="_blank" class="btn btn-default btn-sm">
+                                                        <i class="fas fa-external-link-alt"></i> Visit Site
                                                     </a>
-                                                    <a href="{% url 'AutoLogin' %}?id={$ site.id $}" target="_blank" class="btn btn-primary">
+                                                    <a href="{% url 'AutoLogin' %}?id={$ site.id $}" target="_blank" class="btn btn-primary btn-sm">
                                                         <i class="fab fa-wordpress"></i> WP Login
                                                     </a>
                                                 </div>
