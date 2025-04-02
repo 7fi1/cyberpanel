@@ -1353,7 +1353,7 @@ app.controller('WPsiteHome', function ($scope, $http, $timeout, $compile, $windo
         }
 
         function cantLoadInitialDatas(response) {
-            $('#wordpresshomeloading').hide();
+            //$('#wordpresshomeloading').hide();
             $scope.wordpresshomeloading = true;
             $scope.stagingDetailsForm = true;
             $scope.installationProgress = false;
@@ -2639,6 +2639,14 @@ app.controller('listWebsites', function ($scope, $http) {
 
     $scope.currentPage = 1;
     $scope.recordsToShow = 10;
+
+    $scope.toggleWPSites = function(index) {
+        if (!$scope.WebSitesList[index].showWPSites) {
+            $scope.WebSitesList[index].showWPSites = true;
+        } else {
+            $scope.WebSitesList[index].showWPSites = false;
+        }
+    };
 
     $scope.getFurtherWebsitesFromDB = function () {
 

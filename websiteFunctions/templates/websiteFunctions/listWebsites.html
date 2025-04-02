@@ -101,6 +101,40 @@
                                title="Owner">&emsp;</i>
                             <span ng-bind="web.admin" style="text-transform: none"></span>
                         </div>
+                        <div class="col-md-3 content-box-header">
+                            <i class="p fa fa-plus btn-icon text-muted" ng-click="toggleWPSites($index)" 
+                               data-toggle="tooltip" data-placement="right" title="Show WordPress Sites">&emsp;</i>
+                            <span ng-if="web.wp_sites && web.wp_sites.length > 0" style="text-transform: none">
+                                {$ web.wp_sites.length $} WordPress Sites
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- WordPress Sites Section -->
+                    <div class="col-md-12" ng-if="web.showWPSites && web.wp_sites && web.wp_sites.length > 0" 
+                         style="background-color: #f9f9f9; padding: 15px; margin-top: 10px;">
+                        <h4>WordPress Sites</h4>
+                        <div class="row" ng-repeat="wp in web.wp_sites">
+                            <div class="col-md-12" style="margin-bottom: 10px; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <strong>{$ wp.title $}</strong>
+                                        <br>
+                                        <a href="{$ wp.url $}" target="_blank">{$ wp.url $}</a>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <span>Version: {$ wp.version $}</span>
+                                        <br>
+                                        <span>PHP: {$ wp.phpVersion $}</span>
+                                    </div>
+                                    <div class="col-md-4 text-right">
+                                        <a href="/websites/WPHome?ID={$ wp.id $}" class="btn btn-primary btn-sm">
+                                            <i class="fa fa-cog"></i> Manage
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <div id="listFail" class="alert alert-danger">

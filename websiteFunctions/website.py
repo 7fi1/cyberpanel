@@ -2425,68 +2425,33 @@ Require valid-user"""
             return HttpResponse(json_data)
 
     def findWebsitesListJson(self, websites):
-
-        json_data = "["
-        checker = 0
-
-        try:
-            ipFile = "/etc/cyberpanel/machineIP"
-            f = open(ipFile)
-            ipData = f.read()
-            ipAddress = ipData.split('\n', 1)[0]
-        except BaseException as msg:
-            logging.CyberCPLogFileWriter.writeToFile("Failed to read machine IP, error:" + str(msg))
-            ipAddress = "192.168.100.1"
-
-        ### lets first find php path
-
-        from plogical.phpUtilities import phpUtilities
-
-        if os.path.exists(ProcessUtilities.debugPath):
-            logging.CyberCPLogFileWriter.writeToFile(f'findWebsitesListJson 1')
-
-        for items in websites:
-            if os.path.exists(ProcessUtilities.debugPath):
-                logging.CyberCPLogFileWriter.writeToFile(f'findWebsitesListJson 2')
-            if items.state == 0:
-                state = "Suspended"
-            else:
-                state = "Active"
-
-            vhFile = f'/usr/local/lsws/conf/vhosts/{items.domain}/vhost.conf'
-
-            if os.path.exists(ProcessUtilities.debugPath):
-                logging.CyberCPLogFileWriter.writeToFile(vhFile)
-
+        json_data = []
+        for website in websites:
+            wp_sites = []
             try:
-                PHPVersionActual = phpUtilities.WrapGetPHPVersionFromFileToGetVersionWithPHP(vhFile)
+                wp_sites = WPSites.objects.filter(owner=website)
+                wp_sites = [{
+                    'id': wp.id,
+                    'title': wp.title,
+                    'url': wp.FinalURL,
+                    'version': wp.version if hasattr(wp, 'version') else 'Unknown',
+                    'phpVersion': wp.phpVersion if hasattr(wp, 'phpVersion') else 'Unknown'
+                } for wp in wp_sites]
             except:
-                PHPVersionActual = 'PHP 8.1'
+                pass
 
-            if os.path.exists(ProcessUtilities.debugPath):
-                logging.CyberCPLogFileWriter.writeToFile(f'findWebsitesListJson 3')
-
-            DiskUsage, DiskUsagePercentage, bwInMB, bwUsage = virtualHostUtilities.FindStats(items)
-            if os.path.exists(ProcessUtilities.debugPath):
-                logging.CyberCPLogFileWriter.writeToFile(f'findWebsitesListJson 4')
-            try:
-                diskUsed = "%sMB" % str(DiskUsage)
-            except:
-                diskUsed = "%sMB" % str(0)
-
-            dic = {'domain': items.domain, 'adminEmail': items.adminEmail, 'ipAddress': ipAddress,
-                   'admin': items.admin.userName, 'package': items.package.packageName, 'state': state,
-                   'diskUsed': diskUsed, 'phpVersion': PHPVersionActual}
-
-            if checker == 0:
-                json_data = json_data + json.dumps(dic)
-                checker = 1
-            else:
-                json_data = json_data + ',' + json.dumps(dic)
-
-        json_data = json_data + ']'
-
-        return json_data
+            json_data.append({
+                'domain': website.domain,
+                'adminEmail': website.adminEmail,
+                'phpVersion': website.phpSelection,
+                'state': website.state,
+                'ipAddress': website.ipAddress,
+                'diskUsed': website.diskUsed,
+                'package': website.package,
+                'admin': website.admin,
+                'wp_sites': wp_sites
+            })
+        return json.dumps(json_data)
 
 
 
