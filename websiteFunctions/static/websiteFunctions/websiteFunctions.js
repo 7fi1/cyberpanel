@@ -2662,34 +2662,51 @@ app.controller('listWebsites', function ($scope, $http) {
                     return str.join("&");
                 }
             }).then(function(response) {
-                if (response.data.status === 1) {
-                    $scope.wp_sites = response.data.data.map(function(site) {
-                        return {
-                            id: site.id,
-                            title: site.title || site.domain,
-                            url: site.url,
-                            version: site.version,
-                            phpVersion: site.php_version,
-                            theme: site.theme,
-                            activePlugins: site.active_plugins || 0,
-                            searchIndex: site.search_index === 'enabled',
-                            debugging: site.debugging === 'enabled',
-                            passwordProtection: site.password_protection === 'enabled',
-                            maintenanceMode: site.maintenance_mode === 'enabled'
-                        };
-                    });
-                    $scope.web.showWPSites = true;
+                console.log('WP Details Response:', response);  // Debug log
+                
+                if (response.data && response.data.status === 1 && response.data.data) {
+                    try {
+                        $scope.wp_sites = response.data.data.map(function(site) {
+                            return {
+                                id: site.id || '',
+                                title: site.title || site.domain || $scope.selectedWebsite.domain,
+                                url: site.url || 'http://' + $scope.selectedWebsite.domain,
+                                version: site.version || 'Unknown',
+                                phpVersion: site.php_version || 'Unknown',
+                                theme: site.theme || 'Unknown',
+                                activePlugins: site.active_plugins || 0,
+                                searchIndex: site.search_index === 'enabled',
+                                debugging: site.debugging === 'enabled',
+                                passwordProtection: site.password_protection === 'enabled',
+                                maintenanceMode: site.maintenance_mode === 'enabled'
+                            };
+                        });
+                        $scope.web.showWPSites = true;
+                    } catch (e) {
+                        console.error('Error processing WordPress data:', e);
+                        new PNotify({
+                            title: 'Error',
+                            text: 'Failed to process WordPress site details: ' + e.message,
+                            type: 'error'
+                        });
+                    }
                 } else {
+                    console.error('Invalid response format:', response);  // Debug log
                     new PNotify({
                         title: 'Error',
-                        text: 'Failed to fetch WordPress site details.',
+                        text: response.data && response.data.error_message ? 
+                              response.data.error_message : 
+                              'Failed to fetch WordPress site details. Invalid response format.',
                         type: 'error'
                     });
                 }
             }).catch(function(error) {
+                console.error('WP Details Error:', error);  // Debug log
                 new PNotify({
                     title: 'Error',
-                    text: 'Connection failed while fetching WordPress site details.',
+                    text: error.data && error.data.error_message ? 
+                          error.data.error_message : 
+                          'Connection failed while fetching WordPress site details.',
                     type: 'error'
                 });
             });
@@ -6627,34 +6644,51 @@ app.controller('manageAliasController', function ($scope, $http, $timeout, $wind
                     return str.join("&");
                 }
             }).then(function(response) {
-                if (response.data.status === 1) {
-                    $scope.wp_sites = response.data.data.map(function(site) {
-                        return {
-                            id: site.id,
-                            title: site.title || site.domain,
-                            url: site.url,
-                            version: site.version,
-                            phpVersion: site.php_version,
-                            theme: site.theme,
-                            activePlugins: site.active_plugins || 0,
-                            searchIndex: site.search_index === 'enabled',
-                            debugging: site.debugging === 'enabled',
-                            passwordProtection: site.password_protection === 'enabled',
-                            maintenanceMode: site.maintenance_mode === 'enabled'
-                        };
-                    });
-                    $scope.web.showWPSites = true;
+                console.log('WP Details Response:', response);  // Debug log
+                
+                if (response.data && response.data.status === 1 && response.data.data) {
+                    try {
+                        $scope.wp_sites = response.data.data.map(function(site) {
+                            return {
+                                id: site.id || '',
+                                title: site.title || site.domain || $scope.selectedWebsite.domain,
+                                url: site.url || 'http://' + $scope.selectedWebsite.domain,
+                                version: site.version || 'Unknown',
+                                phpVersion: site.php_version || 'Unknown',
+                                theme: site.theme || 'Unknown',
+                                activePlugins: site.active_plugins || 0,
+                                searchIndex: site.search_index === 'enabled',
+                                debugging: site.debugging === 'enabled',
+                                passwordProtection: site.password_protection === 'enabled',
+                                maintenanceMode: site.maintenance_mode === 'enabled'
+                            };
+                        });
+                        $scope.web.showWPSites = true;
+                    } catch (e) {
+                        console.error('Error processing WordPress data:', e);
+                        new PNotify({
+                            title: 'Error',
+                            text: 'Failed to process WordPress site details: ' + e.message,
+                            type: 'error'
+                        });
+                    }
                 } else {
+                    console.error('Invalid response format:', response);  // Debug log
                     new PNotify({
                         title: 'Error',
-                        text: 'Failed to fetch WordPress site details.',
+                        text: response.data && response.data.error_message ? 
+                              response.data.error_message : 
+                              'Failed to fetch WordPress site details. Invalid response format.',
                         type: 'error'
                     });
                 }
             }).catch(function(error) {
+                console.error('WP Details Error:', error);  // Debug log
                 new PNotify({
                     title: 'Error',
-                    text: 'Connection failed while fetching WordPress site details.',
+                    text: error.data && error.data.error_message ? 
+                          error.data.error_message : 
+                          'Connection failed while fetching WordPress site details.',
                     type: 'error'
                 });
             });
