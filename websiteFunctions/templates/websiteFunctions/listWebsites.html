@@ -102,7 +102,7 @@
                             <span ng-bind="web.admin" style="text-transform: none"></span>
                         </div>
                         <div class="col-md-3 content-box-header">
-                            <i class="p fa fa-plus btn-icon text-muted" ng-click="toggleWPSites($index)" 
+                            <i class="p fa fa-wordpress btn-icon text-muted" ng-click="showWPSites($index)" 
                                data-toggle="tooltip" data-placement="right" title="Show WordPress Sites">&emsp;</i>
                             <span ng-if="web.wp_sites && web.wp_sites.length > 0" style="text-transform: none">
                                 {$ web.wp_sites.length $} WordPress Sites
@@ -132,6 +132,47 @@
                                             <i class="fa fa-cog"></i> Manage
                                         </a>
                                     </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- WordPress Sites Modal -->
+                    <div id="wpSitesModal" class="modal fade" tabindex="-1" role="dialog">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">WordPress Sites</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    <div ng-repeat="wp in web.wp_sites">
+                                        <div class="wp-site-item" style="margin-bottom: 15px; padding: 10px; border: 1px solid #eee; border-radius: 4px;">
+                                            <h5>{$ wp.title $}</h5>
+                                            <p><a href="{$ wp.url $}" target="_blank">{$ wp.url $}</a></p>
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <strong>Version:</strong> {$ wp.version || 'Unknown' $}
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <strong>PHP:</strong> {$ wp.phpVersion || 'Unknown' $}
+                                                </div>
+                                            </div>
+                                            <div class="text-right" style="margin-top: 10px;">
+                                                <a href="/websites/WPHome?ID={$ wp.id $}" class="btn btn-primary btn-sm">
+                                                    <i class="fa fa-cog"></i> Manage
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div ng-if="!web.wp_sites || web.wp_sites.length === 0" class="text-center">
+                                        <p>No WordPress sites found.</p>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                                 </div>
                             </div>
                         </div>

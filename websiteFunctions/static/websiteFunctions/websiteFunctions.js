@@ -2846,6 +2846,10 @@ app.controller('listWebsites', function ($scope, $http) {
 
     };
 
+    $scope.showWPSites = function(index) {
+        $scope.selectedWebsite = $scope.WebSitesList[index];
+        $('#wpSitesModal').modal('show');
+    };
 
 });
 
