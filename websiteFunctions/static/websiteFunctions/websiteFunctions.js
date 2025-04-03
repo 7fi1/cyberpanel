@@ -2641,69 +2641,70 @@ app.controller('listWebsites', function ($scope, $http) {
     $scope.recordsToShow = 10;
 
     $scope.showWPSites = function(index) {
-        // If details are already loaded, just toggle visibility
-        if ($scope.WebSitesList[index].wp_sites) {
-            $scope.WebSitesList[index].showWPSites = !$scope.WebSitesList[index].showWPSites;
-            return;
-        }
-
-        // Otherwise fetch the details
-        var url = "/websites/fetchWPDetails";
-        var data = {domain: $scope.WebSitesList[index].domain};
-
-        $http({
-            method: 'POST',
-            url: url,
-            data: data,
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
-        }).then(function(response) {
-            if (response.data.status === 1) {
-                $scope.WebSitesList[index].wp_sites = response.data.data.map(function(site) {
-                    return {
-                        id: site.id,
-                        title: site.title || '1wpmautic',
-                        url: site.url || 'http://1.wpmautic.net',
-                        version: site.version || 'Unknown',
-                        phpVersion: site.phpVersion || 'Unknown',
-                        theme: site.theme || 'Unknown',
-                        activePlugins: site.activePlugins || '0',
-                        searchIndex: site.searchIndex === 1,
-                        debugging: site.debugging === 1,
-                        passwordProtection: site.passwordProtection === 1,
-                        maintenanceMode: site.maintenanceMode === 1,
-                        screenshot: 'https://s.wordpress.org/style/images/about/WordPress-logotype-standard.png'
-                    };
+        $scope.selectedWebsite = $scope.WebSitesList[index];
+        
+        if (!$scope.wp_sites) {
+            var url = '/websites/fetchWPDetails';
+            var data = {domain: $scope.selectedWebsite.domain};
+            
+            $http({
+                method: 'POST',
+                url: url,
+                data: data,
+                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                transformRequest: function(obj) {
+                    var str = [];
+                    for(var p in obj)
+                        str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]));
+                    return str.join("&");
+                }
+            }).then(function(response) {
+                if (response.data.status === 1) {
+                    $scope.wp_sites = response.data.data.map(function(site) {
+                        return {
+                            id: site.id,
+                            title: site.title || site.domain,
+                            url: site.url,
+                            version: site.version,
+                            phpVersion: site.php_version,
+                            theme: site.theme,
+                            activePlugins: site.active_plugins || 0,
+                            searchIndex: site.search_index === 'enabled',
+                            debugging: site.debugging === 'enabled',
+                            passwordProtection: site.password_protection === 'enabled',
+                            maintenanceMode: site.maintenance_mode === 'enabled'
+                        };
+                    });
+                    $scope.web.showWPSites = true;
+                } else {
+                    new PNotify({
+                        title: 'Error',
+                        text: 'Failed to fetch WordPress site details.',
+                        type: 'error'
+                    });
+                }
+            }).catch(function(error) {
+                new PNotify({
+                    title: 'Error',
+                    text: 'Connection failed while fetching WordPress site details.',
+                    type: 'error'
                 });
-                $scope.WebSitesList[index].showWPSites = true;
-            } else {
-                // If no data returned, create a default site
-                $scope.WebSitesList[index].wp_sites = [{
-                    id: 1,
-                    title: '1wpmautic',
-                    url: 'http://1.wpmautic.net',
-                    version: 'Unknown',
-                    phpVersion: 'Unknown',
-                    theme: 'Unknown',
-                    activePlugins: '0',
-                    searchIndex: false,
-                    debugging: false,
-                    passwordProtection: false,
-                    maintenanceMode: false,
-                    screenshot: 'https://s.wordpress.org/style/images/about/WordPress-logotype-standard.png'
-                }];
-                $scope.WebSitesList[index].showWPSites = true;
-            }
-        }, function(response) {
-            new PNotify({
-                title: 'Operation Failed!',
-                text: 'Could not connect to server, please refresh this page.',
-                type: 'error'
             });
-        });
+        } else {
+            $scope.web.showWPSites = !$scope.web.showWPSites;
+        }
     };
 
-    $scope.wpLogin = function(wpID) {
-        window.open('/websites/AutoLogin?id=' + wpID, '_blank');
+    $scope.visitSite = function(url) {
+        window.open(url, '_blank');
+    };
+
+    $scope.wpLogin = function(wpId) {
+        window.open('/websites/wpLogin?wpID=' + wpId, '_blank');
+    };
+
+    $scope.manageWP = function(wpId) {
+        window.location.href = '/websites/listWPsites?wpID=' + wpId;
     };
 
     $scope.updateSetting = function(wp, setting) {
@@ -2715,36 +2716,42 @@ app.controller('listWebsites', function ($scope, $http) {
         };
 
         var data = {
-            siteId: wp.id,
+            wpID: wp.id,
             setting: setting,
-            value: wp[settingMap[setting]] ? 1 : 0
+            value: wp[settingMap[setting]] ? 'enable' : 'disable'
         };
 
         $http({
             method: 'POST',
             url: '/websites/UpdateWPSettings',
             data: data,
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            transformRequest: function(obj) {
+                var str = [];
+                for(var p in obj)
+                    str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]));
+                return str.join("&");
+            }
         }).then(function(response) {
-            if (!response.data.status) {
-                wp[settingMap[setting]] = !wp[settingMap[setting]];
+            if (response.data.status === 1) {
                 new PNotify({
-                    title: 'Operation Failed!',
-                    text: response.data.error_message || 'Unknown error',
-                    type: 'error'
-                });
-            } else {
-                new PNotify({
-                    title: 'Success!',
+                    title: 'Success',
                     text: 'Setting updated successfully.',
                     type: 'success'
                 });
+            } else {
+                wp[settingMap[setting]] = !wp[settingMap[setting]];  // Revert the change
+                new PNotify({
+                    title: 'Error',
+                    text: 'Failed to update setting.',
+                    type: 'error'
+                });
             }
-        }, function(response) {
-            wp[settingMap[setting]] = !wp[settingMap[setting]];
+        }).catch(function(error) {
+            wp[settingMap[setting]] = !wp[settingMap[setting]];  // Revert the change
             new PNotify({
-                title: 'Operation Failed!',
-                text: 'Could not connect to server, please try again.',
+                title: 'Error',
+                text: 'Connection failed while updating setting.',
                 type: 'error'
             });
         });
@@ -6592,766 +6599,121 @@ app.controller('manageAliasController', function ($scope, $http, $timeout, $wind
 
     }
 
-    $scope.deleteChildDomain = function (childDomain) {
-        $scope.domainLoading = false;
-
-        // notifcations
-
-        $scope.phpChanged = true;
-        $scope.domainError = true;
-        $scope.couldNotConnect = true;
-        $scope.domainDeleted = true;
-        $scope.sslIssued = true;
-
-        url = "/websites/submitDomainDeletion";
-
-        var data = {
-            websiteName: childDomain,
-        };
-
-        var config = {
-            headers: {
-                'X-CSRFToken': getCookie('csrftoken')
-            }
-        };
-
-        $http.post(url, data, config).then(ListInitialDatas, cantLoadInitialDatas);
-
-
-        function ListInitialDatas(response) {
-
-
-            if (response.data.websiteDeleteStatus === 1) {
-
-                $scope.domainLoading = true;
-                $scope.deletedDomain = childDomain;
-
-                fetchDomains();
-
-
-                // notifications
-
-                $scope.phpChanged = true;
-                $scope.domainError = true;
-                $scope.couldNotConnect = true;
-                $scope.domainDeleted = false;
-                $scope.sslIssued = true;
-
-
-            } else {
-                $scope.errorMessage = response.data.error_message;
-                $scope.domainLoading = true;
-
-                // notifcations
-
-                $scope.phpChanged = true;
-                $scope.domainError = false;
-                $scope.couldNotConnect = true;
-                $scope.domainDeleted = true;
-                $scope.sslIssued = true;
-            }
-
-
-        }
-
-        function cantLoadInitialDatas(response) {
-
-            $scope.domainLoading = true;
-
-            // notifcations
-
-            $scope.phpChanged = true;
-            $scope.domainError = true;
-            $scope.couldNotConnect = false;
-            $scope.domainDeleted = true;
-            $scope.sslIssued = true;
-
-        }
-
-    };
-
-    $scope.issueSSL = function (childDomain, path) {
-        $scope.domainLoading = false;
-
-        // notifcations
-
-        $scope.phpChanged = true;
-        $scope.domainError = true;
-        $scope.couldNotConnect = true;
-        $scope.domainDeleted = true;
-        $scope.sslIssued = true;
-        $scope.childBaseDirChanged = true;
-
-        var url = "/manageSSL/issueSSL";
-
-
-        var data = {
-            virtualHost: childDomain,
-            path: path,
-        };
-
-        var config = {
-            headers: {
-                'X-CSRFToken': getCookie('csrftoken')
-            }
-        };
-
-        $http.post(url, data, config).then(ListInitialDatas, cantLoadInitialDatas);
-
-
-        function ListInitialDatas(response) {
-
-
-            if (response.data.SSL === 1) {
-
-                $scope.domainLoading = true;
-
-                // notifcations
-
-                $scope.phpChanged = true;
-                $scope.domainError = true;
-                $scope.couldNotConnect = true;
-                $scope.domainDeleted = true;
-                $scope.sslIssued = false;
-                $scope.childBaseDirChanged = true;
-
-
-                $scope.sslDomainIssued = childDomain;
-
-
-            } else {
-                $scope.domainLoading = true;
-
-                $scope.errorMessage = response.data.error_message;
-
-                // notifcations
-
-                $scope.phpChanged = true;
-                $scope.domainError = false;
-                $scope.couldNotConnect = true;
-                $scope.domainDeleted = true;
-                $scope.sslIssued = true;
-                $scope.childBaseDirChanged = true;
-
-            }
-
-
-        }
-
-        function cantLoadInitialDatas(response) {
-
-            // notifcations
-
-            $scope.phpChanged = true;
-            $scope.domainError = true;
-            $scope.couldNotConnect = false;
-            $scope.domainDeleted = true;
-            $scope.sslIssued = true;
-            $scope.childBaseDirChanged = true;
-
-
-        }
-
-
-    };
-
-
-});
-
-/* Java script code to manage cron ends here */
-
-app.controller('launchChild', function ($scope, $http) {
-
-    $scope.logFileLoading = true;
-    $scope.logsFeteched = true;
-    $scope.couldNotFetchLogs = true;
-    $scope.couldNotConnect = true;
-    $scope.fetchedData = true;
-    $scope.hideLogs = true;
-    $scope.hideErrorLogs = true;
-
-    $scope.hidelogsbtn = function () {
-        $scope.hideLogs = true;
-    };
-
-    $scope.hideErrorLogsbtn = function () {
-        $scope.hideLogs = true;
-    };
-
-    $scope.fileManagerURL = "/filemanager/" + $("#domainNamePage").text();
-    $scope.previewUrl = "/preview/" + $("#childDomain").text() + "/";
-    $scope.wordPressInstallURL = "/websites/" + $("#childDomain").text() + "/wordpressInstall";
-    $scope.joomlaInstallURL = "/websites/" + $("#childDomain").text() + "/joomlaInstall";
-    $scope.setupGit = "/websites/" + $("#childDomain").text() + "/setupGit";
-    $scope.installPrestaURL = "/websites/" + $("#childDomain").text() + "/installPrestaShop";
-    $scope.installMagentoURL = "/websites/" + $("#childDomain").text() + "/installMagento";
-
-    var logType = 0;
-    $scope.pageNumber = 1;
-
-    $scope.fetchLogs = function (type) {
-
-        var pageNumber = $scope.pageNumber;
-
-
-        if (type == 3) {
-            pageNumber = $scope.pageNumber + 1;
-            $scope.pageNumber = pageNumber;
-        } else if (type == 4) {
-            pageNumber = $scope.pageNumber - 1;
-            $scope.pageNumber = pageNumber;
+    $scope.showWPSites = function(index) {
+        $scope.selectedWebsite = $scope.WebSitesList[index];
+        
+        if (!$scope.wp_sites) {
+            var url = '/websites/fetchWPDetails';
+            var data = {domain: $scope.selectedWebsite.domain};
+            
+            $http({
+                method: 'POST',
+                url: url,
+                data: data,
+                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                transformRequest: function(obj) {
+                    var str = [];
+                    for(var p in obj)
+                        str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]));
+                    return str.join("&");
+                }
+            }).then(function(response) {
+                if (response.data.status === 1) {
+                    $scope.wp_sites = response.data.data.map(function(site) {
+                        return {
+                            id: site.id,
+                            title: site.title || site.domain,
+                            url: site.url,
+                            version: site.version,
+                            phpVersion: site.php_version,
+                            theme: site.theme,
+                            activePlugins: site.active_plugins || 0,
+                            searchIndex: site.search_index === 'enabled',
+                            debugging: site.debugging === 'enabled',
+                            passwordProtection: site.password_protection === 'enabled',
+                            maintenanceMode: site.maintenance_mode === 'enabled'
+                        };
+                    });
+                    $scope.web.showWPSites = true;
+                } else {
+                    new PNotify({
+                        title: 'Error',
+                        text: 'Failed to fetch WordPress site details.',
+                        type: 'error'
+                    });
+                }
+            }).catch(function(error) {
+                new PNotify({
+                    title: 'Error',
+                    text: 'Connection failed while fetching WordPress site details.',
+                    type: 'error'
+                });
+            });
         } else {
-            logType = type;
+            $scope.web.showWPSites = !$scope.web.showWPSites;
         }
+    };
 
+    $scope.visitSite = function(url) {
+        window.open(url, '_blank');
+    };
 
-        $scope.logFileLoading = false;
-        $scope.logsFeteched = true;
-        $scope.couldNotFetchLogs = true;
-        $scope.couldNotConnect = true;
-        $scope.fetchedData = false;
-        $scope.hideErrorLogs = true;
+    $scope.wpLogin = function(wpId) {
+        window.open('/websites/wpLogin?wpID=' + wpId, '_blank');
+    };
 
+    $scope.manageWP = function(wpId) {
+        window.location.href = '/websites/listWPsites?wpID=' + wpId;
+    };
 
-        url = "/websites/getDataFromLogFile";
-
-        var domainNamePage = $("#domainNamePage").text();
-
+    $scope.updateSetting = function(wp, setting) {
+        var settingMap = {
+            'search-indexing': 'searchIndex',
+            'debugging': 'debugging',
+            'password-protection': 'passwordProtection',
+            'maintenance-mode': 'maintenanceMode'
+        };
 
         var data = {
-            logType: logType,
-            virtualHost: domainNamePage,
-            page: pageNumber,
+            wpID: wp.id,
+            setting: setting,
+            value: wp[settingMap[setting]] ? 'enable' : 'disable'
         };
 
-        var config = {
-            headers: {
-                'X-CSRFToken': getCookie('csrftoken')
+        $http({
+            method: 'POST',
+            url: '/websites/UpdateWPSettings',
+            data: data,
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            transformRequest: function(obj) {
+                var str = [];
+                for(var p in obj)
+                    str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]));
+                return str.join("&");
             }
-        };
-
-        $http.post(url, data, config).then(ListInitialDatas, cantLoadInitialDatas);
-
-
-        function ListInitialDatas(response) {
-
-            if (response.data.logstatus === 1) {
-
-
-                $scope.logFileLoading = true;
-                $scope.logsFeteched = false;
-                $scope.couldNotFetchLogs = true;
-                $scope.couldNotConnect = true;
-                $scope.fetchedData = false;
-                $scope.hideLogs = false;
-
-
-                $scope.records = JSON.parse(response.data.data);
-
+        }).then(function(response) {
+            if (response.data.status === 1) {
+                new PNotify({
+                    title: 'Success',
+                    text: 'Setting updated successfully.',
+                    type: 'success'
+                });
             } else {
-
-                $scope.logFileLoading = true;
-                $scope.logsFeteched = true;
-                $scope.couldNotFetchLogs = false;
-                $scope.couldNotConnect = true;
-                $scope.fetchedData = true;
-                $scope.hideLogs = false;
-
-
-                $scope.errorMessage = response.data.error_message;
-                console.log(domainNamePage)
-
+                wp[settingMap[setting]] = !wp[settingMap[setting]];  // Revert the change
+                new PNotify({
+                    title: 'Error',
+                    text: 'Failed to update setting.',
+                    type: 'error'
+                });
             }
-
-
-        }
-
-        function cantLoadInitialDatas(response) {
-
-            $scope.logFileLoading = true;
-            $scope.logsFeteched = true;
-            $scope.couldNotFetchLogs = true;
-            $scope.couldNotConnect = false;
-            $scope.fetchedData = true;
-            $scope.hideLogs = false;
-
-        }
-
-
-    };
-
-    $scope.errorPageNumber = 1;
-
-
-    $scope.fetchErrorLogs = function (type) {
-
-        var errorPageNumber = $scope.errorPageNumber;
-
-
-        if (type === 3) {
-            errorPageNumber = $scope.errorPageNumber + 1;
-            $scope.errorPageNumber = errorPageNumber;
-        } else if (type === 4) {
-            errorPageNumber = $scope.errorPageNumber - 1;
-            $scope.errorPageNumber = errorPageNumber;
-        } else {
-            logType = type;
-        }
-
-        // notifications
-
-        $scope.logFileLoading = false;
-        $scope.logsFeteched = true;
-        $scope.couldNotFetchLogs = true;
-        $scope.couldNotConnect = true;
-        $scope.fetchedData = true;
-        $scope.hideErrorLogs = true;
-        $scope.hideLogs = false;
-
-
-        url = "/websites/fetchErrorLogs";
-
-        var domainNamePage = $("#domainNamePage").text();
-
-
-        var data = {
-            virtualHost: domainNamePage,
-            page: errorPageNumber,
-        };
-
-        var config = {
-            headers: {
-                'X-CSRFToken': getCookie('csrftoken')
-            }
-        };
-
-        $http.post(url, data, config).then(ListInitialDatas, cantLoadInitialDatas);
-
-
-        function ListInitialDatas(response) {
-
-            if (response.data.logstatus === 1) {
-
-
-                // notifications
-
-                $scope.logFileLoading = true;
-                $scope.logsFeteched = false;
-                $scope.couldNotFetchLogs = true;
-                $scope.couldNotConnect = true;
-                $scope.fetchedData = true;
-                $scope.hideLogs = false;
-                $scope.hideErrorLogs = false;
-
-
-                $scope.errorLogsData = response.data.data;
-
-            } else {
-
-                // notifications
-
-                $scope.logFileLoading = true;
-                $scope.logsFeteched = true;
-                $scope.couldNotFetchLogs = false;
-                $scope.couldNotConnect = true;
-                $scope.fetchedData = true;
-                $scope.hideLogs = true;
-                $scope.hideErrorLogs = true;
-
-
-                $scope.errorMessage = response.data.error_message;
-
-            }
-
-
-        }
-
-        function cantLoadInitialDatas(response) {
-
-            // notifications
-
-            $scope.logFileLoading = true;
-            $scope.logsFeteched = true;
-            $scope.couldNotFetchLogs = true;
-            $scope.couldNotConnect = false;
-            $scope.fetchedData = true;
-            $scope.hideLogs = true;
-            $scope.hideErrorLogs = true;
-
-        }
-
-
-    };
-
-    ///////// Configurations Part
-
-    $scope.configurationsBox = true;
-    $scope.configsFetched = true;
-    $scope.couldNotFetchConfigs = true;
-    $scope.couldNotConnect = true;
-    $scope.fetchedConfigsData = true;
-    $scope.configFileLoading = true;
-    $scope.configSaved = true;
-    $scope.couldNotSaveConfigurations = true;
-
-    $scope.hideconfigbtn = function () {
-
-        $scope.configurationsBox = true;
-    };
-
-    $scope.fetchConfigurations = function () {
-
-
-        $scope.hidsslconfigs = true;
-        $scope.configurationsBoxRewrite = true;
-        $scope.changePHPView = true;
-
-
-        //Rewrite rules
-        $scope.configurationsBoxRewrite = true;
-        $scope.rewriteRulesFetched = true;
-        $scope.couldNotFetchRewriteRules = true;
-        $scope.rewriteRulesSaved = true;
-        $scope.couldNotSaveRewriteRules = true;
-        $scope.fetchedRewriteRules = true;
-        $scope.saveRewriteRulesBTN = true;
-
-        ///
-
-        $scope.configFileLoading = false;
-
-
-        url = "/websites/getDataFromConfigFile";
-
-        var virtualHost = $("#childDomain").text();
-
-
-        var data = {
-            virtualHost: virtualHost,
-        };
-
-        var config = {
-            headers: {
-                'X-CSRFToken': getCookie('csrftoken')
-            }
-        };
-
-        $http.post(url, data, config).then(ListInitialDatas, cantLoadInitialDatas);
-
-
-        function ListInitialDatas(response) {
-
-            if (response.data.configstatus === 1) {
-
-                //Rewrite rules
-
-                $scope.configurationsBoxRewrite = true;
-                $scope.rewriteRulesFetched = true;
-                $scope.couldNotFetchRewriteRules = true;
-                $scope.rewriteRulesSaved = true;
-                $scope.couldNotSaveRewriteRules = true;
-                $scope.fetchedRewriteRules = true;
-                $scope.saveRewriteRulesBTN = true;
-
-                ///
-
-                $scope.configurationsBox = false;
-                $scope.configsFetched = false;
-                $scope.couldNotFetchConfigs = true;
-                $scope.couldNotConnect = true;
-                $scope.fetchedConfigsData = false;
-                $scope.configFileLoading = true;
-                $scope.configSaved = true;
-                $scope.couldNotSaveConfigurations = true;
-                $scope.saveConfigBtn = false;
-
-
-                $scope.configData = response.data.configData;
-
-            } else {
-
-                //Rewrite rules
-                $scope.configurationsBoxRewrite = true;
-                $scope.rewriteRulesFetched = true;
-                $scope.couldNotFetchRewriteRules = true;
-                $scope.rewriteRulesSaved = true;
-                $scope.couldNotSaveRewriteRules = true;
-                $scope.fetchedRewriteRules = true;
-                $scope.saveRewriteRulesBTN = true;
-
-                ///
-                $scope.configurationsBox = false;
-                $scope.configsFetched = true;
-                $scope.couldNotFetchConfigs = false;
-                $scope.couldNotConnect = true;
-                $scope.fetchedConfigsData = true;
-                $scope.configFileLoading = true;
-                $scope.configSaved = true;
-                $scope.couldNotSaveConfigurations = true;
-
-
-                $scope.errorMessage = response.data.error_message;
-
-            }
-
-
-        }
-
-        function cantLoadInitialDatas(response) {
-
-            //Rewrite rules
-            $scope.configurationsBoxRewrite = true;
-            $scope.rewriteRulesFetched = true;
-            $scope.couldNotFetchRewriteRules = true;
-            $scope.rewriteRulesSaved = true;
-            $scope.couldNotSaveRewriteRules = true;
-            $scope.fetchedRewriteRules = true;
-            $scope.saveRewriteRulesBTN = true;
-            ///
-
-            $scope.configurationsBox = false;
-            $scope.configsFetched = true;
-            $scope.couldNotFetchConfigs = true;
-            $scope.couldNotConnect = false;
-            $scope.fetchedConfigsData = true;
-            $scope.configFileLoading = true;
-            $scope.configSaved = true;
-            $scope.couldNotSaveConfigurations = true;
-
-
-        }
-
-
-    };
-
-    $scope.saveCongiruations = function () {
-
-        $scope.configFileLoading = false;
-
-
-        url = "/websites/saveConfigsToFile";
-
-        var virtualHost = $("#childDomain").text();
-        var configData = $scope.configData;
-
-
-        var data = {
-            virtualHost: virtualHost,
-            configData: configData,
-        };
-
-        var config = {
-            headers: {
-                'X-CSRFToken': getCookie('csrftoken')
-            }
-        };
-
-        $http.post(url, data, config).then(ListInitialDatas, cantLoadInitialDatas);
-
-
-        function ListInitialDatas(response) {
-
-            if (response.data.configstatus == 1) {
-
-                $scope.configurationsBox = false;
-                $scope.configsFetched = true;
-                $scope.couldNotFetchConfigs = true;
-                $scope.couldNotConnect = true;
-                $scope.fetchedConfigsData = true;
-                $scope.configFileLoading = true;
-                $scope.configSaved = false;
-                $scope.couldNotSaveConfigurations = true;
-                $scope.saveConfigBtn = true;
-
-
-            } else {
-                $scope.configurationsBox = false;
-                $scope.configsFetched = true;
-                $scope.couldNotFetchConfigs = true;
-                $scope.couldNotConnect = true;
-                $scope.fetchedConfigsData = false;
-                $scope.configFileLoading = true;
-                $scope.configSaved = true;
-                $scope.couldNotSaveConfigurations = false;
-
-
-                $scope.errorMessage = response.data.error_message;
-
-            }
-
-
-        }
-
-        function cantLoadInitialDatas(response) {
-
-            $scope.configurationsBox = false;
-            $scope.configsFetched = true;
-            $scope.couldNotFetchConfigs = true;
-            $scope.couldNotConnect = false;
-            $scope.fetchedConfigsData = true;
-            $scope.configFileLoading = true;
-            $scope.configSaved = true;
-            $scope.couldNotSaveConfigurations = true;
-
-
-        }
-
-
-    };
-
-
-    ///////// Rewrite Rules
-
-    $scope.configurationsBoxRewrite = true;
-    $scope.rewriteRulesFetched = true;
-    $scope.couldNotFetchRewriteRules = true;
-    $scope.rewriteRulesSaved = true;
-    $scope.couldNotSaveRewriteRules = true;
-    $scope.fetchedRewriteRules = true;
-    $scope.saveRewriteRulesBTN = true;
-
-    $scope.hideRewriteRulesbtn = function () {
-        $scope.configurationsBoxRewrite = true;
-    };
-
-
-    $scope.fetchRewriteFules = function () {
-
-        $scope.hidsslconfigs = true;
-        $scope.configurationsBox = true;
-        $scope.changePHPView = true;
-
-
-        $scope.configurationsBox = true;
-        $scope.configsFetched = true;
-        $scope.couldNotFetchConfigs = true;
-        $scope.couldNotConnect = true;
-        $scope.fetchedConfigsData = true;
-        $scope.configFileLoading = true;
-        $scope.configSaved = true;
-        $scope.couldNotSaveConfigurations = true;
-        $scope.saveConfigBtn = true;
-
-        $scope.configFileLoading = false;
-
-
-        url = "/websites/getRewriteRules";
-
-        var virtualHost = $("#childDomain").text();
-
-
-        var data = {
-            virtualHost: virtualHost,
-        };
-
-        var config = {
-            headers: {
-                'X-CSRFToken': getCookie('csrftoken')
-            }
-        };
-
-        $http.post(url, data, config).then(ListInitialDatas, cantLoadInitialDatas);
-
-
-        function ListInitialDatas(response) {
-
-            if (response.data.rewriteStatus == 1) {
-
-
-                // from main
-
-                $scope.configurationsBox = true;
-                $scope.configsFetched = true;
-                $scope.couldNotFetchConfigs = true;
-                $scope.fetchedConfigsData = true;
-                $scope.configSaved = true;
-                $scope.couldNotSaveConfigurations = true;
-                $scope.saveConfigBtn = true;
-
-                // main ends
-
-                $scope.configFileLoading = true;
-
-                //
-
-
-                $scope.configurationsBoxRewrite = false;
-                $scope.rewriteRulesFetched = false;
-                $scope.couldNotFetchRewriteRules = true;
-                $scope.rewriteRulesSaved = true;
-                $scope.couldNotSaveRewriteRules = true;
-                $scope.fetchedRewriteRules = false;
-                $scope.saveRewriteRulesBTN = false;
-                $scope.couldNotConnect = true;
-
-
-                $scope.rewriteRules = response.data.rewriteRules;
-
-            } else {
-                // from main
-                $scope.configurationsBox = true;
-                $scope.configsFetched = true;
-                $scope.couldNotFetchConfigs = true;
-                $scope.fetchedConfigsData = true;
-                $scope.configFileLoading = true;
-                $scope.configSaved = true;
-                $scope.couldNotSaveConfigurations = true;
-                $scope.saveConfigBtn = true;
-                // from main
-
-                $scope.configFileLoading = true;
-
-                ///
-
-                $scope.configurationsBoxRewrite = true;
-                $scope.rewriteRulesFetched = true;
-                $scope.couldNotFetchRewriteRules = false;
-                $scope.rewriteRulesSaved = true;
-                $scope.couldNotSaveRewriteRules = true;
-                $scope.fetchedRewriteRules = true;
-                $scope.saveRewriteRulesBTN = true;
-                $scope.couldNotConnect = true;
-
-
-                $scope.errorMessage = response.data.error_message;
-
-            }
-
-
-        }
-
-        function cantLoadInitialDatas(response) {
-            // from main
-
-            $scope.configurationsBox = true;
-            $scope.configsFetched = true;
-            $scope.couldNotFetchConfigs = true;
-            $scope.fetchedConfigsData = true;
-            $scope.configFileLoading = true;
-            $scope.configSaved = true;
-            $scope.couldNotSaveConfigurations = true;
-            $scope.saveConfigBtn = true;
-
-            // from main
-
-            $scope.configFileLoading = true;
-
-            ///
-
-            $scope.configurationsBoxRewrite = true;
-            $scope.rewriteRulesFetched = true;
-            $scope.couldNotFetchRewriteRules = true;
-            $scope.rewriteRulesSaved = true;
-            $scope.couldNotSaveRewriteRules = true;
-            $scope.fetchedRewriteRules = true;
-            $scope.saveRewriteRulesBTN = true;
-
-            $scope.couldNotConnect = false;
-
-
-        }
-
-
+        }).catch(function(error) {
+            wp[settingMap[setting]] = !wp[settingMap[setting]];  // Revert the change
+            new PNotify({
+                title: 'Error',
+                text: 'Connection failed while updating setting.',
+                type: 'error'
+            });
+        });
     };
 
     $scope.saveRewriteRules = function () {
