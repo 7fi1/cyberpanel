@@ -2636,9 +2636,43 @@ $("#listFail").hide();
 
 app.controller('listWebsites', function ($scope, $http, $window) {
     $scope.web = {};
+    $scope.WebSitesList = [];
     
     $scope.currentPage = 1;
     $scope.recordsToShow = 10;
+
+    // Initial fetch of websites
+    $scope.getFurtherWebsitesFromDB = function () {
+        var config = {
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        };
+
+        var data = {
+            page: $scope.currentPage,
+            recordsToShow: $scope.recordsToShow
+        };
+
+        var dataurl = "/websites/fetchWebsitesList";
+
+        $http.post(dataurl, data, config).then(function(response) {
+            if (response.data.listWebSiteStatus === 1) {
+                $scope.WebSitesList = JSON.parse(response.data.data);
+                $scope.pagination = response.data.pagination;
+                $("#listFail").hide();
+            } else {
+                $("#listFail").fadeIn();
+                $scope.errorMessage = response.data.error_message;
+            }
+        }).catch(function(error) {
+            $("#listFail").fadeIn();
+            $scope.errorMessage = error.message || 'An error occurred while fetching websites';
+        });
+    };
+
+    // Call it immediately
+    $scope.getFurtherWebsitesFromDB();
 
     $scope.showWPSites = function(index) {
         $scope.selectedWebsite = $scope.WebSitesList[index];
@@ -2811,46 +2845,6 @@ app.controller('listWebsites', function ($scope, $http, $window) {
             });
         });
     };
-
-    $scope.getFurtherWebsitesFromDB = function () {
-
-        var config = {
-            headers: {
-                'X-CSRFToken': getCookie('csrftoken')
-            }
-        };
-
-        var data = {
-            page: $scope.currentPage,
-            recordsToShow: $scope.recordsToShow
-        };
-
-
-        dataurl = "/websites/fetchWebsitesList";
-
-        $http.post(dataurl, data, config).then(ListInitialData, cantLoadInitialData);
-
-
-        function ListInitialData(response) {
-            if (response.data.listWebSiteStatus === 1) {
-
-                $scope.WebSitesList = JSON.parse(response.data.data);
-                $scope.pagination = response.data.pagination;
-                $scope.clients = JSON.parse(response.data.data);
-                $("#listFail").hide();
-            } else {
-                $("#listFail").fadeIn();
-                $scope.errorMessage = response.data.error_message;
-
-            }
-        }
-
-        function cantLoadInitialData(response) {
-        }
-
-
-    };
-    $scope.getFurtherWebsitesFromDB();
 
     $scope.cyberPanelLoading = true;
 
@@ -6703,7 +6697,7 @@ app.controller('manageAliasController', function ($scope, $http, $timeout, $wind
                             };
                         });
                         $scope.selectedWebsite.showWPSites = true;
-                    } catch (e) {
+                    } catch(e) {
                         console.error('Error processing WordPress data:', e);
                         // Create default site on error
                         $scope.selectedWebsite.wp_sites = [{
