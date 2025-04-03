@@ -2641,8 +2641,59 @@ app.controller('listWebsites', function ($scope, $http) {
     $scope.recordsToShow = 10;
 
     $scope.showWPSites = function(index) {
-        // Toggle the showWPSites flag for the clicked website
-        $scope.WebSitesList[index].showWPSites = !$scope.WebSitesList[index].showWPSites;
+        // If details are already loaded, just toggle visibility
+        if ($scope.WebSitesList[index].wp_sites) {
+            $scope.WebSitesList[index].showWPSites = !$scope.WebSitesList[index].showWPSites;
+            return;
+        }
+
+        // Otherwise fetch the details
+        var url = "/websites/fetchWPDetails";
+        var data = {domain: $scope.WebSitesList[index].domain};
+
+        $http({
+            method: 'POST',
+            url: url,
+            data: data,
+        }).then(function(response) {
+            if (response.data.status === 1) {
+                $scope.WebSitesList[index].wp_sites = response.data.data;
+                $scope.WebSitesList[index].showWPSites = true;
+            } else {
+                new PNotify({
+                    title: 'Operation Failed!',
+                    text: response.data.error_message,
+                    type: 'error'
+                });
+            }
+        }, function(response) {
+            new PNotify({
+                title: 'Operation Failed!',
+                text: 'Could not connect to server, please refresh this page.',
+                type: 'error'
+            });
+        });
+    };
+
+    $scope.wpLogin = function(wpID) {
+        var url = "/websites/wpLogin";
+        var data = {wpID: wpID};
+
+        $http({
+            method: 'POST',
+            url: url,
+            data: data,
+        }).then(function(response) {
+            if (response.data.status === 1) {
+                window.open(response.data.loginURL, '_blank');
+            } else {
+                new PNotify({
+                    title: 'Operation Failed!',
+                    text: response.data.error_message,
+                    type: 'error'
+                });
+            }
+        });
     };
 
     $scope.getFurtherWebsitesFromDB = function () {

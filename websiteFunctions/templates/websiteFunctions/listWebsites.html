@@ -111,22 +111,54 @@
 
                     <!-- WordPress Sites Section -->
                     <div class="col-md-12" ng-if="web.showWPSites && web.wp_sites && web.wp_sites.length > 0">
-                        <div class="wp-sites-list" style="padding: 15px; background-color: #f8f9fa; border: 1px solid #eee; margin: 10px; border-radius: 4px;">
-                            <h4 style="margin-bottom: 15px;">WordPress Sites</h4>
-                            <div ng-repeat="wp in web.wp_sites" style="margin-bottom: 10px; padding: 10px; background: white; border: 1px solid #e9ecef; border-radius: 4px;">
+                        <div class="wp-sites-list" style="margin: 15px;">
+                            <div ng-repeat="wp in web.wp_sites" class="panel" style="box-shadow: 0px 0px 1px 0px #888888; margin-bottom: 15px;">
                                 <div class="row">
-                                    <div class="col-md-6">
-                                        <h5 style="margin-top: 0;">{$ wp.title $}</h5>
-                                        <a href="{$ wp.url $}" target="_blank" style="color: #007bff;">{$ wp.url $}</a>
+                                    <div class="col-md-12">
+                                        <div class="col-lg-10 content-box-header" style="text-transform: none;">
+                                            <h2 style="display: inline; color: #414C59;" ng-bind="wp.title"></h2>
+                                            <a href="{$ wp.url $}" target="_blank" style="margin-left: 10px;">Visit Site</a>
+                                            <a href="#" ng-click="wpLogin(wp.id)" style="margin-left: 10px;">WP Login</a>
+                                        </div>
+                                        <div class="col-md-2 content-box-header text-right">
+                                            <a href="/websites/WPHome?ID={$ wp.id $}" class="btn btn-primary btn-sm">
+                                                <i class="fa fa-cog"></i> Manage
+                                            </a>
+                                        </div>
                                     </div>
-                                    <div class="col-md-4">
-                                        <div><strong>Version:</strong> {$ wp.version || 'Unknown' $}</div>
-                                        <div><strong>PHP:</strong> {$ wp.phpVersion || 'Unknown' $}</div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="col-md-3 content-box-header">
+                                            <i class="p fa fa-wordpress btn-icon text-muted" data-toggle="tooltip" data-placement="right" title="WordPress Version">&emsp;</i>
+                                            <span>{$ wp.version || 'Unknown' $}</span>
+                                        </div>
+                                        <div class="col-md-3 content-box-header">
+                                            <i class="p fa fa-code btn-icon text-muted" data-toggle="tooltip" data-placement="right" title="PHP Version">&emsp;</i>
+                                            <span>{$ wp.phpVersion || 'Unknown' $}</span>
+                                        </div>
+                                        <div class="col-md-3 content-box-header">
+                                            <i class="p fa fa-paint-brush btn-icon text-muted" data-toggle="tooltip" data-placement="right" title="Theme">&emsp;</i>
+                                            <span>{$ wp.theme || 'Unknown' $}</span>
+                                        </div>
+                                        <div class="col-md-3 content-box-header">
+                                            <i class="p fa fa-puzzle-piece btn-icon text-muted" data-toggle="tooltip" data-placement="right" title="Active Plugins">&emsp;</i>
+                                            <span>{$ wp.activePlugins || '0' $} active</span>
+                                        </div>
                                     </div>
-                                    <div class="col-md-2 text-right">
-                                        <a href="/websites/WPHome?ID={$ wp.id $}" class="btn btn-primary btn-sm">
-                                            <i class="fa fa-cog"></i> Manage
-                                        </a>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="col-md-6 content-box-header">
+                                            <i class="p fa fa-search btn-icon text-muted" data-toggle="tooltip" data-placement="right" title="Search Engine Indexing">&emsp;</i>
+                                            <span>{$ wp.searchEngineIndexing ? 'Enabled' : 'Disabled' $}</span>
+                                        </div>
+                                        <div class="col-md-6 content-box-header">
+                                            <i class="p fa fa-lock btn-icon text-muted" data-toggle="tooltip" data-placement="right" title="Maintenance Mode">&emsp;</i>
+                                            <span>{$ wp.maintenanceMode ? 'Enabled' : 'Disabled' $}</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
