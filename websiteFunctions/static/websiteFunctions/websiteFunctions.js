@@ -2640,12 +2640,9 @@ app.controller('listWebsites', function ($scope, $http) {
     $scope.currentPage = 1;
     $scope.recordsToShow = 10;
 
-    $scope.toggleWPSites = function(index) {
-        if (!$scope.WebSitesList[index].showWPSites) {
-            $scope.WebSitesList[index].showWPSites = true;
-        } else {
-            $scope.WebSitesList[index].showWPSites = false;
-        }
+    $scope.showWPSites = function(index) {
+        // Toggle the showWPSites flag for the clicked website
+        $scope.WebSitesList[index].showWPSites = !$scope.WebSitesList[index].showWPSites;
     };
 
     $scope.getFurtherWebsitesFromDB = function () {
@@ -2844,11 +2841,6 @@ app.controller('listWebsites', function ($scope, $http) {
         }
 
 
-    };
-
-    $scope.showWPSites = function(index) {
-        $scope.selectedWebsite = $scope.WebSitesList[index];
-        $('#wpSitesModal').modal('show');
     };
 
 });

@@ -78,7 +78,6 @@
                                      style="text-transform: none">{% trans "Issue SSL" %}</a></span>
                         </div>
                         <div class="col-md-3 content-box-header">
-
                             <span ng-bind="web.phpVersion"></span>
                         </div>
                     </div>
@@ -111,68 +110,24 @@
                     </div>
 
                     <!-- WordPress Sites Section -->
-                    <div class="col-md-12" ng-if="web.showWPSites && web.wp_sites && web.wp_sites.length > 0" 
-                         style="background-color: #f9f9f9; padding: 15px; margin-top: 10px;">
-                        <h4>WordPress Sites</h4>
-                        <div class="row" ng-repeat="wp in web.wp_sites">
-                            <div class="col-md-12" style="margin-bottom: 10px; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+                    <div class="col-md-12" ng-if="web.showWPSites && web.wp_sites && web.wp_sites.length > 0">
+                        <div class="wp-sites-list" style="padding: 15px; background-color: #f8f9fa; border: 1px solid #eee; margin: 10px; border-radius: 4px;">
+                            <h4 style="margin-bottom: 15px;">WordPress Sites</h4>
+                            <div ng-repeat="wp in web.wp_sites" style="margin-bottom: 10px; padding: 10px; background: white; border: 1px solid #e9ecef; border-radius: 4px;">
                                 <div class="row">
-                                    <div class="col-md-4">
-                                        <strong>{$ wp.title $}</strong>
-                                        <br>
-                                        <a href="{$ wp.url $}" target="_blank">{$ wp.url $}</a>
+                                    <div class="col-md-6">
+                                        <h5 style="margin-top: 0;">{$ wp.title $}</h5>
+                                        <a href="{$ wp.url $}" target="_blank" style="color: #007bff;">{$ wp.url $}</a>
                                     </div>
                                     <div class="col-md-4">
-                                        <span>Version: {$ wp.version $}</span>
-                                        <br>
-                                        <span>PHP: {$ wp.phpVersion $}</span>
+                                        <div><strong>Version:</strong> {$ wp.version || 'Unknown' $}</div>
+                                        <div><strong>PHP:</strong> {$ wp.phpVersion || 'Unknown' $}</div>
                                     </div>
-                                    <div class="col-md-4 text-right">
+                                    <div class="col-md-2 text-right">
                                         <a href="/websites/WPHome?ID={$ wp.id $}" class="btn btn-primary btn-sm">
                                             <i class="fa fa-cog"></i> Manage
                                         </a>
                                     </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- WordPress Sites Modal -->
-                    <div id="wpSitesModal" class="modal fade" tabindex="-1" role="dialog">
-                        <div class="modal-dialog">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title">WordPress Sites</h5>
-                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                        <span aria-hidden="true">&times;</span>
-                                    </button>
-                                </div>
-                                <div class="modal-body">
-                                    <div ng-repeat="wp in web.wp_sites">
-                                        <div class="wp-site-item" style="margin-bottom: 15px; padding: 10px; border: 1px solid #eee; border-radius: 4px;">
-                                            <h5>{$ wp.title $}</h5>
-                                            <p><a href="{$ wp.url $}" target="_blank">{$ wp.url $}</a></p>
-                                            <div class="row">
-                                                <div class="col-md-6">
-                                                    <strong>Version:</strong> {$ wp.version || 'Unknown' $}
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <strong>PHP:</strong> {$ wp.phpVersion || 'Unknown' $}
-                                                </div>
-                                            </div>
-                                            <div class="text-right" style="margin-top: 10px;">
-                                                <a href="/websites/WPHome?ID={$ wp.id $}" class="btn btn-primary btn-sm">
-                                                    <i class="fa fa-cog"></i> Manage
-                                                </a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div ng-if="!web.wp_sites || web.wp_sites.length === 0" class="text-center">
-                                        <p>No WordPress sites found.</p>
-                                    </div>
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                                 </div>
                             </div>
                         </div>
