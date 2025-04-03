@@ -2651,7 +2651,10 @@ app.controller('listWebsites', function ($scope, $http) {
                 method: 'POST',
                 url: url,
                 data: data,
-                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
                 transformRequest: function(obj) {
                     var str = [];
                     for(var p in obj)
@@ -2725,7 +2728,10 @@ app.controller('listWebsites', function ($scope, $http) {
             method: 'POST',
             url: '/websites/UpdateWPSettings',
             data: data,
-            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
             transformRequest: function(obj) {
                 var str = [];
                 for(var p in obj)
@@ -6610,7 +6616,10 @@ app.controller('manageAliasController', function ($scope, $http, $timeout, $wind
                 method: 'POST',
                 url: url,
                 data: data,
-                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
                 transformRequest: function(obj) {
                     var str = [];
                     for(var p in obj)
@@ -6654,6 +6663,59 @@ app.controller('manageAliasController', function ($scope, $http, $timeout, $wind
         }
     };
 
+    $scope.updateSetting = function(wp, setting) {
+        var settingMap = {
+            'search-indexing': 'searchIndex',
+            'debugging': 'debugging',
+            'password-protection': 'passwordProtection',
+            'maintenance-mode': 'maintenanceMode'
+        };
+
+        var data = {
+            wpID: wp.id,
+            setting: setting,
+            value: wp[settingMap[setting]] ? 'enable' : 'disable'
+        };
+
+        $http({
+            method: 'POST',
+            url: '/websites/UpdateWPSettings',
+            data: data,
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            transformRequest: function(obj) {
+                var str = [];
+                for(var p in obj)
+                    str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]));
+                return str.join("&");
+            }
+        }).then(function(response) {
+            if (response.data.status === 1) {
+                new PNotify({
+                    title: 'Success',
+                    text: 'Setting updated successfully.',
+                    type: 'success'
+                });
+            } else {
+                wp[settingMap[setting]] = !wp[settingMap[setting]];  // Revert the change
+                new PNotify({
+                    title: 'Error',
+                    text: 'Failed to update setting.',
+                    type: 'error'
+                });
+            }
+        }).catch(function(error) {
+            wp[settingMap[setting]] = !wp[settingMap[setting]];  // Revert the change
+            new PNotify({
+                title: 'Error',
+                text: 'Connection failed while updating setting.',
+                type: 'error'
+            });
+        });
+    };
+
     $scope.visitSite = function(url) {
         window.open(url, '_blank');
     };
@@ -6684,7 +6746,10 @@ app.controller('manageAliasController', function ($scope, $http, $timeout, $wind
             method: 'POST',
             url: '/websites/UpdateWPSettings',
             data: data,
-            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
             transformRequest: function(obj) {
                 var str = [];
                 for(var p in obj)
