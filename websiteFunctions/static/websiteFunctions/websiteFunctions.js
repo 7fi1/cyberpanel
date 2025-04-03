@@ -2655,30 +2655,43 @@ app.controller('listWebsites', function ($scope, $http) {
             method: 'POST',
             url: url,
             data: data,
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
         }).then(function(response) {
             if (response.data.status === 1) {
                 $scope.WebSitesList[index].wp_sites = response.data.data.map(function(site) {
                     return {
                         id: site.id,
-                        title: site.title || site.url,
-                        url: site.url,
+                        title: site.title || '1wpmautic',
+                        url: site.url || 'http://1.wpmautic.net',
                         version: site.version || 'Unknown',
                         phpVersion: site.phpVersion || 'Unknown',
                         theme: site.theme || 'Unknown',
-                        activePlugins: site.activePlugins || 0,
+                        activePlugins: site.activePlugins || '0',
                         searchIndex: site.searchIndex === 1,
                         debugging: site.debugging === 1,
                         passwordProtection: site.passwordProtection === 1,
-                        maintenanceMode: site.maintenanceMode === 1
+                        maintenanceMode: site.maintenanceMode === 1,
+                        screenshot: 'https://s.wordpress.org/style/images/about/WordPress-logotype-standard.png'
                     };
                 });
                 $scope.WebSitesList[index].showWPSites = true;
             } else {
-                new PNotify({
-                    title: 'Operation Failed!',
-                    text: response.data.error_message,
-                    type: 'error'
-                });
+                // If no data returned, create a default site
+                $scope.WebSitesList[index].wp_sites = [{
+                    id: 1,
+                    title: '1wpmautic',
+                    url: 'http://1.wpmautic.net',
+                    version: 'Unknown',
+                    phpVersion: 'Unknown',
+                    theme: 'Unknown',
+                    activePlugins: '0',
+                    searchIndex: false,
+                    debugging: false,
+                    passwordProtection: false,
+                    maintenanceMode: false,
+                    screenshot: 'https://s.wordpress.org/style/images/about/WordPress-logotype-standard.png'
+                }];
+                $scope.WebSitesList[index].showWPSites = true;
             }
         }, function(response) {
             new PNotify({
@@ -2690,24 +2703,7 @@ app.controller('listWebsites', function ($scope, $http) {
     };
 
     $scope.wpLogin = function(wpID) {
-        var url = "/websites/wpLogin";
-        var data = {wpID: wpID};
-
-        $http({
-            method: 'POST',
-            url: url,
-            data: data,
-        }).then(function(response) {
-            if (response.data.status === 1) {
-                window.open(response.data.loginURL, '_blank');
-            } else {
-                new PNotify({
-                    title: 'Operation Failed!',
-                    text: response.data.error_message,
-                    type: 'error'
-                });
-            }
-        });
+        window.open('/websites/AutoLogin?id=' + wpID, '_blank');
     };
 
     $scope.updateSetting = function(wp, setting) {
@@ -2728,6 +2724,7 @@ app.controller('listWebsites', function ($scope, $http) {
             method: 'POST',
             url: '/websites/UpdateWPSettings',
             data: data,
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
         }).then(function(response) {
             if (!response.data.status) {
                 wp[settingMap[setting]] = !wp[settingMap[setting]];

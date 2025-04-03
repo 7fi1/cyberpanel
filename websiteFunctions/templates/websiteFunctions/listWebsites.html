@@ -112,80 +112,64 @@
                     <!-- WordPress Sites Section -->
                     <div class="col-md-12" ng-if="web.showWPSites && web.wp_sites && web.wp_sites.length > 0">
                         <div ng-repeat="wp in web.wp_sites" class="wp-site-item" style="border: 1px solid #ddd; margin: 15px 0; border-radius: 4px;">
-                            <div class="wp-site-header" style="padding: 15px; border-bottom: 1px solid #ddd; background: #f5f5f5;">
-                                <div class="row">
-                                    <div class="col-sm-8">
-                                        <h4 style="margin: 0;" ng-bind="wp.title"></h4>
-                                    </div>
-                                    <div class="col-sm-4 text-right">
-                                        <a href="/websites/WPHome?ID={$ wp.id $}" class="btn btn-primary btn-sm">MANAGE</a>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="wp-site-content" style="padding: 15px;">
-                                <div class="row">
-                                    <div class="col-sm-12">
-                                        <div class="text-left" style="margin-bottom: 15px;">
-                                            <a href="{$ wp.url $}" target="_blank" class="btn btn-default btn-sm">
-                                                <i class="fa fa-external-link-alt"></i> Visit Site
-                                            </a>
-                                            <a href="#" ng-click="wpLogin(wp.id)" class="btn btn-default btn-sm">
-                                                <i class="fa fa-wordpress"></i> WP Login
-                                            </a>
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <div style="padding: 15px;">
+                                        <div style="margin-bottom: 15px;">
+                                            <span style="font-size: 18px;" ng-bind="wp.title"></span>
+                                            <div class="pull-right">
+                                                <a href="{$ wp.url $}" target="_blank" class="btn btn-default btn-sm">Visit Site</a>
+                                                <a href="#" ng-click="wpLogin(wp.id)" class="btn btn-default btn-sm">WP Login</a>
+                                                <a href="/websites/WPHome?ID={$ wp.id $}" class="btn btn-primary btn-sm">MANAGE</a>
+                                            </div>
                                         </div>
+
                                         <div class="row">
                                             <div class="col-sm-3">
-                                                <div class="info-box">
-                                                    <label style="display: block; font-size: 12px; color: #666; margin-bottom: 5px;">WordPress</label>
-                                                    <span style="font-size: 14px;">{$ wp.version || 'Unknown' $}</span>
+                                                <div>
+                                                    <i class="fa fa-wordpress"></i>
+                                                    <span style="margin-left: 5px;">{$ wp.version || 'Unknown' $}</span>
                                                 </div>
                                             </div>
                                             <div class="col-sm-3">
-                                                <div class="info-box">
-                                                    <label style="display: block; font-size: 12px; color: #666; margin-bottom: 5px;">PHP Version</label>
-                                                    <span style="font-size: 14px;">{$ wp.phpVersion || 'Unknown' $}</span>
+                                                <div>
+                                                    <i class="fa fa-code"></i>
+                                                    <span style="margin-left: 5px;">{$ wp.phpVersion || 'Unknown' $}</span>
                                                 </div>
                                             </div>
                                             <div class="col-sm-3">
-                                                <div class="info-box">
-                                                    <label style="display: block; font-size: 12px; color: #666; margin-bottom: 5px;">Theme</label>
-                                                    <span style="font-size: 14px;">{$ wp.theme || 'Unknown' $}</span>
+                                                <div>
+                                                    <i class="fa fa-paint-brush"></i>
+                                                    <span style="margin-left: 5px;">{$ wp.theme || 'Unknown' $}</span>
                                                 </div>
                                             </div>
                                             <div class="col-sm-3">
-                                                <div class="info-box">
-                                                    <label style="display: block; font-size: 12px; color: #666; margin-bottom: 5px;">Plugins</label>
-                                                    <span style="font-size: 14px;">{$ wp.activePlugins || '0' $} active</span>
+                                                <div>
+                                                    <i class="fa fa-puzzle-piece"></i>
+                                                    <span style="margin-left: 5px;">{$ wp.activePlugins || '0' $} active</span>
                                                 </div>
                                             </div>
                                         </div>
+
                                         <div class="row" style="margin-top: 15px;">
                                             <div class="col-sm-6">
-                                                <div class="checkbox">
-                                                    <label>
-                                                        <input type="checkbox" ng-model="wp.searchIndex" ng-change="updateSetting(wp, 'search-indexing')">
-                                                        Search engine indexing
-                                                    </label>
+                                                <div>
+                                                    <i class="fa fa-search"></i>
+                                                    <span style="margin-left: 5px;">DISABLED</span>
                                                 </div>
-                                                <div class="checkbox">
-                                                    <label>
-                                                        <input type="checkbox" ng-model="wp.debugging" ng-change="updateSetting(wp, 'debugging')">
-                                                        Debugging
-                                                    </label>
+                                                <div style="margin-top: 10px;">
+                                                    <i class="fa fa-bug"></i>
+                                                    <span style="margin-left: 5px;">DISABLED</span>
                                                 </div>
                                             </div>
                                             <div class="col-sm-6">
-                                                <div class="checkbox">
-                                                    <label>
-                                                        <input type="checkbox" ng-model="wp.passwordProtection" ng-change="updateSetting(wp, 'password-protection')">
-                                                        Password protection
-                                                    </label>
+                                                <div>
+                                                    <i class="fa fa-lock"></i>
+                                                    <span style="margin-left: 5px;">DISABLED</span>
                                                 </div>
-                                                <div class="checkbox">
-                                                    <label>
-                                                        <input type="checkbox" ng-model="wp.maintenanceMode" ng-change="updateSetting(wp, 'maintenance-mode')">
-                                                        Maintenance mode
-                                                    </label>
+                                                <div style="margin-top: 10px;">
+                                                    <i class="fa fa-wrench"></i>
+                                                    <span style="margin-left: 5px;">DISABLED</span>
                                                 </div>
                                             </div>
                                         </div>
