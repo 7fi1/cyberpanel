@@ -2450,15 +2450,23 @@ Require valid-user"""
             except:
                 pass
 
+            # Calculate disk usage
+            DiskUsage, DiskUsagePercentage, bwInMB, bwUsage = virtualHostUtilities.FindStats(website)
+            diskUsed = "%sMB" % str(DiskUsage)
+
+            # Convert numeric state to text
+            state = "Active" if website.state == 1 else "Suspended"
+
             json_data.append({
                 'domain': website.domain,
                 'adminEmail': website.adminEmail,
                 'phpVersion': website.phpSelection,
-                'state': website.state,
+                'state': state,
                 'ipAddress': ipAddress,
                 'package': website.package.packageName,
                 'admin': website.admin.userName,
-                'wp_sites': wp_sites
+                'wp_sites': wp_sites,
+                'diskUsed': diskUsed
             })
         return json.dumps(json_data)
 
