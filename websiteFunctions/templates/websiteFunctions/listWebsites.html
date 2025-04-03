@@ -111,66 +111,46 @@
 
                     <!-- WordPress Sites Section -->
                     <div class="col-md-12" ng-if="web.showWPSites && web.wp_sites && web.wp_sites.length > 0">
-                        <div class="wp-sites-list" style="margin: 15px;">
-                            <div ng-repeat="wp in web.wp_sites" class="panel" style="box-shadow: 0px 0px 1px 0px #888888; margin-bottom: 15px; background: white;">
+                        <div class="wp-sites-list">
+                            <div ng-repeat="wp in web.wp_sites" class="panel" style="margin: 15px; padding: 20px; background: white; border: 1px solid #ddd; border-radius: 4px;">
                                 <div class="row">
-                                    <div class="col-md-12" style="padding: 0;">
-                                        <div style="padding: 10px 15px; border-bottom: 1px solid #eee;">
-                                            <div class="pull-left">
-                                                <h3 style="margin: 0; font-size: 24px; display: inline-block;" ng-bind="wp.title"></h3>
-                                                <a href="{$ wp.url $}" target="_blank" class="btn btn-default btn-sm" style="margin-left: 10px;">Visit Site</a>
-                                                <a href="#" ng-click="wpLogin(wp.id)" class="btn btn-default btn-sm">WP Login</a>
-                                            </div>
-                                            <div class="pull-right">
-                                                <a href="/websites/WPHome?ID={$ wp.id $}" class="btn btn-primary btn-sm">MANAGE</a>
-                                            </div>
+                                    <div class="col-md-12">
+                                        <div style="margin-bottom: 20px;">
+                                            <h3 style="display: inline-block; margin: 0; font-weight: normal;" ng-bind="wp.title"></h3>
+                                            <a href="{$ wp.url $}" class="btn btn-default btn-sm" style="margin-left: 10px;">Visit Site</a>
+                                            <a href="#" ng-click="wpLogin(wp.id)" class="btn btn-default btn-sm">WP Login</a>
+                                            <a href="/websites/WPHome?ID={$ wp.id $}" class="btn btn-primary btn-sm pull-right">MANAGE</a>
                                         </div>
                                     </div>
                                 </div>
 
-                                <div class="row" style="margin: 0;">
-                                    <div class="col-md-12" style="padding: 15px;">
-                                        <div class="row">
-                                            <div class="col-md-3">
-                                                <div>
-                                                    <i class="fa fa-wordpress" style="color: #666;"></i>
-                                                    <span style="margin-left: 5px;">{$ wp.version || 'UNKNOWN' $}</span>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-3">
-                                                <div>
-                                                    <i class="fa fa-code" style="color: #666;"></i>
-                                                    <span style="margin-left: 5px;">{$ wp.phpVersion || 'UNKNOWN' $}</span>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-3">
-                                                <div>
-                                                    <i class="fa fa-paint-brush" style="color: #666;"></i>
-                                                    <span style="margin-left: 5px;">{$ wp.theme || 'UNKNOWN' $}</span>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-3">
-                                                <div>
-                                                    <i class="fa fa-puzzle-piece" style="color: #666;"></i>
-                                                    <span style="margin-left: 5px;">{$ wp.activePlugins || '0' $} ACTIVE</span>
-                                                </div>
-                                            </div>
-                                        </div>
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <i class="fa fa-wordpress" style="color: #666;"></i>
+                                        <span style="margin-left: 5px; color: #666;">Unknown</span>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <i class="fa fa-code" style="color: #666;"></i>
+                                        <span style="margin-left: 5px; color: #666;">Unknown</span>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <i class="fa fa-paint-brush" style="color: #666;"></i>
+                                        <span style="margin-left: 5px; color: #666;">UNKNOWN</span>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <i class="fa fa-puzzle-piece" style="color: #666;"></i>
+                                        <span style="margin-left: 5px; color: #666;">0 ACTIVE</span>
+                                    </div>
+                                </div>
 
-                                        <div class="row" style="margin-top: 15px;">
-                                            <div class="col-md-6">
-                                                <div>
-                                                    <i class="fa fa-search" style="color: #666;"></i>
-                                                    <span style="margin-left: 5px;">DISABLED</span>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <div>
-                                                    <i class="fa fa-lock" style="color: #666;"></i>
-                                                    <span style="margin-left: 5px;">DISABLED</span>
-                                                </div>
-                                            </div>
-                                        </div>
+                                <div class="row" style="margin-top: 15px;">
+                                    <div class="col-md-6">
+                                        <i class="fa fa-search" style="color: #666;"></i>
+                                        <span style="margin-left: 5px; color: #666;">DISABLED</span>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <i class="fa fa-lock" style="color: #666;"></i>
+                                        <span style="margin-left: 5px; color: #666;">DISABLED</span>
                                     </div>
                                 </div>
                             </div>
