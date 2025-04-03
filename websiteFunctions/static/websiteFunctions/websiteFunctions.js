@@ -2455,7 +2455,6 @@ app.controller('createWebsite', function ($scope, $http, $timeout, $window) {
             mailDomain = 0
         }
 
-
         url = "/websites/submitWebsiteCreation";
 
         var package = $scope.packageForWebsite;
@@ -2635,6 +2634,7 @@ $("#listFail").hide();
 
 
 app.controller('listWebsites', function ($scope, $http, $window) {
+    console.log('Initializing listWebsites controller');
     $scope.web = {};
     $scope.WebSitesList = [];
     
@@ -2643,6 +2643,7 @@ app.controller('listWebsites', function ($scope, $http, $window) {
 
     // Initial fetch of websites
     $scope.getFurtherWebsitesFromDB = function () {
+        console.log('Fetching websites from DB');
         var config = {
             headers: {
                 'X-CSRFToken': getCookie('csrftoken')
@@ -2655,17 +2656,27 @@ app.controller('listWebsites', function ($scope, $http, $window) {
         };
 
         var dataurl = "/websites/fetchWebsitesList";
+        console.log('Making request to:', dataurl);
 
         $http.post(dataurl, data, config).then(function(response) {
+            console.log('Received response:', response);
             if (response.data.listWebSiteStatus === 1) {
-                $scope.WebSitesList = JSON.parse(response.data.data);
-                $scope.pagination = response.data.pagination;
-                $("#listFail").hide();
+                try {
+                    $scope.WebSitesList = JSON.parse(response.data.data);
+                    console.log('Parsed WebSitesList:', $scope.WebSitesList);
+                    $scope.pagination = response.data.pagination;
+                    $("#listFail").hide();
+                } catch (e) {
+                    console.error('Error parsing response data:', e);
+                    $("#listFail").fadeIn();
+                    $scope.errorMessage = 'Error parsing server response';
+                }
             } else {
                 $("#listFail").fadeIn();
                 $scope.errorMessage = response.data.error_message;
             }
         }).catch(function(error) {
+            console.error('Error fetching websites:', error);
             $("#listFail").fadeIn();
             $scope.errorMessage = error.message || 'An error occurred while fetching websites';
         });
@@ -2675,9 +2686,14 @@ app.controller('listWebsites', function ($scope, $http, $window) {
     $scope.getFurtherWebsitesFromDB();
 
     $scope.showWPSites = function(index) {
+        console.log('showWPSites called with index:', index);
+        console.log('Current WebSitesList:', $scope.WebSitesList);
+        
         $scope.selectedWebsite = $scope.WebSitesList[index];
+        console.log('Selected website:', $scope.selectedWebsite);
         
         if (!$scope.selectedWebsite.wp_sites) {
+            console.log('Fetching WP details for:', $scope.selectedWebsite.domain);
             var url = '/websites/fetchWPDetails';
             var data = {
                 domain: $scope.selectedWebsite.domain,
@@ -6649,9 +6665,14 @@ app.controller('manageAliasController', function ($scope, $http, $timeout, $wind
     }
 
     $scope.showWPSites = function(index) {
+        console.log('showWPSites called with index:', index);
+        console.log('Current WebSitesList:', $scope.WebSitesList);
+        
         $scope.selectedWebsite = $scope.WebSitesList[index];
+        console.log('Selected website:', $scope.selectedWebsite);
         
         if (!$scope.selectedWebsite.wp_sites) {
+            console.log('Fetching WP details for:', $scope.selectedWebsite.domain);
             var url = '/websites/fetchWPDetails';
             var data = {
                 domain: $scope.selectedWebsite.domain,
