@@ -2657,7 +2657,21 @@ app.controller('listWebsites', function ($scope, $http) {
             data: data,
         }).then(function(response) {
             if (response.data.status === 1) {
-                $scope.WebSitesList[index].wp_sites = response.data.data;
+                $scope.WebSitesList[index].wp_sites = response.data.data.map(function(site) {
+                    return {
+                        id: site.id,
+                        title: site.title || site.url,
+                        url: site.url,
+                        version: site.version || 'Unknown',
+                        phpVersion: site.phpVersion || 'Unknown',
+                        theme: site.theme || 'Unknown',
+                        activePlugins: site.activePlugins || 0,
+                        searchIndex: site.searchIndex === 1,
+                        debugging: site.debugging === 1,
+                        passwordProtection: site.passwordProtection === 1,
+                        maintenanceMode: site.maintenanceMode === 1
+                    };
+                });
                 $scope.WebSitesList[index].showWPSites = true;
             } else {
                 new PNotify({
@@ -2693,6 +2707,49 @@ app.controller('listWebsites', function ($scope, $http) {
                     type: 'error'
                 });
             }
+        });
+    };
+
+    $scope.updateSetting = function(wp, setting) {
+        var settingMap = {
+            'search-indexing': 'searchIndex',
+            'debugging': 'debugging',
+            'password-protection': 'passwordProtection',
+            'maintenance-mode': 'maintenanceMode'
+        };
+
+        var data = {
+            siteId: wp.id,
+            setting: setting,
+            value: wp[settingMap[setting]] ? 1 : 0
+        };
+
+        $http({
+            method: 'POST',
+            url: '/websites/UpdateWPSettings',
+            data: data,
+        }).then(function(response) {
+            if (!response.data.status) {
+                wp[settingMap[setting]] = !wp[settingMap[setting]];
+                new PNotify({
+                    title: 'Operation Failed!',
+                    text: response.data.error_message || 'Unknown error',
+                    type: 'error'
+                });
+            } else {
+                new PNotify({
+                    title: 'Success!',
+                    text: 'Setting updated successfully.',
+                    type: 'success'
+                });
+            }
+        }, function(response) {
+            wp[settingMap[setting]] = !wp[settingMap[setting]];
+            new PNotify({
+                title: 'Operation Failed!',
+                text: 'Could not connect to server, please try again.',
+                type: 'error'
+            });
         });
     };
 
