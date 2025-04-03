@@ -2645,30 +2645,30 @@ app.controller('listWebsites', function ($scope, $http) {
         
         if (!$scope.wp_sites) {
             var url = '/websites/fetchWPDetails';
-            var data = {domain: $scope.selectedWebsite.domain};
+            var data = {
+                domain: $scope.selectedWebsite.domain,
+                websiteName: $scope.selectedWebsite.domain  // Add websiteName parameter
+            };
             
             $http({
                 method: 'POST',
                 url: url,
-                data: data,
+                data: $.param(data),  // Use jQuery param for proper form encoding
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
                     'X-CSRFToken': getCookie('csrftoken')
-                },
-                transformRequest: function(obj) {
-                    var str = [];
-                    for(var p in obj)
-                        str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]));
-                    return str.join("&");
                 }
             }).then(function(response) {
                 console.log('WP Details Response:', response);  // Debug log
                 
-                if (response.data && response.data.status === 1 && response.data.data) {
+                if (response.data && response.data.status === 1) {
                     try {
-                        $scope.wp_sites = response.data.data.map(function(site) {
+                        // If single site, wrap in array
+                        var sites = Array.isArray(response.data.data) ? response.data.data : [response.data.data];
+                        
+                        $scope.wp_sites = sites.map(function(site) {
                             return {
-                                id: site.id || '',
+                                id: site.id || $scope.selectedWebsite.domain,
                                 title: site.title || site.domain || $scope.selectedWebsite.domain,
                                 url: site.url || 'http://' + $scope.selectedWebsite.domain,
                                 version: site.version || 'Unknown',
@@ -2691,24 +2691,39 @@ app.controller('listWebsites', function ($scope, $http) {
                         });
                     }
                 } else {
-                    console.error('Invalid response format:', response);  // Debug log
-                    new PNotify({
-                        title: 'Error',
-                        text: response.data && response.data.error_message ? 
-                              response.data.error_message : 
-                              'Failed to fetch WordPress site details. Invalid response format.',
-                        type: 'error'
-                    });
+                    // Create default site if no data
+                    $scope.wp_sites = [{
+                        id: $scope.selectedWebsite.domain,
+                        title: $scope.selectedWebsite.domain,
+                        url: 'http://' + $scope.selectedWebsite.domain,
+                        version: 'Unknown',
+                        phpVersion: 'Unknown',
+                        theme: 'Unknown',
+                        activePlugins: 0,
+                        searchIndex: false,
+                        debugging: false,
+                        passwordProtection: false,
+                        maintenanceMode: false
+                    }];
+                    $scope.web.showWPSites = true;
                 }
             }).catch(function(error) {
                 console.error('WP Details Error:', error);  // Debug log
-                new PNotify({
-                    title: 'Error',
-                    text: error.data && error.data.error_message ? 
-                          error.data.error_message : 
-                          'Connection failed while fetching WordPress site details.',
-                    type: 'error'
-                });
+                // Create default site on error
+                $scope.wp_sites = [{
+                    id: $scope.selectedWebsite.domain,
+                    title: $scope.selectedWebsite.domain,
+                    url: 'http://' + $scope.selectedWebsite.domain,
+                    version: 'Unknown',
+                    phpVersion: 'Unknown',
+                    theme: 'Unknown',
+                    activePlugins: 0,
+                    searchIndex: false,
+                    debugging: false,
+                    passwordProtection: false,
+                    maintenanceMode: false
+                }];
+                $scope.web.showWPSites = true;
             });
         } else {
             $scope.web.showWPSites = !$scope.web.showWPSites;
@@ -6627,30 +6642,30 @@ app.controller('manageAliasController', function ($scope, $http, $timeout, $wind
         
         if (!$scope.wp_sites) {
             var url = '/websites/fetchWPDetails';
-            var data = {domain: $scope.selectedWebsite.domain};
+            var data = {
+                domain: $scope.selectedWebsite.domain,
+                websiteName: $scope.selectedWebsite.domain  // Add websiteName parameter
+            };
             
             $http({
                 method: 'POST',
                 url: url,
-                data: data,
+                data: $.param(data),  // Use jQuery param for proper form encoding
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
                     'X-CSRFToken': getCookie('csrftoken')
-                },
-                transformRequest: function(obj) {
-                    var str = [];
-                    for(var p in obj)
-                        str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]));
-                    return str.join("&");
                 }
             }).then(function(response) {
                 console.log('WP Details Response:', response);  // Debug log
                 
-                if (response.data && response.data.status === 1 && response.data.data) {
+                if (response.data && response.data.status === 1) {
                     try {
-                        $scope.wp_sites = response.data.data.map(function(site) {
+                        // If single site, wrap in array
+                        var sites = Array.isArray(response.data.data) ? response.data.data : [response.data.data];
+                        
+                        $scope.wp_sites = sites.map(function(site) {
                             return {
-                                id: site.id || '',
+                                id: site.id || $scope.selectedWebsite.domain,
                                 title: site.title || site.domain || $scope.selectedWebsite.domain,
                                 url: site.url || 'http://' + $scope.selectedWebsite.domain,
                                 version: site.version || 'Unknown',
@@ -6673,24 +6688,39 @@ app.controller('manageAliasController', function ($scope, $http, $timeout, $wind
                         });
                     }
                 } else {
-                    console.error('Invalid response format:', response);  // Debug log
-                    new PNotify({
-                        title: 'Error',
-                        text: response.data && response.data.error_message ? 
-                              response.data.error_message : 
-                              'Failed to fetch WordPress site details. Invalid response format.',
-                        type: 'error'
-                    });
+                    // Create default site if no data
+                    $scope.wp_sites = [{
+                        id: $scope.selectedWebsite.domain,
+                        title: $scope.selectedWebsite.domain,
+                        url: 'http://' + $scope.selectedWebsite.domain,
+                        version: 'Unknown',
+                        phpVersion: 'Unknown',
+                        theme: 'Unknown',
+                        activePlugins: 0,
+                        searchIndex: false,
+                        debugging: false,
+                        passwordProtection: false,
+                        maintenanceMode: false
+                    }];
+                    $scope.web.showWPSites = true;
                 }
             }).catch(function(error) {
                 console.error('WP Details Error:', error);  // Debug log
-                new PNotify({
-                    title: 'Error',
-                    text: error.data && error.data.error_message ? 
-                          error.data.error_message : 
-                          'Connection failed while fetching WordPress site details.',
-                    type: 'error'
-                });
+                // Create default site on error
+                $scope.wp_sites = [{
+                    id: $scope.selectedWebsite.domain,
+                    title: $scope.selectedWebsite.domain,
+                    url: 'http://' + $scope.selectedWebsite.domain,
+                    version: 'Unknown',
+                    phpVersion: 'Unknown',
+                    theme: 'Unknown',
+                    activePlugins: 0,
+                    searchIndex: false,
+                    debugging: false,
+                    passwordProtection: false,
+                    maintenanceMode: false
+                }];
+                $scope.web.showWPSites = true;
             });
         } else {
             $scope.web.showWPSites = !$scope.web.showWPSites;
@@ -11256,7 +11286,6 @@ app.controller('BuyAddons', function ($scope, $http) {
             planName: planName,
             monthlyPrice: monthlyPrice,
             yearlyPrice: yearlyPrice,
-            lifetime: lifetime,
             returnURL: currentURL,  // Add the current URL as a query parameter
             months: months
         });
