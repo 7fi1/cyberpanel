@@ -384,14 +384,6 @@ app.controller('listWebsites', function ($scope, $http, $window) {
 
     };
 
-    $scope.getFullUrl = function(url) {
-        if (!url) return '';
-        if (url.startsWith('http://') || url.startsWith('https://')) {
-            return url;
-        }
-        return 'https://' + url;
-    };
-
     $scope.showWPSites = function(domain) {
         var site = $scope.WebSitesList.find(function(site) {
             return site.domain === domain;
