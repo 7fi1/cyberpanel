@@ -2692,11 +2692,10 @@ app.controller('listWebsites', function ($scope, $http, $window) {
         $scope.selectedWebsite = $scope.WebSitesList[index];
         console.log('Selected website:', $scope.selectedWebsite);
         
-        // Always fetch fresh data
-        var url = '/websites/FetchWPdata';
+        // Call the new GetWPSitesByDomain endpoint
+        var url = '/websites/GetWPSitesByDomain';
         var data = {
-            domain: $scope.selectedWebsite.domain,
-            websiteName: $scope.selectedWebsite.domain
+            domain: $scope.selectedWebsite.domain
         };
         
         $http({
@@ -2708,48 +2707,48 @@ app.controller('listWebsites', function ($scope, $http, $window) {
                 'X-CSRFToken': getCookie('csrftoken')
             }
         }).then(function(response) {
-            console.log('WP Details Response:', response);
-            
-            // Check if response is HTML (login page)
-            if (typeof response.data === 'string' && response.data.includes('<!DOCTYPE html>')) {
-                console.log('Received HTML response, redirecting to login');
-                window.location.href = '/login';
-                return;
-            }
+            console.log('WP Sites Response:', response);
             
             if (response.data && response.data.status === 1) {
                 try {
-                    // If single site, wrap in array
-                    var sites = Array.isArray(response.data.data) ? response.data.data : [response.data.data];
+                    // Display the data in an alert
+                    var wpSites = response.data.data;
+                    var alertMessage = 'WordPress Sites for ' + $scope.selectedWebsite.domain + ':\n\n';
                     
-                    $scope.selectedWebsite.wp_sites = sites.map(function(site) {
-                        return {
-                            id: site.id || $scope.selectedWebsite.domain,
-                            title: site.title || site.domain || $scope.selectedWebsite.domain,
-                            url: site.url || 'http://' + $scope.selectedWebsite.domain,
-                            version: site.version || 'Unknown',
-                            phpVersion: site.php_version || 'Unknown',
-                            theme: site.theme || 'Unknown',
-                            activePlugins: site.active_plugins || 0,
-                            searchIndex: site.search_index === 'enabled',
-                            debugging: site.debugging === 'enabled',
-                            passwordProtection: site.password_protection === 'enabled',
-                            maintenanceMode: site.maintenance_mode === 'enabled'
-                        };
+                    wpSites.forEach(function(site, index) {
+                        alertMessage += 'Site ' + (index + 1) + ':\n';
+                        alertMessage += 'Title: ' + site.title + '\n';
+                        alertMessage += 'URL: ' + site.url + '\n';
+                        alertMessage += 'Version: ' + site.version + '\n';
+                        alertMessage += 'PHP Version: ' + site.phpVersion + '\n';
+                        alertMessage += 'Active Plugins: ' + site.activePlugins + '\n';
+                        alertMessage += 'Theme: ' + site.theme + '\n';
+                        alertMessage += 'Debugging: ' + (site.debugging ? 'Enabled' : 'Disabled') + '\n';
+                        alertMessage += 'Search Index: ' + (site.searchIndex ? 'Enabled' : 'Disabled') + '\n';
+                        alertMessage += 'Maintenance Mode: ' + (site.maintenanceMode ? 'Enabled' : 'Disabled') + '\n';
+                        alertMessage += 'Password Protection: ' + (site.passwordProtection ? 'Enabled' : 'Disabled') + '\n\n';
                     });
+                    
+                    alert(alertMessage);
+                    
+                    // Update the UI with the data
+                    $scope.selectedWebsite.wp_sites = wpSites;
                     $scope.selectedWebsite.showWPSites = true;
                 } catch (e) {
                     console.error('Error processing WordPress data:', e);
+                    alert('Error processing WordPress data: ' + e.message);
                     $scope.selectedWebsite.showWPSites = false;
                     $scope.selectedWebsite.wp_sites = [];
                 }
             } else {
                 console.error('Error fetching WordPress sites:', response.data.error_message);
+                alert('Error fetching WordPress sites: ' + response.data.error_message);
                 $scope.selectedWebsite.showWPSites = false;
                 $scope.selectedWebsite.wp_sites = [];
             }
         }, function(error) {
             console.error('Error fetching WordPress sites:', error);
+            alert('Error fetching WordPress sites: ' + error.message);
             $scope.selectedWebsite.showWPSites = false;
             $scope.selectedWebsite.wp_sites = [];
         });
@@ -8247,11 +8246,10 @@ app.controller('listWebsites', function ($scope, $http, $window) {
         $scope.selectedWebsite = $scope.WebSitesList[index];
         console.log('Selected website:', $scope.selectedWebsite);
         
-        // Always fetch fresh data
-        var url = '/websites/FetchWPdata';
+        // Call the new GetWPSitesByDomain endpoint
+        var url = '/websites/GetWPSitesByDomain';
         var data = {
-            domain: $scope.selectedWebsite.domain,
-            websiteName: $scope.selectedWebsite.domain
+            domain: $scope.selectedWebsite.domain
         };
         
         $http({
@@ -8263,48 +8261,48 @@ app.controller('listWebsites', function ($scope, $http, $window) {
                 'X-CSRFToken': getCookie('csrftoken')
             }
         }).then(function(response) {
-            console.log('WP Details Response:', response);
-            
-            // Check if response is HTML (login page)
-            if (typeof response.data === 'string' && response.data.includes('<!DOCTYPE html>')) {
-                console.log('Received HTML response, redirecting to login');
-                window.location.href = '/login';
-                return;
-            }
+            console.log('WP Sites Response:', response);
             
             if (response.data && response.data.status === 1) {
                 try {
-                    // If single site, wrap in array
-                    var sites = Array.isArray(response.data.data) ? response.data.data : [response.data.data];
+                    // Display the data in an alert
+                    var wpSites = response.data.data;
+                    var alertMessage = 'WordPress Sites for ' + $scope.selectedWebsite.domain + ':\n\n';
                     
-                    $scope.selectedWebsite.wp_sites = sites.map(function(site) {
-                        return {
-                            id: site.id || $scope.selectedWebsite.domain,
-                            title: site.title || site.domain || $scope.selectedWebsite.domain,
-                            url: site.url || 'http://' + $scope.selectedWebsite.domain,
-                            version: site.version || 'Unknown',
-                            phpVersion: site.php_version || 'Unknown',
-                            theme: site.theme || 'Unknown',
-                            activePlugins: site.active_plugins || 0,
-                            searchIndex: site.search_index === 'enabled',
-                            debugging: site.debugging === 'enabled',
-                            passwordProtection: site.password_protection === 'enabled',
-                            maintenanceMode: site.maintenance_mode === 'enabled'
-                        };
+                    wpSites.forEach(function(site, index) {
+                        alertMessage += 'Site ' + (index + 1) + ':\n';
+                        alertMessage += 'Title: ' + site.title + '\n';
+                        alertMessage += 'URL: ' + site.url + '\n';
+                        alertMessage += 'Version: ' + site.version + '\n';
+                        alertMessage += 'PHP Version: ' + site.phpVersion + '\n';
+                        alertMessage += 'Active Plugins: ' + site.activePlugins + '\n';
+                        alertMessage += 'Theme: ' + site.theme + '\n';
+                        alertMessage += 'Debugging: ' + (site.debugging ? 'Enabled' : 'Disabled') + '\n';
+                        alertMessage += 'Search Index: ' + (site.searchIndex ? 'Enabled' : 'Disabled') + '\n';
+                        alertMessage += 'Maintenance Mode: ' + (site.maintenanceMode ? 'Enabled' : 'Disabled') + '\n';
+                        alertMessage += 'Password Protection: ' + (site.passwordProtection ? 'Enabled' : 'Disabled') + '\n\n';
                     });
+                    
+                    alert(alertMessage);
+                    
+                    // Update the UI with the data
+                    $scope.selectedWebsite.wp_sites = wpSites;
                     $scope.selectedWebsite.showWPSites = true;
                 } catch (e) {
                     console.error('Error processing WordPress data:', e);
+                    alert('Error processing WordPress data: ' + e.message);
                     $scope.selectedWebsite.showWPSites = false;
                     $scope.selectedWebsite.wp_sites = [];
                 }
             } else {
                 console.error('Error fetching WordPress sites:', response.data.error_message);
+                alert('Error fetching WordPress sites: ' + response.data.error_message);
                 $scope.selectedWebsite.showWPSites = false;
                 $scope.selectedWebsite.wp_sites = [];
             }
         }, function(error) {
             console.error('Error fetching WordPress sites:', error);
+            alert('Error fetching WordPress sites: ' + error.message);
             $scope.selectedWebsite.showWPSites = false;
             $scope.selectedWebsite.wp_sites = [];
         });
@@ -12184,11 +12182,10 @@ app.controller('manageAliasController', function ($scope, $http, $timeout, $wind
         $scope.selectedWebsite = $scope.WebSitesList[index];
         console.log('Selected website:', $scope.selectedWebsite);
         
-        // Always fetch fresh data
-        var url = '/websites/FetchWPdata';
+        // Call the new GetWPSitesByDomain endpoint
+        var url = '/websites/GetWPSitesByDomain';
         var data = {
-            domain: $scope.selectedWebsite.domain,
-            websiteName: $scope.selectedWebsite.domain
+            domain: $scope.selectedWebsite.domain
         };
         
         $http({
@@ -12200,48 +12197,48 @@ app.controller('manageAliasController', function ($scope, $http, $timeout, $wind
                 'X-CSRFToken': getCookie('csrftoken')
             }
         }).then(function(response) {
-            console.log('WP Details Response:', response);
-            
-            // Check if response is HTML (login page)
-            if (typeof response.data === 'string' && response.data.includes('<!DOCTYPE html>')) {
-                console.log('Received HTML response, redirecting to login');
-                window.location.href = '/login';
-                return;
-            }
+            console.log('WP Sites Response:', response);
             
             if (response.data && response.data.status === 1) {
                 try {
-                    // If single site, wrap in array
-                    var sites = Array.isArray(response.data.data) ? response.data.data : [response.data.data];
+                    // Display the data in an alert
+                    var wpSites = response.data.data;
+                    var alertMessage = 'WordPress Sites for ' + $scope.selectedWebsite.domain + ':\n\n';
                     
-                    $scope.selectedWebsite.wp_sites = sites.map(function(site) {
-                        return {
-                            id: site.id || $scope.selectedWebsite.domain,
-                            title: site.title || site.domain || $scope.selectedWebsite.domain,
-                            url: site.url || 'http://' + $scope.selectedWebsite.domain,
-                            version: site.version || 'Unknown',
-                            phpVersion: site.php_version || 'Unknown',
-                            theme: site.theme || 'Unknown',
-                            activePlugins: site.active_plugins || 0,
-                            searchIndex: site.search_index === 'enabled',
-                            debugging: site.debugging === 'enabled',
-                            passwordProtection: site.password_protection === 'enabled',
-                            maintenanceMode: site.maintenance_mode === 'enabled'
-                        };
+                    wpSites.forEach(function(site, index) {
+                        alertMessage += 'Site ' + (index + 1) + ':\n';
+                        alertMessage += 'Title: ' + site.title + '\n';
+                        alertMessage += 'URL: ' + site.url + '\n';
+                        alertMessage += 'Version: ' + site.version + '\n';
+                        alertMessage += 'PHP Version: ' + site.phpVersion + '\n';
+                        alertMessage += 'Active Plugins: ' + site.activePlugins + '\n';
+                        alertMessage += 'Theme: ' + site.theme + '\n';
+                        alertMessage += 'Debugging: ' + (site.debugging ? 'Enabled' : 'Disabled') + '\n';
+                        alertMessage += 'Search Index: ' + (site.searchIndex ? 'Enabled' : 'Disabled') + '\n';
+                        alertMessage += 'Maintenance Mode: ' + (site.maintenanceMode ? 'Enabled' : 'Disabled') + '\n';
+                        alertMessage += 'Password Protection: ' + (site.passwordProtection ? 'Enabled' : 'Disabled') + '\n\n';
                     });
+                    
+                    alert(alertMessage);
+                    
+                    // Update the UI with the data
+                    $scope.selectedWebsite.wp_sites = wpSites;
                     $scope.selectedWebsite.showWPSites = true;
                 } catch (e) {
                     console.error('Error processing WordPress data:', e);
+                    alert('Error processing WordPress data: ' + e.message);
                     $scope.selectedWebsite.showWPSites = false;
                     $scope.selectedWebsite.wp_sites = [];
                 }
             } else {
                 console.error('Error fetching WordPress sites:', response.data.error_message);
+                alert('Error fetching WordPress sites: ' + response.data.error_message);
                 $scope.selectedWebsite.showWPSites = false;
                 $scope.selectedWebsite.wp_sites = [];
             }
         }, function(error) {
             console.error('Error fetching WordPress sites:', error);
+            alert('Error fetching WordPress sites: ' + error.message);
             $scope.selectedWebsite.showWPSites = false;
             $scope.selectedWebsite.wp_sites = [];
         });

@@ -111,44 +111,41 @@
 
                     <!-- WordPress Sites Section -->
                     <div class="col-md-12" ng-if="web.showWPSites && web.wp_sites && web.wp_sites.length > 0">
-                        <div ng-repeat="wp in web.wp_sites" style="margin: 15px 0; padding: 20px; background: white; border: 1px solid #ddd; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                        <div ng-repeat="wp in web.wp_sites" style="margin: 15px 0; padding: 20px; background: white; border: 1px solid #ddd; border-radius: 4px;">
                             <div class="row">
                                 <div class="col-md-6">
-                                    <h3 style="margin-top: 0; font-size: 18px; color: #333;" ng-bind="wp.title"></h3>
+                                    <span style="font-size: 16px;" ng-bind="wp.title"></span>
                                 </div>
                                 <div class="col-md-6 text-right">
-                                    <button class="btn btn-default" style="margin-right: 5px;" ng-click="visitSite(wp.url)">
-                                        <i class="fa fa-external-link"></i> Visit Site
-                                    </button>
-                                    <button class="btn btn-info" style="margin-right: 5px;" ng-click="wpLogin(wp.id)">
-                                        <i class="fa fa-wordpress"></i> WP Login
-                                    </button>
+                                    <button class="btn btn-default btn-sm" style="margin-right: 5px;" ng-click="visitSite(wp.url)">Visit Site</button>
+                                    <button class="btn btn-default btn-sm" style="margin-right: 5px;" ng-click="wpLogin(wp.id)">WP Login</button>
+                                    <button class="btn btn-primary btn-sm" ng-click="manageWP(wp.id)">MANAGE</button>
                                 </div>
                             </div>
 
-                            <div class="row" style="margin-top: 20px;">
+                            <div class="row" style="margin-top: 30px;">
                                 <div class="col-md-3">
-                                    <div style="border-top: 1px solid #eee; padding-top: 15px;">
+                                    <div style="border-top: 1px solid #ddd; padding-top: 15px;">
                                         <div style="color: #666; font-size: 12px; margin-bottom: 5px;">WordPress</div>
-                                        <div style="font-size: 16px; color: #333;" ng-bind="wp.version"></div>
+                                        <div ng-bind="wp.version || 'Unknown'"></div>
                                     </div>
                                 </div>
                                 <div class="col-md-3">
-                                    <div style="border-top: 1px solid #eee; padding-top: 15px;">
+                                    <div style="border-top: 1px solid #ddd; padding-top: 15px;">
                                         <div style="color: #666; font-size: 12px; margin-bottom: 5px;">PHP Version</div>
-                                        <div style="font-size: 16px; color: #333;">PHP {$ wp.phpVersion $}</div>
+                                        <div ng-bind="wp.phpVersion || 'Unknown'"></div>
                                     </div>
                                 </div>
                                 <div class="col-md-3">
-                                    <div style="border-top: 1px solid #eee; padding-top: 15px;">
+                                    <div style="border-top: 1px solid #ddd; padding-top: 15px;">
                                         <div style="color: #666; font-size: 12px; margin-bottom: 5px;">Theme</div>
-                                        <div style="font-size: 16px; color: #333;" ng-bind="wp.theme"></div>
+                                        <div ng-bind="wp.theme || 'Unknown'"></div>
                                     </div>
                                 </div>
                                 <div class="col-md-3">
-                                    <div style="border-top: 1px solid #eee; padding-top: 15px;">
+                                    <div style="border-top: 1px solid #ddd; padding-top: 15px;">
                                         <div style="color: #666; font-size: 12px; margin-bottom: 5px;">Plugins</div>
-                                        <div style="font-size: 16px; color: #333;">{$ wp.activePlugins $} active</div>
+                                        <div>{$ wp.activePlugins || '0' $} active</div>
                                     </div>
                                 </div>
                             </div>
@@ -156,21 +153,21 @@
                             <div class="row" style="margin-top: 20px;">
                                 <div class="col-md-6">
                                     <div style="margin-bottom: 10px;">
-                                        <input type="checkbox" ng-model="wp.searchIndex" ng-change="updateSetting(wp.id, 'search-indexing', wp.searchIndex)" style="margin-right: 5px;">
+                                        <input type="checkbox" ng-model="wp.searchIndex" ng-change="updateSetting(wp, 'search-indexing')" style="margin-right: 5px;">
                                         <span style="color: #666;">Search engine indexing</span>
                                     </div>
                                     <div>
-                                        <input type="checkbox" ng-model="wp.debugging" ng-change="updateSetting(wp.id, 'debugging', wp.debugging)" style="margin-right: 5px;">
+                                        <input type="checkbox" ng-model="wp.debugging" ng-change="updateSetting(wp, 'debugging')" style="margin-right: 5px;">
                                         <span style="color: #666;">Debugging</span>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div style="margin-bottom: 10px;">
-                                        <input type="checkbox" ng-model="wp.passwordProtection" ng-change="updateSetting(wp.id, 'password-protection', wp.passwordProtection)" style="margin-right: 5px;">
+                                        <input type="checkbox" ng-model="wp.passwordProtection" ng-change="updateSetting(wp, 'password-protection')" style="margin-right: 5px;">
                                         <span style="color: #666;">Password protection</span>
                                     </div>
                                     <div>
-                                        <input type="checkbox" ng-model="wp.maintenanceMode" ng-change="updateSetting(wp.id, 'maintenance-mode', wp.maintenanceMode)" style="margin-right: 5px;">
+                                        <input type="checkbox" ng-model="wp.maintenanceMode" ng-change="updateSetting(wp, 'maintenance-mode')" style="margin-right: 5px;">
                                         <span style="color: #666;">Maintenance mode</span>
                                     </div>
                                 </div>
