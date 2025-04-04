@@ -2674,7 +2674,7 @@ app.controller('listWebsites', function ($scope, $http, $window) {
     // Call it immediately
     $scope.getFurtherWebsitesFromDB();
 
-    $scope.showWPSites = function(domain) {
+    $scope.Sites = function(domain) {
         var url = '/websites/fetchWPDetails';
         var data = {
           domain: domain
@@ -2688,16 +2688,19 @@ app.controller('listWebsites', function ($scope, $http, $window) {
             'X-CSRFToken': getCookie('csrftoken')
           }
         }).then(function(response) {
-          if (response.data.status === 1) {
+          if (response.data.status === 1 && response.data.fetchStatus === 1) {
             $scope.web.wp_sites = response.data.sites;
             $scope.web.showWPSites = true;
+            $("#listFail").hide();
           } else {
-            alert('Error: ' + response.data.error_message);
+            $("#listFail").fadeIn();
+            $scope.errorMessage = response.data.error_message || 'Failed to fetch WordPress sites';
           }
         }).catch(function(error) {
-          alert('Error fetching WordPress sites: ' + JSON.stringify(error));
+          $("#listFail").fadeIn();
+          $scope.errorMessage = error.message || 'An error occurred while fetching WordPress sites';
         });
-      };
+    };
 
     $scope.visitSite = function(url) {
         window.open(url, '_blank');
@@ -6581,7 +6584,7 @@ app.controller('manageAliasController', function ($scope, $http, $timeout, $wind
                 'X-CSRFToken': getCookie('csrftoken')
             }
         }).then(function(response) {
-            if (response.data.status === 1) {
+            if (response.data.status === 1 && response.data.fetchStatus === 1) {
                 var sites = response.data.sites;
                 var message = 'WordPress Sites for ' + domain + ':\n\n';
                 sites.forEach(function(site) {
