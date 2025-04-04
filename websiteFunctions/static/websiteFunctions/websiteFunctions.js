@@ -6585,20 +6585,16 @@ app.controller('manageAliasController', function ($scope, $http, $timeout, $wind
             }
         }).then(function(response) {
             if (response.data.status === 1 && response.data.fetchStatus === 1) {
-                var sites = response.data.sites;
-                var message = 'WordPress Sites for ' + domain + ':\n\n';
-                sites.forEach(function(site) {
-                    message += 'Title: ' + site.title + '\n';
-                    message += 'URL: ' + site.url + '\n';
-                    message += 'Version: ' + site.version + '\n';
-                    message += 'Status: ' + site.status + '\n\n';
-                });
-                alert(message);
+                $scope.web.wp_sites = response.data.sites;
+                $scope.web.showWPSites = true;
+                $("#listFail").hide();
             } else {
-                alert('Error: ' + response.data.error_message);
+                $("#listFail").fadeIn();
+                $scope.errorMessage = response.data.error_message || 'Failed to fetch WordPress sites';
             }
         }).catch(function(error) {
-            alert('Error fetching WordPress sites: ' + JSON.stringify(error));
+            $("#listFail").fadeIn();
+            $scope.errorMessage = error.message || 'An error occurred while fetching WordPress sites';
         });
     };
 
