@@ -7053,7 +7053,7 @@ StrictHostKeyChecking no
         proc = httpProc(request, 'websiteFunctions/DockerSiteHome.html',
                         {'dockerSite': ds})
         return proc.render()
-    
+
     def fetchWPSitesForDomain(self, userID=None, data=None):
         try:
             currentACL = ACLManager.loadedACL(userID)
@@ -7064,7 +7064,7 @@ StrictHostKeyChecking no
             
             if ACLManager.checkOwnership(domain, admin, currentACL) != 1:
                 return ACLManager.loadErrorJson('fetchStatus', 0)
-                
+
             wp_sites = WPSites.objects.filter(owner=website)
             sites = []
             
@@ -7082,10 +7082,10 @@ StrictHostKeyChecking no
                 version = html.escape(version)
 
 
-                sites.append({
-                    'id': site.id,
-                    'title': site.title,
-                    'url': site.FinalURL,
+            sites.append({
+                'id': site.id,
+                'title': site.title,
+                'url': site.FinalURL,
                     'path': site.path,
                     'version': version,
                 })
@@ -7093,7 +7093,7 @@ StrictHostKeyChecking no
             data_ret = {'status': 1, 'fetchStatus': 1, 'error_message': "None", "sites": sites}
             json_data = json.dumps(data_ret)
             return HttpResponse(json_data)
-            
+
         except BaseException as msg:
             data_ret = {'status': 0, 'fetchStatus': 0, 'error_message': str(msg)}
             json_data = json.dumps(data_ret)
