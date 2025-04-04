@@ -194,4 +194,6 @@ urlpatterns = [
     # Catch all for domains
     path('<domain>/<childDomain>', views.launchChild, name='launchChild'),
     path('<domain>', views.domain, name='domain'),
+
+    path(r'GetWPSitesByDomain', views.GetWPSitesByDomain, name='GetWPSitesByDomain'),
 ]

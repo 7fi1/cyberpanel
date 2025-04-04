@@ -2685,73 +2685,84 @@ app.controller('listWebsites', function ($scope, $http, $window) {
     // Call it immediately
     $scope.getFurtherWebsitesFromDB();
 
-    $scope.showWPSites = function(index) {
-        console.log('showWPSites called with index:', index);
-        console.log('Current WebSitesList:', $scope.WebSitesList);
-        
-        $scope.selectedWebsite = $scope.WebSitesList[index];
-        console.log('Selected website:', $scope.selectedWebsite);
-        
-        // Always fetch fresh data
-        var url = '/websites/FetchWPdata';
-        var data = {
-            domain: $scope.selectedWebsite.domain,
-            websiteName: $scope.selectedWebsite.domain
-        };
-        
-        $http({
-            method: 'POST',
-            url: url,
-            data: JSON.stringify(data),
+    $scope.showWPSites = function(domain) {
+        var config = {
             headers: {
-                'Content-Type': 'application/json',
                 'X-CSRFToken': getCookie('csrftoken')
             }
-        }).then(function(response) {
-            console.log('WP Details Response:', response);
-            
-            // Check if response is HTML (login page)
-            if (typeof response.data === 'string' && response.data.includes('<!DOCTYPE html>')) {
-                console.log('Received HTML response, redirecting to login');
-                window.location.href = '/login';
-                return;
-            }
-            
-            if (response.data && response.data.status === 1) {
-                try {
-                    // If single site, wrap in array
-                    var sites = Array.isArray(response.data.data) ? response.data.data : [response.data.data];
-                    
-                    $scope.selectedWebsite.wp_sites = sites.map(function(site) {
-                        return {
-                            id: site.id || $scope.selectedWebsite.domain,
-                            title: site.title || site.domain || $scope.selectedWebsite.domain,
-                            url: site.url || 'http://' + $scope.selectedWebsite.domain,
-                            version: site.version || 'Unknown',
-                            phpVersion: site.php_version || 'Unknown',
-                            theme: site.theme || 'Unknown',
-                            activePlugins: site.active_plugins || 0,
-                            searchIndex: site.search_index === 'enabled',
-                            debugging: site.debugging === 'enabled',
-                            passwordProtection: site.password_protection === 'enabled',
-                            maintenanceMode: site.maintenance_mode === 'enabled'
-                        };
-                    });
-                    $scope.selectedWebsite.showWPSites = true;
-                } catch (e) {
-                    console.error('Error processing WordPress data:', e);
-                    $scope.selectedWebsite.showWPSites = false;
-                    $scope.selectedWebsite.wp_sites = [];
+        };
+
+        var data = {
+            domain: domain
+        };
+
+        var url = '/websites/GetWPSitesByDomain';
+        
+        $http.post(url, data, config).then(function(response) {
+            if (response.data.status === 1) {
+                // Find the website in the list and update its WordPress sites
+                for (var i = 0; i < $scope.WebSitesList.length; i++) {
+                    if ($scope.WebSitesList[i].domain === domain) {
+                        $scope.WebSitesList[i].wp_sites = response.data.data;
+                        $scope.WebSitesList[i].showWPSites = !$scope.WebSitesList[i].showWPSites;
+                        break;
+                    }
                 }
             } else {
                 console.error('Error fetching WordPress sites:', response.data.error_message);
-                $scope.selectedWebsite.showWPSites = false;
-                $scope.selectedWebsite.wp_sites = [];
+                new PNotify({
+                    title: 'Error!',
+                    text: response.data.error_message,
+                    type: 'error'
+                });
             }
         }, function(error) {
             console.error('Error fetching WordPress sites:', error);
-            $scope.selectedWebsite.showWPSites = false;
-            $scope.selectedWebsite.wp_sites = [];
+            new PNotify({
+                title: 'Error!',
+                text: 'Failed to fetch WordPress sites. Please try again.',
+                type: 'error'
+            });
+        });
+    };
+
+    $scope.updateSetting = function(wpId, setting, value) {
+        var config = {
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        };
+
+        var data = {
+            siteId: wpId,
+            setting: setting,
+            value: value
+        };
+
+        var url = '/websites/UpdateWPSettings';
+        
+        $http.post(url, data, config).then(function(response) {
+            if (response.data.status === 1) {
+                new PNotify({
+                    title: 'Success!',
+                    text: 'Setting updated successfully.',
+                    type: 'success'
+                });
+            } else {
+                console.error('Error updating setting:', response.data.error_message);
+                new PNotify({
+                    title: 'Error!',
+                    text: response.data.error_message,
+                    type: 'error'
+                });
+            }
+        }, function(error) {
+            console.error('Error updating setting:', error);
+            new PNotify({
+                title: 'Error!',
+                text: 'Failed to update setting. Please try again.',
+                type: 'error'
+            });
         });
     };
 
@@ -2765,59 +2776,6 @@ app.controller('listWebsites', function ($scope, $http, $window) {
 
     $scope.manageWP = function(wpId) {
         window.location.href = '/websites/listWPsites?wpID=' + wpId;
-    };
-
-    $scope.updateSetting = function(wp, setting) {
-        var settingMap = {
-            'search-indexing': 'searchIndex',
-            'debugging': 'debugging',
-            'password-protection': 'passwordProtection',
-            'maintenance-mode': 'maintenanceMode'
-        };
-
-        var data = {
-            wpID: wp.id,
-            setting: setting,
-            value: wp[settingMap[setting]] ? 'enable' : 'disable'
-        };
-
-        $http({
-            method: 'POST',
-            url: '/websites/UpdateWPSettings',
-            data: data,
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'X-CSRFToken': getCookie('csrftoken')
-            },
-            transformRequest: function(obj) {
-                var str = [];
-                for(var p in obj)
-                    str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]));
-                return str.join("&");
-            }
-        }).then(function(response) {
-            if (response.data.status === 1) {
-                new PNotify({
-                    title: 'Success',
-                    text: 'Setting updated successfully.',
-                    type: 'success'
-                });
-            } else {
-                wp[settingMap[setting]] = !wp[settingMap[setting]];  // Revert the change
-                new PNotify({
-                    title: 'Error',
-                    text: 'Failed to update setting.',
-                    type: 'error'
-                });
-            }
-        }).catch(function(error) {
-            wp[settingMap[setting]] = !wp[settingMap[setting]];  // Revert the change
-            new PNotify({
-                title: 'Error',
-                text: 'Connection failed while updating setting.',
-                type: 'error'
-            });
-        });
     };
 
     $scope.cyberPanelLoading = true;
@@ -8240,73 +8198,84 @@ app.controller('listWebsites', function ($scope, $http, $window) {
     // Call it immediately
     $scope.getFurtherWebsitesFromDB();
 
-    $scope.showWPSites = function(index) {
-        console.log('showWPSites called with index:', index);
-        console.log('Current WebSitesList:', $scope.WebSitesList);
-        
-        $scope.selectedWebsite = $scope.WebSitesList[index];
-        console.log('Selected website:', $scope.selectedWebsite);
-        
-        // Always fetch fresh data
-        var url = '/websites/FetchWPdata';
-        var data = {
-            domain: $scope.selectedWebsite.domain,
-            websiteName: $scope.selectedWebsite.domain
-        };
-        
-        $http({
-            method: 'POST',
-            url: url,
-            data: JSON.stringify(data),
+    $scope.showWPSites = function(domain) {
+        var config = {
             headers: {
-                'Content-Type': 'application/json',
                 'X-CSRFToken': getCookie('csrftoken')
             }
-        }).then(function(response) {
-            console.log('WP Details Response:', response);
-            
-            // Check if response is HTML (login page)
-            if (typeof response.data === 'string' && response.data.includes('<!DOCTYPE html>')) {
-                console.log('Received HTML response, redirecting to login');
-                window.location.href = '/login';
-                return;
-            }
-            
-            if (response.data && response.data.status === 1) {
-                try {
-                    // If single site, wrap in array
-                    var sites = Array.isArray(response.data.data) ? response.data.data : [response.data.data];
-                    
-                    $scope.selectedWebsite.wp_sites = sites.map(function(site) {
-                        return {
-                            id: site.id || $scope.selectedWebsite.domain,
-                            title: site.title || site.domain || $scope.selectedWebsite.domain,
-                            url: site.url || 'http://' + $scope.selectedWebsite.domain,
-                            version: site.version || 'Unknown',
-                            phpVersion: site.php_version || 'Unknown',
-                            theme: site.theme || 'Unknown',
-                            activePlugins: site.active_plugins || 0,
-                            searchIndex: site.search_index === 'enabled',
-                            debugging: site.debugging === 'enabled',
-                            passwordProtection: site.password_protection === 'enabled',
-                            maintenanceMode: site.maintenance_mode === 'enabled'
-                        };
-                    });
-                    $scope.selectedWebsite.showWPSites = true;
-                } catch (e) {
-                    console.error('Error processing WordPress data:', e);
-                    $scope.selectedWebsite.showWPSites = false;
-                    $scope.selectedWebsite.wp_sites = [];
+        };
+
+        var data = {
+            domain: domain
+        };
+
+        var url = '/websites/GetWPSitesByDomain';
+        
+        $http.post(url, data, config).then(function(response) {
+            if (response.data.status === 1) {
+                // Find the website in the list and update its WordPress sites
+                for (var i = 0; i < $scope.WebSitesList.length; i++) {
+                    if ($scope.WebSitesList[i].domain === domain) {
+                        $scope.WebSitesList[i].wp_sites = response.data.data;
+                        $scope.WebSitesList[i].showWPSites = !$scope.WebSitesList[i].showWPSites;
+                        break;
+                    }
                 }
             } else {
                 console.error('Error fetching WordPress sites:', response.data.error_message);
-                $scope.selectedWebsite.showWPSites = false;
-                $scope.selectedWebsite.wp_sites = [];
+                new PNotify({
+                    title: 'Error!',
+                    text: response.data.error_message,
+                    type: 'error'
+                });
             }
         }, function(error) {
             console.error('Error fetching WordPress sites:', error);
-            $scope.selectedWebsite.showWPSites = false;
-            $scope.selectedWebsite.wp_sites = [];
+            new PNotify({
+                title: 'Error!',
+                text: 'Failed to fetch WordPress sites. Please try again.',
+                type: 'error'
+            });
+        });
+    };
+
+    $scope.updateSetting = function(wpId, setting, value) {
+        var config = {
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        };
+
+        var data = {
+            siteId: wpId,
+            setting: setting,
+            value: value
+        };
+
+        var url = '/websites/UpdateWPSettings';
+        
+        $http.post(url, data, config).then(function(response) {
+            if (response.data.status === 1) {
+                new PNotify({
+                    title: 'Success!',
+                    text: 'Setting updated successfully.',
+                    type: 'success'
+                });
+            } else {
+                console.error('Error updating setting:', response.data.error_message);
+                new PNotify({
+                    title: 'Error!',
+                    text: response.data.error_message,
+                    type: 'error'
+                });
+            }
+        }, function(error) {
+            console.error('Error updating setting:', error);
+            new PNotify({
+                title: 'Error!',
+                text: 'Failed to update setting. Please try again.',
+                type: 'error'
+            });
         });
     };
 
@@ -8320,59 +8289,6 @@ app.controller('listWebsites', function ($scope, $http, $window) {
 
     $scope.manageWP = function(wpId) {
         window.location.href = '/websites/listWPsites?wpID=' + wpId;
-    };
-
-    $scope.updateSetting = function(wp, setting) {
-        var settingMap = {
-            'search-indexing': 'searchIndex',
-            'debugging': 'debugging',
-            'password-protection': 'passwordProtection',
-            'maintenance-mode': 'maintenanceMode'
-        };
-
-        var data = {
-            wpID: wp.id,
-            setting: setting,
-            value: wp[settingMap[setting]] ? 'enable' : 'disable'
-        };
-
-        $http({
-            method: 'POST',
-            url: '/websites/UpdateWPSettings',
-            data: data,
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'X-CSRFToken': getCookie('csrftoken')
-            },
-            transformRequest: function(obj) {
-                var str = [];
-                for(var p in obj)
-                    str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]));
-                return str.join("&");
-            }
-        }).then(function(response) {
-            if (response.data.status === 1) {
-                new PNotify({
-                    title: 'Success',
-                    text: 'Setting updated successfully.',
-                    type: 'success'
-                });
-            } else {
-                wp[settingMap[setting]] = !wp[settingMap[setting]];  // Revert the change
-                new PNotify({
-                    title: 'Error',
-                    text: 'Failed to update setting.',
-                    type: 'error'
-                });
-            }
-        }).catch(function(error) {
-            wp[settingMap[setting]] = !wp[settingMap[setting]];  // Revert the change
-            new PNotify({
-                title: 'Error',
-                text: 'Connection failed while updating setting.',
-                type: 'error'
-            });
-        });
     };
 
     $scope.cyberPanelLoading = true;
@@ -12177,124 +12093,82 @@ app.controller('manageAliasController', function ($scope, $http, $timeout, $wind
 
     }
 
-    $scope.showWPSites = function(index) {
-        console.log('showWPSites called with index:', index);
-        console.log('Current WebSitesList:', $scope.WebSitesList);
-        
-        $scope.selectedWebsite = $scope.WebSitesList[index];
-        console.log('Selected website:', $scope.selectedWebsite);
-        
-        // Always fetch fresh data
-        var url = '/websites/FetchWPdata';
-        var data = {
-            domain: $scope.selectedWebsite.domain,
-            websiteName: $scope.selectedWebsite.domain
-        };
-        
-        $http({
-            method: 'POST',
-            url: url,
-            data: JSON.stringify(data),
+    $scope.showWPSites = function(domain) {
+        var config = {
             headers: {
-                'Content-Type': 'application/json',
                 'X-CSRFToken': getCookie('csrftoken')
             }
-        }).then(function(response) {
-            console.log('WP Details Response:', response);
-            
-            // Check if response is HTML (login page)
-            if (typeof response.data === 'string' && response.data.includes('<!DOCTYPE html>')) {
-                console.log('Received HTML response, redirecting to login');
-                window.location.href = '/login';
-                return;
-            }
-            
-            if (response.data && response.data.status === 1) {
-                try {
-                    // If single site, wrap in array
-                    var sites = Array.isArray(response.data.data) ? response.data.data : [response.data.data];
-                    
-                    $scope.selectedWebsite.wp_sites = sites.map(function(site) {
-                        return {
-                            id: site.id || $scope.selectedWebsite.domain,
-                            title: site.title || site.domain || $scope.selectedWebsite.domain,
-                            url: site.url || 'http://' + $scope.selectedWebsite.domain,
-                            version: site.version || 'Unknown',
-                            phpVersion: site.php_version || 'Unknown',
-                            theme: site.theme || 'Unknown',
-                            activePlugins: site.active_plugins || 0,
-                            searchIndex: site.search_index === 'enabled',
-                            debugging: site.debugging === 'enabled',
-                            passwordProtection: site.password_protection === 'enabled',
-                            maintenanceMode: site.maintenance_mode === 'enabled'
-                        };
-                    });
-                    $scope.selectedWebsite.showWPSites = true;
-                } catch (e) {
-                    console.error('Error processing WordPress data:', e);
-                    $scope.selectedWebsite.showWPSites = false;
-                    $scope.selectedWebsite.wp_sites = [];
+        };
+
+        var data = {
+            domain: domain
+        };
+
+        var url = '/websites/GetWPSitesByDomain';
+        
+        $http.post(url, data, config).then(function(response) {
+            if (response.data.status === 1) {
+                // Find the website in the list and update its WordPress sites
+                for (var i = 0; i < $scope.WebSitesList.length; i++) {
+                    if ($scope.WebSitesList[i].domain === domain) {
+                        $scope.WebSitesList[i].wp_sites = response.data.data;
+                        $scope.WebSitesList[i].showWPSites = !$scope.WebSitesList[i].showWPSites;
+                        break;
+                    }
                 }
             } else {
                 console.error('Error fetching WordPress sites:', response.data.error_message);
-                $scope.selectedWebsite.showWPSites = false;
-                $scope.selectedWebsite.wp_sites = [];
+                new PNotify({
+                    title: 'Error!',
+                    text: response.data.error_message,
+                    type: 'error'
+                });
             }
         }, function(error) {
             console.error('Error fetching WordPress sites:', error);
-            $scope.selectedWebsite.showWPSites = false;
-            $scope.selectedWebsite.wp_sites = [];
+            new PNotify({
+                title: 'Error!',
+                text: 'Failed to fetch WordPress sites. Please try again.',
+                type: 'error'
+            });
         });
     };
 
-    $scope.updateSetting = function(wp, setting) {
-        var settingMap = {
-            'search-indexing': 'searchIndex',
-            'debugging': 'debugging',
-            'password-protection': 'passwordProtection',
-            'maintenance-mode': 'maintenanceMode'
+    $scope.updateSetting = function(wpId, setting, value) {
+        var config = {
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            }
         };
 
         var data = {
-            wpID: wp.id,
+            siteId: wpId,
             setting: setting,
-            value: wp[settingMap[setting]] ? 'enable' : 'disable'
+            value: value
         };
 
-        $http({
-            method: 'POST',
-            url: '/websites/UpdateWPSettings',
-            data: data,
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'X-CSRFToken': getCookie('csrftoken')
-            },
-            transformRequest: function(obj) {
-                var str = [];
-                for(var p in obj)
-                    str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]));
-                return str.join("&");
-            }
-        }).then(function(response) {
+        var url = '/websites/UpdateWPSettings';
+        
+        $http.post(url, data, config).then(function(response) {
             if (response.data.status === 1) {
                 new PNotify({
-                    title: 'Success',
+                    title: 'Success!',
                     text: 'Setting updated successfully.',
                     type: 'success'
                 });
             } else {
-                wp[settingMap[setting]] = !wp[settingMap[setting]];  // Revert the change
+                console.error('Error updating setting:', response.data.error_message);
                 new PNotify({
-                    title: 'Error',
-                    text: 'Failed to update setting.',
+                    title: 'Error!',
+                    text: response.data.error_message,
                     type: 'error'
                 });
             }
-        }).catch(function(error) {
-            wp[settingMap[setting]] = !wp[settingMap[setting]];  // Revert the change
+        }, function(error) {
+            console.error('Error updating setting:', error);
             new PNotify({
-                title: 'Error',
-                text: 'Connection failed while updating setting.',
+                title: 'Error!',
+                text: 'Failed to update setting. Please try again.',
                 type: 'error'
             });
         });
@@ -12312,73 +12186,15 @@ app.controller('manageAliasController', function ($scope, $http, $timeout, $wind
         window.location.href = '/websites/listWPsites?wpID=' + wpId;
     };
 
-    $scope.updateSetting = function(wp, setting) {
-        var settingMap = {
-            'search-indexing': 'searchIndex',
-            'debugging': 'debugging',
-            'password-protection': 'passwordProtection',
-            'maintenance-mode': 'maintenanceMode'
-        };
+    $scope.cyberPanelLoading = true;
+
+    $scope.issueSSL = function (virtualHost) {
+        $scope.cyberPanelLoading = false;
+
+        url = "/websites/issueSSL";
 
         var data = {
-            wpID: wp.id,
-            setting: setting,
-            value: wp[settingMap[setting]] ? 'enable' : 'disable'
-        };
-
-        $http({
-            method: 'POST',
-            url: '/websites/UpdateWPSettings',
-            data: data,
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'X-CSRFToken': getCookie('csrftoken')
-            },
-            transformRequest: function(obj) {
-                var str = [];
-                for(var p in obj)
-                    str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]));
-                return str.join("&");
-            }
-        }).then(function(response) {
-            if (response.data.status === 1) {
-                new PNotify({
-                    title: 'Success',
-                    text: 'Setting updated successfully.',
-                    type: 'success'
-                });
-            } else {
-                wp[settingMap[setting]] = !wp[settingMap[setting]];  // Revert the change
-                new PNotify({
-                    title: 'Error',
-                    text: 'Failed to update setting.',
-                    type: 'error'
-                });
-            }
-        }).catch(function(error) {
-            wp[settingMap[setting]] = !wp[settingMap[setting]];  // Revert the change
-            new PNotify({
-                title: 'Error',
-                text: 'Connection failed while updating setting.',
-                type: 'error'
-            });
-        });
-    };
-
-    $scope.saveRewriteRules = function () {
-
-        $scope.configFileLoading = false;
-
-
-        url = "/websites/saveRewriteRules";
-
-        var virtualHost = $("#childDomain").text();
-        var rewriteRules = $scope.rewriteRules;
-
-
-        var data = {
-            virtualHost: virtualHost,
-            rewriteRules: rewriteRules,
+            virtualHost: virtualHost
         };
 
         var config = {
@@ -12389,68 +12205,33 @@ app.controller('manageAliasController', function ($scope, $http, $timeout, $wind
 
         $http.post(url, data, config).then(ListInitialDatas, cantLoadInitialDatas);
 
-
         function ListInitialDatas(response) {
-
-            if (response.data.rewriteStatus == 1) {
-
-                $scope.configurationsBoxRewrite = false;
-                $scope.rewriteRulesFetched = true;
-                $scope.couldNotFetchRewriteRules = true;
-                $scope.rewriteRulesSaved = false;
-                $scope.couldNotSaveRewriteRules = true;
-                $scope.fetchedRewriteRules = true;
-                $scope.saveRewriteRulesBTN = true;
-                $scope.configFileLoading = true;
-
-
+            if (response.data.status === 1) {
+                $scope.cyberPanelLoading = true;
+                $scope.sslIssued = false;
+                $scope.couldNotIssueSSL = true;
+                $scope.couldNotConnect = true;
             } else {
-                $scope.configurationsBoxRewrite = false;
-                $scope.rewriteRulesFetched = false;
-                $scope.couldNotFetchRewriteRules = true;
-                $scope.rewriteRulesSaved = true;
-                $scope.couldNotSaveRewriteRules = false;
-                $scope.fetchedRewriteRules = true;
-                $scope.saveRewriteRulesBTN = false;
-
-                $scope.configFileLoading = true;
-
-
+                $scope.cyberPanelLoading = true;
+                $scope.sslIssued = true;
+                $scope.couldNotIssueSSL = false;
+                $scope.couldNotConnect = true;
                 $scope.errorMessage = response.data.error_message;
-
             }
-
-
         }
 
         function cantLoadInitialDatas(response) {
-
-            $scope.configurationsBoxRewrite = false;
-            $scope.rewriteRulesFetched = false;
-            $scope.couldNotFetchRewriteRules = true;
-            $scope.rewriteRulesSaved = true;
-            $scope.couldNotSaveRewriteRules = true;
-            $scope.fetchedRewriteRules = true;
-            $scope.saveRewriteRulesBTN = false;
-
-            $scope.configFileLoading = true;
-
+            $scope.cyberPanelLoading = true;
+            $scope.sslIssued = true;
+            $scope.couldNotIssueSSL = true;
             $scope.couldNotConnect = false;
-
-
         }
-
-
     };
-
-
-    //////// SSL Part
 
     $scope.sslSaved = true;
     $scope.couldNotSaveSSL = true;
     $scope.hidsslconfigs = true;
     $scope.couldNotConnect = true;
-
 
     $scope.hidesslbtn = function () {
         $scope.hidsslconfigs = true;
@@ -12463,10 +12244,7 @@ app.controller('manageAliasController', function ($scope, $http, $timeout, $wind
         $scope.changePHPView = true;
     };
 
-
     $scope.saveSSL = function () {
-
-
         $scope.configFileLoading = false;
 
         url = "/websites/saveSSL";
@@ -12474,7 +12252,6 @@ app.controller('manageAliasController', function ($scope, $http, $timeout, $wind
         var virtualHost = $("#childDomain").text();
         var cert = $scope.cert;
         var key = $scope.key;
-
 
         var data = {
             virtualHost: virtualHost,
@@ -12490,52 +12267,33 @@ app.controller('manageAliasController', function ($scope, $http, $timeout, $wind
 
         $http.post(url, data, config).then(ListInitialDatas, cantLoadInitialDatas);
 
-
         function ListInitialDatas(response) {
-
             if (response.data.sslStatus === 1) {
-
                 $scope.sslSaved = false;
                 $scope.couldNotSaveSSL = true;
                 $scope.couldNotConnect = true;
                 $scope.configFileLoading = true;
-
-
             } else {
-
                 $scope.sslSaved = true;
                 $scope.couldNotSaveSSL = false;
                 $scope.couldNotConnect = true;
                 $scope.configFileLoading = true;
-
                 $scope.errorMessage = response.data.error_message;
-
             }
-
-
         }
 
         function cantLoadInitialDatas(response) {
-
             $scope.sslSaved = true;
             $scope.couldNotSaveSSL = true;
             $scope.couldNotConnect = false;
             $scope.configFileLoading = true;
-
-
         }
-
     };
-
-
-    //// Change PHP Master
 
     $scope.failedToChangePHPMaster = true;
     $scope.phpChangedMaster = true;
     $scope.couldNotConnect = true;
-
     $scope.changePHPView = true;
-
 
     $scope.hideChangePHPMaster = function () {
         $scope.changePHPView = true;
@@ -12548,11 +12306,7 @@ app.controller('manageAliasController', function ($scope, $http, $timeout, $wind
         $scope.changePHPView = false;
     };
 
-
     $scope.changePHPVersionMaster = function (childDomain, phpSelection) {
-
-        // notifcations
-
         $scope.configFileLoading = false;
 
         var url = "/websites/changePHP";
@@ -12570,62 +12324,35 @@ app.controller('manageAliasController', function ($scope, $http, $timeout, $wind
 
         $http.post(url, data, config).then(ListInitialDatas, cantLoadInitialDatas);
 
-
         function ListInitialDatas(response) {
-
-
             if (response.data.changePHP === 1) {
-
                 $scope.configFileLoading = true;
                 $scope.websiteDomain = $("#childDomain").text();
-
-
-                // notifcations
-
                 $scope.failedToChangePHPMaster = true;
                 $scope.phpChangedMaster = false;
                 $scope.couldNotConnect = true;
-
-
             } else {
-
                 $scope.configFileLoading = true;
                 $scope.errorMessage = response.data.error_message;
-
-                // notifcations
-
                 $scope.failedToChangePHPMaster = false;
                 $scope.phpChangedMaster = true;
                 $scope.couldNotConnect = true;
-
             }
-
-
         }
 
         function cantLoadInitialDatas(response) {
-
             $scope.configFileLoading = true;
-
-            // notifcations
-
             $scope.failedToChangePHPMaster = true;
             $scope.phpChangedMaster = true;
             $scope.couldNotConnect = false;
-
         }
-
     };
-
-
-    /// Open_basedir protection
 
     $scope.baseDirLoading = true;
     $scope.operationFailed = true;
     $scope.operationSuccessfull = true;
     $scope.couldNotConnect = true;
     $scope.openBaseDirBox = true;
-
 
     $scope.openBaseDirView = function () {
         $scope.openBaseDirBox = false;
@@ -12636,15 +12363,11 @@ app.controller('manageAliasController', function ($scope, $http, $timeout, $wind
     };
 
     $scope.applyOpenBasedirChanges = function (childDomain, phpSelection) {
-
-        // notifcations
-
         $scope.baseDirLoading = false;
         $scope.operationFailed = true;
         $scope.operationSuccessfull = true;
         $scope.couldNotConnect = true;
         $scope.openBaseDirBox = false;
-
 
         var url = "/websites/changeOpenBasedir";
 
@@ -12661,52 +12384,36 @@ app.controller('manageAliasController', function ($scope, $http, $timeout, $wind
 
         $http.post(url, data, config).then(ListInitialDatas, cantLoadInitialDatas);
 
-
         function ListInitialDatas(response) {
-
-
             if (response.data.changeOpenBasedir === 1) {
-
                 $scope.baseDirLoading = true;
                 $scope.operationFailed = true;
                 $scope.operationSuccessfull = false;
                 $scope.couldNotConnect = true;
                 $scope.openBaseDirBox = false;
-
             } else {
-
                 $scope.baseDirLoading = true;
                 $scope.operationFailed = false;
                 $scope.operationSuccessfull = true;
                 $scope.couldNotConnect = true;
                 $scope.openBaseDirBox = false;
-
                 $scope.errorMessage = response.data.error_message;
-
             }
-
-
         }
 
         function cantLoadInitialDatas(response) {
-
             $scope.baseDirLoading = true;
             $scope.operationFailed = true;
             $scope.operationSuccessfull = true;
             $scope.couldNotConnect = false;
             $scope.openBaseDirBox = false;
-
-
         }
-
     }
-
 });
 
 /* Application Installer */
 
 app.controller('installWordPressCTRL', function ($scope, $http, $timeout) {
-
     $scope.installationDetailsForm = false;
     $scope.installationProgress = true;
     $scope.installationFailed = true;
@@ -12718,7 +12425,6 @@ app.controller('installWordPressCTRL', function ($scope, $http, $timeout) {
     var statusFile;
     var domain = $("#domainNamePage").text();
     var path;
-
 
     $scope.goBack = function () {
         $scope.installationDetailsForm = false;
@@ -12732,7 +12438,6 @@ app.controller('installWordPressCTRL', function ($scope, $http, $timeout) {
     };
 
     $scope.installWordPress = function () {
-
         $scope.installationDetailsForm = true;
         $scope.installationProgress = false;
         $scope.installationFailed = true;
@@ -12744,7 +12449,6 @@ app.controller('installWordPressCTRL', function ($scope, $http, $timeout) {
 
         path = $scope.installPath;
 
-
         url = "/websites/installWordpress";
 
         var home = "1";
@@ -12752,7 +12456,6 @@ app.controller('installWordPressCTRL', function ($scope, $http, $timeout) {
         if (typeof path !== 'undefined') {
             home = "0";
         }
-
 
         var data = {
             domain: domain,
@@ -12772,14 +12475,11 @@ app.controller('installWordPressCTRL', function ($scope, $http, $timeout) {
 
         $http.post(url, data, config).then(ListInitialDatas, cantLoadInitialDatas);
 
-
         function ListInitialDatas(response) {
-
             if (response.data.installStatus === 1) {
                 statusFile = response.data.tempStatusPath;
                 getInstallStatus();
             } else {
-
                 $scope.installationDetailsForm = true;
                 $scope.installationProgress = false;
                 $scope.installationFailed = false;
@@ -12787,23 +12487,15 @@ app.controller('installWordPressCTRL', function ($scope, $http, $timeout) {
                 $scope.couldNotConnect = true;
                 $scope.wpInstallLoading = true;
                 $scope.goBackDisable = false;
-
                 $scope.errorMessage = response.data.error_message;
-
             }
-
-
         }
 
         function cantLoadInitialDatas(response) {
-
-
         }
-
     };
 
     function getInstallStatus() {
-
         url = "/websites/installWordpressStatus";
 
         var data = {
@@ -12817,17 +12509,11 @@ app.controller('installWordPressCTRL', function ($scope, $http, $timeout) {
             }
         };
 
-
         $http.post(url, data, config).then(ListInitialDatas, cantLoadInitialDatas);
 
-
         function ListInitialDatas(response) {
-
-
             if (response.data.abort === 1) {
-
                 if (response.data.installStatus === 1) {
-
                     $scope.installationDetailsForm = true;
                     $scope.installationProgress = false;
                     $scope.installationFailed = true;
@@ -12842,14 +12528,11 @@ app.controller('installWordPressCTRL', function ($scope, $http, $timeout) {
                         $scope.installationURL = domain;
                     }
 
-
                     $("#installProgress").css("width", "100%");
                     $scope.installPercentage = "100";
                     $scope.currentStatus = response.data.currentStatus;
                     $timeout.cancel();
-
                 } else {
-
                     $scope.installationDetailsForm = true;
                     $scope.installationProgress = false;
                     $scope.installationFailed = false;
@@ -12862,33 +12545,21 @@ app.controller('installWordPressCTRL', function ($scope, $http, $timeout) {
 
                     $("#installProgress").css("width", "0%");
                     $scope.installPercentage = "0";
-
                 }
-
             } else {
                 $("#installProgress").css("width", response.data.installationProgress + "%");
                 $scope.installPercentage = response.data.installationProgress;
                 $scope.currentStatus = response.data.currentStatus;
 
                 $timeout(getInstallStatus, 1000);
-
-
             }
-
         }
 
         function cantLoadInitialDatas(response) {
-
             $scope.canNotFetch = true;
             $scope.couldNotConnect = false;
-
-
         }
-
-
     }
-
-
 });
 
 app.controller('installJoomlaCTRL', function ($scope, $http, $timeout) {
@@ -15077,16 +14748,108 @@ app.controller('manageGIT', function ($scope, $http, $timeout, $window) {
         }
     };
 
-    $scope.fetchGitignore = function () {
-
-        $scope.cyberpanelLoading = false;
-
-        url = "/websites/fetchGitignore";
-
+    $scope.showWPSites = function(domain) {
+        var config = {
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        };
 
         var data = {
-            domain: $("#domain").text(),
-            folder: $scope.folder
+            domain: domain
+        };
+
+        var url = '/websites/GetWPSitesByDomain';
+        
+        $http.post(url, data, config).then(function(response) {
+            if (response.data.status === 1) {
+                // Find the website in the list and update its WordPress sites
+                for (var i = 0; i < $scope.WebSitesList.length; i++) {
+                    if ($scope.WebSitesList[i].domain === domain) {
+                        $scope.WebSitesList[i].wp_sites = response.data.data;
+                        $scope.WebSitesList[i].showWPSites = !$scope.WebSitesList[i].showWPSites;
+                        break;
+                    }
+                }
+            } else {
+                console.error('Error fetching WordPress sites:', response.data.error_message);
+                new PNotify({
+                    title: 'Error!',
+                    text: response.data.error_message,
+                    type: 'error'
+                });
+            }
+        }, function(error) {
+            console.error('Error fetching WordPress sites:', error);
+            new PNotify({
+                title: 'Error!',
+                text: 'Failed to fetch WordPress sites. Please try again.',
+                type: 'error'
+            });
+        });
+    };
+
+    $scope.updateSetting = function(wpId, setting, value) {
+        var config = {
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        };
+
+        var data = {
+            siteId: wpId,
+            setting: setting,
+            value: value
+        };
+
+        var url = '/websites/UpdateWPSettings';
+        
+        $http.post(url, data, config).then(function(response) {
+            if (response.data.status === 1) {
+                new PNotify({
+                    title: 'Success!',
+                    text: 'Setting updated successfully.',
+                    type: 'success'
+                });
+            } else {
+                console.error('Error updating setting:', response.data.error_message);
+                new PNotify({
+                    title: 'Error!',
+                    text: response.data.error_message,
+                    type: 'error'
+                });
+            }
+        }, function(error) {
+            console.error('Error updating setting:', error);
+            new PNotify({
+                title: 'Error!',
+                text: 'Failed to update setting. Please try again.',
+                type: 'error'
+            });
+        });
+    };
+
+    $scope.visitSite = function(url) {
+        window.open(url, '_blank');
+    };
+
+    $scope.wpLogin = function(wpId) {
+        window.open('/websites/wpLogin?wpID=' + wpId, '_blank');
+    };
+
+    $scope.manageWP = function(wpId) {
+        window.location.href = '/websites/listWPsites?wpID=' + wpId;
+    };
+
+    $scope.cyberPanelLoading = true;
+
+    $scope.issueSSL = function (virtualHost) {
+        $scope.cyberPanelLoading = false;
+
+        url = "/websites/issueSSL";
+
+        var data = {
+            virtualHost: virtualHost
         };
 
         var config = {
@@ -15098,1051 +14861,65 @@ app.controller('manageGIT', function ($scope, $http, $timeout, $window) {
         $http.post(url, data, config).then(ListInitialDatas, cantLoadInitialDatas);
 
         function ListInitialDatas(response) {
-            $scope.cyberpanelLoading = true;
+            $scope.cyberPanelLoading = true;
             if (response.data.status === 1) {
-                new PNotify({
-                    title: 'Success',
-                    text: 'Successfully fetched.',
-                    type: 'success'
-                });
-                $scope.gitIgnoreContent = response.data.gitIgnoreContent;
+                $scope.sslIssued = false;
+                $scope.couldNotIssueSSL = true;
+                $scope.couldNotConnect = true;
             } else {
-                new PNotify({
-                    title: 'Operation Failed!',
-                    text: response.data.error_message,
-                    type: 'error'
-                });
-            }
-
-
-        }
-
-        function cantLoadInitialDatas(response) {
-            $scope.cyberpanelLoading = true;
-            new PNotify({
-                title: 'Operation Failed!',
-                text: 'Could not connect to server, please refresh this page.',
-                type: 'error'
-            });
-
-
-        }
-    };
-
-    $scope.saveGitIgnore = function () {
-
-        $scope.cyberpanelLoading = false;
-
-        url = "/websites/saveGitIgnore";
-
-
-        var data = {
-            domain: $("#domain").text(),
-            folder: $scope.folder,
-            gitIgnoreContent: $scope.gitIgnoreContent
-
-        };
-
-        var config = {
-            headers: {
-                'X-CSRFToken': getCookie('csrftoken')
-            }
-        };
-
-        $http.post(url, data, config).then(ListInitialDatas, cantLoadInitialDatas);
-
-        function ListInitialDatas(response) {
-            $scope.cyberpanelLoading = true;
-            if (response.data.status === 1) {
-                new PNotify({
-                    title: 'Success',
-                    text: 'Successfully saved.',
-                    type: 'success'
-                });
-            } else {
-                new PNotify({
-                    title: 'Operation Failed!',
-                    text: response.data.error_message,
-                    type: 'error'
-                });
-            }
-
-
-        }
-
-        function cantLoadInitialDatas(response) {
-            $scope.cyberpanelLoading = true;
-            new PNotify({
-                title: 'Operation Failed!',
-                text: 'Could not connect to server, please refresh this page.',
-                type: 'error'
-            });
-
-
-        }
-    };
-
-    $scope.fetchCommits = function () {
-
-        $scope.cyberpanelLoading = false;
-
-        url = "/websites/fetchCommits";
-
-
-        var data = {
-            domain: $("#domain").text(),
-            folder: $scope.folder
-        };
-
-        var config = {
-            headers: {
-                'X-CSRFToken': getCookie('csrftoken')
-            }
-        };
-
-        $http.post(url, data, config).then(ListInitialDatas, cantLoadInitialDatas);
-
-        function ListInitialDatas(response) {
-            $scope.cyberpanelLoading = true;
-            $scope.gitCommitsTable = false;
-            if (response.data.status === 1) {
-                new PNotify({
-                    title: 'Success',
-                    text: 'Successfully fetched.',
-                    type: 'success'
-                });
-                $scope.commits = JSON.parse(response.data.commits);
-            } else {
-                new PNotify({
-                    title: 'Operation Failed!',
-                    text: response.data.error_message,
-                    type: 'error'
-                });
-            }
-
-
-        }
-
-        function cantLoadInitialDatas(response) {
-            $scope.cyberpanelLoading = true;
-            new PNotify({
-                title: 'Operation Failed!',
-                text: 'Could not connect to server, please refresh this page.',
-                type: 'error'
-            });
-
-
-        }
-    };
-
-    var currentComit;
-    var fetchFileCheck = 0;
-    var initial = 1;
-
-    $scope.fetchFiles = function (commit) {
-
-        currentComit = commit;
-        $scope.cyberpanelLoading = false;
-
-        if (initial === 1) {
-            initial = 0;
-        } else {
-            fetchFileCheck = 1;
-        }
-
-        url = "/websites/fetchFiles";
-
-
-        var data = {
-            domain: $("#domain").text(),
-            folder: $scope.folder,
-            commit: commit
-        };
-
-        var config = {
-            headers: {
-                'X-CSRFToken': getCookie('csrftoken')
-            }
-        };
-
-        $http.post(url, data, config).then(ListInitialDatas, cantLoadInitialDatas);
-
-        function ListInitialDatas(response) {
-            $scope.cyberpanelLoading = true;
-            $scope.gitCommitsTable = false;
-            if (response.data.status === 1) {
-                new PNotify({
-                    title: 'Success',
-                    text: 'Successfully fetched.',
-                    type: 'success'
-                });
-                $scope.files = response.data.files;
-            } else {
-                new PNotify({
-                    title: 'Operation Failed!',
-                    text: response.data.error_message,
-                    type: 'error'
-                });
-            }
-
-
-        }
-
-        function cantLoadInitialDatas(response) {
-            $scope.cyberpanelLoading = true;
-            new PNotify({
-                title: 'Operation Failed!',
-                text: 'Could not connect to server, please refresh this page.',
-                type: 'error'
-            });
-
-
-        }
-    };
-
-    $scope.fileStatus = true;
-
-    $scope.fetchChangesInFile = function () {
-        $scope.fileStatus = true;
-
-        if (fetchFileCheck === 1) {
-            fetchFileCheck = 0;
-            return 0;
-        }
-
-        $scope.cyberpanelLoading = false;
-        $scope.currentSelectedFile = $scope.changeFile;
-
-        url = "/websites/fetchChangesInFile";
-
-        var data = {
-            domain: $("#domain").text(),
-            folder: $scope.folder,
-            file: $scope.changeFile,
-            commit: currentComit
-        };
-
-        var config = {
-            headers: {
-                'X-CSRFToken': getCookie('csrftoken')
-            }
-        };
-
-        $http.post(url, data, config).then(ListInitialDatas, cantLoadInitialDatas);
-
-        function ListInitialDatas(response) {
-            $scope.cyberpanelLoading = true;
-            if (response.data.status === 1) {
-                new PNotify({
-                    title: 'Success',
-                    text: 'Successfully fetched.',
-                    type: 'success'
-                });
-                $scope.fileStatus = false;
-                document.getElementById("fileChangedContent").innerHTML = response.data.fileChangedContent;
-            } else {
-                $scope.fileStatus = true;
-                new PNotify({
-                    title: 'Operation Failed!',
-                    text: response.data.error_message,
-                    type: 'error'
-                });
+                $scope.sslIssued = true;
+                $scope.couldNotIssueSSL = false;
+                $scope.couldNotConnect = true;
+                $scope.errorMessage = response.data.error_message;
             }
         }
 
         function cantLoadInitialDatas(response) {
-            $scope.cyberpanelLoading = true;
-            new PNotify({
-                title: 'Operation Failed!',
-                text: 'Could not connect to server, please refresh this page.',
-                type: 'error'
-            });
-
-
+            $scope.cyberPanelLoading = true;
+            $scope.sslIssued = true;
+            $scope.couldNotIssueSSL = true;
+            $scope.couldNotConnect = false;
         }
     };
-
-    $scope.saveGitConfigurations = function () {
-
-        $scope.cyberpanelLoading = false;
-
-        url = "/websites/saveGitConfigurations";
-
-        var data = {
-            domain: $("#domain").text(),
-            folder: $scope.folder,
-            autoCommit: $scope.autoCommit,
-            autoPush: $scope.autoPush,
-            emailLogs: $scope.emailLogs,
-            commands: document.getElementById("currentCommands").value,
-            webhookCommand: $scope.webhookCommand
-        };
-
-        if ($scope.autoCommit === undefined) {
-            $scope.autoCommitCurrent = 'Never';
-        } else {
-            $scope.autoCommitCurrent = $scope.autoCommit;
-        }
-
-        if ($scope.autoPush === undefined) {
-            $scope.autoPushCurrent = 'Never';
-        } else {
-            $scope.autoPushCurrent = $scope.autoPush;
-        }
-
-        if ($scope.emailLogs === undefined) {
-            $scope.emailLogsCurrent = false;
-        } else {
-            $scope.emailLogsCurrent = $scope.emailLogs;
-        }
-
-        if ($scope.webhookCommand === undefined) {
-            $scope.webhookCommandCurrent = false;
-        } else {
-            $scope.webhookCommandCurrent = $scope.webhookCommand;
-        }
-
-        var config = {
-            headers: {
-                'X-CSRFToken': getCookie('csrftoken')
-            }
-        };
-
-        $http.post(url, data, config).then(ListInitialDatas, cantLoadInitialDatas);
-
-        function ListInitialDatas(response) {
-            $scope.cyberpanelLoading = true;
-            if (response.data.status === 1) {
-                new PNotify({
-                    title: 'Success',
-                    text: 'Successfully saved.',
-                    type: 'success'
-                });
-            } else {
-                new PNotify({
-                    title: 'Operation Failed!',
-                    text: response.data.error_message,
-                    type: 'error'
-                });
-            }
-        }
-
-        function cantLoadInitialDatas(response) {
-            $scope.cyberpanelLoading = true;
-            new PNotify({
-                title: 'Operation Failed!',
-                text: 'Could not connect to server, please refresh this page.',
-                type: 'error'
-            });
-
-
-        }
-    };
-
-    $scope.currentPage = 1;
-    $scope.recordsToShow = 10;
-
-    $scope.fetchGitLogs = function () {
-        $scope.cyberpanelLoading = false;
-        var config = {
-            headers: {
-                'X-CSRFToken': getCookie('csrftoken')
-            }
-        };
-
-        var data = {
-            domain: $("#domain").text(),
-            folder: $scope.folder,
-            page: $scope.currentPage,
-            recordsToShow: $scope.recordsToShow
-        };
-
-
-        dataurl = "/websites/fetchGitLogs";
-
-        $http.post(dataurl, data, config).then(ListInitialDatas, cantLoadInitialDatas);
-
-        function ListInitialDatas(response) {
-            $scope.cyberpanelLoading = true;
-            if (response.data.status === 1) {
-                new PNotify({
-                    title: 'Success',
-                    text: 'Successfully fetched.',
-                    type: 'success'
-                });
-                $scope.logs = JSON.parse(response.data.logs);
-                $scope.pagination = response.data.pagination;
-            } else {
-                new PNotify({
-                    title: 'Operation Failed!',
-                    text: response.data.error_message,
-                    type: 'error'
-                });
-            }
-        }
-
-        function cantLoadInitialDatas(response) {
-            $scope.cyberpanelLoading = true;
-            new PNotify({
-                title: 'Operation Failed!',
-                text: 'Could not connect to server, please refresh this page.',
-                type: 'error'
-            });
-
-
-        }
-
-
-    };
-
 });
 
-/* Java script code to git tracking ends here */
+/* Java script code to delete website ends here */
 
+/* Java script code to modify package ends here */
 
-app.controller('ApacheManager', function ($scope, $http, $timeout) {
-    $scope.cyberpanelloading = true;
-    $scope.apacheOLS = true;
-    $scope.pureOLS = true;
-    $scope.lswsEnt = true;
+/* Java script code to suspend/un-suspend ends here */
 
-    var apache = 1, ols = 2, lsws = 3;
-    var statusFile;
+/* Java script code to manage cron */
 
-    $scope.getSwitchStatus = function () {
-        $scope.cyberpanelloading = false;
-        url = "/websites/getSwitchStatus";
+/* Java script code to manage cron ends here */
 
-        var data = {
-            domainName: $("#domainNamePage").text()
-        };
+/* Java script code to manage cron */
 
-        var config = {
-            headers: {
-                'X-CSRFToken': getCookie('csrftoken')
-            }
-        };
+/* Java script code to syncWebsite ends here */
 
-        $http.post(url, data, config).then(ListInitialData, cantLoadInitialData);
+/* Application Installer */
 
-
-        function ListInitialData(response) {
-            $scope.cyberpanelloading = true;
-            if (response.data.status === 1) {
-                if (response.data.server === apache) {
-                    $scope.apacheOLS = false;
-                    $scope.pureOLS = true;
-                    $scope.lswsEnt = true;
-                    $scope.configData = response.data.configData;
-
-                    $scope.pmMaxChildren = response.data.pmMaxChildren;
-                    $scope.pmStartServers = response.data.pmStartServers;
-                    $scope.pmMinSpareServers = response.data.pmMinSpareServers;
-                    $scope.pmMaxSpareServers = response.data.pmMaxSpareServers;
-                    $scope.phpPath = response.data.phpPath;
-
-
-                } else if (response.data.server === ols) {
-                    $scope.apacheOLS = true;
-                    $scope.pureOLS = false;
-                    $scope.lswsEnt = true;
-                } else {
-                    $scope.apacheOLS = true;
-                    $scope.pureOLS = true;
-                    $scope.lswsEnt = false;
-                }
-                //$scope.records = JSON.parse(response.data.data);
-            } else {
-                new PNotify({
-                    title: 'Operation Failed!',
-                    text: response.data.error_message,
-                    type: 'error'
-                });
-            }
-        }
-
-        function cantLoadInitialData(response) {
-            $scope.cyberpanelloading = true;
-            new PNotify({
-                title: 'Operation Failed!',
-                text: 'Could not connect to server, please refresh this page.',
-                type: 'error'
-            });
-        }
-
-
-    };
-    $scope.getSwitchStatus();
-
-    $scope.switchServer = function (server) {
-        $scope.cyberpanelloading = false;
-        $scope.functionProgress = {"width": "0%"};
-        $scope.functionStatus = 'Starting conversion..';
-
-        url = "/websites/switchServer";
-
-        var data = {
-            domainName: $("#domainNamePage").text(),
-            phpSelection: $scope.phpSelection,
-            server: server
-        };
-
-        var config = {
-            headers: {
-                'X-CSRFToken': getCookie('csrftoken')
-            }
-        };
-
-        $http.post(url, data, config).then(ListInitialData, cantLoadInitialData);
-
-        function ListInitialData(response) {
-            if (response.data.status === 1) {
-                statusFile = response.data.tempStatusPath;
-                statusFunc();
-
-            } else {
-                $scope.cyberpanelloading = true;
-                new PNotify({
-                    title: 'Operation Failed!',
-                    text: response.data.error_message,
-                    type: 'error'
-                });
-            }
-
-        }
-
-        function cantLoadInitialData(response) {
-            $scope.cyberpanelloading = true;
-            new PNotify({
-                title: 'Operation Failed!',
-                text: 'Could not connect to server, please refresh this page.',
-                type: 'error'
-            });
-        }
-
-
-    };
-
-    function statusFunc() {
-        $scope.cyberpanelloading = false;
-        url = "/websites/statusFunc";
-
-        var data = {
-            statusFile: statusFile
-        };
-
-        var config = {
-            headers: {
-                'X-CSRFToken': getCookie('csrftoken')
-            }
-        };
-
-        $http.post(url, data, config).then(ListInitialData, cantLoadInitialData);
-
-
-        function ListInitialData(response) {
-            if (response.data.status === 1) {
-                if (response.data.abort === 1) {
-                    $scope.functionProgress = {"width": "100%"};
-                    $scope.functionStatus = response.data.currentStatus;
-                    $scope.cyberpanelloading = true;
-                    $timeout.cancel();
-                    $scope.getSwitchStatus();
-                } else {
-                    $scope.functionProgress = {"width": response.data.installationProgress + "%"};
-                    $scope.functionStatus = response.data.currentStatus;
-                    $timeout(statusFunc, 3000);
-                }
-
-            } else {
-                $scope.cyberpanelloading = true;
-                $scope.functionStatus = response.data.error_message;
-                $scope.functionProgress = {"width": response.data.installationProgress + "%"};
-                $timeout.cancel();
-            }
-
-        }
-
-        function cantLoadInitialData(response) {
-            $scope.functionProgress = {"width": response.data.installationProgress + "%"};
-            $scope.functionStatus = 'Could not connect to server, please refresh this page.';
-            $timeout.cancel();
-        }
-
-    }
-
-
-    $scope.tuneSettings = function () {
-        $scope.cyberpanelloading = false;
-
-        url = "/websites/tuneSettings";
-
-        var data = {
-            domainName: $("#domainNamePage").text(),
-            pmMaxChildren: $scope.pmMaxChildren,
-            pmStartServers: $scope.pmStartServers,
-            pmMinSpareServers: $scope.pmMinSpareServers,
-            pmMaxSpareServers: $scope.pmMaxSpareServers,
-            phpPath: $scope.phpPath
-        };
-
-        var config = {
-            headers: {
-                'X-CSRFToken': getCookie('csrftoken')
-            }
-        };
-
-        $http.post(url, data, config).then(ListInitialData, cantLoadInitialData);
-
-        function ListInitialData(response) {
-            $scope.cyberpanelloading = true;
-            if (response.data.status === 1) {
-
-                new PNotify({
-                    title: 'Success',
-                    text: 'Changes successfully applied.',
-                    type: 'success'
-                });
-
-            } else {
-                $scope.cyberpanelloading = true;
-                new PNotify({
-                    title: 'Operation Failed!',
-                    text: response.data.error_message,
-                    type: 'error'
-                });
-            }
-
-        }
-
-        function cantLoadInitialData(response) {
-            $scope.cyberpanelloading = true;
-            new PNotify({
-                title: 'Operation Failed!',
-                text: 'Could not connect to server, please refresh this page.',
-                type: 'error'
-            });
-        }
-
-
-    };
-
-    $scope.saveApacheConfig = function () {
-        $scope.cyberpanelloading = false;
-
-        url = "/websites/saveApacheConfigsToFile";
-
-        var data = {
-            domainName: $("#domainNamePage").text(),
-            configData: $scope.configData
-        };
-
-        var config = {
-            headers: {
-                'X-CSRFToken': getCookie('csrftoken')
-            }
-        };
-
-        $http.post(url, data, config).then(ListInitialData, cantLoadInitialData);
-
-        function ListInitialData(response) {
-            $scope.cyberpanelloading = true;
-            if (response.data.status === 1) {
-
-                new PNotify({
-                    title: 'Success',
-                    text: 'Changes successfully applied.',
-                    type: 'success'
-                });
-
-            } else {
-                $scope.cyberpanelloading = true;
-                new PNotify({
-                    title: 'Operation Failed!',
-                    text: response.data.error_message,
-                    type: 'error'
-                });
-            }
-
-        }
-
-        function cantLoadInitialData(response) {
-            $scope.cyberpanelloading = true;
-            new PNotify({
-                title: 'Operation Failed!',
-                text: 'Could not connect to server, please refresh this page.',
-                type: 'error'
-            });
-        }
-
-
-    };
-
-});
-
-
-app.controller('createDockerPackage', function ($scope, $http, $window) {
-    $scope.cyberpanelLoading = true;
-
-    $scope.createdockerpackage = function () {
-
-        $scope.cyberpanelLoading = false;
-        var config = {
-            headers: {
-                'X-CSRFToken': getCookie('csrftoken')
-            }
-        };
-
-        var data = {
-            name: $scope.packagesname,
-            cpu: $scope.CPU,
-            Memory: $scope.Memory,
-            Bandwidth: $scope.Bandwidth,
-            disk: $scope.disk
-        };
-
-
-        dataurl = "/websites/AddDockerpackage";
-
-        $http.post(dataurl, data, config).then(ListInitialDatas, cantLoadInitialDatas);
-
-        function ListInitialDatas(response) {
-            $scope.cyberpanelLoading = true;
-            if (response.data.status === 1) {
-                new PNotify({
-                    title: 'Success',
-                    text: 'Successfully Saved.',
-                    type: 'success'
-                });
-
-            } else {
-                new PNotify({
-                    title: 'Operation Failed!',
-                    text: response.data.error_message,
-                    type: 'error'
-                });
-            }
-        }
-
-        function cantLoadInitialDatas(response) {
-            $scope.cyberpanelLoading = true;
-            new PNotify({
-                title: 'Operation Failed!',
-                text: 'Could not connect to server, please refresh this page.',
-                type: 'error'
-            });
-
-
-        }
-    }
-
-
-    $scope.Getpackage = function (packid) {
-
-        $scope.cyberpanelLoading = false;
-        var config = {
-            headers: {
-                'X-CSRFToken': getCookie('csrftoken')
-            }
-        };
-
-        var data = {
-            id: packid,
-        };
-
-
-        dataurl = "/websites/Getpackage";
-
-        $http.post(dataurl, data, config).then(ListInitialDatas, cantLoadInitialDatas);
-
-        function ListInitialDatas(response) {
-            $scope.cyberpanelLoading = true;
-            if (response.data.status === 1) {
-                $scope.U_Name = response.data.error_message.obj.Name
-                $scope.U_CPU = response.data.error_message.obj.CPU
-                $scope.U_Memory = response.data.error_message.obj.Memory
-                $scope.U_Bandwidth = response.data.error_message.obj.Bandwidth
-                $scope.U_DiskSpace = response.data.error_message.obj.DiskSpace
-
-                $scope.EidtID = packid;
-
-            } else {
-                new PNotify({
-                    title: 'Operation Failed!',
-                    text: response.data.error_message,
-                    type: 'error'
-                });
-            }
-        }
-
-        function cantLoadInitialDatas(response) {
-            $scope.cyberpanelLoading = true;
-            new PNotify({
-                title: 'Operation Failed!',
-                text: 'Could not connect to server, please refresh this page.',
-                type: 'error'
-            });
-
-
-        }
-    }
-
-
-    $scope.SaveUpdate = function () {
-
-        $scope.cyberpanelLoading = false;
-        var config = {
-            headers: {
-                'X-CSRFToken': getCookie('csrftoken')
-            }
-        };
-
-        var data = {
-            id: $scope.EidtID,
-            CPU: $scope.U_CPU,
-            RAM: $scope.U_Memory,
-            Bandwidth: $scope.U_Bandwidth,
-            DiskSpace: $scope.U_DiskSpace,
-        };
-
-
-        dataurl = "/websites/Updatepackage";
-
-        $http.post(dataurl, data, config).then(ListInitialDatas, cantLoadInitialDatas);
-
-        function ListInitialDatas(response) {
-            $scope.cyberpanelLoading = true;
-            if (response.data.status === 1) {
-                new PNotify({
-                    title: 'Success',
-                    text: 'Successfully Updated.',
-                    type: 'success'
-                });
-            } else {
-                new PNotify({
-                    title: 'Operation Failed!',
-                    text: response.data.error_message,
-                    type: 'error'
-                });
-            }
-        }
-
-        function cantLoadInitialDatas(response) {
-            $scope.cyberpanelLoading = true;
-            new PNotify({
-                title: 'Operation Failed!',
-                text: 'Could not connect to server, please refresh this page.',
-                type: 'error'
-            });
-
-
-        }
-    }
-
-    var FinalDeletepackageURL;
-    $scope.Deletepackage = function (url) {
-        FinalDeletepackageURL = url;
-        // console.log(FinalDeletepackageURL);
-    }
-
-    $scope.ConfirmDelete = function () {
-        window.location.href = FinalDeletepackageURL
-    }
-
-})
-app.controller('AssignPackage', function ($scope, $http,) {
-    $scope.cyberpanelLoading = true;
-    $scope.AddAssignment = function () {
-        $scope.cyberpanelLoading = false;
-        var config = {
-            headers: {
-                'X-CSRFToken': getCookie('csrftoken')
-            }
-        };
-
-        var data = {
-            package: $('#packageSelection').val(),
-            user: $scope.userSelection,
-        };
-
-
-        dataurl = "/websites/AddAssignment";
-
-        $http.post(dataurl, data, config).then(ListInitialDatas, cantLoadInitialDatas);
-
-        function ListInitialDatas(response) {
-            $scope.cyberpanelLoading = true;
-            if (response.data.status === 1) {
-                new PNotify({
-                    title: 'Success',
-                    text: 'Successfully saved.',
-                    type: 'success'
-                });
-
-            } else {
-                new PNotify({
-                    title: 'Operation Failed!',
-                    text: response.data.error_message,
-                    type: 'error'
-                });
-            }
-        }
-
-        function cantLoadInitialDatas(response) {
-            $scope.cyberpanelLoading = true;
-            new PNotify({
-                title: 'Operation Failed!',
-                text: 'Could not connect to server, please refresh this page.',
-                type: 'error'
-            });
-
-
-        }
-    }
-
-    var FinalDeletepackageURL;
-    $scope.Deleteassingment = function (url) {
-        FinalDeletepackageURL = url;
-        // console.log(FinalDeletepackageURL);
-    }
-
-    $scope.ConfirmDelete = function () {
-        window.location.href = FinalDeletepackageURL
-    }
-
-})
-app.controller('createDockerSite', function ($scope, $http, $timeout) {
-    $scope.cyberpanelLoading = true;
+app.controller('installWordPressCTRL', function ($scope, $http, $timeout) {
     $scope.installationDetailsForm = false;
     $scope.installationProgress = true;
-    $scope.errorMessageBox = true;
-    $scope.success = true;
+    $scope.installationFailed = true;
+    $scope.installationSuccessfull = true;
     $scope.couldNotConnect = true;
+    $scope.wpInstallLoading = true;
     $scope.goBackDisable = true;
 
     var statusFile;
+    var domain = $("#domainNamePage").text();
+    var path;
 
-    $scope.createdockersite = function () {
-
-        $scope.cyberpanelLoading = false;
-        $scope.installationDetailsForm = true;
-        $scope.installationProgress = false;
-        $scope.errorMessageBox = true;
-        $scope.success = true;
-        $scope.couldNotConnect = true;
-        $scope.goBackDisable = true;
-
-        $scope.currentStatus = "Starting creation..";
-
-
-        url = "/websites/submitDockerSiteCreation";
-
-        var package = $scope.packageForWebsite;
-
-
-        var data = {
-            sitename: $scope.siteName,
-            Owner: $scope.userSelection,
-            Domain: $scope.domainNameCreate,
-            MysqlCPU: $scope.CPUMysql,
-            MYsqlRam: $scope.rammysql,
-            SiteCPU: $scope.CPUSite,
-            SiteRam: $scope.RamSite,
-            App: $scope.App,
-            WPusername: $scope.WPUsername,
-            WPemal: $scope.wpEmail,
-            WPpasswd: $scope.WPpassword
-        };
-
-
-        var config = {
-            headers: {
-                'X-CSRFToken': getCookie('csrftoken')
-            }
-        };
-
-        $http.post(url, data, config).then(ListInitialDatas, cantLoadInitialDatas);
-
-
-        function ListInitialDatas(response) {
-            console.log('.........................')
-            if (response.data.installStatus === 1) {
-                console.log(response.data.installsatus)
-                statusFile = response.data.tempStatusPath;
-                getCreationStatus();
-            } else {
-
-                $scope.cyberpanelLoading = true;
-                $scope.installationDetailsForm = true;
-                $scope.installationProgress = false;
-                $scope.errorMessageBox = false;
-                $scope.success = true;
-                $scope.couldNotConnect = true;
-                $scope.goBackDisable = false;
-
-                $scope.errorMessage = response.data.error_message;
-            }
-
-
-        }
-
-        function cantLoadInitialDatas(response) {
-
-            $scope.cyberpanelLoading = true;
-            $scope.installationDetailsForm = true;
-            $scope.installationProgress = false;
-            $scope.errorMessageBox = true;
-            $scope.success = true;
-            $scope.couldNotConnect = false;
-            $scope.goBackDisable = false;
-
-        }
-
-
-    };
     $scope.goBack = function () {
-        $scope.cyberpanelLoading = true;
         $scope.installationDetailsForm = false;
         $scope.installationProgress = true;
-        $scope.errorMessageBox = true;
-        $scope.success = true;
+        $scope.installationFailed = true;
+        $scope.installationSuccessfull = true;
         $scope.couldNotConnect = true;
-        $scope.goBackDisable = true;
-        $("#installProgress").css("width", "0%");
-    };
-
-    function getCreationStatus() {
-
-        url = "/websites/installWordpressStatus";
-
-        var data = {
-            statusFile: statusFile
-        };
-
-        var config = {
-            headers: {
-                'X-CSRFToken': getCookie('csrftoken')
-            }
-        };
-
-
-        $http.post(url, data, config).then(ListInitialDatas, cantLoadInitialDatas);
-
-
-        function ListInitialDatas(response) {
-
-
-            if (response.data.abort === 1) {
-
-                if (response.data.installStatus === 1) {
-
-                    $scope.cyberpanelLoading = true;
-                    $scope.installationDetailsForm = true;
-                    $scope.installationProgress = false;
-                    $scope.errorMessageBox = true;
-                    $scope.success = false;
-                    $scope.couldNotConnect = true;
-                    $scope.goBackDisable = false;
+        $scope.wpInstallLoading = true;
+        $scope.goBackDisable = false;
 
                     $("#installProgress").css("width", "100%");
                     $scope.installPercentage = "100";

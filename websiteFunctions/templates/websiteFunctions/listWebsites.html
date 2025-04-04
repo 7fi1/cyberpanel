@@ -101,7 +101,7 @@
                             <span ng-bind="web.admin" style="text-transform: none"></span>
                         </div>
                         <div class="col-md-3 content-box-header">
-                            <i class="p fa fa-wordpress btn-icon text-muted" ng-click="showWPSites($index)" 
+                            <i class="p fa fa-wordpress btn-icon text-muted" ng-click="showWPSites(web.domain)" 
                                data-toggle="tooltip" data-placement="right" title="Show WordPress Sites">&emsp;</i>
                             <span ng-if="web.wp_sites && web.wp_sites.length > 0" style="text-transform: none">
                                 {$ web.wp_sites.length $} WordPress Sites
@@ -110,65 +110,76 @@
                     </div>
 
                     <!-- WordPress Sites Section -->
-                    <div class="col-md-12" ng-if="web.showWPSites && web.wp_sites && web.wp_sites.length > 0">
-                        <div ng-repeat="wp in web.wp_sites" style="margin: 15px 0; padding: 20px; background: white; border: 1px solid #ddd; border-radius: 4px;">
+                    <div ng-if="web.showWPSites && web.wp_sites && web.wp_sites.length > 0" class="card mt-3">
+                        <div class="card-header">
+                            <h5 class="mb-0">WordPress Sites</h5>
+                        </div>
+                        <div class="card-body">
                             <div class="row">
-                                <div class="col-md-6">
-                                    <span style="font-size: 16px;" ng-bind="wp.title"></span>
-                                </div>
-                                <div class="col-md-6 text-right">
-                                    <button class="btn btn-default btn-sm" style="margin-right: 5px;" ng-click="visitSite(wp.url)">Visit Site</button>
-                                    <button class="btn btn-default btn-sm" style="margin-right: 5px;" ng-click="wpLogin(wp.id)">WP Login</button>
-                                    <button class="btn btn-primary btn-sm" ng-click="manageWP(wp.id)">MANAGE</button>
-                                </div>
-                            </div>
-
-                            <div class="row" style="margin-top: 30px;">
-                                <div class="col-md-3">
-                                    <div style="border-top: 1px solid #ddd; padding-top: 15px;">
-                                        <div style="color: #666; font-size: 12px; margin-bottom: 5px;">WordPress</div>
-                                        <div ng-bind="wp.version || 'Unknown'"></div>
-                                    </div>
-                                </div>
-                                <div class="col-md-3">
-                                    <div style="border-top: 1px solid #ddd; padding-top: 15px;">
-                                        <div style="color: #666; font-size: 12px; margin-bottom: 5px;">PHP Version</div>
-                                        <div ng-bind="wp.phpVersion || 'Unknown'"></div>
-                                    </div>
-                                </div>
-                                <div class="col-md-3">
-                                    <div style="border-top: 1px solid #ddd; padding-top: 15px;">
-                                        <div style="color: #666; font-size: 12px; margin-bottom: 5px;">Theme</div>
-                                        <div ng-bind="wp.theme || 'Unknown'"></div>
-                                    </div>
-                                </div>
-                                <div class="col-md-3">
-                                    <div style="border-top: 1px solid #ddd; padding-top: 15px;">
-                                        <div style="color: #666; font-size: 12px; margin-bottom: 5px;">Plugins</div>
-                                        <div>{$ wp.activePlugins || '0' $} active</div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="row" style="margin-top: 20px;">
-                                <div class="col-md-6">
-                                    <div style="margin-bottom: 10px;">
-                                        <input type="checkbox" ng-model="wp.searchIndex" ng-change="updateSetting(wp, 'search-indexing')" style="margin-right: 5px;">
-                                        <span style="color: #666;">Search engine indexing</span>
-                                    </div>
-                                    <div>
-                                        <input type="checkbox" ng-model="wp.debugging" ng-change="updateSetting(wp, 'debugging')" style="margin-right: 5px;">
-                                        <span style="color: #666;">Debugging</span>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div style="margin-bottom: 10px;">
-                                        <input type="checkbox" ng-model="wp.passwordProtection" ng-change="updateSetting(wp, 'password-protection')" style="margin-right: 5px;">
-                                        <span style="color: #666;">Password protection</span>
-                                    </div>
-                                    <div>
-                                        <input type="checkbox" ng-model="wp.maintenanceMode" ng-change="updateSetting(wp, 'maintenance-mode')" style="margin-right: 5px;">
-                                        <span style="color: #666;">Maintenance mode</span>
+                                <div class="col-md-6 mb-4" ng-repeat="site in web.wp_sites">
+                                    <div class="card h-100">
+                                        <div class="card-header d-flex justify-content-between align-items-center">
+                                            <h6 class="mb-0">{{site.title}}</h6>
+                                            <div>
+                                                <button class="btn btn-sm btn-primary mr-2" ng-click="visitSite(site.url)">
+                                                    <i class="fas fa-external-link-alt"></i> Visit
+                                                </button>
+                                                <button class="btn btn-sm btn-info mr-2" ng-click="wpLogin(site.id)">
+                                                    <i class="fas fa-sign-in-alt"></i> Login
+                                                </button>
+                                                <button class="btn btn-sm btn-secondary" ng-click="manageWP(site.id)">
+                                                    <i class="fas fa-cog"></i> Manage
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <p><strong>WordPress Version:</strong> {{site.version}}</p>
+                                                    <p><strong>PHP Version:</strong> {{site.phpVersion}}</p>
+                                                    <p><strong>Active Theme:</strong> {{site.theme}}</p>
+                                                    <p><strong>Active Plugins:</strong> {{site.activePlugins}}</p>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <div class="custom-control custom-switch">
+                                                            <input type="checkbox" class="custom-control-input" 
+                                                                   id="searchIndex{{site.id}}" 
+                                                                   ng-model="site.searchIndex"
+                                                                   ng-change="updateSetting(site.id, 'search-indexing', site.searchIndex ? 'enable' : 'disable')">
+                                                            <label class="custom-control-label" for="searchIndex{{site.id}}">Search Indexing</label>
+                                                        </div>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <div class="custom-control custom-switch">
+                                                            <input type="checkbox" class="custom-control-input" 
+                                                                   id="debugging{{site.id}}" 
+                                                                   ng-model="site.debugging"
+                                                                   ng-change="updateSetting(site.id, 'debugging', site.debugging ? 'enable' : 'disable')">
+                                                            <label class="custom-control-label" for="debugging{{site.id}}">Debugging</label>
+                                                        </div>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <div class="custom-control custom-switch">
+                                                            <input type="checkbox" class="custom-control-input" 
+                                                                   id="passwordProtection{{site.id}}" 
+                                                                   ng-model="site.passwordProtection"
+                                                                   ng-change="updateSetting(site.id, 'password-protection', site.passwordProtection ? 'enable' : 'disable')">
+                                                            <label class="custom-control-label" for="passwordProtection{{site.id}}">Password Protection</label>
+                                                        </div>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <div class="custom-control custom-switch">
+                                                            <input type="checkbox" class="custom-control-input" 
+                                                                   id="maintenanceMode{{site.id}}" 
+                                                                   ng-model="site.maintenanceMode"
+                                                                   ng-change="updateSetting(site.id, 'maintenance-mode', site.maintenanceMode ? 'enable' : 'disable')">
+                                                            <label class="custom-control-label" for="maintenanceMode{{site.id}}">Maintenance Mode</label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
