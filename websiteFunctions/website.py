@@ -7091,8 +7091,8 @@ StrictHostKeyChecking no
                 })
                 
             data_ret = {'status': 1, 'fetchStatus': 1, 'error_message': "None", "sites": sites}
-            json_data = json.dumps(data_ret)
-            return HttpResponse(json_data)
+                json_data = json.dumps(data_ret)
+                return HttpResponse(json_data)
 
         except BaseException as msg:
             data_ret = {'status': 0, 'fetchStatus': 0, 'error_message': str(msg)}
