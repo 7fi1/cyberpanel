@@ -134,13 +134,13 @@
                                     <div class="wp-site-content">
                                         <div class="row">
                                             <div class="col-sm-3">
-                                                <img ng-src="{$ wp.screenshot $}" 
+                                                <img ng-src="https://api.microlink.io/?url={$ getFullUrl(wp.url) $}&screenshot=true&meta=false&embed=screenshot.url" 
                                                      alt="{$ wp.title $}" 
                                                      class="img-responsive"
                                                      style="max-width: 100%; margin-bottom: 10px;"
                                                      onerror="this.onerror=null; this.src='https://s.wordpress.org/style/images/about/WordPress-logotype-standard.png';">
                                                 <div class="text-center">
-                                                    <a ng-href="http://{$ wp.url $}" target="_blank" class="btn btn-default btn-sm">
+                                                    <a ng-href="{$ getFullUrl(wp.url) $}" target="_blank" class="btn btn-default btn-sm">
                                                         <i class="fas fa-external-link-alt"></i> Visit Site
                                                     </a>
                                                     <a href="{% url 'AutoLogin' %}?id={$ wp.id $}" target="_blank" class="btn btn-primary btn-sm">
