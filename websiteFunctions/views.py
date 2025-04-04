@@ -1842,20 +1842,3 @@ def Dockersitehome(request, dockerapp):
         return wm.Dockersitehome(request, userID, None)
     except KeyError:
         return redirect(loadLoginPage)
-
-def GetWPSitesByDomain(request):
-    try:
-        userID = request.session['userID']
-        data = json.loads(request.body)
-        domain = data['domain']
-
-        wm = WebsiteManager()
-        response = wm.GetWPSitesByDomain(userID, data)
-        
-        return response
-    except KeyError:
-        return redirect(reverse('login'))
-    except BaseException as msg:
-        data_ret = {'status': 0, 'error_message': str(msg)}
-        json_data = json.dumps(data_ret)
-        return HttpResponse(json_data)
