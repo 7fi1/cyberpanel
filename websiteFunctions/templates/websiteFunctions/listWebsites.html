@@ -7,6 +7,9 @@
     {% get_current_language as LANGUAGE_CODE %}
     <!-- Current language: {{ LANGUAGE_CODE }} -->
 
+    <!-- Add Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
     <script>
         $(document).ready(function () {
             $('[data-toggle="tooltip"]').tooltip();
@@ -84,25 +87,25 @@
 
                     <div class="col-md-12">
                         <div class="col-md-3 content-box-header">
-                            <i class="p fa fa-hdd-o btn-icon text-muted" data-toggle="tooltip"
+                            <i class="fa-solid fa-hard-drive btn-icon text-muted" data-toggle="tooltip"
                                data-placement="right"
                                title="Disk Usage">&emsp;</i>
                             <span ng-bind="web.diskUsed" style="text-transform: none"></span>
                         </div>
                         <div class="col-md-3 content-box-header">
-                            <i class="p fa fa-cubes btn-icon text-muted" data-toggle="tooltip"
+                            <i class="fa-solid fa-cubes btn-icon text-muted" data-toggle="tooltip"
                                data-placement="right"
                                title="Packages">&emsp;</i>
                             <span ng-bind="web.package" style="text-transform: none"></span>
                         </div>
                         <div class="col-md-3 content-box-header">
-                            <i class="p fa fa-user btn-icon text-muted" data-toggle="tooltip" data-placement="right"
+                            <i class="fa-solid fa-user btn-icon text-muted" data-toggle="tooltip" data-placement="right"
                                title="Owner">&emsp;</i>
                             <span ng-bind="web.admin" style="text-transform: none"></span>
                         </div>
                         <div class="col-md-3 content-box-header">
                             <a href="javascript:void(0);" ng-click="showWPSites(web.domain)" style="cursor: pointer;">
-                                <i class="p fa fa-wordpress btn-icon text-muted" data-toggle="tooltip" 
+                                <i class="fa-brands fa-wordpress btn-icon text-muted" data-toggle="tooltip" 
                                    data-placement="right" title="Show WordPress Sites">&emsp;</i>
                                 <span ng-if="web.wp_sites && web.wp_sites.length > 0" style="text-transform: none">
                                     {$ web.wp_sites.length $} WordPress Sites
@@ -119,14 +122,14 @@
                                     <div class="wp-site-header">
                                         <div class="row">
                                             <div class="col-sm-8">
-                                                <h4><i class="fab fa-wordpress" style="color: #00749C; margin-right: 8px;"></i>{$ wp.title $}</h4>
+                                                <h4><i class="fa-brands fa-wordpress" style="color: #00749C; margin-right: 8px;"></i>{$ wp.title $}</h4>
                                             </div>
                                             <div class="col-sm-4 text-right">
                                                 <button class="btn btn-primary btn-sm" ng-click="manageWP(wp.id)">
-                                                    <i class="fas fa-cog"></i> Manage
+                                                    <i class="fa-solid fa-cog"></i> Manage
                                                 </button>
                                                 <button class="btn btn-danger btn-sm" ng-click="deleteWPSite(wp)">
-                                                    <i class="fas fa-trash"></i> Delete
+                                                    <i class="fa-solid fa-trash"></i> Delete
                                                 </button>
                                             </div>
                                         </div>
@@ -141,10 +144,10 @@
                                                      onerror="this.onerror=null; this.src='https://s.wordpress.org/style/images/about/WordPress-logotype-standard.png';">
                                                 <div class="text-center">
                                                     <a ng-href="{$ getFullUrl(wp.url) $}" target="_blank" class="btn btn-default btn-sm">
-                                                        <i class="fas fa-external-link-alt"></i> Visit Site
+                                                        <i class="fa-solid fa-external-link"></i> Visit Site
                                                     </a>
                                                     <a href="{% url 'AutoLogin' %}?id={$ wp.id $}" target="_blank" class="btn btn-primary btn-sm">
-                                                        <i class="fab fa-wordpress"></i> WP Login
+                                                        <i class="fa-brands fa-wordpress"></i> WP Login
                                                     </a>
                                                 </div>
                                             </div>
