@@ -2213,6 +2213,44 @@ Require valid-user"""
             dic = {'getWebsiteCron': 0, 'error_message': str(msg)}
             json_data = json.dumps(dic)
             return HttpResponse(json_data)
+        
+    def fetchWebsitesList(self, userID=None, data=None):
+        try:
+            currentACL = ACLManager.loadedACL(userID)
+            pageNumber = int(data['page'])
+            recordsToShow = int(data['recordsToShow'])
+
+            if os.path.exists(ProcessUtilities.debugPath):
+                logging.CyberCPLogFileWriter.writeToFile(f'Fetch sites step 1..')
+
+            endPageNumber, finalPageNumber = self.recordsPointer(pageNumber, recordsToShow)
+
+            if os.path.exists(ProcessUtilities.debugPath):
+                logging.CyberCPLogFileWriter.writeToFile(f'Fetch sites step 2..')
+
+            websites = ACLManager.findWebsiteObjects(currentACL, userID)
+
+            if os.path.exists(ProcessUtilities.debugPath):
+                logging.CyberCPLogFileWriter.writeToFile(f'Fetch sites step 3..')
+
+            pagination = self.getPagination(len(websites), recordsToShow)
+
+            if os.path.exists(ProcessUtilities.debugPath):
+                logging.CyberCPLogFileWriter.writeToFile(f'Fetch sites step 4..')
+
+            json_data = self.findWebsitesListJson(websites[finalPageNumber:endPageNumber])
+
+            if os.path.exists(ProcessUtilities.debugPath):
+                logging.CyberCPLogFileWriter.writeToFile(f'Fetch sites step 5..')
+
+            final_dic = {'status': 1, 'listWebSiteStatus': 1, 'error_message': "None", "data": json_data,
+                         'pagination': pagination}
+            final_json = json.dumps(final_dic)
+            return HttpResponse(final_json)
+        except BaseException as msg:
+            dic = {'status': 1, 'listWebSiteStatus': 0, 'error_message': str(msg)}
+            json_data = json.dumps(dic)
+            return HttpResponse(json_data)
 
     def remCronbyLine(self, userID=None, data=None):
         try:
