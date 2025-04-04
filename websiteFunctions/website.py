@@ -7067,6 +7067,9 @@ StrictHostKeyChecking no
                 
             wp_sites = WPSites.objects.filter(owner=website)
             sites = []
+
+            command = 'sudo -u %s %s -d error_reporting=0 /usr/bin/wp core version --skip-plugins --skip-themes --path=%s 2>/dev/null' % (
+                Vhuser, FinalPHPPath, path)
             
             for site in wp_sites:
                 sites.append({
