@@ -7053,8 +7053,6 @@ StrictHostKeyChecking no
         proc = httpProc(request, 'websiteFunctions/DockerSiteHome.html',
                         {'dockerSite': ds})
         return proc.render()
-
-    def fetchWPSitesForDomain(self, userID=None, data=None):
         try:
             currentACL = ACLManager.loadedACL(userID)
             admin = Administrator.objects.get(pk=userID)
@@ -7088,6 +7086,55 @@ StrictHostKeyChecking no
                 'url': site.FinalURL,
                     'path': site.path,
                     'version': version,
+                })
+                
+            data_ret = {'status': 1, 'fetchStatus': 1, 'error_message': "None", "sites": sites}
+            json_data = json.dumps(data_ret)
+            return HttpResponse(json_data)
+
+        except BaseException as msg:
+            data_ret = {'status': 0, 'fetchStatus': 0, 'error_message': str(msg)}
+            json_data = json.dumps(data_ret)
+            return HttpResponse(json_data)
+        
+    def fetchWPSitesForDomain(self, userID=None, data=None):
+        try:
+            currentACL = ACLManager.loadedACL(userID)
+            admin = Administrator.objects.get(pk=userID)
+            
+            domain = data['domain']
+            website = Websites.objects.get(domain=domain)
+            
+            if ACLManager.checkOwnership(domain, admin, currentACL) != 1:
+                return ACLManager.loadErrorJson('fetchStatus', 0)
+
+            wp_sites = WPSites.objects.filter(owner=website)
+            sites = []
+            
+            Vhuser = website.externalApp
+            PHPVersion = website.phpSelection
+
+            php = ACLManager.getPHPString(PHPVersion)
+            FinalPHPPath = '/usr/local/lsws/lsphp%s/bin/php' % (php)
+            
+            for site in wp_sites:
+                command = 'sudo -u %s %s -d error_reporting=0 /usr/bin/wp core version --skip-plugins --skip-themes --path=%s 2>/dev/null' % (
+                    Vhuser, FinalPHPPath, site.path)
+                version = ProcessUtilities.outputExecutioner(command, None, True)
+                version = html.escape(version)
+
+                # Generate screenshot URL
+                site_url = site.FinalURL
+                if not site_url.startswith(('http://', 'https://')):
+                    site_url = f'https://{site_url}'
+
+                sites.append({
+                    'id': site.id,
+                    'title': site.title,
+                    'url': site.FinalURL,
+                    'path': site.path,
+                    'version': version,
+                    'screenshot': f'https://api.microlink.io/?url={site_url}&screenshot=true&meta=false&embed=screenshot.url'
                 })
                 
             data_ret = {'status': 1, 'fetchStatus': 1, 'error_message': "None", "sites": sites}
