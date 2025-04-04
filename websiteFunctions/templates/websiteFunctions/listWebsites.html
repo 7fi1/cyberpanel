@@ -101,7 +101,7 @@
                             <span ng-bind="web.admin" style="text-transform: none"></span>
                         </div>
                         <div class="col-md-3 content-box-header">
-                            <i class="p fa fa-wordpress btn-icon text-muted" ng-click="showWPSites($index)" 
+                            <i class="p fa fa-wordpress btn-icon text-muted" ng-click="showWPSites(web.domain)" 
                                data-toggle="tooltip" data-placement="right" title="Show WordPress Sites">&emsp;</i>
                             <span ng-if="web.wp_sites && web.wp_sites.length > 0" style="text-transform: none">
                                 {$ web.wp_sites.length $} WordPress Sites

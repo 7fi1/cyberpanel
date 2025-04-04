@@ -51,6 +51,7 @@ urlpatterns = [
     path('AddWPsiteforRemoteBackup', views.AddWPsiteforRemoteBackup, name='AddWPsiteforRemoteBackup'),
     path('UpdateRemoteschedules', views.UpdateRemoteschedules, name='UpdateRemoteschedules'),
     path('ScanWordpressSite', views.ScanWordpressSite, name='ScanWordpressSite'),
+    path('fetchWPDetails', views.fetchWPDetails, name='fetchWPDetails'),
 
     # AddPlugin
     path('ConfigurePlugins', views.ConfigurePlugins, name='ConfigurePlugins'),

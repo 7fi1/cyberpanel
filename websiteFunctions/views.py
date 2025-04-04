@@ -1842,3 +1842,12 @@ def Dockersitehome(request, dockerapp):
         return wm.Dockersitehome(request, userID, None)
     except KeyError:
         return redirect(loadLoginPage)
+
+def fetchWPDetails(request):
+    try:
+        userID = request.session['userID']
+        data = json.loads(request.body)
+        wm = WebsiteManager()
+        return wm.fetchWPSitesForDomain(userID, data)
+    except KeyError:
+        return redirect(loadLoginPage)
