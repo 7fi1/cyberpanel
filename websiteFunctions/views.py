@@ -1846,7 +1846,9 @@ def Dockersitehome(request, dockerapp):
 def fetchWPDetails(request):
     try:
         userID = request.session['userID']
-        data = json.loads(request.body)
+        data = {
+            'domain': request.POST.get('domain')
+        }
         wm = WebsiteManager()
         return wm.fetchWPSitesForDomain(userID, data)
     except KeyError:
