@@ -2677,35 +2677,27 @@ app.controller('listWebsites', function ($scope, $http, $window) {
     $scope.showWPSites = function(domain) {
         var url = '/websites/fetchWPDetails';
         var data = {
-            domain: domain
+          domain: domain
         };
-        
         $http({
-            method: 'POST',
-            url: url,
-            data: $.param(data),
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'X-CSRFToken': getCookie('csrftoken')
-            }
+          method: 'POST',
+          url: url,
+          data: $.param(data),
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': getCookie('csrftoken')
+          }
         }).then(function(response) {
-            if (response.data.status === 1) {
-                var sites = response.data.sites;
-                var message = 'WordPress Sites for ' + domain + ':\n\n';
-                sites.forEach(function(site) {
-                    message += 'Title: ' + site.title + '\n';
-                    message += 'URL: ' + site.url + '\n';
-                    message += 'Version: ' + site.version + '\n';
-                    message += 'Status: ' + site.status + '\n\n';
-                });
-                alert(message);
-            } else {
-                alert('Error: ' + response.data.error_message);
-            }
+          if (response.data.status === 1) {
+            $scope.web.wp_sites = response.data.sites;
+            $scope.web.showWPSites = true;
+          } else {
+            alert('Error: ' + response.data.error_message);
+          }
         }).catch(function(error) {
-            alert('Error fetching WordPress sites: ' + JSON.stringify(error));
+          alert('Error fetching WordPress sites: ' + JSON.stringify(error));
         });
-    };
+      };
 
     $scope.visitSite = function(url) {
         window.open(url, '_blank');
