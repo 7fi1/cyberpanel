@@ -16,7 +16,6 @@ urlpatterns = [
     # WordPress
     path('createWordpress', views.WPCreate, name='createWordpress'),
     path('ListWPSites', views.ListWPSites, name='ListWPSites'),
-    path('ListWPSitesForWebsite', views.ListWPSitesForWebsite, name='ListWPSitesForWebsite'),
     path('WPHome', views.WPHome, name='WPHome'),
     path('RestoreBackups', views.RestoreBackups, name='RestoreBackups'),
     path('RestoreHome', views.RestoreHome, name='RestoreHome'),

@@ -46,14 +46,6 @@ def ListWPSites(request):
     except KeyError:
         return redirect(loadLoginPage)
 
-def ListWPSitesForWebsite(request):
-    try:
-        userID = request.session['userID']
-        wm = WebsiteManager()
-        return wm.ListWPSitesForWebsite(userID, request.POST)
-    except KeyError:
-        return redirect(loadLoginPage)
-
 def WPHome(request):
     try:
         userID = request.session['userID']

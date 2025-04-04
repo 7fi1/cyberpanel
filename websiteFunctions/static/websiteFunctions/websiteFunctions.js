@@ -2689,24 +2689,26 @@ app.controller('listWebsites', function ($scope, $http, $window) {
         console.log('showWPSites called with index:', index);
         console.log('Current WebSitesList:', $scope.WebSitesList);
         
-        var web = $scope.WebSitesList[index];
-        console.log('Selected website:', web);
+        $scope.selectedWebsite = $scope.WebSitesList[index];
+        console.log('Selected website:', $scope.selectedWebsite);
         
-        // Fetch WordPress sites for this website
-        var url = '/websites/ListWPSitesForWebsite';
+        // Always fetch fresh data
+        var url = '/websites/FetchWPdata';
+        var data = {
+            domain: $scope.selectedWebsite.domain,
+            websiteName: $scope.selectedWebsite.domain
+        };
         
         $http({
             method: 'POST',
             url: url,
+            data: JSON.stringify(data),
             headers: {
                 'Content-Type': 'application/json',
                 'X-CSRFToken': getCookie('csrftoken')
-            },
-            data: {
-                websiteName: web.domain
             }
         }).then(function(response) {
-            console.log('WP Sites Response:', response);
+            console.log('WP Details Response:', response);
             
             // Check if response is HTML (login page)
             if (typeof response.data === 'string' && response.data.includes('<!DOCTYPE html>')) {
@@ -2717,23 +2719,39 @@ app.controller('listWebsites', function ($scope, $http, $window) {
             
             if (response.data && response.data.status === 1) {
                 try {
-                    // Update the website's wp_sites property
-                    $scope.WebSitesList[index].wp_sites = response.data.wp_sites;
-                    $scope.WebSitesList[index].showWPSites = true;
-                } catch (error) {
-                    console.error('Error processing WP sites:', error);
-                    $("#listFail").fadeIn();
-                    $scope.errorMessage = 'Error processing WordPress sites data';
+                    // If single site, wrap in array
+                    var sites = Array.isArray(response.data.data) ? response.data.data : [response.data.data];
+                    
+                    $scope.selectedWebsite.wp_sites = sites.map(function(site) {
+                        return {
+                            id: site.id || $scope.selectedWebsite.domain,
+                            title: site.title || site.domain || $scope.selectedWebsite.domain,
+                            url: site.url || 'http://' + $scope.selectedWebsite.domain,
+                            version: site.version || 'Unknown',
+                            phpVersion: site.php_version || 'Unknown',
+                            theme: site.theme || 'Unknown',
+                            activePlugins: site.active_plugins || 0,
+                            searchIndex: site.search_index === 'enabled',
+                            debugging: site.debugging === 'enabled',
+                            passwordProtection: site.password_protection === 'enabled',
+                            maintenanceMode: site.maintenance_mode === 'enabled'
+                        };
+                    });
+                    $scope.selectedWebsite.showWPSites = true;
+                } catch (e) {
+                    console.error('Error processing WordPress data:', e);
+                    $scope.selectedWebsite.showWPSites = false;
+                    $scope.selectedWebsite.wp_sites = [];
                 }
             } else {
-                console.error('Error fetching WP sites:', response.data.error_message);
-                $("#listFail").fadeIn();
-                $scope.errorMessage = response.data.error_message || 'Error fetching WordPress sites';
+                console.error('Error fetching WordPress sites:', response.data.error_message);
+                $scope.selectedWebsite.showWPSites = false;
+                $scope.selectedWebsite.wp_sites = [];
             }
-        }).catch(function(error) {
+        }, function(error) {
             console.error('Error fetching WordPress sites:', error);
-            $("#listFail").fadeIn();
-            $scope.errorMessage = error.message || 'An error occurred while fetching WordPress sites';
+            $scope.selectedWebsite.showWPSites = false;
+            $scope.selectedWebsite.wp_sites = [];
         });
     };
 
@@ -8226,24 +8244,26 @@ app.controller('listWebsites', function ($scope, $http, $window) {
         console.log('showWPSites called with index:', index);
         console.log('Current WebSitesList:', $scope.WebSitesList);
         
-        var web = $scope.WebSitesList[index];
-        console.log('Selected website:', web);
+        $scope.selectedWebsite = $scope.WebSitesList[index];
+        console.log('Selected website:', $scope.selectedWebsite);
         
-        // Fetch WordPress sites for this website
-        var url = '/websites/ListWPSitesForWebsite';
+        // Always fetch fresh data
+        var url = '/websites/FetchWPdata';
+        var data = {
+            domain: $scope.selectedWebsite.domain,
+            websiteName: $scope.selectedWebsite.domain
+        };
         
         $http({
             method: 'POST',
             url: url,
+            data: JSON.stringify(data),
             headers: {
                 'Content-Type': 'application/json',
                 'X-CSRFToken': getCookie('csrftoken')
-            },
-            data: {
-                websiteName: web.domain
             }
         }).then(function(response) {
-            console.log('WP Sites Response:', response);
+            console.log('WP Details Response:', response);
             
             // Check if response is HTML (login page)
             if (typeof response.data === 'string' && response.data.includes('<!DOCTYPE html>')) {
@@ -8254,23 +8274,39 @@ app.controller('listWebsites', function ($scope, $http, $window) {
             
             if (response.data && response.data.status === 1) {
                 try {
-                    // Update the website's wp_sites property
-                    $scope.WebSitesList[index].wp_sites = response.data.wp_sites;
-                    $scope.WebSitesList[index].showWPSites = true;
-                } catch (error) {
-                    console.error('Error processing WP sites:', error);
-                    $("#listFail").fadeIn();
-                    $scope.errorMessage = 'Error processing WordPress sites data';
+                    // If single site, wrap in array
+                    var sites = Array.isArray(response.data.data) ? response.data.data : [response.data.data];
+                    
+                    $scope.selectedWebsite.wp_sites = sites.map(function(site) {
+                        return {
+                            id: site.id || $scope.selectedWebsite.domain,
+                            title: site.title || site.domain || $scope.selectedWebsite.domain,
+                            url: site.url || 'http://' + $scope.selectedWebsite.domain,
+                            version: site.version || 'Unknown',
+                            phpVersion: site.php_version || 'Unknown',
+                            theme: site.theme || 'Unknown',
+                            activePlugins: site.active_plugins || 0,
+                            searchIndex: site.search_index === 'enabled',
+                            debugging: site.debugging === 'enabled',
+                            passwordProtection: site.password_protection === 'enabled',
+                            maintenanceMode: site.maintenance_mode === 'enabled'
+                        };
+                    });
+                    $scope.selectedWebsite.showWPSites = true;
+                } catch (e) {
+                    console.error('Error processing WordPress data:', e);
+                    $scope.selectedWebsite.showWPSites = false;
+                    $scope.selectedWebsite.wp_sites = [];
                 }
             } else {
-                console.error('Error fetching WP sites:', response.data.error_message);
-                $("#listFail").fadeIn();
-                $scope.errorMessage = response.data.error_message || 'Error fetching WordPress sites';
+                console.error('Error fetching WordPress sites:', response.data.error_message);
+                $scope.selectedWebsite.showWPSites = false;
+                $scope.selectedWebsite.wp_sites = [];
             }
-        }).catch(function(error) {
+        }, function(error) {
             console.error('Error fetching WordPress sites:', error);
-            $("#listFail").fadeIn();
-            $scope.errorMessage = error.message || 'An error occurred while fetching WordPress sites';
+            $scope.selectedWebsite.showWPSites = false;
+            $scope.selectedWebsite.wp_sites = [];
         });
     };
 
@@ -12145,24 +12181,26 @@ app.controller('manageAliasController', function ($scope, $http, $timeout, $wind
         console.log('showWPSites called with index:', index);
         console.log('Current WebSitesList:', $scope.WebSitesList);
         
-        var web = $scope.WebSitesList[index];
-        console.log('Selected website:', web);
+        $scope.selectedWebsite = $scope.WebSitesList[index];
+        console.log('Selected website:', $scope.selectedWebsite);
         
-        // Fetch WordPress sites for this website
-        var url = '/websites/ListWPSitesForWebsite';
+        // Always fetch fresh data
+        var url = '/websites/FetchWPdata';
+        var data = {
+            domain: $scope.selectedWebsite.domain,
+            websiteName: $scope.selectedWebsite.domain
+        };
         
         $http({
             method: 'POST',
             url: url,
+            data: JSON.stringify(data),
             headers: {
                 'Content-Type': 'application/json',
                 'X-CSRFToken': getCookie('csrftoken')
-            },
-            data: {
-                websiteName: web.domain
             }
         }).then(function(response) {
-            console.log('WP Sites Response:', response);
+            console.log('WP Details Response:', response);
             
             // Check if response is HTML (login page)
             if (typeof response.data === 'string' && response.data.includes('<!DOCTYPE html>')) {
@@ -12173,23 +12211,39 @@ app.controller('manageAliasController', function ($scope, $http, $timeout, $wind
             
             if (response.data && response.data.status === 1) {
                 try {
-                    // Update the website's wp_sites property
-                    $scope.WebSitesList[index].wp_sites = response.data.wp_sites;
-                    $scope.WebSitesList[index].showWPSites = true;
-                } catch (error) {
-                    console.error('Error processing WP sites:', error);
-                    $("#listFail").fadeIn();
-                    $scope.errorMessage = 'Error processing WordPress sites data';
+                    // If single site, wrap in array
+                    var sites = Array.isArray(response.data.data) ? response.data.data : [response.data.data];
+                    
+                    $scope.selectedWebsite.wp_sites = sites.map(function(site) {
+                        return {
+                            id: site.id || $scope.selectedWebsite.domain,
+                            title: site.title || site.domain || $scope.selectedWebsite.domain,
+                            url: site.url || 'http://' + $scope.selectedWebsite.domain,
+                            version: site.version || 'Unknown',
+                            phpVersion: site.php_version || 'Unknown',
+                            theme: site.theme || 'Unknown',
+                            activePlugins: site.active_plugins || 0,
+                            searchIndex: site.search_index === 'enabled',
+                            debugging: site.debugging === 'enabled',
+                            passwordProtection: site.password_protection === 'enabled',
+                            maintenanceMode: site.maintenance_mode === 'enabled'
+                        };
+                    });
+                    $scope.selectedWebsite.showWPSites = true;
+                } catch (e) {
+                    console.error('Error processing WordPress data:', e);
+                    $scope.selectedWebsite.showWPSites = false;
+                    $scope.selectedWebsite.wp_sites = [];
                 }
             } else {
-                console.error('Error fetching WP sites:', response.data.error_message);
-                $("#listFail").fadeIn();
-                $scope.errorMessage = response.data.error_message || 'Error fetching WordPress sites';
+                console.error('Error fetching WordPress sites:', response.data.error_message);
+                $scope.selectedWebsite.showWPSites = false;
+                $scope.selectedWebsite.wp_sites = [];
             }
-        }).catch(function(error) {
+        }, function(error) {
             console.error('Error fetching WordPress sites:', error);
-            $("#listFail").fadeIn();
-            $scope.errorMessage = error.message || 'An error occurred while fetching WordPress sites';
+            $scope.selectedWebsite.showWPSites = false;
+            $scope.selectedWebsite.wp_sites = [];
         });
     };
 
