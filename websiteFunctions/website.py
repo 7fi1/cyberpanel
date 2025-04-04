@@ -7067,18 +7067,27 @@ StrictHostKeyChecking no
                 
             wp_sites = WPSites.objects.filter(owner=website)
             sites = []
+            
+            Vhuser = website.externalApp
+            PHPVersion = website.phpSelection
 
-            command = 'sudo -u %s %s -d error_reporting=0 /usr/bin/wp core version --skip-plugins --skip-themes --path=%s 2>/dev/null' % (
-                Vhuser, FinalPHPPath, path)
+            php = ACLManager.getPHPString(PHPVersion)
+            FinalPHPPath = '/usr/local/lsws/lsphp%s/bin/php' % (php)
             
             for site in wp_sites:
+
+                command = 'sudo -u %s %s -d error_reporting=0 /usr/bin/wp core version --skip-plugins --skip-themes --path=%s 2>/dev/null' % (
+                    Vhuser, FinalPHPPath, site.path)
+                version = ProcessUtilities.outputExecutioner(command, None, True)
+                version = html.escape(version)
+
+
                 sites.append({
                     'id': site.id,
                     'title': site.title,
                     'url': site.FinalURL,
                     'path': site.path,
-                    'version': site.version,
-                    'status': site.status
+                    'version': version,
                 })
                 
             data_ret = {'status': 1, 'fetchStatus': 1, 'error_message': "None", "sites": sites}
