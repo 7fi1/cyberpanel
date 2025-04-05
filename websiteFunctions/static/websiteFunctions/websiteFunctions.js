@@ -2945,6 +2945,73 @@ app.controller('listWebsites', function ($scope, $http, $window) {
 
     };
 
+    $scope.togglePasswordProtection = function(wp) {
+        if (wp.passwordProtection) {
+            // Show modal for credentials
+            $('#Passwordprotection').modal('show');
+            // Store the current WordPress site for later use
+            $scope.currentWPSite = wp;
+        } else {
+            // Disable password protection
+            $scope.updateSetting(wp, 'password-protection');
+        }
+    };
+
+    $scope.enablePasswordProtection = function() {
+        if (!$scope.PPUsername || !$scope.PPPassword) {
+            new PNotify({
+                title: 'Error!',
+                text: 'Please provide both username and password',
+                type: 'error'
+            });
+            return;
+        }
+
+        var data = {
+            siteId: $scope.currentWPSite.id,
+            setting: 'password-protection',
+            PPUsername: $scope.PPUsername,
+            PPPassword: $scope.PPPassword
+        };
+
+        var config = {
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        };
+
+        $http.post('/websites/UpdateWPSettings', data, config).then(
+            function(response) {
+                if (response.data.status) {
+                    new PNotify({
+                        title: 'Success!',
+                        text: 'Password protection enabled successfully',
+                        type: 'success'
+                    });
+                    $('#Passwordprotection').modal('hide');
+                    // Clear the credentials
+                    $scope.PPUsername = '';
+                    $scope.PPPassword = '';
+                } else {
+                    $scope.currentWPSite.passwordProtection = false;
+                    new PNotify({
+                        title: 'Error!',
+                        text: response.data.error_message || 'Failed to enable password protection',
+                        type: 'error'
+                    });
+                }
+            },
+            function(response) {
+                $scope.currentWPSite.passwordProtection = false;
+                new PNotify({
+                    title: 'Error!',
+                    text: 'Could not connect to server',
+                    type: 'error'
+                });
+            }
+        );
+    };
+
 });
 
 app.controller('listChildDomainsMain', function ($scope, $http, $timeout) {
@@ -6336,6 +6403,73 @@ app.controller('listWebsites', function ($scope, $http, $window) {
         }
 
 
+    };
+
+    $scope.togglePasswordProtection = function(wp) {
+        if (wp.passwordProtection) {
+            // Show modal for credentials
+            $('#Passwordprotection').modal('show');
+            // Store the current WordPress site for later use
+            $scope.currentWPSite = wp;
+        } else {
+            // Disable password protection
+            $scope.updateSetting(wp, 'password-protection');
+        }
+    };
+
+    $scope.enablePasswordProtection = function() {
+        if (!$scope.PPUsername || !$scope.PPPassword) {
+            new PNotify({
+                title: 'Error!',
+                text: 'Please provide both username and password',
+                type: 'error'
+            });
+            return;
+        }
+
+        var data = {
+            siteId: $scope.currentWPSite.id,
+            setting: 'password-protection',
+            PPUsername: $scope.PPUsername,
+            PPPassword: $scope.PPPassword
+        };
+
+        var config = {
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        };
+
+        $http.post('/websites/UpdateWPSettings', data, config).then(
+            function(response) {
+                if (response.data.status) {
+                    new PNotify({
+                        title: 'Success!',
+                        text: 'Password protection enabled successfully',
+                        type: 'success'
+                    });
+                    $('#Passwordprotection').modal('hide');
+                    // Clear the credentials
+                    $scope.PPUsername = '';
+                    $scope.PPPassword = '';
+                } else {
+                    $scope.currentWPSite.passwordProtection = false;
+                    new PNotify({
+                        title: 'Error!',
+                        text: response.data.error_message || 'Failed to enable password protection',
+                        type: 'error'
+                    });
+                }
+            },
+            function(response) {
+                $scope.currentWPSite.passwordProtection = false;
+                new PNotify({
+                    title: 'Error!',
+                    text: 'Could not connect to server',
+                    type: 'error'
+                });
+            }
+        );
     };
 
 });

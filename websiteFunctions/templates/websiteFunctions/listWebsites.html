@@ -16,6 +16,37 @@
         });
     </script>
 
+    <!-- Password Protection Modal -->
+    <div id="Passwordprotection" class="modal fade" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">Enable Password Protection</h4>
+                </div>
+                <div class="modal-body">
+                    <div>
+                        <label class="col-sm-4">Username</label>
+                        <input ng-model="PPUsername" required class="col-lg-8"
+                               type="text" placeholder="Username">
+                    </div>
+                    <div style="margin-top: 36px;">
+                        <label class="col-sm-4">Password</label>
+                        <input ng-model="PPPassword" required class="col-lg-8"
+                               type="password" placeholder="*******************">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary"
+                            ng-click="enablePasswordProtection()">Enable</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div ng-controller="listWebsites" class="container">
 
         <div id="page-title">
@@ -196,7 +227,7 @@
                                                     <div class="col-sm-6">
                                                         <div class="checkbox">
                                                             <label>
-                                                                <input type="checkbox" ng-model="wp.passwordProtection" ng-change="updateSetting(wp, 'password-protection')">
+                                                                <input type="checkbox" ng-model="wp.passwordProtection" ng-change="togglePasswordProtection(wp)">
                                                                 Password protection
                                                             </label>
                                                         </div>
