@@ -125,10 +125,10 @@
                                                 <h4><i class="fa-brands fa-wordpress" style="color: #00749C; margin-right: 8px;"></i>{$ wp.title $}</h4>
                                             </div>
                                             <div class="col-sm-4 text-right">
-                                                <button class="btn btn-primary btn-sm" ng-click="manageWP(wp.id)">
+                                                <button class="btn btn-outline-primary btn-sm wp-action-btn" ng-click="manageWP(wp.id)">
                                                     <i class="fa-solid fa-cog"></i> Manage
                                                 </button>
-                                                <button class="btn btn-danger btn-sm" ng-click="deleteWPSite(wp)">
+                                                <button class="btn btn-outline-danger btn-sm wp-action-btn" ng-click="deleteWPSite(wp)">
                                                     <i class="fa-solid fa-trash"></i> Delete
                                                 </button>
                                             </div>
@@ -142,11 +142,11 @@
                                                      class="img-responsive"
                                                      style="max-width: 100%; margin-bottom: 10px; min-height: 150px; background: #f5f5f5;"
                                                      onerror="this.onerror=null; this.src='https://s.wordpress.org/style/images/about/WordPress-logotype-standard.png';">
-                                                <div class="text-center">
-                                                    <a ng-href="{$ getFullUrl(wp.url) $}" target="_blank" class="btn btn-default btn-sm">
+                                                <div class="text-center wp-action-buttons">
+                                                    <a ng-href="{$ getFullUrl(wp.url) $}" target="_blank" class="btn btn-outline-secondary btn-sm wp-action-btn">
                                                         <i class="fa-solid fa-external-link"></i> Visit Site
                                                     </a>
-                                                    <a href="{% url 'AutoLogin' %}?id={$ wp.id $}" target="_blank" class="btn btn-primary btn-sm">
+                                                    <a href="{% url 'AutoLogin' %}?id={$ wp.id $}" target="_blank" class="btn btn-outline-primary btn-sm wp-action-btn">
                                                         <i class="fa-brands fa-wordpress"></i> WP Login
                                                     </a>
                                                 </div>
@@ -264,18 +264,47 @@
                         .mt-3 {
                             margin-top: 1rem;
                         }
-                        .btn {
-                            margin: 0 2px;
-                        }
-                        .btn i {
-                            margin-right: 5px;
-                        }
-                        .text-center .btn {
-                            min-width: 100px;
-                        }
-                        .wp-site-item .btn-sm {
-                            padding: 5px 12px;
+                        /* Updated button styles */
+                        .wp-action-btn {
+                            margin: 0 4px;
+                            padding: 6px 12px;
                             font-size: 13px;
+                            font-weight: 500;
+                            transition: all 0.2s ease;
+                            border-width: 1.5px;
+                        }
+                        .wp-action-btn i {
+                            margin-right: 6px;
+                        }
+                        .wp-action-buttons {
+                            margin-top: 12px;
+                        }
+                        .wp-action-buttons .wp-action-btn {
+                            min-width: 110px;
+                        }
+                        .btn-outline-primary {
+                            color: #0073aa;
+                            border-color: #0073aa;
+                        }
+                        .btn-outline-primary:hover {
+                            background-color: #0073aa;
+                            color: white;
+                        }
+                        .btn-outline-secondary {
+                            color: #50575e;
+                            border-color: #50575e;
+                        }
+                        .btn-outline-secondary:hover {
+                            background-color: #50575e;
+                            color: white;
+                        }
+                        .btn-outline-danger {
+                            color: #dc3545;
+                            border-color: #dc3545;
+                        }
+                        .btn-outline-danger:hover {
+                            background-color: #dc3545;
+                            color: white;
                         }
                     </style>
 
