@@ -7134,6 +7134,7 @@ StrictHostKeyChecking no
                     'url': site.FinalURL,
                     'path': site.path,
                     'version': version,
+                    'phpVersion': site.owner.phpSelection
                     'screenshot': f'https://api.microlink.io/?url={site_url}&screenshot=true&meta=false&embed=screenshot.url'
                 })
                 
