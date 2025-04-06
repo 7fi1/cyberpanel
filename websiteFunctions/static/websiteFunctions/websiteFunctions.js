@@ -3082,6 +3082,91 @@ app.controller('listWebsites', function ($scope, $http, $window) {
 
     };
 
+    // Function to submit password protection from modal
+    $scope.submitPasswordProtection = function() {
+        console.log('submitPasswordProtection function called');
+        console.log('Current WP site:', $scope.currentWP);
+
+        if (!$scope.currentWP) {
+            console.log('Error: No WordPress site selected');
+            new PNotify({
+                title: 'Error!',
+                text: 'No WordPress site selected.',
+                type: 'error'
+            });
+            return;
+        }
+
+        console.log('Username:', $scope.currentWP.PPUsername);
+        console.log('Password:', $scope.currentWP.PPPassword ? '[MASKED]' : 'not set');
+
+        if (!$scope.currentWP.PPUsername || !$scope.currentWP.PPPassword) {
+            console.log('Error: Missing username or password');
+            new PNotify({
+                title: 'Error!',
+                text: 'Please provide both username and password',
+                type: 'error'
+            });
+            return;
+        }
+
+        var data = {
+            wpID: $scope.currentWP.id,
+            setting: 'PasswordProtection',
+            PPUsername: $scope.currentWP.PPUsername,
+            PPPassword: $scope.currentWP.PPPassword
+        };
+
+        console.log('Submitting data:', {...data, PPPassword: '[MASKED]'});
+        
+        var config = {
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            transformRequest: function(obj) {
+                var str = [];
+                for(var p in obj)
+                    str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]));
+                return str.join("&");
+            }
+        };
+
+        console.log('Sending request to /websites/UpdateWPSettings');
+        $('#passwordProtectionModal').modal('hide');
+        
+        $http.post('/websites/UpdateWPSettings', data, config).then(function(response) {
+            console.log('Received response:', response);
+            if (response.data.status === 1) {
+                console.log('Password protection updated successfully');
+                new PNotify({
+                    title: 'Success!',
+                    text: 'Password protection updated successfully!',
+                    type: 'success'
+                });
+                location.reload();
+            } else {
+                console.log('Failed to update password protection:', response.data.error_message);
+                new PNotify({
+                    title: 'Error!',
+                    text: response.data.error_message || 'Failed to update password protection',
+                    type: 'error'
+                });
+                // Revert the checkbox state
+                $scope.currentWP.passwordProtection = !$scope.currentWP.passwordProtection;
+            }
+        }).catch(function(error) {
+            console.log('Request failed:', error);
+            new PNotify({
+                title: 'Error!',
+                text: 'Could not connect to server',
+                type: 'error'
+            });
+            // Revert the checkbox state
+            $scope.currentWP.passwordProtection = !$scope.currentWP.passwordProtection;
+        });
+    };
+
 });
 
 app.controller('listChildDomainsMain', function ($scope, $http, $timeout) {
@@ -6402,11 +6487,11 @@ $scope.UpdateWPSettings = function(data) {
 
 // Function to submit password protection from modal
 $scope.submitPasswordProtection = function() {
-    console.log('submitPasswordProtection called');
+    console.log('submitPasswordProtection function called');
     console.log('Current WP site:', $scope.currentWP);
 
     if (!$scope.currentWP) {
-        console.log('No WordPress site selected');
+        console.log('Error: No WordPress site selected');
         new PNotify({
             title: 'Error!',
             text: 'No WordPress site selected.',
@@ -6415,11 +6500,11 @@ $scope.submitPasswordProtection = function() {
         return;
     }
 
-    console.log('PPUsername:', $scope.currentWP.PPUsername);
-    console.log('PPPassword:', $scope.currentWP.PPPassword);
+    console.log('Username:', $scope.currentWP.PPUsername);
+    console.log('Password:', $scope.currentWP.PPPassword ? '[MASKED]' : 'not set');
 
     if (!$scope.currentWP.PPUsername || !$scope.currentWP.PPPassword) {
-        console.log('Missing username or password');
+        console.log('Error: Missing username or password');
         new PNotify({
             title: 'Error!',
             text: 'Please provide both username and password',
@@ -6435,10 +6520,54 @@ $scope.submitPasswordProtection = function() {
         PPPassword: $scope.currentWP.PPPassword
     };
 
-    console.log('Submitting data:', data);
+    console.log('Submitting data:', {...data, PPPassword: '[MASKED]'});
+    
+    var config = {
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        transformRequest: function(obj) {
+            var str = [];
+            for(var p in obj)
+                str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]));
+            return str.join("&");
+        }
+    };
+
+    console.log('Sending request to /websites/UpdateWPSettings');
     $('#passwordProtectionModal').modal('hide');
-    console.log('Modal hidden, calling UpdateWPSettings');
-    $scope.UpdateWPSettings(data);
+    
+    $http.post('/websites/UpdateWPSettings', data, config).then(function(response) {
+        console.log('Received response:', response);
+        if (response.data.status === 1) {
+            console.log('Password protection updated successfully');
+            new PNotify({
+                title: 'Success!',
+                text: 'Password protection updated successfully!',
+                type: 'success'
+            });
+            location.reload();
+        } else {
+            console.log('Failed to update password protection:', response.data.error_message);
+            new PNotify({
+                title: 'Error!',
+                text: response.data.error_message || 'Failed to update password protection',
+                type: 'error'
+            });
+            // Revert the checkbox state
+            $scope.currentWP.passwordProtection = !$scope.currentWP.passwordProtection;
+        }
+    }).catch(function(error) {
+        console.log('Request failed:', error);
+        new PNotify({
+            title: 'Error!',
+            text: 'Could not connect to server',
+            type: 'error'
+        });
+        // Revert the checkbox state
+        $scope.currentWP.passwordProtection = !$scope.currentWP.passwordProtection;
+    });
 };
 
     $scope.cyberPanelLoading = true;
