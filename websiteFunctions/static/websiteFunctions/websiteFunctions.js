@@ -2734,14 +2734,13 @@ app.controller('listWebsites', function ($scope, $http, $window) {
         var settingMap = {
             'search-indexing': 'searchIndex',
             'debugging': 'debugging',
-            'password-protection': 'passwordProtection',
             'maintenance-mode': 'maintenanceMode'
         };
 
         var data = {
-            wpID: wp.id,
+            siteId: wp.id,  // Changed from wpID to siteId to match backend
             setting: setting,
-            value: wp[settingMap[setting]] ? 'enable' : 'disable'
+            value: wp[settingMap[setting]] ? 1 : 0  // Changed to use numeric values
         };
 
         $http({
@@ -2769,7 +2768,7 @@ app.controller('listWebsites', function ($scope, $http, $window) {
                 wp[settingMap[setting]] = !wp[settingMap[setting]];  // Revert the change
                 new PNotify({
                     title: 'Error',
-                    text: 'Failed to update setting.',
+                    text: response.data.error_message || 'Failed to update setting.',
                     type: 'error'
                 });
             }
@@ -6352,9 +6351,9 @@ $scope.updateSetting = function(wp, setting) {
     };
 
     var data = {
-        wpID: wp.id,
+        siteId: wp.id,  // Changed from wpID to siteId to match backend
         setting: setting,
-        value: wp[settingMap[setting]] ? 'enable' : 'disable'
+        value: wp[settingMap[setting]] ? 1 : 0  // Changed to use numeric values
     };
 
     $http({
@@ -10411,14 +10410,13 @@ app.controller('manageAliasController', function ($scope, $http, $timeout, $wind
         var settingMap = {
             'search-indexing': 'searchIndex',
             'debugging': 'debugging',
-            'password-protection': 'passwordProtection',
             'maintenance-mode': 'maintenanceMode'
         };
 
         var data = {
-            wpID: wp.id,
+            siteId: wp.id,  // Changed from wpID to siteId to match backend
             setting: setting,
-            value: wp[settingMap[setting]] ? 'enable' : 'disable'
+            value: wp[settingMap[setting]] ? 1 : 0  // Changed to use numeric values
         };
 
         $http({
@@ -10446,7 +10444,7 @@ app.controller('manageAliasController', function ($scope, $http, $timeout, $wind
                 wp[settingMap[setting]] = !wp[settingMap[setting]];  // Revert the change
                 new PNotify({
                     title: 'Error',
-                    text: 'Failed to update setting.',
+                    text: response.data.error_message || 'Failed to update setting.',
                     type: 'error'
                 });
             }
@@ -10617,14 +10615,13 @@ app.controller('manageAliasController', function ($scope, $http, $timeout, $wind
         var settingMap = {
             'search-indexing': 'searchIndex',
             'debugging': 'debugging',
-            'password-protection': 'passwordProtection',
             'maintenance-mode': 'maintenanceMode'
         };
 
         var data = {
-            wpID: wp.id,
+            siteId: wp.id,  // Changed from wpID to siteId to match backend
             setting: setting,
-            value: wp[settingMap[setting]] ? 'enable' : 'disable'
+            value: wp[settingMap[setting]] ? 1 : 0  // Changed to use numeric values
         };
 
         $http({
@@ -10652,7 +10649,7 @@ app.controller('manageAliasController', function ($scope, $http, $timeout, $wind
                 wp[settingMap[setting]] = !wp[settingMap[setting]];  // Revert the change
                 new PNotify({
                     title: 'Error',
-                    text: 'Failed to update setting.',
+                    text: response.data.error_message || 'Failed to update setting.',
                     type: 'error'
                 });
             }
