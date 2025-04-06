@@ -2847,19 +2847,84 @@ app.controller('listWebsites', function ($scope, $http, $window) {
     };
 
     $scope.togglePasswordProtection = function(wp) {
+        console.log('togglePasswordProtection called with wp:', wp);
         if (wp.passwordProtection) {
-            // Show modal or form to collect username/password
-            wp.setting = "PasswordProtection";
+            // Show modal for credentials
+            console.log('Password protection enabled, showing modal');
             wp.PPUsername = "";
             wp.PPPassword = "";
+            $scope.currentWP = wp; // Store current WP site
+            console.log('Current WP site set to:', $scope.currentWP);
             $('#passwordProtectionModal').modal('show');
         } else {
             // Disable password protection
-            wp.setting = "PasswordProtection";
-            wp.PPUsername = "";
-            wp.PPPassword = "";
-            $scope.UpdateWPSettings(wp);
+            console.log('Password protection disabled, sending update');
+            var data = {
+                wpID: wp.id,
+                setting: 'PasswordProtection',
+                PPUsername: '',
+                PPPassword: ''
+            };
+            console.log('Sending data to UpdateWPSettings:', data);
+            $scope.UpdateWPSettings(data);
         }
+    };
+
+    $scope.UpdateWPSettings = function(data) {
+        console.log('UpdateWPSettings called with data:', data);
+        $('#wordpresshomeloading').show();
+
+        var config = {
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            transformRequest: function(obj) {
+                var str = [];
+                for(var p in obj)
+                    str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]));
+                return str.join("&");
+            }
+        };
+
+        var url = "/websites/saveWPSettings";
+        console.log('Sending POST request to:', url);
+        
+        $http.post(url, data, config).then(function(response) {
+            console.log('Received response:', response);
+            $('#wordpresshomeloading').hide();
+            
+            if (response.data.status === 1) {
+                console.log('Settings updated successfully');
+                new PNotify({
+                    title: 'Success!',
+                    text: 'Successfully Updated!',
+                    type: 'success'
+                });
+                if (data.setting === "PasswordProtection") {
+                    console.log('Reloading page after password protection update');
+                    location.reload();
+                }
+            } else {
+                console.log('Update failed:', response.data.error_message);
+                new PNotify({
+                    title: 'Operation Failed!',
+                    text: response.data.error_message,
+                    type: 'error'
+                });
+                if (data.setting === "PasswordProtection") {
+                    location.reload();
+                }
+            }
+        }, function(error) {
+            console.log('Request failed:', error);
+            $('#wordpresshomeloading').hide();
+            new PNotify({
+                title: 'Operation Failed!',
+                text: 'Could not connect to server, please refresh this page',
+                type: 'error'
+            });
+        });
     };
 
     $scope.cyberPanelLoading = true;
@@ -6310,26 +6375,32 @@ $scope.updateSetting = function(wp, setting) {
 
 // Handle password protection specifically
 $scope.togglePasswordProtection = function(wp) {
+    console.log('togglePasswordProtection called with wp:', wp);
     if (wp.passwordProtection) {
         // Show modal for credentials
+        console.log('Password protection enabled, showing modal');
         wp.PPUsername = "";
         wp.PPPassword = "";
-        $('#passwordProtectionModal').modal('show');
         $scope.currentWP = wp; // Store current WP site
+        console.log('Current WP site set to:', $scope.currentWP);
+        $('#passwordProtectionModal').modal('show');
     } else {
         // Disable password protection
+        console.log('Password protection disabled, sending update');
         var data = {
             wpID: wp.id,
             setting: 'PasswordProtection',
             PPUsername: '',
             PPPassword: ''
         };
+        console.log('Sending data to UpdateWPSettings:', data);
         $scope.UpdateWPSettings(data);
     }
 };
 
 // Handle the actual password protection update
 $scope.UpdateWPSettings = function(data) {
+    console.log('UpdateWPSettings called with data:', data);
     $('#wordpresshomeloading').show();
 
     var config = {
@@ -6345,38 +6416,43 @@ $scope.UpdateWPSettings = function(data) {
         }
     };
 
-    $http.post('/websites/UpdateWPSettings', data, config).then(function(response) {
+    var url = "/websites/saveWPSettings";
+    console.log('Sending POST request to:', url);
+    
+    $http.post(url, data, config).then(function(response) {
+        console.log('Received response:', response);
         $('#wordpresshomeloading').hide();
         
         if (response.data.status === 1) {
+            console.log('Settings updated successfully');
             new PNotify({
                 title: 'Success!',
                 text: 'Successfully Updated!',
                 type: 'success'
             });
-            location.reload();
+            if (data.setting === "PasswordProtection") {
+                console.log('Reloading page after password protection update');
+                location.reload();
+            }
         } else {
+            console.log('Update failed:', response.data.error_message);
             new PNotify({
                 title: 'Operation Failed!',
-                text: response.data.error_message || 'Failed to update password protection.',
+                text: response.data.error_message,
                 type: 'error'
             });
-            // Revert the checkbox
-            if ($scope.currentWP) {
-                $scope.currentWP.passwordProtection = !$scope.currentWP.passwordProtection;
+            if (data.setting === "PasswordProtection") {
+                location.reload();
             }
         }
     }, function(error) {
+        console.log('Request failed:', error);
         $('#wordpresshomeloading').hide();
         new PNotify({
             title: 'Operation Failed!',
             text: 'Could not connect to server, please refresh this page',
             type: 'error'
         });
-        // Revert the checkbox
-        if ($scope.currentWP) {
-            $scope.currentWP.passwordProtection = !$scope.currentWP.passwordProtection;
-        }
     });
 };
 
@@ -6422,18 +6498,26 @@ $scope.submitPasswordProtection = function() {
 };
 
     $scope.togglePasswordProtection = function(wp) {
+        console.log('togglePasswordProtection called with wp:', wp);
         if (wp.passwordProtection) {
-            // Show modal or form to collect username/password
-            wp.setting = "PasswordProtection";
+            // Show modal for credentials
+            console.log('Password protection enabled, showing modal');
             wp.PPUsername = "";
             wp.PPPassword = "";
+            $scope.currentWP = wp; // Store current WP site
+            console.log('Current WP site set to:', $scope.currentWP);
             $('#passwordProtectionModal').modal('show');
         } else {
             // Disable password protection
-            wp.setting = "PasswordProtection";
-            wp.PPUsername = "";
-            wp.PPPassword = "";
-            $scope.UpdateWPSettings(wp);
+            console.log('Password protection disabled, sending update');
+            var data = {
+                wpID: wp.id,
+                setting: 'PasswordProtection',
+                PPUsername: '',
+                PPPassword: ''
+            };
+            console.log('Sending data to UpdateWPSettings:', data);
+            $scope.UpdateWPSettings(data);
         }
     };
 
@@ -10401,19 +10485,84 @@ app.controller('manageAliasController', function ($scope, $http, $timeout, $wind
     };
 
     $scope.togglePasswordProtection = function(wp) {
+        console.log('togglePasswordProtection called with wp:', wp);
         if (wp.passwordProtection) {
-            // Show modal or form to collect username/password
-            wp.setting = "PasswordProtection";
+            // Show modal for credentials
+            console.log('Password protection enabled, showing modal');
             wp.PPUsername = "";
             wp.PPPassword = "";
+            $scope.currentWP = wp; // Store current WP site
+            console.log('Current WP site set to:', $scope.currentWP);
             $('#passwordProtectionModal').modal('show');
         } else {
             // Disable password protection
-            wp.setting = "PasswordProtection";
-            wp.PPUsername = "";
-            wp.PPPassword = "";
-            $scope.UpdateWPSettings(wp);
+            console.log('Password protection disabled, sending update');
+            var data = {
+                wpID: wp.id,
+                setting: 'PasswordProtection',
+                PPUsername: '',
+                PPPassword: ''
+            };
+            console.log('Sending data to UpdateWPSettings:', data);
+            $scope.UpdateWPSettings(data);
         }
+    };
+
+    $scope.UpdateWPSettings = function(data) {
+        console.log('UpdateWPSettings called with data:', data);
+        $('#wordpresshomeloading').show();
+
+        var config = {
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            transformRequest: function(obj) {
+                var str = [];
+                for(var p in obj)
+                    str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]));
+                return str.join("&");
+            }
+        };
+
+        var url = "/websites/saveWPSettings";
+        console.log('Sending POST request to:', url);
+        
+        $http.post(url, data, config).then(function(response) {
+            console.log('Received response:', response);
+            $('#wordpresshomeloading').hide();
+            
+            if (response.data.status === 1) {
+                console.log('Settings updated successfully');
+                new PNotify({
+                    title: 'Success!',
+                    text: 'Successfully Updated!',
+                    type: 'success'
+                });
+                if (data.setting === "PasswordProtection") {
+                    console.log('Reloading page after password protection update');
+                    location.reload();
+                }
+            } else {
+                console.log('Update failed:', response.data.error_message);
+                new PNotify({
+                    title: 'Operation Failed!',
+                    text: response.data.error_message,
+                    type: 'error'
+                });
+                if (data.setting === "PasswordProtection") {
+                    location.reload();
+                }
+            }
+        }, function(error) {
+            console.log('Request failed:', error);
+            $('#wordpresshomeloading').hide();
+            new PNotify({
+                title: 'Operation Failed!',
+                text: 'Could not connect to server, please refresh this page',
+                type: 'error'
+            });
+        });
     };
 
     $scope.visitSite = function(url) {
