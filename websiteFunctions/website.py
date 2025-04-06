@@ -859,6 +859,19 @@ class WebsiteManager:
                 Vhuser, FinalPHPPath, path)
             lscachee = ProcessUtilities.outputExecutioner(command)
 
+            # Get current theme
+            command = 'sudo -u %s %s -d error_reporting=0 /usr/bin/wp theme list --status=active --field=name --skip-plugins --skip-themes --path=%s 2>/dev/null' % (
+                Vhuser, FinalPHPPath, site.path)
+            currentTheme = ProcessUtilities.outputExecutioner(command, None, True)
+            currentTheme = currentTheme.strip()
+
+            # Get number of plugins
+            command = 'sudo -u %s %s -d error_reporting=0 /usr/bin/wp plugin list --field=name --skip-plugins --skip-themes --path=%s 2>/dev/null' % (
+                Vhuser, FinalPHPPath, site.path)
+            plugins = ProcessUtilities.outputExecutioner(command, None, True)
+            pluginCount = len([p for p in plugins.split('\n') if p.strip()])
+
+
             if lscachee.find('Status: Active') > -1:
                 lscache = 1
             else:
@@ -881,6 +894,8 @@ class WebsiteManager:
             command = 'sudo -u %s %s -d error_reporting=0 /usr/bin/wp maintenance-mode status --skip-plugins --skip-themes --path=%s' % (
                 Vhuser, FinalPHPPath, path)
             maintenanceMod = ProcessUtilities.outputExecutioner(command)
+
+            
 
             result = maintenanceMod.splitlines()[-1]
             if result.find('not active') > -1:
@@ -912,7 +927,9 @@ class WebsiteManager:
                 'searchIndex': searchindex,
                 'maintenanceMode': maintenanceMode,
                 'passwordprotection': passwd,
-                'wpcron': wpcron
+                'wpcron': wpcron,
+                'theme': currentTheme,
+                'activePlugins': pluginCount
 
             }
 
@@ -7123,6 +7140,18 @@ StrictHostKeyChecking no
                 version = ProcessUtilities.outputExecutioner(command, None, True)
                 version = html.escape(version)
 
+                # Get current theme
+                command = 'sudo -u %s %s -d error_reporting=0 /usr/bin/wp theme list --status=active --field=name --skip-plugins --skip-themes --path=%s 2>/dev/null' % (
+                    Vhuser, FinalPHPPath, site.path)
+                currentTheme = ProcessUtilities.outputExecutioner(command, None, True)
+                currentTheme = currentTheme.strip()
+
+                # Get number of plugins
+                command = 'sudo -u %s %s -d error_reporting=0 /usr/bin/wp plugin list --field=name --skip-plugins --skip-themes --path=%s 2>/dev/null' % (
+                    Vhuser, FinalPHPPath, site.path)
+                plugins = ProcessUtilities.outputExecutioner(command, None, True)
+                pluginCount = len([p for p in plugins.split('\n') if p.strip()])
+
                 # Generate screenshot URL
                 site_url = site.FinalURL
                 if not site_url.startswith(('http://', 'https://')):
@@ -7135,6 +7164,8 @@ StrictHostKeyChecking no
                     'path': site.path,
                     'version': version,
                     'phpVersion': site.owner.phpSelection,
+                    'theme': currentTheme,
+                    'activePlugins': pluginCount,
                     'screenshot': f'https://api.microlink.io/?url={site_url}&screenshot=true&meta=false&embed=screenshot.url'
                 })
                 
