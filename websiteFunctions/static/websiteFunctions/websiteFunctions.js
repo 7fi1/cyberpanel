@@ -3122,20 +3122,14 @@ app.controller('listWebsites', function ($scope, $http, $window) {
         var config = {
             headers: {
                 'X-CSRFToken': getCookie('csrftoken'),
-                'Content-Type': 'application/x-www-form-urlencoded'
-            },
-            transformRequest: function(obj) {
-                var str = [];
-                for(var p in obj)
-                    str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]));
-                return str.join("&");
+                'Content-Type': 'application/json'
             }
         };
 
         console.log('Sending request to /websites/UpdateWPSettings');
         $('#passwordProtectionModal').modal('hide');
         
-        $http.post('/websites/UpdateWPSettings', data, config).then(function(response) {
+        $http.post('/websites/UpdateWPSettings', JSON.stringify(data), config).then(function(response) {
             console.log('Received response:', response);
             if (response.data.status === 1) {
                 console.log('Password protection updated successfully');
@@ -6524,20 +6518,14 @@ $scope.submitPasswordProtection = function() {
     var config = {
         headers: {
             'X-CSRFToken': getCookie('csrftoken'),
-            'Content-Type': 'application/x-www-form-urlencoded'
-        },
-        transformRequest: function(obj) {
-            var str = [];
-            for(var p in obj)
-                str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]));
-            return str.join("&");
+            'Content-Type': 'application/json'
         }
     };
 
     console.log('Sending request to /websites/UpdateWPSettings');
     $('#passwordProtectionModal').modal('hide');
     
-    $http.post('/websites/UpdateWPSettings', data, config).then(function(response) {
+    $http.post('/websites/UpdateWPSettings', JSON.stringify(data), config).then(function(response) {
         console.log('Received response:', response);
         if (response.data.status === 1) {
             console.log('Password protection updated successfully');
