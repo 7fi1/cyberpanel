@@ -2738,9 +2738,9 @@ app.controller('listWebsites', function ($scope, $http, $window) {
         };
 
         var data = {
-            siteId: wp.id,  // Changed from wpID to siteId to match backend
+            siteId: wp.id,
             setting: setting,
-            value: wp[settingMap[setting]] ? 1 : 0  // Changed to use numeric values
+            value: wp[settingMap[setting]] ? 1 : 0
         };
 
         $http({
@@ -2748,14 +2748,8 @@ app.controller('listWebsites', function ($scope, $http, $window) {
             url: '/websites/UpdateWPSettings',
             data: data,
             headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
+                'Content-Type': 'application/json',
                 'X-CSRFToken': getCookie('csrftoken')
-            },
-            transformRequest: function(obj) {
-                var str = [];
-                for(var p in obj)
-                    str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]));
-                return str.join("&");
             }
         }).then(function(response) {
             if (response.data.status === 1) {
@@ -6351,9 +6345,9 @@ $scope.updateSetting = function(wp, setting) {
     };
 
     var data = {
-        siteId: wp.id,  // Changed from wpID to siteId to match backend
+        siteId: wp.id,
         setting: setting,
-        value: wp[settingMap[setting]] ? 1 : 0  // Changed to use numeric values
+        value: wp[settingMap[setting]] ? 1 : 0
     };
 
     $http({
@@ -6361,14 +6355,8 @@ $scope.updateSetting = function(wp, setting) {
         url: '/websites/UpdateWPSettings',
         data: data,
         headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
+            'Content-Type': 'application/json',
             'X-CSRFToken': getCookie('csrftoken')
-        },
-        transformRequest: function(obj) {
-            var str = [];
-            for(var p in obj)
-                str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]));
-            return str.join("&");
         }
     }).then(function(response) {
         if (response.data.status === 1) {
@@ -10414,9 +10402,9 @@ app.controller('manageAliasController', function ($scope, $http, $timeout, $wind
         };
 
         var data = {
-            siteId: wp.id,  // Changed from wpID to siteId to match backend
+            siteId: wp.id,
             setting: setting,
-            value: wp[settingMap[setting]] ? 1 : 0  // Changed to use numeric values
+            value: wp[settingMap[setting]] ? 1 : 0
         };
 
         $http({
@@ -10424,14 +10412,8 @@ app.controller('manageAliasController', function ($scope, $http, $timeout, $wind
             url: '/websites/UpdateWPSettings',
             data: data,
             headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
+                'Content-Type': 'application/json',
                 'X-CSRFToken': getCookie('csrftoken')
-            },
-            transformRequest: function(obj) {
-                var str = [];
-                for(var p in obj)
-                    str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]));
-                return str.join("&");
             }
         }).then(function(response) {
             if (response.data.status === 1) {
@@ -10619,9 +10601,9 @@ app.controller('manageAliasController', function ($scope, $http, $timeout, $wind
         };
 
         var data = {
-            siteId: wp.id,  // Changed from wpID to siteId to match backend
+            siteId: wp.id,
             setting: setting,
-            value: wp[settingMap[setting]] ? 1 : 0  // Changed to use numeric values
+            value: wp[settingMap[setting]] ? 1 : 0
         };
 
         $http({
@@ -10629,14 +10611,8 @@ app.controller('manageAliasController', function ($scope, $http, $timeout, $wind
             url: '/websites/UpdateWPSettings',
             data: data,
             headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
+                'Content-Type': 'application/json',
                 'X-CSRFToken': getCookie('csrftoken')
-            },
-            transformRequest: function(obj) {
-                var str = [];
-                for(var p in obj)
-                    str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]));
-                return str.join("&");
             }
         }).then(function(response) {
             if (response.data.status === 1) {
