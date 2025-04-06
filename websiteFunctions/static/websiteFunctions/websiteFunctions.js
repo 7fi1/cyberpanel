@@ -2464,12 +2464,9 @@ app.controller('createWebsite', function ($scope, $http, $timeout, $window) {
         //     var domainName = document.getElementById('TestDomainNameCreate').value + Part2_domainNameCreate;
         // }
         // if (website_create_domain_check == 1) {
-        //
         //     var domainName = $scope.domainNameCreate;
         // }
         var domainName = $scope.domainNameCreate;
-
-        // var domainName = $scope.domainNameCreate;
 
         var adminEmail = $scope.adminEmail;
         var phpSelection = $scope.phpSelection;
@@ -2887,7 +2884,7 @@ app.controller('listWebsites', function ($scope, $http, $window) {
             }
         };
 
-        var url = "/websites/saveWPSettings";
+        var url = "/websites/UpdateWPSettings";
         console.log('Sending POST request to:', url);
         
         $http.post(url, data, config).then(function(response) {
@@ -6267,59 +6264,6 @@ app.controller('listWebsites', function ($scope, $http, $window) {
         window.location.href = '/websites/listWPsites?wpID=' + wpId;
     };
 
-    $scope.updateSetting = function(wp, setting) {
-        var settingMap = {
-            'search-indexing': 'searchIndex',
-            'debugging': 'debugging',
-            'password-protection': 'passwordProtection',
-            'maintenance-mode': 'maintenanceMode'
-        };
-
-        var data = {
-            wpID: wp.id,
-            setting: setting,
-            value: wp[settingMap[setting]] ? 'enable' : 'disable'
-        };
-
-        $http({
-            method: 'POST',
-            url: '/websites/UpdateWPSettings',
-            data: data,
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'X-CSRFToken': getCookie('csrftoken')
-            },
-            transformRequest: function(obj) {
-                var str = [];
-                for(var p in obj)
-                    str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]));
-                return str.join("&");
-            }
-        }).then(function(response) {
-            if (response.data.status === 1) {
-                new PNotify({
-                    title: 'Success',
-                    text: 'Setting updated successfully.',
-                    type: 'success'
-                });
-            } else {
-                wp[settingMap[setting]] = !wp[settingMap[setting]];  // Revert the change
-                new PNotify({
-                    title: 'Error',
-                    text: 'Failed to update setting.',
-                    type: 'error'
-                });
-            }
-        }).catch(function(error) {
-            wp[settingMap[setting]] = !wp[settingMap[setting]];  // Revert the change
-            new PNotify({
-                title: 'Error',
-                text: 'Connection failed while updating setting.',
-                type: 'error'
-            });
-        });
-    };
-
     // First, update the updateSetting function to handle all settings except password protection
 $scope.updateSetting = function(wp, setting) {
     var settingMap = {
@@ -6416,7 +6360,7 @@ $scope.UpdateWPSettings = function(data) {
         }
     };
 
-    var url = "/websites/saveWPSettings";
+    var url = "/websites/UpdateWPSettings";
     console.log('Sending POST request to:', url);
     
     $http.post(url, data, config).then(function(response) {
@@ -6496,30 +6440,6 @@ $scope.submitPasswordProtection = function() {
     console.log('Modal hidden, calling UpdateWPSettings');
     $scope.UpdateWPSettings(data);
 };
-
-    $scope.togglePasswordProtection = function(wp) {
-        console.log('togglePasswordProtection called with wp:', wp);
-        if (wp.passwordProtection) {
-            // Show modal for credentials
-            console.log('Password protection enabled, showing modal');
-            wp.PPUsername = "";
-            wp.PPPassword = "";
-            $scope.currentWP = wp; // Store current WP site
-            console.log('Current WP site set to:', $scope.currentWP);
-            $('#passwordProtectionModal').modal('show');
-        } else {
-            // Disable password protection
-            console.log('Password protection disabled, sending update');
-            var data = {
-                wpID: wp.id,
-                setting: 'PasswordProtection',
-                PPUsername: '',
-                PPPassword: ''
-            };
-            console.log('Sending data to UpdateWPSettings:', data);
-            $scope.UpdateWPSettings(data);
-        }
-    };
 
     $scope.cyberPanelLoading = true;
 
@@ -10525,7 +10445,7 @@ app.controller('manageAliasController', function ($scope, $http, $timeout, $wind
             }
         };
 
-        var url = "/websites/saveWPSettings";
+        var url = "/websites/UpdateWPSettings";
         console.log('Sending POST request to:', url);
         
         $http.post(url, data, config).then(function(response) {
