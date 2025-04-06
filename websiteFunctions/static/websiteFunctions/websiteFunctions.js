@@ -2906,12 +2906,11 @@ app.controller('listWebsites', function ($scope, $http, $window) {
                 console.log('Update failed:', response.data.error_message);
                 new PNotify({
                     title: 'Operation Failed!',
-                    text: response.data.error_message,
+                    text: response.data.error_message || 'Failed to enable password protection',
                     type: 'error'
                 });
-                if (data.setting === "PasswordProtection") {
-                    location.reload();
-                }
+                // Revert the checkbox state
+                $scope.currentWP.passwordProtection = !$scope.currentWP.passwordProtection;
             }
         }, function(error) {
             console.log('Request failed:', error);
@@ -2921,6 +2920,8 @@ app.controller('listWebsites', function ($scope, $http, $window) {
                 text: 'Could not connect to server, please refresh this page',
                 type: 'error'
             });
+            // Revert the checkbox state
+            $scope.currentWP.passwordProtection = !$scope.currentWP.passwordProtection;
         });
     };
 
@@ -6466,7 +6467,7 @@ $scope.UpdateWPSettings = function(data) {
             console.log('Update failed:', response.data.error_message);
             new PNotify({
                 title: 'Operation Failed!',
-                text: response.data.error_message,
+                text: response.data.error_message || 'Failed to enable password protection',
                 type: 'error'
             });
             if (data.setting === "PasswordProtection") {
