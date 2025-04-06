@@ -6382,7 +6382,11 @@ $scope.UpdateWPSettings = function(data) {
 
 // Function to submit password protection from modal
 $scope.submitPasswordProtection = function() {
+    console.log('submitPasswordProtection called');
+    console.log('Current WP site:', $scope.currentWP);
+
     if (!$scope.currentWP) {
+        console.log('No WordPress site selected');
         new PNotify({
             title: 'Error!',
             text: 'No WordPress site selected.',
@@ -6391,7 +6395,11 @@ $scope.submitPasswordProtection = function() {
         return;
     }
 
+    console.log('PPUsername:', $scope.currentWP.PPUsername);
+    console.log('PPPassword:', $scope.currentWP.PPPassword);
+
     if (!$scope.currentWP.PPUsername || !$scope.currentWP.PPPassword) {
+        console.log('Missing username or password');
         new PNotify({
             title: 'Error!',
             text: 'Please provide both username and password',
@@ -6407,7 +6415,9 @@ $scope.submitPasswordProtection = function() {
         PPPassword: $scope.currentWP.PPPassword
     };
 
+    console.log('Submitting data:', data);
     $('#passwordProtectionModal').modal('hide');
+    console.log('Modal hidden, calling UpdateWPSettings');
     $scope.UpdateWPSettings(data);
 };
 
