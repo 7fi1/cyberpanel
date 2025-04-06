@@ -3111,13 +3111,12 @@ app.controller('listWebsites', function ($scope, $http, $window) {
         }
 
         var data = {
-            wpID: $scope.currentWP.id,
-            setting: 'PasswordProtection',
-            PPUsername: $scope.currentWP.PPUsername,
-            PPPassword: $scope.currentWP.PPPassword
+            siteId: $scope.currentWP.id,
+            setting: 'password-protection',
+            value: 'enable'
         };
 
-        console.log('Submitting data:', {...data, PPPassword: '[MASKED]'});
+        console.log('Submitting data:', data);
         
         var config = {
             headers: {
@@ -3141,7 +3140,7 @@ app.controller('listWebsites', function ($scope, $http, $window) {
                 console.log('Password protection updated successfully');
                 new PNotify({
                     title: 'Success!',
-                    text: 'Password protection updated successfully!',
+                    text: 'Password protection enabled successfully!',
                     type: 'success'
                 });
                 location.reload();
@@ -3149,7 +3148,7 @@ app.controller('listWebsites', function ($scope, $http, $window) {
                 console.log('Failed to update password protection:', response.data.error_message);
                 new PNotify({
                     title: 'Error!',
-                    text: response.data.error_message || 'Failed to update password protection',
+                    text: response.data.error_message || 'Failed to enable password protection',
                     type: 'error'
                 });
                 // Revert the checkbox state
@@ -6514,13 +6513,12 @@ $scope.submitPasswordProtection = function() {
     }
 
     var data = {
-        wpID: $scope.currentWP.id,
-        setting: 'PasswordProtection',
-        PPUsername: $scope.currentWP.PPUsername,
-        PPPassword: $scope.currentWP.PPPassword
+        siteId: $scope.currentWP.id,
+        setting: 'password-protection',
+        value: 'enable'
     };
 
-    console.log('Submitting data:', {...data, PPPassword: '[MASKED]'});
+    console.log('Submitting data:', data);
     
     var config = {
         headers: {
@@ -6544,7 +6542,7 @@ $scope.submitPasswordProtection = function() {
             console.log('Password protection updated successfully');
             new PNotify({
                 title: 'Success!',
-                text: 'Password protection updated successfully!',
+                text: 'Password protection enabled successfully!',
                 type: 'success'
             });
             location.reload();
@@ -6552,7 +6550,7 @@ $scope.submitPasswordProtection = function() {
             console.log('Failed to update password protection:', response.data.error_message);
             new PNotify({
                 title: 'Error!',
-                text: response.data.error_message || 'Failed to update password protection',
+                text: response.data.error_message || 'Failed to enable password protection',
                 type: 'error'
             });
             // Revert the checkbox state
