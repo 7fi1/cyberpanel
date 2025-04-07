@@ -595,12 +595,9 @@ app.controller('WPsiteHome', function ($scope, $http, $timeout, $compile, $windo
                 if (response.data.ret_data.debugging === 1) {
                     $('#debugging').prop('checked', true);
                 }
-                
-                // Set the search index state
-                $timeout(function() {
-                    $scope.searchIndexEnabled = response.data.ret_data.searchIndex === 1;
-                });
-                
+                if (response.data.ret_data.searchIndex === 1) {
+                    $('#searchIndex').prop('checked', true);
+                }
                 if (response.data.ret_data.maintenanceMode === 1) {
                     $('#maintenanceMode').prop('checked', true);
                 }
@@ -646,12 +643,7 @@ app.controller('WPsiteHome', function ($scope, $http, $timeout, $compile, $windo
                 PPPassword: CheckBoxpasssword == 0 ? $scope.PPPassword : ''
             };
         } else {
-            var settingValue = 0;
-            if (setting === 'searchIndex') {
-                settingValue = $scope.searchIndexEnabled ? 1 : 0;
-            } else if ($('#' + setting).is(":checked")) {
-                settingValue = 1;
-            }
+            var settingValue = $('#' + setting).is(":checked") ? 1 : 0;
             data = {
                 WPid: $('#WPid').html(),
                 setting: setting,
@@ -4156,12 +4148,9 @@ app.controller('WPsiteHome', function ($scope, $http, $timeout, $compile, $windo
                 if (response.data.ret_data.debugging === 1) {
                     $('#debugging').prop('checked', true);
                 }
-                
-                // Set the search index state
-                $timeout(function() {
-                    $scope.searchIndexEnabled = response.data.ret_data.searchIndex === 1;
-                });
-                
+                if (response.data.ret_data.searchIndex === 1) {
+                    $('#searchIndex').prop('checked', true);
+                }
                 if (response.data.ret_data.maintenanceMode === 1) {
                     $('#maintenanceMode').prop('checked', true);
                 }
@@ -4207,12 +4196,7 @@ app.controller('WPsiteHome', function ($scope, $http, $timeout, $compile, $windo
                 PPPassword: CheckBoxpasssword == 0 ? $scope.PPPassword : ''
             };
         } else {
-            var settingValue = 0;
-            if (setting === 'searchIndex') {
-                settingValue = $scope.searchIndexEnabled ? 1 : 0;
-            } else if ($('#' + setting).is(":checked")) {
-                settingValue = 1;
-            }
+            var settingValue = $('#' + setting).is(":checked") ? 1 : 0;
             data = {
                 WPid: $('#WPid').html(),
                 setting: setting,
@@ -4245,11 +4229,6 @@ app.controller('WPsiteHome', function ($scope, $http, $timeout, $compile, $windo
                     text: response.data.error_message,
                     type: 'error'
                 });
-                if (setting === 'searchIndex') {
-                    $timeout(function() {
-                        $scope.searchIndexEnabled = !$scope.searchIndexEnabled; // Revert the change
-                    });
-                }
                 if (setting === "PasswordProtection") {
                     location.reload();
                 }
@@ -4257,11 +4236,6 @@ app.controller('WPsiteHome', function ($scope, $http, $timeout, $compile, $windo
         }, function(error) {
             $('#wordpresshomeloading').hide();
             $scope.wordpresshomeloading = true;
-            if (setting === 'searchIndex') {
-                $timeout(function() {
-                    $scope.searchIndexEnabled = !$scope.searchIndexEnabled; // Revert the change
-                });
-            }
             console.error('Failed to update setting:', error);
         });
     };
@@ -5922,8 +5896,8 @@ function website_create_checkbox_function() {
 app.controller('createWebsite', function ($scope, $http, $timeout, $window) {
 
     $scope.webSiteCreationLoading = true;
-    $scope.installationDetailsForm = false;
-    $scope.installationProgress = true;
+    $scope.installationDetailsForm = true;
+    $scope.installationProgress = false;
     $scope.errorMessageBox = true;
     $scope.success = true;
     $scope.couldNotConnect = true;
