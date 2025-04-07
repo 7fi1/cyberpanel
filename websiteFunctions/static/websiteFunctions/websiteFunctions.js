@@ -6333,7 +6333,7 @@ app.controller('listWebsites', function ($scope, $http, $window) {
     };
 
     $scope.manageWP = function(wpId) {
-        window.location.href = '/websites/listWPsites?wpID=' + wpId;
+        window.location.href = '/websites/WPHome?ID=' + wpId;
     };
 
     // First, update the updateSetting function to handle all settings except password protection
