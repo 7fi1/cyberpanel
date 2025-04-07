@@ -2684,11 +2684,11 @@ app.controller('listWebsites', function ($scope, $http, $window) {
     };
 
     $scope.wpLogin = function(wpId) {
-        window.open('/websites/wpLogin?wpID=' + wpId, '_blank');
+        window.open('/websites/AutoLogin?id=' + wpId, '_blank');
     };
 
     $scope.manageWP = function(wpId) {
-        window.location.href = '/websites/listWPsites?wpID=' + wpId;
+        window.location.href = '/websites/WPHome?ID=' + wpId;
     };
 
     $scope.getFullUrl = function(url) {
@@ -2709,49 +2709,7 @@ app.controller('listWebsites', function ($scope, $http, $window) {
 
     $scope.deleteWPSite = function(wp) {
         if (confirm('Are you sure you want to delete this WordPress site? This action cannot be undone.')) {
-            var config = {
-                headers: {
-                    'X-CSRFToken': getCookie('csrftoken')
-                }
-            };
-            var data = {
-                wpid: wp.id,
-                domain: wp.domain
-            };
-            
-            $http.post('/websites/deleteWordPressSite', data, config).then(
-                function(response) {
-                    if (response.data.status === 1) {
-                        // Remove the WP site from the list
-                        var site = $scope.WebSitesList.find(function(site) {
-                            return site.domain === wp.domain;
-                        });
-                        if (site && site.wp_sites) {
-                            site.wp_sites = site.wp_sites.filter(function(wpSite) {
-                                return wpSite.id !== wp.id;
-                            });
-                        }
-                        new PNotify({
-                            title: 'Success!',
-                            text: 'WordPress site deleted successfully.',
-                            type: 'success'
-                        });
-                    } else {
-                        new PNotify({
-                            title: 'Error!',
-                            text: response.data.error_message || 'Could not delete WordPress site',
-                            type: 'error'
-                        });
-                    }
-                },
-                function(response) {
-                    new PNotify({
-                        title: 'Error!',
-                        text: 'Could not connect to server',
-                        type: 'error'
-                    });
-                }
-            );
+            window.location.href = '/websites/ListWPSites?DeleteID=' + wp.id;
         }
     };
 
@@ -13454,7 +13412,11 @@ app.controller('manageAliasController', function ($scope, $http, $timeout, $wind
         });
     };
 
-    $scope.visitSite = function(url) {
+    $scope.visitSite = function(wp) {
+        var url = wp.url || wp.domain;
+        if (!/^https?:\/\//i.test(url)) {
+            url = 'https://' + url;
+        }
         window.open(url, '_blank');
     };
 
