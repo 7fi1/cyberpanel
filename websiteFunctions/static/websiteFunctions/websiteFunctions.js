@@ -662,7 +662,6 @@ app.controller('WPsiteHome', function ($scope, $http, $timeout, $compile, $windo
         $scope.wordpresshomeloading = false;
         $('#wordpresshomeloading').show();
 
-
         var url = "/websites/UpdateWPSettings";
 
         if (setting === "PasswordProtection") {
@@ -673,7 +672,6 @@ app.controller('WPsiteHome', function ($scope, $http, $timeout, $compile, $windo
                     PPUsername: $scope.PPUsername,
                     PPPassword: $scope.PPPassword,
                 }
-
             } else {
                 var data = {
                     WPid: $('#WPid').html(),
@@ -681,9 +679,13 @@ app.controller('WPsiteHome', function ($scope, $http, $timeout, $compile, $windo
                     PPUsername: '',
                     PPPassword: '',
                 }
-
             }
-
+        } else if (setting === 'search-indexing') {
+            var data = {
+                WPid: $('#WPid').html(),
+                setting: setting,
+                settingValue: $scope.searchIndexEnabled ? 1 : 0
+            }
         } else {
             var settingValue = 0;
             if ($('#' + setting).is(":checked")) {
@@ -695,7 +697,6 @@ app.controller('WPsiteHome', function ($scope, $http, $timeout, $compile, $windo
                 settingValue: settingValue
             }
         }
-
 
         var config = {
             headers: {
@@ -4284,6 +4285,12 @@ app.controller('WPsiteHome', function ($scope, $http, $timeout, $compile, $windo
 
             }
 
+        } else if (setting === 'search-indexing') {
+            var data = {
+                WPid: $('#WPid').html(),
+                setting: setting,
+                settingValue: $scope.searchIndexEnabled ? 1 : 0
+            }
         } else {
             var settingValue = 0;
             if ($('#' + setting).is(":checked")) {
