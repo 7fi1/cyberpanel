@@ -2676,11 +2676,11 @@ app.controller('listWebsites', function ($scope, $http, $window) {
 
     $scope.visitSite = function(wp) {
         var url = wp.url || wp.domain;
-        if (!url) return '';
-        if (url.startsWith('http://') || url.startsWith('https://')) {
-            return url;
+        if (!url) return;
+        if (!url.startsWith('http://') && !url.startsWith('https://')) {
+            url = 'https://' + url;
         }
-        return 'https://' + url;
+        window.open(url, '_blank');
     };
 
     $scope.wpLogin = function(wpId) {
@@ -5826,7 +5826,12 @@ app.controller('listWebsites', function ($scope, $http, $window) {
         });
     };
 
-    $scope.visitSite = function(url) {
+    $scope.visitSite = function(wp) {
+        var url = wp.url || wp.domain;
+        if (!url) return;
+        if (!url.startsWith('http://') && !url.startsWith('https://')) {
+            url = 'https://' + url;
+        }
         window.open(url, '_blank');
     };
 
@@ -9421,7 +9426,12 @@ app.controller('listWebsites', function ($scope, $http, $window) {
         });
     };
 
-    $scope.visitSite = function(url) {
+    $scope.visitSite = function(wp) {
+        var url = wp.url || wp.domain;
+        if (!url) return;
+        if (!url.startsWith('http://') && !url.startsWith('https://')) {
+            url = 'https://' + url;
+        }
         window.open(url, '_blank');
     };
 
@@ -13414,7 +13424,8 @@ app.controller('manageAliasController', function ($scope, $http, $timeout, $wind
 
     $scope.visitSite = function(wp) {
         var url = wp.url || wp.domain;
-        if (!/^https?:\/\//i.test(url)) {
+        if (!url) return;
+        if (!url.startsWith('http://') && !url.startsWith('https://')) {
             url = 'https://' + url;
         }
         window.open(url, '_blank');

@@ -173,7 +173,7 @@
                                                      style="max-width: 100%; margin-bottom: 10px; min-height: 150px; background: #f5f5f5;"
                                                      onerror="this.onerror=null; this.src='https://s.wordpress.org/style/images/about/WordPress-logotype-standard.png';">
                                                 <div class="text-center wp-action-buttons">
-                                                    <a ng-href="{$ visitSite(wp) $}" target="_blank" class="btn btn-outline-secondary btn-sm wp-action-btn">
+                                                    <a href="javascript:void(0);" ng-click="visitSite(wp)" class="btn btn-outline-secondary btn-sm wp-action-btn">
                                                         <i class="fa-solid fa-external-link"></i> Visit Site
                                                     </a>
                                                     <a href="{% url 'AutoLogin' %}?id={$ wp.id $}" target="_blank" class="btn btn-outline-primary btn-sm wp-action-btn">
