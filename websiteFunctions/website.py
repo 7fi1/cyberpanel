@@ -7171,10 +7171,17 @@ StrictHostKeyChecking no
                     Vhuser, FinalPHPPath, site.path)
                 stdoutput = ProcessUtilities.outputExecutioner(command)
                 searchindex = int(stdoutput.splitlines()[-1])
+                
 
                 command = 'sudo -u %s %s -d error_reporting=0 /usr/bin/wp maintenance-mode status --skip-plugins --skip-themes --path=%s' % (
                     Vhuser, FinalPHPPath, site.path)
                 maintenanceMod = ProcessUtilities.outputExecutioner(command)
+
+                result = maintenanceMod.splitlines()[-1]
+                if result.find('not active') > -1:
+                    maintenanceMode = 0
+                else:
+                    maintenanceMode = 1
 
                 sites.append({
                     'id': site.id,
@@ -7187,7 +7194,7 @@ StrictHostKeyChecking no
                     'activePlugins': pluginCount,
                     'debugging': debugging,
                     'searchIndex': searchindex,
-                    'maintenanceMode': maintenanceMod,
+                    'maintenanceMode': maintenanceMode,
                     'screenshot': f'https://api.microlink.io/?url={site_url}&screenshot=true&meta=false&embed=screenshot.url'
                 })
                 
