@@ -568,8 +568,59 @@ app.controller('listWebsites', function ($scope, $http, $window) {
 
     $scope.deleteWPSite = function(wp) {
         if (confirm('Are you sure you want to delete this WordPress site? This action cannot be undone.')) {
-            window.location.href = '/websites/ListWPSites?DeleteID=' + wp.id;
+            var config = {
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken')
+                }
+            };
+            var data = {
+                wpid: wp.id,
+                domain: wp.domain
+            };
+            
+            $http.post('/websites/deleteWordPressSite', data, config).then(
+                function(response) {
+                    if (response.data.status === 1) {
+                        // Remove the WP site from the list
+                        var site = $scope.WebSitesList.find(function(site) {
+                            return site.domain === wp.domain;
+                        });
+                        if (site && site.wp_sites) {
+                            site.wp_sites = site.wp_sites.filter(function(wpSite) {
+                                return wpSite.id !== wp.id;
+                            });
+                        }
+                        new PNotify({
+                            title: 'Success!',
+                            text: 'WordPress site deleted successfully.',
+                            type: 'success'
+                        });
+                    } else {
+                        new PNotify({
+                            title: 'Error!',
+                            text: response.data.error_message || 'Could not delete WordPress site',
+                            type: 'error'
+                        });
+                    }
+                },
+                function(response) {
+                    new PNotify({
+                        title: 'Error!',
+                        text: 'Could not connect to server',
+                        type: 'error'
+                    });
+                }
+            );
         }
+    };
+
+    $scope.visitSite = function(wp) {
+        var url = wp.url || wp.domain;
+        if (!url) return '';
+        if (url.startsWith('http://') || url.startsWith('https://')) {
+            return url;
+        }
+        return 'https://' + url;
     };
 
 });
