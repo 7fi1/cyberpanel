@@ -110,13 +110,26 @@
                 GLobalAjaxCall($http, "{% url 'GetCurrentPlugins' %}", data,
                     function(response) {
                         if (response.data.status === 1) {
-                            var plugins = JSON.parse(response.data.plugins);
-                            site.activePlugins = plugins.filter(function(p) { return p.status === 'active'; }).length;
-                            site.totalPlugins = plugins.length;
+                            try {
+                                var plugins = JSON.parse(response.data.plugins);
+                                // WordPress CLI returns an array of objects with 'name' and 'status' properties
+                                site.activePlugins = plugins.filter(function(p) { 
+                                    return p.status && p.status.toLowerCase() === 'active'; 
+                                }).length;
+                                site.totalPlugins = plugins.length;
+                            } catch (e) {
+                                console.error('Error parsing plugin data:', e);
+                                site.activePlugins = 'Error';
+                                site.totalPlugins = 'Error';
+                            }
+                        } else {
+                            site.activePlugins = 'Error';
+                            site.totalPlugins = 'Error';
                         }
                     },
                     function(response) {
                         site.activePlugins = 'Error';
+                        site.totalPlugins = 'Error';
                     }
                 );
             }

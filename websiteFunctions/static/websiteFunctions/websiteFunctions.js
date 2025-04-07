@@ -2707,11 +2707,6 @@ app.controller('listWebsites', function ($scope, $http, $window) {
         return 'https://' + url;
     };
 
-    $scope.deleteWPSite = function(wp) {
-        if (confirm('Are you sure you want to delete this WordPress site? This action cannot be undone.')) {
-            window.location.href = '/websites/ListWPSites?DeleteID=' + wp.id;
-        }
-    };
 
     $scope.updateSetting = function(wp, setting) {
         var settingMap = {
@@ -5859,11 +5854,7 @@ app.controller('listWebsites', function ($scope, $http, $window) {
         return 'https://' + url;
     };
 
-    $scope.deleteWPSite = function(wp) {
-        if (confirm('Are you sure you want to delete this WordPress site? This action cannot be undone.')) {
-            window.location.href = '/websites/ListWPSites?DeleteID=' + wp.id;
-        }
-    };
+
 
     $scope.updateSetting = function(wp, setting) {
         var settingMap = {
