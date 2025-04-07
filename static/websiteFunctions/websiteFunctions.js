@@ -385,7 +385,15 @@ app.controller('listWebsites', function ($scope, $http, $window) {
     };
 
     $scope.getFullUrl = function(url) {
-        if (!url) return '';
+        console.log('getFullUrl called with:', url);
+        if (!url) {
+            // If no URL is provided, try to use the domain
+            if (this.wp && this.wp.domain) {
+                url = this.wp.domain;
+            } else {
+                return '';
+            }
+        }
         if (url.startsWith('http://') || url.startsWith('https://')) {
             return url;
         }
@@ -406,11 +414,17 @@ app.controller('listWebsites', function ($scope, $http, $window) {
                     }
                 };
                 var data = { domain: domain };
+                site.loadingWPSites = true;
                 $http.post('/websites/getWordPressSites', data, config).then(
                     function(response) {
+                        site.loadingWPSites = false;
                         if (response.data.status === 1) {
                             site.wp_sites = response.data.sites;
                             site.wp_sites.forEach(function(wp) {
+                                // Ensure each WP site has a URL
+                                if (!wp.url) {
+                                    wp.url = wp.domain || domain;
+                                }
                                 fetchWPSiteData(wp);
                             });
                         } else {
@@ -422,6 +436,7 @@ app.controller('listWebsites', function ($scope, $http, $window) {
                         }
                     },
                     function(response) {
+                        site.loadingWPSites = false;
                         new PNotify({
                             title: 'Error!',
                             text: 'Could not connect to server',
@@ -3631,7 +3646,6 @@ app.controller('manageAliasController', function ($scope, $http, $timeout, $wind
                 $timeout(function () {
                     $window.location.reload();
                 }, 3000);
-
 
             } else {
 
