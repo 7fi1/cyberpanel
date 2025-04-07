@@ -602,9 +602,7 @@ app.controller('WPsiteHome', function ($scope, $http, $timeout, $compile, $windo
                 if (response.data.ret_data.debugging === 1) {
                     $('#debugging').prop('checked', true);
                 }
-                if (response.data.ret_data.searchIndex === 1) {
-                    $('#searchIndex').prop('checked', true);
-                }
+                $scope.searchIndexEnabled = response.data.ret_data.searchIndex === 1;
                 if (response.data.ret_data.maintenanceMode === 1) {
                     $('#maintenanceMode').prop('checked', true);
                 }
@@ -4204,9 +4202,7 @@ app.controller('WPsiteHome', function ($scope, $http, $timeout, $compile, $windo
                 if (response.data.ret_data.debugging === 1) {
                     $('#debugging').prop('checked', true);
                 }
-                if (response.data.ret_data.searchIndex === 1) {
-                    $('#searchIndex').prop('checked', true);
-                }
+                $scope.searchIndexEnabled = response.data.ret_data.searchIndex === 1;
                 if (response.data.ret_data.maintenanceMode === 1) {
                     $('#maintenanceMode').prop('checked', true);
                 }
@@ -9073,7 +9069,7 @@ app.controller('websitePages', function ($scope, $http, $timeout, $window) {
                 $scope.operationFailed = false;
                 $scope.operationSuccessfull = true;
                 $scope.couldNotConnect = true;
-                $scope.openBaseDirBox = false;
+                $scope.openBaseDirChanged = false;
 
                 $scope.errorMessage = response.data.error_message;
 
