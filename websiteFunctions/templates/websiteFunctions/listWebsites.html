@@ -212,7 +212,9 @@
                                                     <div class="col-sm-6">
                                                         <div class="checkbox">
                                                             <label>
-                                                                <input type="checkbox" ng-model="wp.searchIndex" ng-change="updateSetting(wp, 'search-indexing')">
+                                                                <input type="checkbox" 
+                                                                       ng-click="updateSetting(wp, 'search-indexing')"
+                                                                       ng-checked="wp.searchIndex == 1">
                                                                 Search engine indexing
                                                             </label>
                                                         </div>
