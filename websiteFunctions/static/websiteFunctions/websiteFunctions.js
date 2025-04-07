@@ -549,136 +549,64 @@ function create_staging_checkbox_function() {
 create_staging_checkbox_function();
 
 app.controller('WPsiteHome', function ($scope, $http, $timeout, $compile, $window) {
-
-    var CheckBoxpasssword = 0;
-
-    $scope.wordpresshomeloading = true;
-    $scope.stagingDetailsForm = false;
-    $scope.installationProgress = true;
-    $scope.errorMessageBox = true;
-    $scope.success = true;
-    $scope.couldNotConnect = true;
-    $scope.goBackDisable = true;
-    $(document).ready(function () {
-        var checkstatus = document.getElementById("wordpresshome");
-        if (checkstatus !== null) {
-            $scope.LoadWPdata();
-
-        }
-    });
-
-
-    $scope.LoadWPdata = function () {
-
-        $scope.wordpresshomeloading = false;
-        $('#wordpresshomeloading').show();
-
-        var url = "/websites/FetchWPdata";
-
+    $scope.searchIndexEnabled = false; // Initialize the model
+    
+    // Function to fetch initial data
+    function fetchInitialData() {
+        var url = "/websites/FetchWPSettings";
         var data = {
             WPid: $('#WPid').html(),
-        }
-
-        console.log(data);
+        };
         var config = {
             headers: {
                 'X-CSRFToken': getCookie('csrftoken')
             }
         };
-
-
-        $http.post(url, data, config).then(ListInitialDatas, cantLoadInitialDatas);
-
-
-        function ListInitialDatas(response) {
-            wordpresshomeloading = true;
-            $('#wordpresshomeloading').hide();
-
+        $http.post(url, data, config).then(function(response) {
             if (response.data.status === 1) {
-                $('#WPVersion').text(response.data.ret_data.version);
+                $scope.searchIndexEnabled = response.data.ret_data.searchIndex === 1;
                 if (response.data.ret_data.lscache === 1) {
                     $('#lscache').prop('checked', true);
                 }
                 if (response.data.ret_data.debugging === 1) {
                     $('#debugging').prop('checked', true);
                 }
-                $scope.searchIndexEnabled = response.data.ret_data.searchIndex === 1;
                 if (response.data.ret_data.maintenanceMode === 1) {
                     $('#maintenanceMode').prop('checked', true);
                 }
                 if (response.data.ret_data.wpcron === 1) {
                     $('#wpcron').prop('checked', true);
                 }
-                if (response.data.ret_data.passwordprotection == 1) {
-
-                    var dc = '<input  type="checkbox" checked \n' +
-                        '        ng-click="UpdateWPSettings(\'PasswordProtection\')" class="custom-control-input ng-pristine ng-untouched ng-valid ng-not-empty"\n' +
-                        '                                                       id="passwdprotection">\n' +
-                        '                                                <label class="custom-control-label"\n' +
-                        '                                                       for="passwdprotection"></label>'
-                    var mp = $compile(dc)($scope);
-                    angular.element(document.getElementById('prsswdprodata')).append(mp);
-                    CheckBoxpasssword = 1;
-                } else if (response.data.ret_data.passwordprotection == 0) {
-                    var dc = '<input  type="checkbox" data-toggle="modal"\n' +
-                        '                                                       data-target="#Passwordprotection"\n' +
-                        '                                                       class="custom-control-input ng-pristine ng-untouched ng-valid ng-not-empty"\n' +
-                        '                                                       id="passwdprotection">\n' +
-                        '                                                <label class="custom-control-label"\n' +
-                        '                                                       for="passwdprotection"></label>'
-                    $('#prsswdprodata').append(dc);
-                    CheckBoxpasssword = 0;
-                }
-
-            } else {
-                new PNotify({
-                    title: 'Operation Failed!',
-                    text: response.data.error_message,
-                    type: 'error'
-                });
-
+                $('#WPVersion').text(response.data.ret_data.version);
             }
+        });
+    }
 
-        }
-
-        function cantLoadInitialDatas(response) {
-            $('#wordpresshomeloading').hide();
-
-            $scope.webSiteCreationLoading = true;
-            $scope.installationDetailsForm = true;
-            $scope.installationProgress = false;
-            $scope.errorMessageBox = true;
-            $scope.success = true;
-            $scope.couldNotConnect = false;
-            $scope.goBackDisable = false;
-
-        }
-
-
-    };
+    // Call fetchInitialData when controller loads
+    fetchInitialData();
 
     $scope.UpdateWPSettings = function (setting) {
-
         $scope.wordpresshomeloading = false;
         $('#wordpresshomeloading').show();
 
         var url = "/websites/UpdateWPSettings";
+        var data;
 
         if (setting === "PasswordProtection") {
             if (CheckBoxpasssword == 0) {
-                var data = {
+                data = {
                     WPid: $('#WPid').html(),
                     setting: setting,
                     PPUsername: $scope.PPUsername,
                     PPPassword: $scope.PPPassword,
-                }
+                };
             } else {
-                var data = {
+                data = {
                     WPid: $('#WPid').html(),
                     setting: setting,
                     PPUsername: '',
                     PPPassword: '',
-                }
+                };
             }
         } else {
             var settingValue = 0;
@@ -687,11 +615,11 @@ app.controller('WPsiteHome', function ($scope, $http, $timeout, $compile, $windo
             } else if ($('#' + setting).is(":checked")) {
                 settingValue = 1;
             }
-            var data = {
+            data = {
                 WPid: $('#WPid').html(),
                 setting: setting,
                 settingValue: settingValue
-            }
+            };
         }
 
         var config = {
@@ -700,16 +628,14 @@ app.controller('WPsiteHome', function ($scope, $http, $timeout, $compile, $windo
             }
         };
 
-        $http.post(url, data, config).then(ListInitialDatas, cantLoadInitialDatas);
-
-        function ListInitialDatas(response) {
+        $http.post(url, data, config).then(function(response) {
             $scope.wordpresshomeloading = true;
             $('#wordpresshomeloading').hide();
 
             if (response.data.status === 1) {
                 new PNotify({
                     title: 'Success!',
-                    text: 'Successfully Updated!.',
+                    text: 'Successfully Updated!',
                     type: 'success'
                 });
                 if (setting === "PasswordProtection") {
@@ -724,19 +650,12 @@ app.controller('WPsiteHome', function ($scope, $http, $timeout, $compile, $windo
                 if (setting === "PasswordProtection") {
                     location.reload();
                 }
-
             }
-
-        }
-
-        function cantLoadInitialDatas(response) {
+        }, function(error) {
             $('#wordpresshomeloading').hide();
             $scope.wordpresshomeloading = true;
-            alert(response)
-
-        }
-
-
+            alert(error);
+        });
     };
 
     $scope.GetCurrentPlugins = function () {
@@ -12415,350 +12334,6 @@ app.controller('cloneWebsite', function ($scope, $http, $timeout, $window) {
 });
 /* Java script code to cloneWebsite ends here */
 
-
-/* Java script code to syncWebsite */
-app.controller('syncWebsite', function ($scope, $http, $timeout, $window) {
-
-    $scope.cyberpanelLoading = true;
-    $scope.installationDetailsForm = false;
-    $scope.installationProgress = true;
-    $scope.goBackDisable = true;
-
-    var statusFile;
-
-    $scope.startSyncing = function () {
-
-        $scope.cyberpanelLoading = false;
-        $scope.installationDetailsForm = true;
-        $scope.installationProgress = false;
-        $scope.goBackDisable = true;
-
-        $scope.currentStatus = "Cloning started..";
-
-        url = "/websites/startSync";
-
-
-        var data = {
-            childDomain: $("#childDomain").text(),
-            eraseCheck: $scope.eraseCheck,
-            dbCheck: $scope.dbCheck,
-            copyChanged: $scope.copyChanged
-
-        };
-
-        var config = {
-            headers: {
-                'X-CSRFToken': getCookie('csrftoken')
-            }
-        };
-
-        $http.post(url, data, config).then(ListInitialDatas, cantLoadInitialDatas);
-
-        function ListInitialDatas(response) {
-
-            if (response.data.status === 1) {
-                statusFile = response.data.tempStatusPath;
-                getCreationStatus();
-            } else {
-
-                $scope.cyberpanelLoading = true;
-                $scope.installationDetailsForm = true;
-                $scope.installationProgress = false;
-                $scope.goBackDisable = false;
-
-                $scope.currentStatus = response.data.error_message;
-            }
-
-
-        }
-
-        function cantLoadInitialDatas(response) {
-
-            $scope.cyberpanelLoading = true;
-            $scope.installationDetailsForm = true;
-            $scope.installationProgress = false;
-            $scope.goBackDisable = false;
-
-        }
-
-    };
-    $scope.goBack = function () {
-        $scope.cyberpanelLoading = true;
-        $scope.installationDetailsForm = false;
-        $scope.installationProgress = true;
-        $scope.goBackDisable = true;
-        $("#installProgress").css("width", "0%");
-    };
-
-    function getCreationStatus() {
-
-        url = "/websites/installWordpressStatus";
-
-        var data = {
-            statusFile: statusFile
-        };
-
-        var config = {
-            headers: {
-                'X-CSRFToken': getCookie('csrftoken')
-            }
-        };
-
-
-        $http.post(url, data, config).then(ListInitialDatas, cantLoadInitialDatas);
-
-
-        function ListInitialDatas(response) {
-
-
-            if (response.data.abort === 1) {
-
-                if (response.data.installStatus === 1) {
-
-                    $scope.cyberpanelLoading = true;
-                    $scope.installationDetailsForm = true;
-                    $scope.installationProgress = false;
-                    $scope.goBackDisable = false;
-
-                    $("#installProgress").css("width", "100%");
-                    $scope.installPercentage = "100";
-                    $scope.currentStatus = response.data.currentStatus;
-                    $timeout.cancel();
-
-                } else {
-
-                    $scope.cyberpanelLoading = true;
-                    $scope.installationDetailsForm = true;
-                    $scope.installationProgress = false;
-                    $scope.goBackDisable = false;
-
-                    $scope.currentStatus = response.data.error_message;
-
-                    $("#installProgress").css("width", "0%");
-                    $scope.installPercentage = "0";
-                    $scope.goBackDisable = false;
-
-                }
-
-            } else {
-                $("#installProgress").css("width", response.data.installationProgress + "%");
-                $scope.installPercentage = response.data.installationProgress;
-                $scope.currentStatus = response.data.currentStatus;
-                $timeout(getCreationStatus, 1000);
-            }
-
-        }
-
-        function cantLoadInitialDatas(response) {
-
-            $scope.cyberpanelLoading = true;
-            $scope.installationDetailsForm = true;
-            $scope.installationProgress = false;
-            $scope.goBackDisable = false;
-
-        }
-
-
-    }
-
-});
-/* Java script code to syncWebsite ends here */
-
-
-app.controller('installMagentoCTRL', function ($scope, $http, $timeout) {
-
-    $scope.installationDetailsForm = false;
-    $scope.installationProgress = true;
-    $scope.installationFailed = true;
-    $scope.installationSuccessfull = true;
-    $scope.couldNotConnect = true;
-    $scope.wpInstallLoading = true;
-    $scope.goBackDisable = true;
-
-    $scope.databasePrefix = 'ps_';
-
-    var statusFile;
-    var domain = $("#domainNamePage").text();
-    var path;
-
-
-    $scope.goBack = function () {
-        $scope.installationDetailsForm = false;
-        $scope.installationProgress = true;
-        $scope.installationFailed = true;
-        $scope.installationSuccessfull = true;
-        $scope.couldNotConnect = true;
-        $scope.wpInstallLoading = true;
-        $scope.goBackDisable = true;
-        $("#installProgress").css("width", "0%");
-    };
-
-    function getInstallStatus() {
-
-        url = "/websites/installWordpressStatus";
-
-        var data = {
-            statusFile: statusFile,
-            domainName: domain
-        };
-
-        var config = {
-            headers: {
-                'X-CSRFToken': getCookie('csrftoken')
-            }
-        };
-
-
-        $http.post(url, data, config).then(ListInitialDatas, cantLoadInitialDatas);
-
-
-        function ListInitialDatas(response) {
-
-
-            if (response.data.abort === 1) {
-
-                if (response.data.installStatus === 1) {
-
-                    $scope.installationDetailsForm = true;
-                    $scope.installationProgress = false;
-                    $scope.installationFailed = true;
-                    $scope.installationSuccessfull = false;
-                    $scope.couldNotConnect = true;
-                    $scope.wpInstallLoading = true;
-                    $scope.goBackDisable = false;
-
-                    if (typeof path !== 'undefined') {
-                        $scope.installationURL = "http://" + domain + "/" + path;
-                    } else {
-                        $scope.installationURL = domain;
-                    }
-
-
-                    $("#installProgress").css("width", "100%");
-                    $scope.installPercentage = "100";
-                    $scope.currentStatus = response.data.currentStatus;
-                    $timeout.cancel();
-
-                } else {
-
-                    $scope.installationDetailsForm = true;
-                    $scope.installationProgress = false;
-                    $scope.installationFailed = false;
-                    $scope.installationSuccessfull = true;
-                    $scope.couldNotConnect = true;
-                    $scope.wpInstallLoading = true;
-                    $scope.goBackDisable = false;
-
-                    $scope.errorMessage = response.data.error_message;
-
-                    $("#installProgress").css("width", "0%");
-                    $scope.installPercentage = "0";
-
-                }
-
-            } else {
-                $("#installProgress").css("width", response.data.installationProgress + "%");
-                $scope.installPercentage = response.data.installationProgress;
-                $scope.currentStatus = response.data.currentStatus;
-
-                $timeout(getInstallStatus, 1000);
-
-
-            }
-
-        }
-
-        function cantLoadInitialDatas(response) {
-
-            $scope.canNotFetch = true;
-            $scope.couldNotConnect = false;
-
-
-        }
-
-
-    }
-
-    $scope.installMagento = function () {
-
-        $scope.installationDetailsForm = true;
-        $scope.installationProgress = false;
-        $scope.installationFailed = true;
-        $scope.installationSuccessfull = true;
-        $scope.couldNotConnect = true;
-        $scope.wpInstallLoading = false;
-        $scope.goBackDisable = true;
-        $scope.currentStatus = "Starting installation..";
-
-        path = $scope.installPath;
-
-
-        url = "/websites/magentoInstall";
-
-        var home = "1";
-
-        if (typeof path !== 'undefined') {
-            home = "0";
-        }
-        var sampleData;
-        if ($scope.sampleData === true) {
-            sampleData = 1;
-        } else {
-            sampleData = 0
-        }
-
-
-        var data = {
-            domain: domain,
-            home: home,
-            path: path,
-            firstName: $scope.firstName,
-            lastName: $scope.lastName,
-            username: $scope.username,
-            email: $scope.email,
-            passwordByPass: $scope.password,
-            sampleData: sampleData
-        };
-
-        var config = {
-            headers: {
-                'X-CSRFToken': getCookie('csrftoken')
-            }
-        };
-
-        $http.post(url, data, config).then(ListInitialDatas, cantLoadInitialDatas);
-
-
-        function ListInitialDatas(response) {
-
-            if (response.data.installStatus === 1) {
-                statusFile = response.data.tempStatusPath;
-                getInstallStatus();
-            } else {
-
-                $scope.installationDetailsForm = true;
-                $scope.installationProgress = false;
-                $scope.installationFailed = false;
-                $scope.installationSuccessfull = true;
-                $scope.couldNotConnect = true;
-                $scope.wpInstallLoading = true;
-                $scope.goBackDisable = false;
-
-                $scope.errorMessage = response.data.error_message;
-
-            }
-
-
-        }
-
-        function cantLoadInitialDatas(response) {
-        }
-
-    };
-
-
-});
-
 /* Java script code to git tracking */
 app.controller('manageGIT', function ($scope, $http, $timeout, $window) {
 
@@ -15082,7 +14657,6 @@ app.controller('BuyAddons', function ($scope, $http) {
 // Check if there is a query string
         currentURL = queryStringIndex !== -1 ? currentURL.substring(0, queryStringIndex) : currentURL;
 
-
         // Encode parameters to make them URL-safe
         const params = new URLSearchParams({
             planName: planName,
@@ -15092,7 +14666,6 @@ app.controller('BuyAddons', function ($scope, $http) {
             months: months
         });
 
-
         // Build the complete URL with query string
         const fullURL = `${baseURL}?${params.toString()}`;
 
@@ -15101,269 +14674,5 @@ app.controller('BuyAddons', function ($scope, $http) {
         window.location.href = fullURL;
 
     }
-
-
-    $scope.fetchDetails = function () {
-
-        if ($scope.destinationType === 'SFTP') {
-            $scope.sftpHide = false;
-            $scope.localHide = true;
-            $scope.populateCurrentRecords();
-        } else {
-            $scope.sftpHide = true;
-            $scope.localHide = false;
-            $scope.populateCurrentRecords();
-        }
-    };
-
-    $scope.populateCurrentRecords = function () {
-
-        $scope.cyberpanelLoading = false;
-
-        url = "/backup/getCurrentBackupDestinations";
-
-        var type = 'SFTP';
-        if ($scope.destinationType === 'SFTP') {
-            type = 'SFTP';
-        } else {
-            type = 'local';
-        }
-
-        var data = {
-            type: type
-        };
-
-        var config = {
-            headers: {
-                'X-CSRFToken': getCookie('csrftoken')
-            }
-        };
-
-
-        $http.post(url, data, config).then(ListInitialDatas, cantLoadInitialDatas);
-
-
-        function ListInitialDatas(response) {
-            $scope.cyberpanelLoading = true;
-            if (response.data.status === 1) {
-                $scope.records = JSON.parse(response.data.data);
-            } else {
-                new PNotify({
-                    title: 'Operation Failed!',
-                    text: response.data.error_message,
-                    type: 'error'
-                });
-            }
-
-        }
-
-        function cantLoadInitialDatas(response) {
-            $scope.cyberpanelLoading = true;
-            new PNotify({
-                title: 'Operation Failed!',
-                text: 'Could not connect to server, please refresh this page',
-                type: 'error'
-            });
-        }
-
-    };
-
-    $scope.addDestination = function (type) {
-        $scope.cyberpanelLoading = false;
-
-        url = "/backup/submitDestinationCreation";
-
-        if (type === 'SFTP') {
-            var data = {
-                type: type,
-                name: $scope.name,
-                IPAddress: $scope.IPAddress,
-                userName: $scope.userName,
-                password: $scope.password,
-                backupSSHPort: $scope.backupSSHPort,
-                path: $scope.path
-            };
-        } else {
-            var data = {
-                type: type,
-                path: $scope.localPath,
-                name: $scope.name
-            };
-        }
-
-        var config = {
-            headers: {
-                'X-CSRFToken': getCookie('csrftoken')
-            }
-        };
-
-
-        $http.post(url, data, config).then(ListInitialDatas, cantLoadInitialDatas);
-
-
-        function ListInitialDatas(response) {
-            $scope.cyberpanelLoading = true;
-            $scope.populateCurrentRecords();
-            if (response.data.status === 1) {
-                new PNotify({
-                    title: 'Success!',
-                    text: 'Destination successfully added.',
-                    type: 'success'
-                });
-            } else {
-                new PNotify({
-                    title: 'Operation Failed!',
-                    text: response.data.error_message,
-                    type: 'error'
-                });
-            }
-
-        }
-
-        function cantLoadInitialDatas(response) {
-            $scope.cyberpanelLoading = true;
-            new PNotify({
-                title: 'Operation Failed!',
-                text: 'Could not connect to server, please refresh this page',
-                type: 'error'
-            });
-        }
-
-    };
-
-    $scope.removeDestination = function (type, nameOrPath) {
-        $scope.cyberpanelLoading = false;
-
-
-        url = "/backup/deleteDestination";
-
-        var data = {
-            type: type,
-            nameOrPath: nameOrPath,
-        };
-
-        var config = {
-            headers: {
-                'X-CSRFToken': getCookie('csrftoken')
-            }
-        };
-
-
-        $http.post(url, data, config).then(ListInitialDatas, cantLoadInitialDatas);
-
-
-        function ListInitialDatas(response) {
-            $scope.cyberpanelLoading = true;
-            $scope.populateCurrentRecords();
-            if (response.data.status === 1) {
-                new PNotify({
-                    title: 'Success!',
-                    text: 'Destination successfully removed.',
-                    type: 'success'
-                });
-            } else {
-                new PNotify({
-                    title: 'Operation Failed!',
-                    text: response.data.error_message,
-                    type: 'error'
-                });
-            }
-
-        }
-
-        function cantLoadInitialDatas(response) {
-            $scope.cyberpanelLoading = true;
-            new PNotify({
-                title: 'Operation Failed!',
-                text: 'Could not connect to server, please refresh this page',
-                type: 'error'
-            });
-        }
-
-    };
-
-    $scope.DeployAccount = function (id) {
-        $scope.cyberpanelLoading = false;
-
-        url = "/backup/DeployAccount";
-
-        var data = {
-            id:id
-
-        };
-
-        var config = {
-            headers: {
-                'X-CSRFToken': getCookie('csrftoken')
-            }
-        };
-
-        $http.post(url, data, config).then(ListInitialDatas, cantLoadInitialDatas);
-
-        function ListInitialDatas(response) {
-
-            $scope.cyberpanelLoading = true;
-            if (response.data.status === 1) {
-                new PNotify({
-                    title: 'Success',
-                    text: 'Successfully deployed.',
-                    type: 'success'
-                });
-                $window.location.reload();
-
-
-            } else {
-                new PNotify({
-                    title: 'Operation Failed!',
-                    text: response.data.error_message,
-                    type: 'error'
-                });
-            }
-
-        }
-
-        function cantLoadInitialDatas(response) {
-            $scope.couldNotConnect = false;
-            restoreBackupButton.disabled = false;
-        }
-
-    };
-
-    //// paypal
-
-    $scope.PaypalBuyNowBackup = function (planName, monthlyPrice, yearlyPrice, months) {
-
-        const baseURL = 'https://platform.cyberpersons.com/Billing/PaypalCreateOrderforBackupPlans';
-        // Get the current URL
-        var currentURL = window.location.href;
-
-// Find the position of the question mark
-        const queryStringIndex = currentURL.indexOf('?');
-
-// Check if there is a query string
-        currentURL = queryStringIndex !== -1 ? currentURL.substring(0, queryStringIndex) : currentURL;
-
-        // Encode parameters to make them URL-safe
-        const params = new URLSearchParams({
-            planName: planName,
-            monthlyPrice: monthlyPrice,
-            yearlyPrice: yearlyPrice,
-            returnURL: currentURL,  // Add the current URL as a query parameter
-            months: months
-        });
-
-
-        // Build the complete URL with query string
-        const fullURL = `${baseURL}?${params.toString()}`;
-
-        // Redirect to the constructed URL
-
-        window.location.href = fullURL;
-
-    }
-
-
-
-
 
 })
