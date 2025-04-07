@@ -549,41 +549,84 @@ function create_staging_checkbox_function() {
 create_staging_checkbox_function();
 
 app.controller('WPsiteHome', function ($scope, $http, $timeout, $compile, $window) {
-    $scope.searchIndexEnabled = false; // Initialize the model
+    var CheckBoxpasssword = 0;
     
-    // Function to fetch initial data
-    function fetchInitialData() {
-        var url = "/websites/FetchWPSettings";
+    $scope.wordpresshomeloading = true;
+    $scope.stagingDetailsForm = false;
+    $scope.installationProgress = true;
+    $scope.errorMessageBox = true;
+    $scope.success = true;
+    $scope.couldNotConnect = true;
+    $scope.goBackDisable = true;
+    $scope.searchIndexEnabled = false;
+
+    $(document).ready(function () {
+        var checkstatus = document.getElementById("wordpresshome");
+        if (checkstatus !== null) {
+            $scope.LoadWPdata();
+        }
+    });
+
+    $scope.LoadWPdata = function () {
+        $scope.wordpresshomeloading = false;
+        $('#wordpresshomeloading').show();
+
+        var url = "/websites/FetchWPdata";
+
         var data = {
             WPid: $('#WPid').html(),
         };
+
         var config = {
             headers: {
                 'X-CSRFToken': getCookie('csrftoken')
             }
         };
+
         $http.post(url, data, config).then(function(response) {
+            $scope.wordpresshomeloading = true;
+            $('#wordpresshomeloading').hide();
+
             if (response.data.status === 1) {
-                $scope.searchIndexEnabled = response.data.ret_data.searchIndex === 1;
+                $('#WPVersion').text(response.data.ret_data.version);
                 if (response.data.ret_data.lscache === 1) {
                     $('#lscache').prop('checked', true);
                 }
                 if (response.data.ret_data.debugging === 1) {
                     $('#debugging').prop('checked', true);
                 }
+                $scope.searchIndexEnabled = response.data.ret_data.searchIndex === 1;
+                $scope.$apply(); // Force Angular to update the view
+                
                 if (response.data.ret_data.maintenanceMode === 1) {
                     $('#maintenanceMode').prop('checked', true);
                 }
                 if (response.data.ret_data.wpcron === 1) {
                     $('#wpcron').prop('checked', true);
                 }
-                $('#WPVersion').text(response.data.ret_data.version);
+                if (response.data.ret_data.passwordprotection == 1) {
+                    var dc = '<input type="checkbox" checked ng-click="UpdateWPSettings(\'PasswordProtection\')" class="custom-control-input" id="passwdprotection"><label class="custom-control-label" for="passwdprotection"></label>';
+                    var mp = $compile(dc)($scope);
+                    angular.element(document.getElementById('prsswdprodata')).append(mp);
+                    CheckBoxpasssword = 1;
+                } else {
+                    var dc = '<input type="checkbox" data-toggle="modal" data-target="#Passwordprotection" class="custom-control-input" id="passwdprotection"><label class="custom-control-label" for="passwdprotection"></label>';
+                    $('#prsswdprodata').append(dc);
+                    CheckBoxpasssword = 0;
+                }
+            } else {
+                new PNotify({
+                    title: 'Operation Failed!',
+                    text: response.data.error_message,
+                    type: 'error'
+                });
             }
+        }, function(error) {
+            $('#wordpresshomeloading').hide();
+            $scope.wordpresshomeloading = true;
+            console.error('Failed to load WP data:', error);
         });
-    }
-
-    // Call fetchInitialData when controller loads
-    fetchInitialData();
+    };
 
     $scope.UpdateWPSettings = function (setting) {
         $scope.wordpresshomeloading = false;
@@ -593,21 +636,12 @@ app.controller('WPsiteHome', function ($scope, $http, $timeout, $compile, $windo
         var data;
 
         if (setting === "PasswordProtection") {
-            if (CheckBoxpasssword == 0) {
-                data = {
-                    WPid: $('#WPid').html(),
-                    setting: setting,
-                    PPUsername: $scope.PPUsername,
-                    PPPassword: $scope.PPPassword,
-                };
-            } else {
-                data = {
-                    WPid: $('#WPid').html(),
-                    setting: setting,
-                    PPUsername: '',
-                    PPPassword: '',
-                };
-            }
+            data = {
+                WPid: $('#WPid').html(),
+                setting: setting,
+                PPUsername: CheckBoxpasssword == 0 ? $scope.PPUsername : '',
+                PPPassword: CheckBoxpasssword == 0 ? $scope.PPPassword : ''
+            };
         } else {
             var settingValue = 0;
             if (setting === 'searchIndex') {
@@ -647,6 +681,9 @@ app.controller('WPsiteHome', function ($scope, $http, $timeout, $compile, $windo
                     text: response.data.error_message,
                     type: 'error'
                 });
+                if (setting === 'searchIndex') {
+                    $scope.searchIndexEnabled = !$scope.searchIndexEnabled; // Revert the change
+                }
                 if (setting === "PasswordProtection") {
                     location.reload();
                 }
@@ -654,7 +691,10 @@ app.controller('WPsiteHome', function ($scope, $http, $timeout, $compile, $windo
         }, function(error) {
             $('#wordpresshomeloading').hide();
             $scope.wordpresshomeloading = true;
-            alert(error);
+            if (setting === 'searchIndex') {
+                $scope.searchIndexEnabled = !$scope.searchIndexEnabled; // Revert the change
+            }
+            console.error('Failed to update setting:', error);
         });
     };
 
@@ -4063,9 +4103,8 @@ function create_staging_checkbox_function() {
 create_staging_checkbox_function();
 
 app.controller('WPsiteHome', function ($scope, $http, $timeout, $compile, $window) {
-
     var CheckBoxpasssword = 0;
-
+    
     $scope.wordpresshomeloading = true;
     $scope.stagingDetailsForm = false;
     $scope.installationProgress = true;
@@ -4073,17 +4112,16 @@ app.controller('WPsiteHome', function ($scope, $http, $timeout, $compile, $windo
     $scope.success = true;
     $scope.couldNotConnect = true;
     $scope.goBackDisable = true;
+    $scope.searchIndexEnabled = false;
+
     $(document).ready(function () {
         var checkstatus = document.getElementById("wordpresshome");
         if (checkstatus !== null) {
             $scope.LoadWPdata();
-
         }
     });
 
-
     $scope.LoadWPdata = function () {
-
         $scope.wordpresshomeloading = false;
         $('#wordpresshomeloading').show();
 
@@ -4091,21 +4129,16 @@ app.controller('WPsiteHome', function ($scope, $http, $timeout, $compile, $windo
 
         var data = {
             WPid: $('#WPid').html(),
-        }
+        };
 
-        console.log(data);
         var config = {
             headers: {
                 'X-CSRFToken': getCookie('csrftoken')
             }
         };
 
-
-        $http.post(url, data, config).then(ListInitialDatas, cantLoadInitialDatas);
-
-
-        function ListInitialDatas(response) {
-            wordpresshomeloading = true;
+        $http.post(url, data, config).then(function(response) {
+            $scope.wordpresshomeloading = true;
             $('#wordpresshomeloading').hide();
 
             if (response.data.status === 1) {
@@ -4117,6 +4150,8 @@ app.controller('WPsiteHome', function ($scope, $http, $timeout, $compile, $windo
                     $('#debugging').prop('checked', true);
                 }
                 $scope.searchIndexEnabled = response.data.ret_data.searchIndex === 1;
+                $scope.$apply(); // Force Angular to update the view
+                
                 if (response.data.ret_data.maintenanceMode === 1) {
                     $('#maintenanceMode').prop('checked', true);
                 }
@@ -4124,80 +4159,43 @@ app.controller('WPsiteHome', function ($scope, $http, $timeout, $compile, $windo
                     $('#wpcron').prop('checked', true);
                 }
                 if (response.data.ret_data.passwordprotection == 1) {
-
-                    var dc = '<input  type="checkbox" checked \n' +
-                        '        ng-click="UpdateWPSettings(\'PasswordProtection\')" class="custom-control-input ng-pristine ng-untouched ng-valid ng-not-empty"\n' +
-                        '                                                       id="passwdprotection">\n' +
-                        '                                                <label class="custom-control-label"\n' +
-                        '                                                       for="passwdprotection"></label>'
+                    var dc = '<input type="checkbox" checked ng-click="UpdateWPSettings(\'PasswordProtection\')" class="custom-control-input" id="passwdprotection"><label class="custom-control-label" for="passwdprotection"></label>';
                     var mp = $compile(dc)($scope);
                     angular.element(document.getElementById('prsswdprodata')).append(mp);
                     CheckBoxpasssword = 1;
-                } else if (response.data.ret_data.passwordprotection == 0) {
-                    var dc = '<input  type="checkbox" data-toggle="modal"\n' +
-                        '                                                       data-target="#Passwordprotection"\n' +
-                        '                                                       class="custom-control-input ng-pristine ng-untouched ng-valid ng-not-empty"\n' +
-                        '                                                       id="passwdprotection">\n' +
-                        '                                                <label class="custom-control-label"\n' +
-                        '                                                       for="passwdprotection"></label>'
+                } else {
+                    var dc = '<input type="checkbox" data-toggle="modal" data-target="#Passwordprotection" class="custom-control-input" id="passwdprotection"><label class="custom-control-label" for="passwdprotection"></label>';
                     $('#prsswdprodata').append(dc);
                     CheckBoxpasssword = 0;
                 }
-
             } else {
                 new PNotify({
                     title: 'Operation Failed!',
                     text: response.data.error_message,
                     type: 'error'
                 });
-
             }
-
-        }
-
-        function cantLoadInitialDatas(response) {
+        }, function(error) {
             $('#wordpresshomeloading').hide();
-
-            $scope.webSiteCreationLoading = true;
-            $scope.installationDetailsForm = true;
-            $scope.installationProgress = false;
-            $scope.errorMessageBox = true;
-            $scope.success = true;
-            $scope.couldNotConnect = false;
-            $scope.goBackDisable = false;
-
-        }
-
-
+            $scope.wordpresshomeloading = true;
+            console.error('Failed to load WP data:', error);
+        });
     };
 
     $scope.UpdateWPSettings = function (setting) {
-
         $scope.wordpresshomeloading = false;
         $('#wordpresshomeloading').show();
 
-
         var url = "/websites/UpdateWPSettings";
+        var data;
 
         if (setting === "PasswordProtection") {
-            if (CheckBoxpasssword == 0) {
-                var data = {
-                    WPid: $('#WPid').html(),
-                    setting: setting,
-                    PPUsername: $scope.PPUsername,
-                    PPPassword: $scope.PPPassword,
-                }
-
-            } else {
-                var data = {
-                    WPid: $('#WPid').html(),
-                    setting: setting,
-                    PPUsername: '',
-                    PPPassword: '',
-                }
-
-            }
-
+            data = {
+                WPid: $('#WPid').html(),
+                setting: setting,
+                PPUsername: CheckBoxpasssword == 0 ? $scope.PPUsername : '',
+                PPPassword: CheckBoxpasssword == 0 ? $scope.PPPassword : ''
+            };
         } else {
             var settingValue = 0;
             if (setting === 'searchIndex') {
@@ -4205,13 +4203,12 @@ app.controller('WPsiteHome', function ($scope, $http, $timeout, $compile, $windo
             } else if ($('#' + setting).is(":checked")) {
                 settingValue = 1;
             }
-            var data = {
+            data = {
                 WPid: $('#WPid').html(),
                 setting: setting,
                 settingValue: settingValue
-            }
+            };
         }
-
 
         var config = {
             headers: {
@@ -4219,18 +4216,14 @@ app.controller('WPsiteHome', function ($scope, $http, $timeout, $compile, $windo
             }
         };
 
-
-        $http.post(url, data, config).then(ListInitialDatas, cantLoadInitialDatas);
-
-
-        function ListInitialDatas(response) {
+        $http.post(url, data, config).then(function(response) {
             $scope.wordpresshomeloading = true;
             $('#wordpresshomeloading').hide();
 
             if (response.data.status === 1) {
                 new PNotify({
                     title: 'Success!',
-                    text: 'Successfully Updated!.',
+                    text: 'Successfully Updated!',
                     type: 'success'
                 });
                 if (setting === "PasswordProtection") {
@@ -4242,22 +4235,21 @@ app.controller('WPsiteHome', function ($scope, $http, $timeout, $compile, $windo
                     text: response.data.error_message,
                     type: 'error'
                 });
+                if (setting === 'searchIndex') {
+                    $scope.searchIndexEnabled = !$scope.searchIndexEnabled; // Revert the change
+                }
                 if (setting === "PasswordProtection") {
                     location.reload();
                 }
-
             }
-
-        }
-
-        function cantLoadInitialDatas(response) {
+        }, function(error) {
             $('#wordpresshomeloading').hide();
             $scope.wordpresshomeloading = true;
-            alert(response)
-
-        }
-
-
+            if (setting === 'searchIndex') {
+                $scope.searchIndexEnabled = !$scope.searchIndexEnabled; // Revert the change
+            }
+            console.error('Failed to update setting:', error);
+        });
     };
 
     $scope.GetCurrentPlugins = function () {
