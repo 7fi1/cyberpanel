@@ -595,8 +595,11 @@ app.controller('WPsiteHome', function ($scope, $http, $timeout, $compile, $windo
                 if (response.data.ret_data.debugging === 1) {
                     $('#debugging').prop('checked', true);
                 }
-                $scope.searchIndexEnabled = response.data.ret_data.searchIndex === 1;
-                $scope.$apply(); // Force Angular to update the view
+                
+                // Set the search index state
+                $timeout(function() {
+                    $scope.searchIndexEnabled = response.data.ret_data.searchIndex === 1;
+                });
                 
                 if (response.data.ret_data.maintenanceMode === 1) {
                     $('#maintenanceMode').prop('checked', true);
@@ -682,7 +685,9 @@ app.controller('WPsiteHome', function ($scope, $http, $timeout, $compile, $windo
                     type: 'error'
                 });
                 if (setting === 'searchIndex') {
-                    $scope.searchIndexEnabled = !$scope.searchIndexEnabled; // Revert the change
+                    $timeout(function() {
+                        $scope.searchIndexEnabled = !$scope.searchIndexEnabled; // Revert the change
+                    });
                 }
                 if (setting === "PasswordProtection") {
                     location.reload();
@@ -692,7 +697,9 @@ app.controller('WPsiteHome', function ($scope, $http, $timeout, $compile, $windo
             $('#wordpresshomeloading').hide();
             $scope.wordpresshomeloading = true;
             if (setting === 'searchIndex') {
-                $scope.searchIndexEnabled = !$scope.searchIndexEnabled; // Revert the change
+                $timeout(function() {
+                    $scope.searchIndexEnabled = !$scope.searchIndexEnabled; // Revert the change
+                });
             }
             console.error('Failed to update setting:', error);
         });
@@ -4149,8 +4156,11 @@ app.controller('WPsiteHome', function ($scope, $http, $timeout, $compile, $windo
                 if (response.data.ret_data.debugging === 1) {
                     $('#debugging').prop('checked', true);
                 }
-                $scope.searchIndexEnabled = response.data.ret_data.searchIndex === 1;
-                $scope.$apply(); // Force Angular to update the view
+                
+                // Set the search index state
+                $timeout(function() {
+                    $scope.searchIndexEnabled = response.data.ret_data.searchIndex === 1;
+                });
                 
                 if (response.data.ret_data.maintenanceMode === 1) {
                     $('#maintenanceMode').prop('checked', true);
@@ -4236,7 +4246,9 @@ app.controller('WPsiteHome', function ($scope, $http, $timeout, $compile, $windo
                     type: 'error'
                 });
                 if (setting === 'searchIndex') {
-                    $scope.searchIndexEnabled = !$scope.searchIndexEnabled; // Revert the change
+                    $timeout(function() {
+                        $scope.searchIndexEnabled = !$scope.searchIndexEnabled; // Revert the change
+                    });
                 }
                 if (setting === "PasswordProtection") {
                     location.reload();
@@ -4246,7 +4258,9 @@ app.controller('WPsiteHome', function ($scope, $http, $timeout, $compile, $windo
             $('#wordpresshomeloading').hide();
             $scope.wordpresshomeloading = true;
             if (setting === 'searchIndex') {
-                $scope.searchIndexEnabled = !$scope.searchIndexEnabled; // Revert the change
+                $timeout(function() {
+                    $scope.searchIndexEnabled = !$scope.searchIndexEnabled; // Revert the change
+                });
             }
             console.error('Failed to update setting:', error);
         });
