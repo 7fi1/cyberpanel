@@ -2716,6 +2716,13 @@ app.controller('listWebsites', function ($scope, $http, $window) {
                     text: 'Setting updated successfully.',
                     type: 'success'
                 });
+                if (setting === 'password-protection' && wp[settingMap[setting]] === 1) {
+                    // Show password protection modal if enabling
+                    wp.PPUsername = "";
+                    wp.PPPassword = "";
+                    $scope.currentWP = wp;
+                    $('#passwordProtectionModal').modal('show');
+                }
             } else {
                 // Revert the change if update failed
                 wp[settingMap[setting]] = wp[settingMap[setting]] === 1 ? 0 : 1;
@@ -6282,6 +6289,13 @@ app.controller('listWebsites', function ($scope, $http, $window) {
                     text: 'Setting updated successfully.',
                     type: 'success'
                 });
+                if (setting === 'password-protection' && wp[settingMap[setting]] === 1) {
+                    // Show password protection modal if enabling
+                    wp.PPUsername = "";
+                    wp.PPPassword = "";
+                    $scope.currentWP = wp;
+                    $('#passwordProtectionModal').modal('show');
+                }
             } else {
                 // Revert the change if update failed
                 wp[settingMap[setting]] = wp[settingMap[setting]] === 1 ? 0 : 1;
@@ -10197,6 +10211,13 @@ app.controller('manageAliasController', function ($scope, $http, $timeout, $wind
                     text: 'Setting updated successfully.',
                     type: 'success'
                 });
+                if (setting === 'password-protection' && wp[settingMap[setting]] === 1) {
+                    // Show password protection modal if enabling
+                    wp.PPUsername = "";
+                    wp.PPPassword = "";
+                    $scope.currentWP = wp;
+                    $('#passwordProtectionModal').modal('show');
+                }
             } else {
                 // Revert the change if update failed
                 wp[settingMap[setting]] = wp[settingMap[setting]] === 1 ? 0 : 1;

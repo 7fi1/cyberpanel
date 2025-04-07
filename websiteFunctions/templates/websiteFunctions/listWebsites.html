@@ -220,7 +220,9 @@
                                                         </div>
                                                         <div class="checkbox">
                                                             <label>
-                                                                <input type="checkbox" ng-model="wp.debugging" ng-change="updateSetting(wp, 'debugging')">
+                                                                <input type="checkbox" 
+                                                                       ng-click="updateSetting(wp, 'debugging')"
+                                                                       ng-checked="wp.debugging == 1">
                                                                 Debugging
                                                             </label>
                                                         </div>
@@ -228,13 +230,17 @@
                                                     <div class="col-sm-6">
                                                         <div class="checkbox">
                                                             <label>
-                                                                <input type="checkbox" ng-model="wp.passwordProtection" ng-change="togglePasswordProtection(wp)">
+                                                                <input type="checkbox" 
+                                                                       ng-click="updateSetting(wp, 'password-protection')"
+                                                                       ng-checked="wp.passwordProtection == 1">
                                                                 Password protection
                                                             </label>
                                                         </div>
                                                         <div class="checkbox">
                                                             <label>
-                                                                <input type="checkbox" ng-model="wp.maintenanceMode" ng-change="updateSetting(wp, 'maintenance-mode')">
+                                                                <input type="checkbox" 
+                                                                       ng-click="updateSetting(wp, 'maintenance-mode')"
+                                                                       ng-checked="wp.maintenanceMode == 1">
                                                                 Maintenance mode
                                                             </label>
                                                         </div>
