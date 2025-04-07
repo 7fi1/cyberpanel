@@ -680,15 +680,11 @@ app.controller('WPsiteHome', function ($scope, $http, $timeout, $compile, $windo
                     PPPassword: '',
                 }
             }
-        } else if (setting === 'search-indexing') {
-            var data = {
-                WPid: $('#WPid').html(),
-                setting: setting,
-                settingValue: $scope.searchIndexEnabled ? 1 : 0
-            }
         } else {
             var settingValue = 0;
-            if ($('#' + setting).is(":checked")) {
+            if (setting === 'searchIndex') {
+                settingValue = $scope.searchIndexEnabled ? 1 : 0;
+            } else if ($('#' + setting).is(":checked")) {
                 settingValue = 1;
             }
             var data = {
@@ -704,9 +700,7 @@ app.controller('WPsiteHome', function ($scope, $http, $timeout, $compile, $windo
             }
         };
 
-
         $http.post(url, data, config).then(ListInitialDatas, cantLoadInitialDatas);
-
 
         function ListInitialDatas(response) {
             $scope.wordpresshomeloading = true;
@@ -4285,15 +4279,11 @@ app.controller('WPsiteHome', function ($scope, $http, $timeout, $compile, $windo
 
             }
 
-        } else if (setting === 'search-indexing') {
-            var data = {
-                WPid: $('#WPid').html(),
-                setting: setting,
-                settingValue: $scope.searchIndexEnabled ? 1 : 0
-            }
         } else {
             var settingValue = 0;
-            if ($('#' + setting).is(":checked")) {
+            if (setting === 'searchIndex') {
+                settingValue = $scope.searchIndexEnabled ? 1 : 0;
+            } else if ($('#' + setting).is(":checked")) {
                 settingValue = 1;
             }
             var data = {
