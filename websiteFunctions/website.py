@@ -861,13 +861,13 @@ class WebsiteManager:
 
             # Get current theme
             command = 'sudo -u %s %s -d error_reporting=0 /usr/bin/wp theme list --status=active --field=name --skip-plugins --skip-themes --path=%s 2>/dev/null' % (
-                Vhuser, FinalPHPPath, site.path)
+                Vhuser, FinalPHPPath, path)
             currentTheme = ProcessUtilities.outputExecutioner(command, None, True)
             currentTheme = currentTheme.strip()
 
             # Get number of plugins
             command = 'sudo -u %s %s -d error_reporting=0 /usr/bin/wp plugin list --field=name --skip-plugins --skip-themes --path=%s 2>/dev/null' % (
-                Vhuser, FinalPHPPath, site.path)
+                Vhuser, FinalPHPPath, path)
             plugins = ProcessUtilities.outputExecutioner(command, None, True)
             pluginCount = len([p for p in plugins.split('\n') if p.strip()])
 
@@ -7157,6 +7157,25 @@ StrictHostKeyChecking no
                 if not site_url.startswith(('http://', 'https://')):
                     site_url = f'https://{site_url}'
 
+
+                command = 'sudo -u %s %s -d error_reporting=0 /usr/bin/wp config list --skip-plugins --skip-themes --path=%s' % (
+                Vhuser, FinalPHPPath, site.path)
+                stdout = ProcessUtilities.outputExecutioner(command)
+                debugging = 0
+                for items in stdout.split('\n'):
+                    if items.find('WP_DEBUG	true	constant') > -1:
+                        debugging = 1
+                        break
+
+                command = 'sudo -u %s %s -d error_reporting=0 /usr/bin/wp option get blog_public --skip-plugins --skip-themes --path=%s' % (
+                    Vhuser, FinalPHPPath, site.path)
+                stdoutput = ProcessUtilities.outputExecutioner(command)
+                searchindex = int(stdoutput.splitlines()[-1])
+
+                command = 'sudo -u %s %s -d error_reporting=0 /usr/bin/wp maintenance-mode status --skip-plugins --skip-themes --path=%s' % (
+                    Vhuser, FinalPHPPath, site.path)
+                maintenanceMod = ProcessUtilities.outputExecutioner(command)
+
                 sites.append({
                     'id': site.id,
                     'title': site.title,
@@ -7166,6 +7185,9 @@ StrictHostKeyChecking no
                     'phpVersion': site.owner.phpSelection,
                     'theme': currentTheme,
                     'activePlugins': pluginCount,
+                    'debugging': debugging,
+                    'searchIndex': searchindex,
+                    'maintenanceMode': maintenanceMod,
                     'screenshot': f'https://api.microlink.io/?url={site_url}&screenshot=true&meta=false&embed=screenshot.url'
                 })
                 
