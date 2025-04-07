@@ -9658,6 +9658,12 @@ app.controller('listWebsites', function ($scope, $http, $window) {
 
     };
 
+    $scope.deleteWPSite = function(wp) {
+        if (confirm('Are you sure you want to delete this WordPress site? This action cannot be undone.')) {
+            window.location.href = '/websites/ListWPSites?DeleteID=' + wp.id;
+        }
+    };
+
 });
 
 app.controller('listChildDomainsMain', function ($scope, $http, $timeout) {
