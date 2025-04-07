@@ -558,7 +558,7 @@ app.controller('WPsiteHome', function ($scope, $http, $timeout, $compile, $windo
     $scope.success = true;
     $scope.couldNotConnect = true;
     $scope.goBackDisable = true;
-    $scope.searchIndexEnabled = false;
+    $scope.searchIndex = 0;
 
     $(document).ready(function () {
         var checkstatus = document.getElementById("wordpresshome");
@@ -595,9 +595,10 @@ app.controller('WPsiteHome', function ($scope, $http, $timeout, $compile, $windo
                 if (response.data.ret_data.debugging === 1) {
                     $('#debugging').prop('checked', true);
                 }
-                if (response.data.ret_data.searchIndex === 1) {
-                    $('#searchIndex').prop('checked', true);
-                }
+                
+                // Set search index state
+                $scope.searchIndex = response.data.ret_data.searchIndex;
+                
                 if (response.data.ret_data.maintenanceMode === 1) {
                     $('#maintenanceMode').prop('checked', true);
                 }
@@ -643,7 +644,13 @@ app.controller('WPsiteHome', function ($scope, $http, $timeout, $compile, $windo
                 PPPassword: CheckBoxpasssword == 0 ? $scope.PPPassword : ''
             };
         } else {
-            var settingValue = $('#' + setting).is(":checked") ? 1 : 0;
+            var settingValue;
+            if (setting === 'searchIndex') {
+                $scope.searchIndex = $scope.searchIndex === 1 ? 0 : 1;
+                settingValue = $scope.searchIndex;
+            } else {
+                settingValue = $('#' + setting).is(":checked") ? 1 : 0;
+            }
             data = {
                 WPid: $('#WPid').html(),
                 setting: setting,
@@ -676,10 +683,9 @@ app.controller('WPsiteHome', function ($scope, $http, $timeout, $compile, $windo
                     text: response.data.error_message,
                     type: 'error'
                 });
+                // Revert the change on error
                 if (setting === 'searchIndex') {
-                    $timeout(function() {
-                        $scope.searchIndexEnabled = !$scope.searchIndexEnabled; // Revert the change
-                    });
+                    $scope.searchIndex = $scope.searchIndex === 1 ? 0 : 1;
                 }
                 if (setting === "PasswordProtection") {
                     location.reload();
@@ -688,10 +694,9 @@ app.controller('WPsiteHome', function ($scope, $http, $timeout, $compile, $windo
         }, function(error) {
             $('#wordpresshomeloading').hide();
             $scope.wordpresshomeloading = true;
+            // Revert the change on error
             if (setting === 'searchIndex') {
-                $timeout(function() {
-                    $scope.searchIndexEnabled = !$scope.searchIndexEnabled; // Revert the change
-                });
+                $scope.searchIndex = $scope.searchIndex === 1 ? 0 : 1;
             }
             console.error('Failed to update setting:', error);
         });
@@ -4111,7 +4116,7 @@ app.controller('WPsiteHome', function ($scope, $http, $timeout, $compile, $windo
     $scope.success = true;
     $scope.couldNotConnect = true;
     $scope.goBackDisable = true;
-    $scope.searchIndexEnabled = false;
+    $scope.searchIndex = 0;
 
     $(document).ready(function () {
         var checkstatus = document.getElementById("wordpresshome");
@@ -4148,9 +4153,10 @@ app.controller('WPsiteHome', function ($scope, $http, $timeout, $compile, $windo
                 if (response.data.ret_data.debugging === 1) {
                     $('#debugging').prop('checked', true);
                 }
-                if (response.data.ret_data.searchIndex === 1) {
-                    $('#searchIndex').prop('checked', true);
-                }
+                
+                // Set search index state
+                $scope.searchIndex = response.data.ret_data.searchIndex;
+                
                 if (response.data.ret_data.maintenanceMode === 1) {
                     $('#maintenanceMode').prop('checked', true);
                 }
@@ -4196,7 +4202,13 @@ app.controller('WPsiteHome', function ($scope, $http, $timeout, $compile, $windo
                 PPPassword: CheckBoxpasssword == 0 ? $scope.PPPassword : ''
             };
         } else {
-            var settingValue = $('#' + setting).is(":checked") ? 1 : 0;
+            var settingValue;
+            if (setting === 'searchIndex') {
+                $scope.searchIndex = $scope.searchIndex === 1 ? 0 : 1;
+                settingValue = $scope.searchIndex;
+            } else {
+                settingValue = $('#' + setting).is(":checked") ? 1 : 0;
+            }
             data = {
                 WPid: $('#WPid').html(),
                 setting: setting,
@@ -4229,6 +4241,10 @@ app.controller('WPsiteHome', function ($scope, $http, $timeout, $compile, $windo
                     text: response.data.error_message,
                     type: 'error'
                 });
+                // Revert the change on error
+                if (setting === 'searchIndex') {
+                    $scope.searchIndex = $scope.searchIndex === 1 ? 0 : 1;
+                }
                 if (setting === "PasswordProtection") {
                     location.reload();
                 }
@@ -4236,6 +4252,10 @@ app.controller('WPsiteHome', function ($scope, $http, $timeout, $compile, $windo
         }, function(error) {
             $('#wordpresshomeloading').hide();
             $scope.wordpresshomeloading = true;
+            // Revert the change on error
+            if (setting === 'searchIndex') {
+                $scope.searchIndex = $scope.searchIndex === 1 ? 0 : 1;
+            }
             console.error('Failed to update setting:', error);
         });
     };
