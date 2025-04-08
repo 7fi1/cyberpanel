@@ -1994,19 +1994,19 @@ class WebsiteManager:
                         os.makedirs(path)
                         htpasswd = f'{path}/.htpasswd'
                         htaccess = f'{wpsite.path}/.htaccess'
-                        password = randomPassword.generate_pass(12)
-                        
-                        # Create .htpasswd file
-                        command = f"htpasswd -cb {htpasswd} admin {password}"
-                        ProcessUtilities.executioner(command)
-                        
+                    password = randomPassword.generate_pass(12)
+                    
+                    # Create .htpasswd file
+                    command = f"htpasswd -cb {htpasswd} admin {password}"
+                    ProcessUtilities.executioner(command)
+                    
                         # Create .htaccess file
-                        htaccess_content = f"""AuthType Basic
+                    htaccess_content = f"""AuthType Basic
 AuthName "Restricted Access"
 AuthUserFile {htpasswd}
 Require valid-user"""
-                        with open(htaccess, 'w') as f:
-                            f.write(htaccess_content)
+                    with open(htaccess, 'w') as f:
+                        f.write(htaccess_content)
                 else:
                     # Disable password protection
                     if os.path.exists(path):
@@ -2208,7 +2208,7 @@ Require valid-user"""
             if alias == 0:
                 phpSelection = data['phpSelection']
                 path = data['path']
-            else:
+                else:
 
                 ### if master website have apache then create this sub-domain also as ols + apache
 
@@ -2711,7 +2711,7 @@ Require valid-user"""
                 for items in childDomains:
                     confPath = virtualHostUtilities.Server_root + "/conf/vhosts/" + items.domain
                     command = "mv " + confPath + " " + confPath + "-suspended"
-                    ProcessUtilities.executioner(command)
+            ProcessUtilities.executioner(command)
 
                 installUtilities.reStartLiteSpeedSocket()
                 website.state = 0
