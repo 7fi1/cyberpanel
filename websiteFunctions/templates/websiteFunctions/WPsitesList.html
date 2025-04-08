@@ -24,6 +24,7 @@
             $scope.currentPage = 1;
             $scope.recordsToShow = 10;
             $scope.expandedSites = {}; // Track which sites are expanded
+            $scope.currentWP = null; // Store current WordPress site for password protection
 
             // Function to toggle site expansion
             $scope.toggleSite = function(site) {
@@ -218,9 +219,10 @@
                 } else {
                     // Disable password protection
                     var data = {
-                        siteId: site.id,
-                        setting: 'password-protection',
-                        value: 0
+                        WPid: site.id,
+                        setting: 'PasswordProtection',
+                        PPUsername: '',
+                        PPPassword: ''
                     };
                     
                     GLobalAjaxCall($http, "{% url 'UpdateWPSettings' %}", data, 
@@ -272,9 +274,8 @@
                 }
 
                 var data = {
-                    siteId: $scope.currentWP.id,
-                    setting: 'password-protection',
-                    value: 1,
+                    WPid: $scope.currentWP.id,
+                    setting: 'PasswordProtection',
                     PPUsername: $scope.currentWP.PPUsername,
                     PPPassword: $scope.currentWP.PPPassword
                 };
@@ -493,6 +494,7 @@
         </div>
     </div>
 
+    <!-- Password Protection Modal -->
     <div class="modal fade" id="passwordProtectionModal" tabindex="-1" role="dialog">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
