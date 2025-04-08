@@ -1952,7 +1952,7 @@ class WebsiteManager:
             data_ret = {'status': 0, 'installStatus': 0, 'error_message': str(msg)}
             json_data = json.dumps(data_ret)
             return HttpResponse(json_data)
-
+        
     def UpdateWPSettings(self, userID=None, data=None):
         try:
             currentACL = ACLManager.loadedACL(userID)
@@ -1990,32 +1990,56 @@ class WebsiteManager:
                 path = f'{vhostPassDir}/{siteId}'
                 if value:
                     # Enable password protection
-                    if not os.path.exists(path):
-                        os.makedirs(path)
-                        htpasswd = f'{path}/.htpasswd'
-                        htaccess = f'{wpsite.path}/.htaccess'
+                    tempPath = f'/home/cyberpanel/{str(randint(1000, 9999))}'
+                    os.makedirs(tempPath)
+
+                    # Create temporary .htpasswd file
+                    htpasswd = f'{tempPath}/.htpasswd'
+                    htaccess = f'{tempPath}/.htaccess'
                     password = randomPassword.generate_pass(12)
-                    
+        
                     # Create .htpasswd file
                     command = f"htpasswd -cb {htpasswd} admin {password}"
                     ProcessUtilities.executioner(command)
                     
-                        # Create .htaccess file
-                    htaccess_content = f"""AuthType Basic
+                    # Create .htaccess file content
+                    htaccess_content = f"""
+AuthType Basic
 AuthName "Restricted Access"
-AuthUserFile {htpasswd}
-Require valid-user"""
+AuthUserFile {path}/.htpasswd
+Require valid-user
+"""
+
                     with open(htaccess, 'w') as f:
                         f.write(htaccess_content)
+
+                    # Create final directory and move files
+                    command = f"mkdir -p {path}"
+                    ProcessUtilities.executioner(command, wpsite.owner.externalApp)
+
+                    # Move files to final location
+                    command = f"mv {htpasswd} {path}/.htpasswd"
+                    ProcessUtilities.executioner(command, wpsite.owner.externalApp)
+
+                    command = f"mv {htaccess} {wpsite.path}/.htaccess" 
+                    ProcessUtilities.executioner(command, wpsite.owner.externalApp)
+
+                    # Cleanup temp directory
+                    command = f"rm -rf {tempPath}"
+                    ProcessUtilities.executioner(command)
+
                 else:
                     # Disable password protection
                     if os.path.exists(path):
-                        import shutil
-                        shutil.rmtree(path)
+                        command = f"rm -rf {path}"
+                        ProcessUtilities.executioner(command, wpsite.owner.externalApp)
+
                     htaccess = f'{wpsite.path}/.htaccess'
                     if os.path.exists(htaccess):
-                        os.remove(htaccess)
-                return JsonResponse({'status': 1, 'error_message': 'None'})
+                        command = f"rm -f {htaccess}"
+                        ProcessUtilities.executioner(command, wpsite.owner.externalApp)
+
+                    return JsonResponse({'status': 1, 'error_message': 'None'})
             elif setting == 'maintenance-mode':
                 if value:
                     command = f'sudo -u {Vhuser} {FinalPHPPath} -d error_reporting=0 /usr/bin/wp maintenance-mode activate --skip-plugins --skip-themes --path={wpsite.path}'
@@ -2032,6 +2056,9 @@ Require valid-user"""
 
         except BaseException as msg:
             return JsonResponse({'status': 0, 'error_message': str(msg)})
+
+
+
 
     def submitWorpressCreation(self, userID=None, data=None):
         try:
@@ -2208,7 +2235,7 @@ Require valid-user"""
             if alias == 0:
                 phpSelection = data['phpSelection']
                 path = data['path']
-                else:
+            else:
 
                 ### if master website have apache then create this sub-domain also as ols + apache
 
@@ -2711,7 +2738,7 @@ Require valid-user"""
                 for items in childDomains:
                     confPath = virtualHostUtilities.Server_root + "/conf/vhosts/" + items.domain
                     command = "mv " + confPath + " " + confPath + "-suspended"
-            ProcessUtilities.executioner(command)
+                    ProcessUtilities.executioner(command)
 
                 installUtilities.reStartLiteSpeedSocket()
                 website.state = 0
