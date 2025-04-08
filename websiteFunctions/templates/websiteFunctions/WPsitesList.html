@@ -321,7 +321,8 @@
                                                     <div class="col-sm-3">
                                                         <div class="info-box">
                                                             <label>Plugins</label>
-                                                            <span>{$ site.activePlugins || '1' $} active</span>
+                                                            <span ng-if="site.activePlugins !== undefined">{$ site.activePlugins $} active of {$ site.totalPlugins $}</span>
+                                                            <span ng-if="site.activePlugins === undefined">Loading...</span>
                                                         </div>
                                                     </div>
                                                 </div>
