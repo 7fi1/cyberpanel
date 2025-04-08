@@ -23,6 +23,27 @@
             $scope.wpSitesCount = $scope.debug.wp_sites_count;
             $scope.currentPage = 1;
             $scope.recordsToShow = 10;
+            $scope.expandedSites = {}; // Track which sites are expanded
+
+            // Function to toggle site expansion
+            $scope.toggleSite = function(site) {
+                if (!$scope.expandedSites[site.id]) {
+                    $scope.expandedSites[site.id] = true;
+                    fetchSiteData(site);
+                } else {
+                    $scope.expandedSites[site.id] = false;
+                }
+            };
+
+            // Function to check if site is expanded
+            $scope.isExpanded = function(siteId) {
+                return $scope.expandedSites[siteId];
+            };
+
+            // Function to check if site data is loaded
+            $scope.isDataLoaded = function(site) {
+                return site.version !== undefined;
+            };
 
             $scope.updatePagination = function() {
                 var filteredSites = $scope.wpSites;
@@ -181,8 +202,10 @@
                 );
             }
 
-            if ($scope.wpSites) {
-                $scope.wpSites.forEach(fetchSiteData);
+            if ($scope.wpSites && $scope.wpSites.length > 0) {
+                // Load data for first site by default
+                $scope.expandedSites[$scope.wpSites[0].id] = true;
+                fetchSiteData($scope.wpSites[0]);
             }
         });
 
@@ -244,7 +267,13 @@
                                     <div class="wp-site-header">
                                         <div class="row">
                                             <div class="col-sm-8">
-                                                <h4>{$ site.title $}</h4>
+                                                <h4>
+                                                    <i class="fas" 
+                                                       ng-class="{'fa-chevron-down': isExpanded(site.id), 'fa-chevron-right': !isExpanded(site.id)}"
+                                                       ng-click="toggleSite(site)"
+                                                       style="cursor: pointer; margin-right: 10px;"></i>
+                                                    {$ site.title $}
+                                                </h4>
                                             </div>
                                             <div class="col-sm-4 text-right">
                                                 <a ng-href="{% url 'WPHome' %}?ID={$ site.id $}" class="btn btn-primary btn-sm">Manage</a>
@@ -252,7 +281,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="wp-site-content">
+                                    <div class="wp-site-content" ng-if="isExpanded(site.id)">
                                         <div class="row">
                                             <div class="col-sm-3">
                                                 <img ng-src="https://api.microlink.io/?url={$ getFullUrl(site.url) $}&screenshot=true&meta=false&embed=screenshot.url" 
