@@ -284,29 +284,33 @@
                 GLobalAjaxCall($http, "{% url 'UpdateWPSettings' %}", data,
                     function(response) {
                         if (response.data.status === 1) {
+                            // Update the site's password protection state
+                            $scope.currentWP.passwordProtection = true;
                             new PNotify({
                                 title: 'Success!',
                                 text: 'Password protection enabled successfully!',
                                 type: 'success'
                             });
+                            // Refresh the site data
+                            fetchSiteData($scope.currentWP);
                         } else {
+                            // Revert the checkbox state
+                            $scope.currentWP.passwordProtection = false;
                             new PNotify({
                                 title: 'Error!',
                                 text: response.data.error_message || 'Failed to enable password protection',
                                 type: 'error'
                             });
-                            // Revert the checkbox state
-                            $scope.currentWP.passwordProtection = false;
                         }
                     },
                     function(error) {
+                        // Revert the checkbox state
+                        $scope.currentWP.passwordProtection = false;
                         new PNotify({
                             title: 'Error!',
                             text: 'Could not connect to server',
                             type: 'error'
                         });
-                        // Revert the checkbox state
-                        $scope.currentWP.passwordProtection = false;
                     }
                 );
             };
