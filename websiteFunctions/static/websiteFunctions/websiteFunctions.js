@@ -2631,7 +2631,7 @@ app.controller('listWebsites', function ($scope, $http, $window) {
     $scope.getFurtherWebsitesFromDB();
 
     $scope.showWPSites = function(domain) {
-        $scope.loading = false;
+        $scope.loading = true;
         console.log('showWPSites called for domain:', domain);
         
         // Make sure domain is defined
@@ -2656,7 +2656,7 @@ app.controller('listWebsites', function ($scope, $http, $window) {
                 'X-CSRFToken': getCookie('csrftoken')
             }
         }).then(function(response) {
-            $scope.loading = true;
+            $scope.loading = false;
             console.log('Response received:', response);
             if (response.data.status === 1 && response.data.fetchStatus === 1) {
                 // Find the website in the list and update its properties
