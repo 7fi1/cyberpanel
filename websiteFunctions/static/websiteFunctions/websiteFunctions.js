@@ -8468,6 +8468,126 @@ app.controller('WPsiteHome', function ($scope, $http, $timeout, $compile, $windo
         }
     };
 
+    $scope.updateSetting = function(site, setting) {
+        var settingMap = {
+            'search-indexing': 'searchIndex',
+            'debugging': 'debugging',
+            'password-protection': 'passwordProtection',
+            'maintenance-mode': 'maintenanceMode'
+        };
+
+        // Toggle the state before sending request
+        site[settingMap[setting]] = site[settingMap[setting]] === 1 ? 0 : 1;
+
+        var data = {
+            siteId: site.id,
+            setting: setting,
+            value: site[settingMap[setting]]
+        };
+
+        var config = {
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        };
+
+        $http.post('/websites/UpdateWPSettings', data, config).then(function(response) {
+            if (response.data.status === 1) {
+                new PNotify({
+                    title: 'Success',
+                    text: 'Setting updated successfully.',
+                    type: 'success'
+                });
+                if (setting === 'password-protection' && site[settingMap[setting]] === 1) {
+                    // Show password protection modal if enabling
+                    site.PPUsername = "";
+                    site.PPPassword = "";
+                    $scope.currentWP = site;
+                    $('#passwordProtectionModal').modal('show');
+                }
+            } else {
+                // Revert the change if update failed
+                site[settingMap[setting]] = site[settingMap[setting]] === 1 ? 0 : 1;
+                new PNotify({
+                    title: 'Error',
+                    text: response.data.error_message || 'Failed to update setting.',
+                    type: 'error'
+                });
+            }
+        }).catch(function(error) {
+            // Revert the change on error
+            site[settingMap[setting]] = site[settingMap[setting]] === 1 ? 0 : 1;
+            new PNotify({
+                title: 'Error',
+                text: 'Connection failed while updating setting.',
+                type: 'error'
+            });
+        });
+    };
+
+    $scope.submitPasswordProtection = function() {
+        if (!$scope.currentWP) {
+            new PNotify({
+                title: 'Error!',
+                text: 'No WordPress site selected.',
+                type: 'error'
+            });
+            return;
+        }
+
+        if (!$scope.currentWP.PPUsername || !$scope.currentWP.PPPassword) {
+            new PNotify({
+                title: 'Error!',
+                text: 'Please provide both username and password',
+                type: 'error'
+            });
+            return;
+        }
+
+        var data = {
+            siteId: $scope.currentWP.id,
+            setting: 'password-protection',
+            value: 'enable',
+            PPUsername: $scope.currentWP.PPUsername,
+            PPPassword: $scope.currentWP.PPPassword
+        };
+
+        var config = {
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        };
+
+        $('#passwordProtectionModal').modal('hide');
+        
+        $http.post('/websites/UpdateWPSettings', data, config).then(function(response) {
+            if (response.data.status === 1) {
+                new PNotify({
+                    title: 'Success!',
+                    text: 'Password protection enabled successfully!',
+                    type: 'success'
+                });
+                location.reload();
+            } else {
+                new PNotify({
+                    title: 'Error!',
+                    text: response.data.error_message || 'Failed to enable password protection',
+                    type: 'error'
+                });
+                // Revert the checkbox state
+                $scope.currentWP.passwordProtection = !$scope.currentWP.passwordProtection;
+            }
+        }).catch(function(error) {
+            new PNotify({
+                title: 'Error!',
+                text: 'Could not connect to server',
+                type: 'error'
+            });
+            // Revert the checkbox state
+            $scope.currentWP.passwordProtection = !$scope.currentWP.passwordProtection;
+        });
+    };
+
 });
 
 
