@@ -88,12 +88,12 @@
                 var settingMap = {
                     'search-indexing': 'searchIndex',
                     'debugging': 'debugging',
-                    'password-protection': 'passwordprotection',
+                    'password-protection': 'passwordProtection',
                     'maintenance-mode': 'maintenanceMode'
                 };
 
                 var data = {
-                    siteId: site.id,
+                    WPid: site.id,
                     setting: setting,
                     value: site[settingMap[setting]] ? 1 : 0
                 };
@@ -220,9 +220,8 @@
                     // Disable password protection
                     var data = {
                         WPid: site.id,
-                        setting: 'PasswordProtection',
-                        PPUsername: '',
-                        PPPassword: ''
+                        setting: 'password-protection',
+                        value: 0
                     };
                     
                     GLobalAjaxCall($http, "{% url 'UpdateWPSettings' %}", data, 
@@ -275,7 +274,8 @@
 
                 var data = {
                     WPid: $scope.currentWP.id,
-                    setting: 'PasswordProtection',
+                    setting: 'password-protection',
+                    value: 1,
                     PPUsername: $scope.currentWP.PPUsername,
                     PPPassword: $scope.currentWP.PPPassword
                 };
