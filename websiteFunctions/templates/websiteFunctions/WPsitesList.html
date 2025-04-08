@@ -207,6 +207,109 @@
                 $scope.expandedSites[$scope.wpSites[0].id] = true;
                 fetchSiteData($scope.wpSites[0]);
             }
+
+            $scope.togglePasswordProtection = function(site) {
+                if (site.passwordProtection) {
+                    // Show modal for credentials
+                    site.PPUsername = "";
+                    site.PPPassword = "";
+                    $scope.currentWP = site;
+                    $('#passwordProtectionModal').modal('show');
+                } else {
+                    // Disable password protection
+                    var data = {
+                        siteId: site.id,
+                        setting: 'password-protection',
+                        value: 0
+                    };
+                    
+                    GLobalAjaxCall($http, "{% url 'UpdateWPSettings' %}", data, 
+                        function(response) {
+                            if (!response.data.status) {
+                                site.passwordProtection = !site.passwordProtection;
+                                new PNotify({
+                                    title: 'Operation Failed!',
+                                    text: response.data.error_message || 'Failed to disable password protection',
+                                    type: 'error'
+                                });
+                            } else {
+                                new PNotify({
+                                    title: 'Success!',
+                                    text: 'Password protection disabled successfully.',
+                                    type: 'success'
+                                });
+                            }
+                        },
+                        function(error) {
+                            site.passwordProtection = !site.passwordProtection;
+                            new PNotify({
+                                title: 'Operation Failed!',
+                                text: 'Could not connect to server.',
+                                type: 'error'
+                            });
+                        }
+                    );
+                }
+            };
+
+            $scope.submitPasswordProtection = function() {
+                if (!$scope.currentWP) {
+                    new PNotify({
+                        title: 'Error!',
+                        text: 'No WordPress site selected.',
+                        type: 'error'
+                    });
+                    return;
+                }
+
+                if (!$scope.currentWP.PPUsername || !$scope.currentWP.PPPassword) {
+                    new PNotify({
+                        title: 'Error!',
+                        text: 'Please provide both username and password',
+                        type: 'error'
+                    });
+                    return;
+                }
+
+                var data = {
+                    siteId: $scope.currentWP.id,
+                    setting: 'password-protection',
+                    value: 1,
+                    PPUsername: $scope.currentWP.PPUsername,
+                    PPPassword: $scope.currentWP.PPPassword
+                };
+
+                $('#passwordProtectionModal').modal('hide');
+
+                GLobalAjaxCall($http, "{% url 'UpdateWPSettings' %}", data,
+                    function(response) {
+                        if (response.data.status === 1) {
+                            new PNotify({
+                                title: 'Success!',
+                                text: 'Password protection enabled successfully!',
+                                type: 'success'
+                            });
+                        } else {
+                            new PNotify({
+                                title: 'Error!',
+                                text: response.data.error_message || 'Failed to enable password protection',
+                                type: 'error'
+                            });
+                            // Revert the checkbox state
+                            $scope.currentWP.passwordProtection = false;
+                        }
+                    },
+                    function(error) {
+                        new PNotify({
+                            title: 'Error!',
+                            text: 'Could not connect to server',
+                            type: 'error'
+                        });
+                        // Revert the checkbox state
+                        $scope.currentWP.passwordProtection = false;
+                    }
+                );
+            };
         });
 
         // Add a range filter for pagination
@@ -345,8 +448,8 @@
                                                         <div class="checkbox">
                                                             <label>
                                                                 <input type="checkbox" 
-                                                                       ng-click="updateSetting(site, 'password-protection')"
-                                                                       ng-checked="site.passwordProtection == 1">
+                                                                       ng-model="site.passwordProtection"
+                                                                       ng-change="togglePasswordProtection(site)">
                                                                 Password protection
                                                             </label>
                                                         </div>
