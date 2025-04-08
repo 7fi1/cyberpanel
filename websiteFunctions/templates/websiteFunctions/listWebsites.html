@@ -232,6 +232,7 @@
                                                             <label>
                                                                 <input type="checkbox" 
                                                                        ng-model="wp.passwordProtection"
+                                                                       ng-init="wp.passwordProtection = wp.passwordProtection || false"
                                                                        ng-change="togglePasswordProtection(wp)">
                                                                 Password protection
                                                             </label>
