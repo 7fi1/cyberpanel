@@ -2631,6 +2631,7 @@ app.controller('listWebsites', function ($scope, $http, $window) {
     $scope.getFurtherWebsitesFromDB();
 
     $scope.showWPSites = function(domain) {
+        $scope.loading = false;
         console.log('showWPSites called for domain:', domain);
         
         // Make sure domain is defined
@@ -2655,6 +2656,7 @@ app.controller('listWebsites', function ($scope, $http, $window) {
                 'X-CSRFToken': getCookie('csrftoken')
             }
         }).then(function(response) {
+            $scope.loading = true;
             console.log('Response received:', response);
             if (response.data.status === 1 && response.data.fetchStatus === 1) {
                 // Find the website in the list and update its properties
@@ -2672,6 +2674,7 @@ app.controller('listWebsites', function ($scope, $http, $window) {
                 console.error('Error in response:', response.data.error_message);
             }
         }).catch(function(error) {
+            $scope.loading = true;
             $("#listFail").fadeIn();
             $scope.errorMessage = error.message || 'An error occurred while fetching WordPress sites';
             console.error('Request failed:', error);
