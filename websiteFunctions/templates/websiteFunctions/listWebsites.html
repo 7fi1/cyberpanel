@@ -149,22 +149,13 @@
                                     <span ng-if="web.wp_sites && web.wp_sites.length > 0" style="text-transform: none">
                                         {$ web.wp_sites.length $} WordPress Sites
                                     </span>
+                                    <i ng-if="web.loadingWPSites" class="fa fa-spinner fa-spin" style="margin-left: 5px;"></i>
                                 </a>
                             </div>
                         </div>
 
-                        <!-- WordPress Sites Loading State -->
-                        <div class="col-md-12" ng-if="web.loadingWP" style="padding: 30px;">
-                            <div class="text-center">
-                                <div class="spinner-border text-primary" role="status" style="width: 2rem; height: 2rem;">
-                                    <span class="sr-only">Loading WordPress sites...</span>
-                                </div>
-                                <p class="mt-2">{% trans "Loading WordPress sites..." %}</p>
-                            </div>
-                        </div>
-
                         <!-- WordPress Sites Section -->
-                        <div class="col-md-12" ng-if="!web.loadingWP && web.showWPSites && web.wp_sites && web.wp_sites.length > 0" style="padding: 15px 30px;">
+                        <div class="col-md-12" ng-if="web.showWPSites && web.wp_sites && web.wp_sites.length > 0" style="padding: 15px 30px;">
                             <div ng-repeat="wp in web.wp_sites" class="wp-site-item">
                                 <div class="row">
                                     <div class="col-sm-12">
