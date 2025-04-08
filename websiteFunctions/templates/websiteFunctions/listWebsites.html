@@ -144,8 +144,18 @@
                         </div>
                     </div>
 
+                    <!-- Loading State for WordPress Sites -->
+                    <div class="col-md-12" ng-if="web.showWPSites && web.loadingWPSites" style="padding: 15px 30px;">
+                        <div class="loading-state">
+                            <div class="loading-spinner">
+                                <i class="fa fa-spinner fa-spin fa-3x"></i>
+                            </div>
+                            <div class="loading-text">Loading WordPress sites...</div>
+                        </div>
+                    </div>
+
                     <!-- WordPress Sites Section -->
-                    <div class="col-md-12" ng-if="web.showWPSites && web.wp_sites && web.wp_sites.length > 0" style="padding: 15px 30px;">
+                    <div class="col-md-12" ng-if="web.showWPSites && !web.loadingWPSites && web.wp_sites && web.wp_sites.length > 0" style="padding: 15px 30px;">
                         <div ng-repeat="wp in web.wp_sites" class="wp-site-item">
                             <div class="row">
                                 <div class="col-sm-12">
@@ -357,6 +367,22 @@
                         .btn-outline-danger:hover {
                             background-color: #dc3545;
                             color: white;
+                        }
+                        .loading-state {
+                            text-align: center;
+                            padding: 30px;
+                            background: #f8f9fa;
+                            border-radius: 8px;
+                            margin: 20px 0;
+                        }
+                        .loading-spinner {
+                            margin-bottom: 15px;
+                            color: #0073aa;
+                        }
+                        .loading-text {
+                            color: #646970;
+                            font-size: 14px;
+                            font-weight: 500;
                         }
                     </style>
 
