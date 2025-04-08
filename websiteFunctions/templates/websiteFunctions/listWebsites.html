@@ -231,8 +231,8 @@
                                                         <div class="checkbox">
                                                             <label>
                                                                 <input type="checkbox" 
-                                                                       ng-click="updateSetting(wp, 'password-protection')"
-                                                                       ng-checked="wp.passwordProtection == 1">
+                                                                       ng-model="wp.passwordProtection"
+                                                                       ng-change="togglePasswordProtection(wp)">
                                                                 Password protection
                                                             </label>
                                                         </div>
