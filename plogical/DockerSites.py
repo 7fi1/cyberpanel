@@ -780,6 +780,20 @@ services:
 
     ##### N8N Container
 
+    def setup_n8n_data_directory(self):
+        """Helper method to create and set up n8n data directory with proper permissions"""
+        # Create n8n data directory
+        command = f"mkdir -p /home/docker/{self.data['finalURL']}/n8n_data"
+        ProcessUtilities.executioner(command)
+
+        # Set proper ownership for n8n data directory (1000:1000 is the node user in n8n container)
+        command = f"chown -R 1000:1000 /home/docker/{self.data['finalURL']}/n8n_data"
+        ProcessUtilities.executioner(command)
+
+        # Set proper permissions
+        command = f"chmod -R 700 /home/docker/{self.data['finalURL']}/n8n_data"
+        ProcessUtilities.executioner(command)
+
     def DeployN8NContainer(self):
         try:
             # Initialize container state tracking
@@ -853,7 +867,7 @@ services:
 
   '{self.data['ServiceName']}':
     image: docker.n8n.io/n8nio/n8n
-    user: node
+    user: "1000:1000"
     restart: always
     healthcheck:
       test: ["CMD", "wget", "--spider", "http://localhost:5678"]
@@ -874,13 +888,13 @@ services:
       - N8N_BASIC_AUTH_ACTIVE=true
       - N8N_BASIC_AUTH_USER={self.data['adminUser']}
       - N8N_BASIC_AUTH_PASSWORD={self.data['MySQLPassword']}
-      - N8N_ENCRYPTION_KEY={randomPassword.generate_pass(32)}
-      - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true
+      - N8N_ENCRYPTION_KEY=auto_generated_key_{randomPassword.generate_pass(32)}
       - N8N_USER_FOLDER=/home/node/.n8n
+      - GENERIC_TIMEZONE=UTC
     ports:
       - "{self.data['port']}:5678"
     volumes:
-      - "{self.data['ServiceName']}_data:/home/node/.n8n"
+      - "/home/docker/{self.data['finalURL']}/n8n_data:/home/node/.n8n"
     depends_on:
       {self.data['ServiceName']}-db:
         condition: service_healthy
@@ -901,6 +915,9 @@ services:
             if result == 0:
                 logging.statusWriter(self.JobID, f'Error creating directories: {str(message)} . [404]')
                 return 0
+
+            # Set up n8n data directory
+            self.setup_n8n_data_directory()
 
             self.containerState['directories_created'] = True
 
@@ -926,18 +943,6 @@ services:
 
             # Start containers
             logging.statusWriter(self.JobID, 'Starting containers..,40')
-            
-            # Create and set permissions on n8n data directory
-            command = f"mkdir -p /home/docker/{self.data['finalURL']}/n8n_data"
-            ProcessUtilities.executioner(command)
-            
-            # Set proper ownership for n8n data directory (1000:1000 is the node user in n8n container)
-            command = f"chown -R 1000:1000 /home/docker/{self.data['finalURL']}/n8n_data"
-            ProcessUtilities.executioner(command)
-            
-            # Set proper permissions
-            command = f"chmod 700 /home/docker/{self.data['finalURL']}/n8n_data"
-            ProcessUtilities.executioner(command)
 
             if ProcessUtilities.decideDistro() == ProcessUtilities.cent8 or ProcessUtilities.decideDistro() == ProcessUtilities.centos:
                 dockerCommand = 'docker compose'
