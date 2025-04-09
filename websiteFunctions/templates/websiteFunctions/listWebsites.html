@@ -143,13 +143,15 @@
                                 <span ng-bind="web.admin" style="text-transform: none"></span>
                             </div>
                             <div class="col-md-3 content-box-header">
-                                <a href="javascript:void(0);" ng-click="showWPSites(web.domain)" style="cursor: pointer;">
+                                <a href="javascript:void(0);" ng-click="showWPSites(web.domain)" style="cursor: pointer; display: inline-flex; align-items: center; gap: 8px;">
                                     <i class="fa-brands fa-wordpress btn-icon text-muted" data-toggle="tooltip" 
                                        data-placement="right" title="Show WordPress Sites">&emsp;</i>
                                     <span ng-if="web.wp_sites && web.wp_sites.length > 0" style="text-transform: none">
                                         {$ web.wp_sites.length $} WordPress Sites
                                     </span>
-                                    <i ng-if="web.loadingWPSites" class="fa fa-spinner fa-spin" style="margin-left: 5px;"></i>
+                                    <span ng-if="web.loadingWPSites" class="loading-indicator">
+                                        <i class="fa fa-spinner fa-spin"></i>
+                                    </span>
                                 </a>
                             </div>
                         </div>
@@ -377,6 +379,15 @@
                             .btn-outline-danger:hover {
                                 background-color: #dc3545;
                                 color: white;
+                            }
+                            .loading-indicator {
+                                display: inline-flex;
+                                align-items: center;
+                                justify-content: center;
+                                color: #00749C;
+                            }
+                            .loading-indicator i {
+                                font-size: 14px;
                             }
                         </style>
 
