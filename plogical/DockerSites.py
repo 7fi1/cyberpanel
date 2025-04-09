@@ -810,15 +810,39 @@ services:
         command = f"find {base_dir} -type f -exec chmod 644 {{}} \\;"
         ProcessUtilities.executioner(command)
 
-        # Create empty config file with proper permissions if it doesn't exist
+        # Generate encryption key
+        encryption_key = f"auto_generated_key_{randomPassword.generate_pass(32)}"
+
+        # Create n8n config with the encryption key
+        config_content = {
+            "encryptionKey": encryption_key,
+            "instanceId": f"n8n_{randomPassword.generate_pass(12)}",
+            "nodes": {},
+            "credentials": {},
+            "settings": {},
+            "versionNotifications": {
+                "enabled": False
+            }
+        }
+
+        # Write config to a temporary file first
+        temp_config = f'/home/cyberpanel/{str(randint(1000, 9999))}-config.json'
+        with open(temp_config, 'w') as f:
+            json.dump(config_content, f, indent=2)
+
+        # Move config to final location with proper permissions
         config_file = f"{base_dir}/.n8n/config/config.json"
-        if not os.path.exists(config_file):
-            command = f"touch {config_file}"
-            ProcessUtilities.executioner(command)
-            command = f"chown 1000:1000 {config_file}"
-            ProcessUtilities.executioner(command)
-            command = f"chmod 644 {config_file}"
-            ProcessUtilities.executioner(command)
+        command = f"mv {temp_config} {config_file}"
+        ProcessUtilities.executioner(command)
+
+        command = f"chown 1000:1000 {config_file}"
+        ProcessUtilities.executioner(command)
+
+        command = f"chmod 644 {config_file}"
+        ProcessUtilities.executioner(command)
+
+        # Store encryption key for use in container environment
+        self.data['N8N_ENCRYPTION_KEY'] = encryption_key
 
     def DeployN8NContainer(self):
         try:
@@ -914,7 +938,7 @@ services:
       - N8N_BASIC_AUTH_ACTIVE=true
       - N8N_BASIC_AUTH_USER={self.data['adminUser']}
       - N8N_BASIC_AUTH_PASSWORD={self.data['MySQLPassword']}
-      - N8N_ENCRYPTION_KEY=auto_generated_key_{randomPassword.generate_pass(32)}
+      - N8N_ENCRYPTION_KEY={self.data['N8N_ENCRYPTION_KEY']}
       - N8N_USER_FOLDER=/home/node/.n8n
       - GENERIC_TIMEZONE=UTC
     ports:
