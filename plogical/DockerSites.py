@@ -819,37 +819,38 @@ services:
                 f"{base_dir}/.n8n/credentials"
             ]
 
-            # Create directories and set ownership/permissions
+            # First create all directories
             for directory in required_dirs:
                 command = f"mkdir -p {directory}"
                 ProcessUtilities.executioner(command)
-                
-                command = f"chown -R 1000:1000 {directory}"
-                ProcessUtilities.executioner(command)
-                
-                command = f"chmod 755 {directory}"
-                ProcessUtilities.executioner(command)
 
-            # Write config directly to final location
-            config_file = f"{base_dir}/.n8n/.n8n/config"
-            with open(config_file, 'w') as f:
-                json.dump(config_content, f, indent=2)
-
-            # Set proper ownership and permissions on config file
-            command = f"chown 1000:1000 {config_file}"
+            # Set ownership of base directory first
+            command = f"chown -R 1000:1000 {base_dir}"
             ProcessUtilities.executioner(command)
 
-            command = f"chmod 644 {config_file}"
+            # Set directory permissions
+            command = f"find {base_dir} -type d -exec chmod 755 {{}} \\;"
+            ProcessUtilities.executioner(command)
+
+            # Write config to a temporary file first
+            temp_config = f'/home/cyberpanel/{str(randint(1000, 9999))}-config.json'
+            with open(temp_config, 'w') as f:
+                json.dump(config_content, f, indent=2)
+
+            # Set proper ownership and permissions on temp file
+            command = f"chown 1000:1000 {temp_config}"
+            ProcessUtilities.executioner(command)
+
+            command = f"chmod 644 {temp_config}"
+            ProcessUtilities.executioner(command)
+
+            # Move config to final location
+            config_file = f"{base_dir}/.n8n/.n8n/config"
+            command = f"mv {temp_config} {config_file}"
             ProcessUtilities.executioner(command)
 
             # Create empty .gitignore to prevent permission issues
             command = f"touch {base_dir}/.n8n/.gitignore"
-            ProcessUtilities.executioner(command)
-            
-            command = f"chown 1000:1000 {base_dir}/.n8n/.gitignore"
-            ProcessUtilities.executioner(command)
-            
-            command = f"chmod 644 {base_dir}/.n8n/.gitignore"
             ProcessUtilities.executioner(command)
 
             # Final permission check on the entire directory
@@ -872,6 +873,10 @@ services:
 
             command = f"chmod 600 {debug_file}"
             ProcessUtilities.executioner(command)
+
+            # Verify permissions
+            command = f"ls -la {base_dir}/.n8n/.n8n/"
+            ProcessUtilities.outputExecutioner(command)
 
         except BaseException as msg:
             logging.writeToFile(f'Error in setup_n8n_data_directory: {str(msg)}')
