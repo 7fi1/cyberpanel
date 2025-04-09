@@ -854,7 +854,7 @@ services:
 
   '{self.data['ServiceName']}':
     image: docker.n8n.io/n8nio/n8n
-    user: root
+    user: node
     restart: always
     healthcheck:
       test: ["CMD", "wget", "--spider", "http://localhost:5678"]
@@ -876,6 +876,8 @@ services:
       - N8N_BASIC_AUTH_USER={self.data['adminUser']}
       - N8N_BASIC_AUTH_PASSWORD={self.data['MySQLPassword']}
       - N8N_ENCRYPTION_KEY={randomPassword.generate_pass(32)}
+      - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true
+      - N8N_USER_FOLDER=/home/node/.n8n
     ports:
       - "{self.data['port']}:5678"
     volumes:
@@ -925,6 +927,19 @@ services:
 
             # Start containers
             logging.statusWriter(self.JobID, 'Starting containers..,40')
+            
+            # Create and set permissions on n8n data directory
+            command = f"mkdir -p /home/docker/{self.data['finalURL']}/n8n_data"
+            ProcessUtilities.executioner(command)
+            
+            # Set proper ownership for n8n data directory (1000:1000 is the node user in n8n container)
+            command = f"chown -R 1000:1000 /home/docker/{self.data['finalURL']}/n8n_data"
+            ProcessUtilities.executioner(command)
+            
+            # Set proper permissions
+            command = f"chmod 700 /home/docker/{self.data['finalURL']}/n8n_data"
+            ProcessUtilities.executioner(command)
+
             if ProcessUtilities.decideDistro() == ProcessUtilities.cent8 or ProcessUtilities.decideDistro() == ProcessUtilities.centos:
                 dockerCommand = 'docker compose'
             else:
