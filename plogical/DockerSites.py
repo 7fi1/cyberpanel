@@ -942,14 +942,14 @@ services:
     user: root
     restart: always
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD-SHELL", "pg_isready -U {self.data['MySQLDBNUser']}"]
       interval: 10s
       timeout: 5s
       retries: 5
     environment:
-      - POSTGRES_USER={self.data['MySQLDBNUser']}
-      - POSTGRES_DB={self.data['MySQLDBName']}
-      - POSTGRES_PASSWORD={self.data['MySQLPassword']}
+      - POSTGRESQL_USERNAME={self.data['MySQLDBNUser']}
+      - POSTGRESQL_DATABASE={self.data['MySQLDBName']}
+      - POSTGRESQL_PASSWORD={self.data['MySQLPassword']}
     volumes:
       - "{self.data['ServiceName']}_db:/bitnami/postgresql"
     networks:
