@@ -801,7 +801,7 @@ services:
             command = f"mkdir -p {base_dir}"
             ProcessUtilities.executioner(command)
 
-            # Generate encryption key
+            # Generate encryption key - store in self.data for use in docker-compose
             encryption_key = randomPassword.generate_pass(32)
             self.data['N8N_ENCRYPTION_KEY'] = encryption_key
 
@@ -844,7 +844,7 @@ services:
             }
 
             # Write config to a temporary file first
-            temp_config = f'/home/cyberpanel/{str(randint(1000, 9999))}-config.json'
+            temp_config = f'/home/cyberpanel/{str(randint(1000, 9999))}-config'
             with open(temp_config, 'w') as f:
                 json.dump(config_content, f, indent=2)
 
@@ -858,23 +858,6 @@ services:
             # Move config to final location
             config_file = f"{base_dir}/.n8n/.n8n/config"
             command = f"mv {temp_config} {config_file}"
-            ProcessUtilities.executioner(command)
-
-            # Write encryption key to a separate file
-            temp_key = f'/home/cyberpanel/{str(randint(1000, 9999))}-encryption_key'
-            with open(temp_key, 'w') as f:
-                f.write(encryption_key)
-
-            # Set proper ownership and permissions on temp key file
-            command = f"chown 1000:1000 {temp_key}"
-            ProcessUtilities.executioner(command)
-
-            command = f"chmod 600 {temp_key}"
-            ProcessUtilities.executioner(command)
-
-            # Move encryption key file to final location
-            encryption_key_file = f"{base_dir}/.n8n/.n8n/encryption_key"
-            command = f"mv {temp_key} {encryption_key_file}"
             ProcessUtilities.executioner(command)
 
             # Create empty .gitignore
@@ -898,8 +881,8 @@ services:
             command = f"find {base_dir} -type f -exec chmod 644 {{}} \\;"
             ProcessUtilities.executioner(command)
 
-            # Special permission for encryption key
-            command = f"chmod 600 {encryption_key_file}"
+            # Special permission for config file
+            command = f"chmod 600 {config_file}"
             ProcessUtilities.executioner(command)
 
             # Verify final permissions
