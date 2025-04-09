@@ -831,21 +831,64 @@ services:
                 command = f"chmod 755 {directory}"
                 ProcessUtilities.executioner(command)
 
-            # Create n8n config with the encryption key
+            # Create n8n config with the encryption key - using n8n's exact format
             config_content = {
-                "encryptionKey": encryption_key,
-                "instanceId": f"n8n_{randomPassword.generate_pass(12)}",
-                "nodes": {},
-                "credentials": {},
-                "settings": {
-                    "instanceId": f"n8n_{randomPassword.generate_pass(12)}",
-                    "tunnelSubdomain": None,
-                    "deployment": "default"
+                "database": {
+                    "type": "postgresdb",
+                    "postgresdb": {
+                        "host": f"{self.data['ServiceName']}-db",
+                        "port": 5432,
+                        "database": self.data['MySQLDBName'],
+                        "user": self.data['MySQLDBNUser'],
+                        "password": self.data['MySQLPassword']
+                    }
                 },
+                "credentials": {
+                    "overwrite": {
+                        "defaults": False,
+                        "oauth2": False
+                    }
+                },
+                "userManagement": {
+                    "disabled": False,
+                    "jwtAuth": {
+                        "jwtExpiration": "7d",
+                        "jwtRefreshExpiration": "30d"
+                    }
+                },
+                "nodes": {
+                    "exclude": [],
+                    "include": []
+                },
+                "encryptionKey": encryption_key,
+                "onboardingCallPromptEnabled": False,
+                "instanceId": f"n8n_{randomPassword.generate_pass(12)}",
+                "deployment": {
+                    "type": "default"
+                },
+                "generic": {
+                    "timezone": "UTC"
+                },
+                "security": {
+                    "basicAuth": {
+                        "active": True,
+                        "user": self.data['adminUser'],
+                        "password": self.data['MySQLPassword']
+                    }
+                },
+                "endpoints": {
+                    "rest": "/"
+                },
+                "executions": {
+                    "process": "main",
+                    "mode": "regular",
+                    "timeout": 3600,
+                    "maxTimeout": 7200
+                },
+                "workflowTagsDisabled": False,
+                "logLevel": "info",
                 "versionNotifications": {
-                    "enabled": False,
-                    "endpoint": "https://api.n8n.io/api/v1/versions/notifications.json",
-                    "infoUrl": "https://docs.n8n.io/reference/release-notes.html"
+                    "enabled": False
                 }
             }
 
@@ -889,6 +932,17 @@ services:
 
             # Special permission for config file
             command = f"chmod 600 {config_file}"
+            ProcessUtilities.executioner(command)
+
+            # Write debug file to verify encryption key
+            debug_file = f"{base_dir}/.n8n/.n8n/debug_encryption_key"
+            with open(debug_file, 'w') as f:
+                f.write(f"Config file key: {encryption_key}\nEnvironment variable: {self.data['N8N_ENCRYPTION_KEY']}")
+
+            command = f"chown 1000:1000 {debug_file}"
+            ProcessUtilities.executioner(command)
+
+            command = f"chmod 600 {debug_file}"
             ProcessUtilities.executioner(command)
 
             return True
