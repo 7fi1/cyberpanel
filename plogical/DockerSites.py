@@ -782,20 +782,43 @@ services:
 
     def setup_n8n_data_directory(self):
         """Helper method to create and set up n8n data directory with proper permissions"""
-        # Create n8n data directory and .n8n subdirectory
-        command = f"mkdir -p /home/docker/{self.data['finalURL']}/n8n_data/.n8n"
+        # Create all required n8n directories
+        base_dir = f"/home/docker/{self.data['finalURL']}/n8n_data"
+        required_dirs = [
+            f"{base_dir}",
+            f"{base_dir}/.n8n",
+            f"{base_dir}/.n8n/.n8n",  # Additional nested directory required by n8n
+            f"{base_dir}/.n8n/data",
+            f"{base_dir}/.n8n/config"
+        ]
+
+        # Create directories
+        for directory in required_dirs:
+            command = f"mkdir -p {directory}"
+            ProcessUtilities.executioner(command)
+
+        # Set proper ownership for n8n data directory and all subdirectories
+        command = f"chown -R 1000:1000 {base_dir}"
         ProcessUtilities.executioner(command)
 
-        # Set proper ownership for n8n data directory (1000:1000 is the node user in n8n container)
-        command = f"chown -R 1000:1000 /home/docker/{self.data['finalURL']}/n8n_data"
+        # Set proper permissions
+        # 755 for directories to allow n8n to read/write/execute
+        command = f"find {base_dir} -type d -exec chmod 755 {{}} \\;"
         ProcessUtilities.executioner(command)
 
-        # Set proper permissions (700 for parent directory and 755 for .n8n subdirectory)
-        command = f"chmod 700 /home/docker/{self.data['finalURL']}/n8n_data"
+        # 644 for files to allow n8n to read/write
+        command = f"find {base_dir} -type f -exec chmod 644 {{}} \\;"
         ProcessUtilities.executioner(command)
-        
-        command = f"chmod -R 755 /home/docker/{self.data['finalURL']}/n8n_data/.n8n"
-        ProcessUtilities.executioner(command)
+
+        # Create empty config file with proper permissions if it doesn't exist
+        config_file = f"{base_dir}/.n8n/config/config.json"
+        if not os.path.exists(config_file):
+            command = f"touch {config_file}"
+            ProcessUtilities.executioner(command)
+            command = f"chown 1000:1000 {config_file}"
+            ProcessUtilities.executioner(command)
+            command = f"chmod 644 {config_file}"
+            ProcessUtilities.executioner(command)
 
     def DeployN8NContainer(self):
         try:
