@@ -838,10 +838,9 @@ services:
       timeout: 5s
       retries: 5
     environment:
-      - POSTGRESQL_USERNAME={self.data['MySQLDBNUser']}
-      - POSTGRESQL_DATABASE={self.data['MySQLDBName']}
-      - POSTGRESQL_PASSWORD={self.data['MySQLPassword']}
-      - POSTGRESQL_POSTGRES_PASSWORD={self.data['MySQLPassword']}
+      - POSTGRES_USER={self.data['MySQLDBNUser']}
+      - POSTGRES_DB={self.data['MySQLDBName']}
+      - POSTGRES_PASSWORD={self.data['MySQLPassword']}
     volumes:
       - "{self.data['ServiceName']}_db:/bitnami/postgresql"
     networks:
