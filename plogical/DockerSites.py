@@ -877,6 +877,24 @@ services:
             self.containerState['docker_installed'] = True
             logging.statusWriter(self.JobID, 'Docker is ready to use..,15')
 
+            # Create directories and set up n8n data directory first
+            logging.statusWriter(self.JobID, 'Creating required directories..,20')
+            command = f"mkdir -p /home/docker/{self.data['finalURL']}/backups"
+            result, message = ProcessUtilities.outputExecutioner(command, None, None, None, 1)
+
+            if result == 0:
+                logging.statusWriter(self.JobID, f'Error creating directories: {str(message)} . [404]')
+                return 0
+
+            # Set up n8n data directory - this will also generate and store the encryption key
+            self.setup_n8n_data_directory()
+
+            if 'N8N_ENCRYPTION_KEY' not in self.data:
+                logging.statusWriter(self.JobID, f'Error: N8N_ENCRYPTION_KEY not set. [404]')
+                return 0
+
+            self.containerState['directories_created'] = True
+
             # Generate Docker Compose configuration
             compose_config = f'''
 version: '3.8'
@@ -941,6 +959,7 @@ services:
       - N8N_ENCRYPTION_KEY={self.data['N8N_ENCRYPTION_KEY']}
       - N8N_USER_FOLDER=/home/node/.n8n
       - GENERIC_TIMEZONE=UTC
+      - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true
     ports:
       - "{self.data['port']}:5678"
     volumes:
@@ -956,20 +975,6 @@ services:
           cpus: '{self.data["CPUsSite"]}'
           memory: {self.data["MemorySite"]}M
 '''
-
-            # Create directories
-            logging.statusWriter(self.JobID, 'Creating required directories..,20')
-            command = f"mkdir -p /home/docker/{self.data['finalURL']}/backups"
-            result, message = ProcessUtilities.outputExecutioner(command, None, None, None, 1)
-
-            if result == 0:
-                logging.statusWriter(self.JobID, f'Error creating directories: {str(message)} . [404]')
-                return 0
-
-            # Set up n8n data directory
-            self.setup_n8n_data_directory()
-
-            self.containerState['directories_created'] = True
 
             # Write Docker Compose file
             logging.statusWriter(self.JobID, 'Writing Docker Compose configuration..,30')
@@ -1039,42 +1044,6 @@ services:
             ProcessUtilities.executioner(execPath, self.data['externalApp'])
 
             self.containerState['proxy_configured'] = True
-
-            # Setup backup script with proper permissions
-            logging.statusWriter(self.JobID, 'Setting up backup script..,90')
-            backup_script = f'''#!/bin/bash
-docker exec {self.data['ServiceName']}-db pg_dump -U {self.data['MySQLDBNUser']} {self.data['MySQLDBName']} > /home/docker/{self.data['finalURL']}/backups/db_$(date +%Y%m%d).sql
-tar -czf /home/docker/{self.data['finalURL']}/backups/n8n_$(date +%Y%m%d).tar.gz /home/docker/{self.data['finalURL']}/data
-'''
-            try:
-                # First write to a temporary location
-                tempPath = f'/home/cyberpanel/{str(randint(1000, 9999))}-backup.sh'
-                with open(tempPath, 'w') as f:
-                    f.write(backup_script)
-
-                # Move to final location with proper permissions
-                backup_script_path = f"/home/docker/{self.data['finalURL']}/backup.sh"
-                
-                # Set proper ownership of docker directory
-                command = f"chown -R {self.data['externalApp']}:{self.data['externalApp']} /home/docker/{self.data['finalURL']}"
-                ProcessUtilities.executioner(command)
-                
-                # Move backup script
-                command = f"mv {tempPath} {backup_script_path}"
-                ProcessUtilities.executioner(command)
-                
-                # Set permissions
-                command = f"chmod 700 {backup_script_path}"
-                ProcessUtilities.executioner(command)
-                
-                # Set ownership
-                command = f"chown {self.data['externalApp']}:{self.data['externalApp']} {backup_script_path}"
-                ProcessUtilities.executioner(command)
-
-            except BaseException as msg:
-                logging.writeToFile(f'Failed to setup backup script: {str(msg)}')
-                # Continue even if backup script fails - not critical for main functionality
-                pass
 
             # Restart web server
             from plogical.installUtilities import installUtilities
