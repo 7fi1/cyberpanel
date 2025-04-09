@@ -143,10 +143,10 @@
                                 <span ng-bind="web.admin" style="text-transform: none"></span>
                             </div>
                             <div class="col-md-3 content-box-header">
-                                <a href="javascript:void(0);" ng-click="showWPSites(web.domain)" style="cursor: pointer; display: inline-flex; align-items: center; gap: 8px;">
+                                <a href="javascript:void(0);" ng-click="showWPSites(web.domain)" class="wp-sites-link">
                                     <i class="fa-brands fa-wordpress btn-icon text-muted" data-toggle="tooltip" 
-                                       data-placement="right" title="Show WordPress Sites">&emsp;</i>
-                                    <span ng-if="web.wp_sites && web.wp_sites.length > 0" style="text-transform: none">
+                                       data-placement="right" title="Show WordPress Sites"></i>
+                                    <span ng-if="web.wp_sites && web.wp_sites.length > 0" class="wp-sites-count">
                                         {$ web.wp_sites.length $} WordPress Sites
                                     </span>
                                     <span ng-if="web.loadingWPSites" class="loading-indicator">
@@ -379,6 +379,24 @@
                             .btn-outline-danger:hover {
                                 background-color: #dc3545;
                                 color: white;
+                            }
+                            .wp-sites-link {
+                                cursor: pointer;
+                                display: inline-flex;
+                                align-items: center;
+                                gap: 8px;
+                                color: inherit;
+                                text-decoration: none;
+                            }
+                            .wp-sites-link:hover {
+                                color: inherit;
+                                text-decoration: none;
+                            }
+                            .wp-sites-link i.btn-icon {
+                                margin-right: 4px;
+                            }
+                            .wp-sites-count {
+                                text-transform: none;
                             }
                             .loading-indicator {
                                 display: inline-flex;
