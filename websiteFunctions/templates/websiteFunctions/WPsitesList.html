@@ -30,6 +30,9 @@
             $scope.toggleSite = function(site) {
                 if (!$scope.expandedSites[site.id]) {
                     $scope.expandedSites[site.id] = true;
+                    site.loading = true;
+                    site.loadingPlugins = true;
+                    site.loadingTheme = true;
                     fetchSiteData(site);
                 } else {
                     $scope.expandedSites[site.id] = false;
@@ -148,10 +151,12 @@
                             site.activePlugins = 'Error';
                             site.totalPlugins = 'Error';
                         }
+                        site.loadingPlugins = false;
                     },
                     function(response) {
                         site.activePlugins = 'Error';
                         site.totalPlugins = 'Error';
+                        site.loadingPlugins = false;
                     }
                 );
             }
@@ -166,9 +171,11 @@
                             site.activeTheme = themes.find(function(t) { return t.status === 'active'; }).name;
                             site.totalThemes = themes.length;
                         }
+                        site.loadingTheme = false;
                     },
                     function(response) {
                         site.activeTheme = 'Error';
+                        site.loadingTheme = false;
                     }
                 );
             }
@@ -189,15 +196,18 @@
                             site.debugging = data.debugging === 1;
                             site.passwordProtection = data.passwordprotection === 1;
                             site.maintenanceMode = data.maintenanceMode === 1;
+                            site.loading = false;
                             fetchPluginData(site);
                             fetchThemeData(site);
                         } else {
                             site.phpVersion = 'PHP 7.4'; // Default value on error
+                            site.loading = false;
                             console.log('Failed to fetch site data:', response.data.error_message);
                         }
                     },
                     function(response) {
                         site.phpVersion = 'PHP 7.4'; // Default value on error
+                        site.loading = false;
                         console.log('Failed to fetch site data');
                     }
                 );
@@ -381,6 +391,9 @@
                                                        ng-click="toggleSite(site)"
                                                        style="cursor: pointer; margin-right: 10px;"></i>
                                                     {$ site.title $}
+                                                    <span ng-if="site.loading || site.loadingPlugins || site.loadingTheme" class="loading-indicator">
+                                                        <i class="fa fa-spinner fa-spin" style="color: #00749C; font-size: 14px;"></i>
+                                                    </span>
                                                 </h4>
                                             </div>
                                             <div class="col-sm-4 text-right">
@@ -411,19 +424,22 @@
                                                     <div class="col-sm-3">
                                                         <div class="info-box">
                                                             <label>WordPress</label>
-                                                            <span>{$ site.version $}</span>
+                                                            <span>{$ site.version || 'Loading...' $}</span>
+                                                            <i ng-if="site.loading" class="fa fa-spinner fa-spin" style="margin-left: 5px; font-size: 12px;"></i>
                                                         </div>
                                                     </div>
                                                     <div class="col-sm-3">
                                                         <div class="info-box">
                                                             <label>PHP Version</label>
                                                             <span>{$ site.phpVersion || 'Loading...' $}</span>
+                                                            <i ng-if="site.loading" class="fa fa-spinner fa-spin" style="margin-left: 5px; font-size: 12px;"></i>
                                                         </div>
                                                     </div>
                                                     <div class="col-sm-3">
                                                         <div class="info-box">
                                                             <label>Theme</label>
-                                                            <span>{$ site.activeTheme || 'twentytwentyfive' $}</span>
+                                                            <span>{$ site.activeTheme || 'Loading...' $}</span>
+                                                            <i ng-if="site.loadingTheme" class="fa fa-spinner fa-spin" style="margin-left: 5px; font-size: 12px;"></i>
                                                         </div>
                                                     </div>
                                                     <div class="col-sm-3">
@@ -431,6 +447,7 @@
                                                             <label>Plugins</label>
                                                             <span ng-if="site.activePlugins !== undefined">{$ site.activePlugins $} active of {$ site.totalPlugins $}</span>
                                                             <span ng-if="site.activePlugins === undefined">Loading...</span>
+                                                            <i ng-if="site.loadingPlugins" class="fa fa-spinner fa-spin" style="margin-left: 5px; font-size: 12px;"></i>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -571,6 +588,18 @@
         }
         .text-center .btn {
             min-width: 100px;
+        }
+        .loading-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #00749C;
+            font-size: 14px;
+            padding: 0 8px;
+        }
+        .loading-indicator i {
+            font-size: 14px;
+            margin-left: 4px;
         }
     </style>
 {% endblock content %}
