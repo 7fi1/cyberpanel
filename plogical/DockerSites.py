@@ -786,32 +786,40 @@ services:
             # Create base n8n data directory
             base_dir = f"/home/docker/{self.data['finalURL']}/n8n_data"
             
-            # First ensure the parent directory exists with correct permissions
-            parent_dir = f"/home/docker/{self.data['finalURL']}"
-            command = f"mkdir -p {parent_dir}"
-            ProcessUtilities.executioner(command)
+            # Create each directory in the path with proper permissions
+            path_parts = base_dir.split('/')
+            current_path = ''
             
-            command = f"chown root:root {parent_dir}"
-            ProcessUtilities.executioner(command)
-            
-            command = f"chmod 755 {parent_dir}"
-            ProcessUtilities.executioner(command)
-
-            # Now create the n8n_data directory
-            command = f"mkdir -p {base_dir}"
-            ProcessUtilities.executioner(command)
-
-            command = f"chown 1000:1000 {base_dir}"
-            ProcessUtilities.executioner(command)
-
-            command = f"chmod 755 {base_dir}"
-            ProcessUtilities.executioner(command)
+            # Build path incrementally ensuring proper permissions at each level
+            for part in path_parts:
+                if part:  # Skip empty parts
+                    current_path += f'/{part}'
+                    
+                    # Create directory if it doesn't exist
+                    command = f"mkdir -p {current_path}"
+                    ProcessUtilities.executioner(command)
+                    
+                    # Set ownership and permissions
+                    if current_path == '/home/docker':
+                        # Root directory
+                        command = f"chown root:root {current_path}"
+                        ProcessUtilities.executioner(command)
+                        
+                        command = f"chmod 755 {current_path}"
+                        ProcessUtilities.executioner(command)
+                    else:
+                        # n8n directories
+                        command = f"chown 1000:1000 {current_path}"
+                        ProcessUtilities.executioner(command)
+                        
+                        command = f"chmod 755 {current_path}"
+                        ProcessUtilities.executioner(command)
 
             # Generate encryption key - store in self.data for use in docker-compose
             encryption_key = randomPassword.generate_pass(32)
             self.data['N8N_ENCRYPTION_KEY'] = encryption_key
 
-            # Create necessary directories with proper ownership from the start
+            # Create n8n subdirectories
             required_dirs = [
                 f"{base_dir}/.n8n",
                 f"{base_dir}/.n8n/.n8n",
@@ -820,7 +828,7 @@ services:
                 f"{base_dir}/.n8n/credentials"
             ]
 
-            # Create directories one by one with proper permissions
+            # Create each required directory with proper permissions
             for directory in required_dirs:
                 command = f"mkdir -p {directory}"
                 ProcessUtilities.executioner(command)
@@ -831,7 +839,7 @@ services:
                 command = f"chmod 755 {directory}"
                 ProcessUtilities.executioner(command)
 
-            # Create n8n config with the encryption key - using n8n's exact format
+            # Create n8n config with the encryption key
             config_content = {
                 "database": {
                     "type": "postgresdb",
@@ -904,9 +912,23 @@ services:
             command = f"chmod 644 {temp_config}"
             ProcessUtilities.executioner(command)
 
+            # Create config directory if it doesn't exist
+            config_dir = f"{base_dir}/.n8n/.n8n"
+            command = f"mkdir -p {config_dir}"
+            ProcessUtilities.executioner(command)
+
+            command = f"chown 1000:1000 {config_dir}"
+            ProcessUtilities.executioner(command)
+
+            command = f"chmod 755 {config_dir}"
+            ProcessUtilities.executioner(command)
+
             # Move config to final location
-            config_file = f"{base_dir}/.n8n/.n8n/config"
+            config_file = f"{config_dir}/config"
             command = f"mv {temp_config} {config_file}"
+            ProcessUtilities.executioner(command)
+
+            command = f"chmod 600 {config_file}"
             ProcessUtilities.executioner(command)
 
             # Create empty .gitignore
@@ -920,30 +942,22 @@ services:
             command = f"chmod 644 {gitignore_file}"
             ProcessUtilities.executioner(command)
 
-            # Final recursive permission setup
-            command = f"chown -R 1000:1000 {base_dir}"
-            ProcessUtilities.executioner(command)
-
-            command = f"find {base_dir} -type d -exec chmod 755 {{}} \\;"
-            ProcessUtilities.executioner(command)
-
-            command = f"find {base_dir} -type f -exec chmod 644 {{}} \\;"
-            ProcessUtilities.executioner(command)
-
-            # Special permission for config file
-            command = f"chmod 600 {config_file}"
-            ProcessUtilities.executioner(command)
-
             # Write debug file to verify encryption key
             debug_file = f"{base_dir}/.n8n/.n8n/debug_encryption_key"
-            with open(debug_file, 'w') as f:
-                f.write(f"Config file key: {encryption_key}\nEnvironment variable: {self.data['N8N_ENCRYPTION_KEY']}")
-
+            
+            # Create debug file with proper permissions first
+            command = f"touch {debug_file}"
+            ProcessUtilities.executioner(command)
+            
             command = f"chown 1000:1000 {debug_file}"
             ProcessUtilities.executioner(command)
-
+            
             command = f"chmod 600 {debug_file}"
             ProcessUtilities.executioner(command)
+            
+            # Now write the content
+            with open(debug_file, 'w') as f:
+                f.write(f"Config file key: {encryption_key}\nEnvironment variable: {self.data['N8N_ENCRYPTION_KEY']}")
 
             return True
 
