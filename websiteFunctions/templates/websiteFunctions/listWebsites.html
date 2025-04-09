@@ -146,11 +146,11 @@
                                 <a href="javascript:void(0);" ng-click="showWPSites(web.domain)" class="wp-sites-link">
                                     <i class="fa-brands fa-wordpress btn-icon text-muted" data-toggle="tooltip" 
                                        data-placement="right" title="Show WordPress Sites"></i>
-                                    <span ng-if="web.wp_sites && web.wp_sites.length > 0" class="wp-sites-count">
+                                    <span ng-if="!web.loadingWPSites && web.wp_sites && web.wp_sites.length > 0" class="wp-sites-count">
                                         {$ web.wp_sites.length $} WordPress Sites
                                     </span>
                                     <span ng-if="web.loadingWPSites" class="loading-indicator">
-                                        <i class="fa fa-spinner fa-spin"></i>
+                                        Loading <i class="fa fa-spinner fa-spin"></i>
                                     </span>
                                 </a>
                             </div>
@@ -401,11 +401,14 @@
                             .loading-indicator {
                                 display: inline-flex;
                                 align-items: center;
-                                justify-content: center;
+                                gap: 8px;
                                 color: #00749C;
+                                font-size: 14px;
+                                padding: 0 8px;
                             }
                             .loading-indicator i {
                                 font-size: 14px;
+                                margin-left: 4px;
                             }
                         </style>
 
