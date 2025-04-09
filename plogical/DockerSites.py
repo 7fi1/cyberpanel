@@ -782,16 +782,19 @@ services:
 
     def setup_n8n_data_directory(self):
         """Helper method to create and set up n8n data directory with proper permissions"""
-        # Create n8n data directory
-        command = f"mkdir -p /home/docker/{self.data['finalURL']}/n8n_data"
+        # Create n8n data directory and .n8n subdirectory
+        command = f"mkdir -p /home/docker/{self.data['finalURL']}/n8n_data/.n8n"
         ProcessUtilities.executioner(command)
 
         # Set proper ownership for n8n data directory (1000:1000 is the node user in n8n container)
         command = f"chown -R 1000:1000 /home/docker/{self.data['finalURL']}/n8n_data"
         ProcessUtilities.executioner(command)
 
-        # Set proper permissions
-        command = f"chmod -R 700 /home/docker/{self.data['finalURL']}/n8n_data"
+        # Set proper permissions (700 for parent directory and 755 for .n8n subdirectory)
+        command = f"chmod 700 /home/docker/{self.data['finalURL']}/n8n_data"
+        ProcessUtilities.executioner(command)
+        
+        command = f"chmod -R 755 /home/docker/{self.data['finalURL']}/n8n_data/.n8n"
         ProcessUtilities.executioner(command)
 
     def DeployN8NContainer(self):
