@@ -788,8 +788,8 @@ services:
             command = f"mkdir -p {base_dir}"
             ProcessUtilities.executioner(command)
 
-            # Generate encryption key
-            encryption_key = f"auto_generated_key_{randomPassword.generate_pass(32)}"
+            # Generate encryption key - without auto_generated_key_ prefix to avoid issues
+            encryption_key = randomPassword.generate_pass(32)
             self.data['N8N_ENCRYPTION_KEY'] = encryption_key
 
             # Create n8n config with the encryption key
@@ -830,21 +830,16 @@ services:
                 command = f"chmod 755 {directory}"
                 ProcessUtilities.executioner(command)
 
-            # Write config to a temporary file first
-            temp_config = f'/home/cyberpanel/{str(randint(1000, 9999))}-config.json'
-            with open(temp_config, 'w') as f:
+            # Write config directly to final location
+            config_file = f"{base_dir}/.n8n/.n8n/config"
+            with open(config_file, 'w') as f:
                 json.dump(config_content, f, indent=2)
 
-            # Set proper ownership and permissions on temp file
-            command = f"chown 1000:1000 {temp_config}"
+            # Set proper ownership and permissions on config file
+            command = f"chown 1000:1000 {config_file}"
             ProcessUtilities.executioner(command)
 
-            command = f"chmod 644 {temp_config}"
-            ProcessUtilities.executioner(command)
-
-            # Move config to final location
-            config_file = f"{base_dir}/.n8n/.n8n/config"
-            command = f"mv {temp_config} {config_file}"
+            command = f"chmod 644 {config_file}"
             ProcessUtilities.executioner(command)
 
             # Create empty .gitignore to prevent permission issues
@@ -865,6 +860,17 @@ services:
             ProcessUtilities.executioner(command)
 
             command = f"find {base_dir} -type f -exec chmod 644 {{}} \\;"
+            ProcessUtilities.executioner(command)
+
+            # Write encryption key to a separate file for debugging
+            debug_file = f"{base_dir}/.n8n/.n8n/encryption_key"
+            with open(debug_file, 'w') as f:
+                f.write(encryption_key)
+
+            command = f"chown 1000:1000 {debug_file}"
+            ProcessUtilities.executioner(command)
+
+            command = f"chmod 600 {debug_file}"
             ProcessUtilities.executioner(command)
 
         except BaseException as msg:
