@@ -782,75 +782,94 @@ services:
 
     def setup_n8n_data_directory(self):
         """Helper method to create and set up n8n data directory with proper permissions"""
-        # Create base n8n data directory
-        base_dir = f"/home/docker/{self.data['finalURL']}/n8n_data"
-        command = f"mkdir -p {base_dir}"
-        ProcessUtilities.executioner(command)
-
-        # Generate encryption key
-        encryption_key = f"auto_generated_key_{randomPassword.generate_pass(32)}"
-        self.data['N8N_ENCRYPTION_KEY'] = encryption_key
-
-        # Create n8n config with the encryption key
-        config_content = {
-            "encryptionKey": encryption_key,
-            "instanceId": f"n8n_{randomPassword.generate_pass(12)}",
-            "nodes": {},
-            "credentials": {},
-            "settings": {
-                "instanceId": f"n8n_{randomPassword.generate_pass(12)}",
-                "tunnelSubdomain": None,
-                "deployment": "default"
-            },
-            "versionNotifications": {
-                "enabled": False,
-                "endpoint": "https://api.n8n.io/api/v1/versions/notifications.json",
-                "infoUrl": "https://docs.n8n.io/reference/release-notes.html"
-            }
-        }
-
-        # Create necessary directories
-        required_dirs = [
-            f"{base_dir}/.n8n",
-            f"{base_dir}/.n8n/database",
-            f"{base_dir}/.n8n/workflows",
-            f"{base_dir}/.n8n/credentials"
-        ]
-
-        for directory in required_dirs:
-            command = f"mkdir -p {directory}"
+        try:
+            # Create base n8n data directory
+            base_dir = f"/home/docker/{self.data['finalURL']}/n8n_data"
+            command = f"mkdir -p {base_dir}"
             ProcessUtilities.executioner(command)
 
-        # Write config directly to the config file
-        config_file = f"{base_dir}/.n8n/.n8n/config"
-        
-        # Ensure parent directory exists
-        command = f"mkdir -p {base_dir}/.n8n/.n8n"
-        ProcessUtilities.executioner(command)
-        
-        # Write config file
-        with open(config_file, 'w') as f:
-            json.dump(config_content, f, indent=2)
+            # Generate encryption key
+            encryption_key = f"auto_generated_key_{randomPassword.generate_pass(32)}"
+            self.data['N8N_ENCRYPTION_KEY'] = encryption_key
 
-        # Set ownership recursively
-        command = f"chown -R 1000:1000 {base_dir}"
-        ProcessUtilities.executioner(command)
+            # Create n8n config with the encryption key
+            config_content = {
+                "encryptionKey": encryption_key,
+                "instanceId": f"n8n_{randomPassword.generate_pass(12)}",
+                "nodes": {},
+                "credentials": {},
+                "settings": {
+                    "instanceId": f"n8n_{randomPassword.generate_pass(12)}",
+                    "tunnelSubdomain": None,
+                    "deployment": "default"
+                },
+                "versionNotifications": {
+                    "enabled": False,
+                    "endpoint": "https://api.n8n.io/api/v1/versions/notifications.json",
+                    "infoUrl": "https://docs.n8n.io/reference/release-notes.html"
+                }
+            }
 
-        # Set directory permissions
-        command = f"find {base_dir} -type d -exec chmod 755 {{}} \\;"
-        ProcessUtilities.executioner(command)
+            # Create necessary directories
+            required_dirs = [
+                f"{base_dir}/.n8n",
+                f"{base_dir}/.n8n/.n8n",
+                f"{base_dir}/.n8n/database",
+                f"{base_dir}/.n8n/workflows",
+                f"{base_dir}/.n8n/credentials"
+            ]
 
-        # Set file permissions
-        command = f"find {base_dir} -type f -exec chmod 644 {{}} \\;"
-        ProcessUtilities.executioner(command)
+            # Create directories and set ownership/permissions
+            for directory in required_dirs:
+                command = f"mkdir -p {directory}"
+                ProcessUtilities.executioner(command)
+                
+                command = f"chown -R 1000:1000 {directory}"
+                ProcessUtilities.executioner(command)
+                
+                command = f"chmod 755 {directory}"
+                ProcessUtilities.executioner(command)
 
-        # Create empty .gitignore to prevent permission issues
-        command = f"touch {base_dir}/.n8n/.gitignore"
-        ProcessUtilities.executioner(command)
-        command = f"chown 1000:1000 {base_dir}/.n8n/.gitignore"
-        ProcessUtilities.executioner(command)
-        command = f"chmod 644 {base_dir}/.n8n/.gitignore"
-        ProcessUtilities.executioner(command)
+            # Write config to a temporary file first
+            temp_config = f'/home/cyberpanel/{str(randint(1000, 9999))}-config.json'
+            with open(temp_config, 'w') as f:
+                json.dump(config_content, f, indent=2)
+
+            # Set proper ownership and permissions on temp file
+            command = f"chown 1000:1000 {temp_config}"
+            ProcessUtilities.executioner(command)
+
+            command = f"chmod 644 {temp_config}"
+            ProcessUtilities.executioner(command)
+
+            # Move config to final location
+            config_file = f"{base_dir}/.n8n/.n8n/config"
+            command = f"mv {temp_config} {config_file}"
+            ProcessUtilities.executioner(command)
+
+            # Create empty .gitignore to prevent permission issues
+            command = f"touch {base_dir}/.n8n/.gitignore"
+            ProcessUtilities.executioner(command)
+            
+            command = f"chown 1000:1000 {base_dir}/.n8n/.gitignore"
+            ProcessUtilities.executioner(command)
+            
+            command = f"chmod 644 {base_dir}/.n8n/.gitignore"
+            ProcessUtilities.executioner(command)
+
+            # Final permission check on the entire directory
+            command = f"chown -R 1000:1000 {base_dir}"
+            ProcessUtilities.executioner(command)
+
+            command = f"find {base_dir} -type d -exec chmod 755 {{}} \\;"
+            ProcessUtilities.executioner(command)
+
+            command = f"find {base_dir} -type f -exec chmod 644 {{}} \\;"
+            ProcessUtilities.executioner(command)
+
+        except BaseException as msg:
+            logging.writeToFile(f'Error in setup_n8n_data_directory: {str(msg)}')
+            raise
 
     def DeployN8NContainer(self):
         try:
