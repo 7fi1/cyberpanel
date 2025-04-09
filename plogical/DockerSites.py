@@ -785,12 +785,45 @@ services:
         try:
             # Create base n8n data directory
             base_dir = f"/home/docker/{self.data['finalURL']}/n8n_data"
+            
+            # First ensure the parent directory exists with correct permissions
+            parent_dir = f"/home/docker/{self.data['finalURL']}"
+            command = f"mkdir -p {parent_dir}"
+            ProcessUtilities.executioner(command)
+            
+            command = f"chown root:root {parent_dir}"
+            ProcessUtilities.executioner(command)
+            
+            command = f"chmod 755 {parent_dir}"
+            ProcessUtilities.executioner(command)
+
+            # Now create the n8n_data directory
             command = f"mkdir -p {base_dir}"
             ProcessUtilities.executioner(command)
 
-            # Generate encryption key - without auto_generated_key_ prefix to avoid issues
+            # Generate encryption key
             encryption_key = randomPassword.generate_pass(32)
             self.data['N8N_ENCRYPTION_KEY'] = encryption_key
+
+            # Create necessary directories with proper ownership from the start
+            required_dirs = [
+                f"{base_dir}/.n8n",
+                f"{base_dir}/.n8n/.n8n",
+                f"{base_dir}/.n8n/database",
+                f"{base_dir}/.n8n/workflows",
+                f"{base_dir}/.n8n/credentials"
+            ]
+
+            # Create directories one by one with proper permissions
+            for directory in required_dirs:
+                command = f"mkdir -p {directory}"
+                ProcessUtilities.executioner(command)
+                
+                command = f"chown -R 1000:1000 {directory}"
+                ProcessUtilities.executioner(command)
+                
+                command = f"chmod 755 {directory}"
+                ProcessUtilities.executioner(command)
 
             # Create n8n config with the encryption key
             config_content = {
@@ -810,28 +843,6 @@ services:
                 }
             }
 
-            # Create necessary directories
-            required_dirs = [
-                f"{base_dir}/.n8n",
-                f"{base_dir}/.n8n/.n8n",
-                f"{base_dir}/.n8n/database",
-                f"{base_dir}/.n8n/workflows",
-                f"{base_dir}/.n8n/credentials"
-            ]
-
-            # First create all directories
-            for directory in required_dirs:
-                command = f"mkdir -p {directory}"
-                ProcessUtilities.executioner(command)
-
-            # Set ownership of base directory first
-            command = f"chown -R 1000:1000 {base_dir}"
-            ProcessUtilities.executioner(command)
-
-            # Set directory permissions
-            command = f"find {base_dir} -type d -exec chmod 755 {{}} \\;"
-            ProcessUtilities.executioner(command)
-
             # Write config to a temporary file first
             temp_config = f'/home/cyberpanel/{str(randint(1000, 9999))}-config.json'
             with open(temp_config, 'w') as f:
@@ -849,11 +860,35 @@ services:
             command = f"mv {temp_config} {config_file}"
             ProcessUtilities.executioner(command)
 
-            # Create empty .gitignore to prevent permission issues
-            command = f"touch {base_dir}/.n8n/.gitignore"
+            # Write encryption key to a separate file
+            temp_key = f'/home/cyberpanel/{str(randint(1000, 9999))}-encryption_key'
+            with open(temp_key, 'w') as f:
+                f.write(encryption_key)
+
+            # Set proper ownership and permissions on temp key file
+            command = f"chown 1000:1000 {temp_key}"
             ProcessUtilities.executioner(command)
 
-            # Final permission check on the entire directory
+            command = f"chmod 600 {temp_key}"
+            ProcessUtilities.executioner(command)
+
+            # Move encryption key file to final location
+            encryption_key_file = f"{base_dir}/.n8n/.n8n/encryption_key"
+            command = f"mv {temp_key} {encryption_key_file}"
+            ProcessUtilities.executioner(command)
+
+            # Create empty .gitignore
+            gitignore_file = f"{base_dir}/.n8n/.gitignore"
+            command = f"touch {gitignore_file}"
+            ProcessUtilities.executioner(command)
+
+            command = f"chown 1000:1000 {gitignore_file}"
+            ProcessUtilities.executioner(command)
+
+            command = f"chmod 644 {gitignore_file}"
+            ProcessUtilities.executioner(command)
+
+            # Final recursive permission setup
             command = f"chown -R 1000:1000 {base_dir}"
             ProcessUtilities.executioner(command)
 
@@ -863,20 +898,15 @@ services:
             command = f"find {base_dir} -type f -exec chmod 644 {{}} \\;"
             ProcessUtilities.executioner(command)
 
-            # Write encryption key to a separate file for debugging
-            debug_file = f"{base_dir}/.n8n/.n8n/encryption_key"
-            with open(debug_file, 'w') as f:
-                f.write(encryption_key)
-
-            command = f"chown 1000:1000 {debug_file}"
+            # Special permission for encryption key
+            command = f"chmod 600 {encryption_key_file}"
             ProcessUtilities.executioner(command)
 
-            command = f"chmod 600 {debug_file}"
-            ProcessUtilities.executioner(command)
-
-            # Verify permissions
+            # Verify final permissions
             command = f"ls -la {base_dir}/.n8n/.n8n/"
             ProcessUtilities.outputExecutioner(command)
+
+            return True
 
         except BaseException as msg:
             logging.writeToFile(f'Error in setup_n8n_data_directory: {str(msg)}')
