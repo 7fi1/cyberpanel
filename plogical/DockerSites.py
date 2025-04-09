@@ -971,17 +971,41 @@ services:
 
             self.containerState['proxy_configured'] = True
 
-            # Setup backup script
+            # Setup backup script with proper permissions
+            logging.statusWriter(self.JobID, 'Setting up backup script..,90')
             backup_script = f'''#!/bin/bash
 docker exec {self.data['ServiceName']}-db pg_dump -U {self.data['MySQLDBNUser']} {self.data['MySQLDBName']} > /home/docker/{self.data['finalURL']}/backups/db_$(date +%Y%m%d).sql
 tar -czf /home/docker/{self.data['finalURL']}/backups/n8n_$(date +%Y%m%d).tar.gz /home/docker/{self.data['finalURL']}/data
 '''
-            backup_script_path = f"/home/docker/{self.data['finalURL']}/backup.sh"
-            with open(backup_script_path, 'w') as f:
-                f.write(backup_script)
-            
-            command = f"chmod +x {backup_script_path}"
-            ProcessUtilities.executioner(command)
+            try:
+                # First write to a temporary location
+                tempPath = f'/home/cyberpanel/{str(randint(1000, 9999))}-backup.sh'
+                with open(tempPath, 'w') as f:
+                    f.write(backup_script)
+
+                # Move to final location with proper permissions
+                backup_script_path = f"/home/docker/{self.data['finalURL']}/backup.sh"
+                
+                # Set proper ownership of docker directory
+                command = f"chown -R {self.data['externalApp']}:{self.data['externalApp']} /home/docker/{self.data['finalURL']}"
+                ProcessUtilities.executioner(command)
+                
+                # Move backup script
+                command = f"mv {tempPath} {backup_script_path}"
+                ProcessUtilities.executioner(command)
+                
+                # Set permissions
+                command = f"chmod 700 {backup_script_path}"
+                ProcessUtilities.executioner(command)
+                
+                # Set ownership
+                command = f"chown {self.data['externalApp']}:{self.data['externalApp']} {backup_script_path}"
+                ProcessUtilities.executioner(command)
+
+            except BaseException as msg:
+                logging.writeToFile(f'Failed to setup backup script: {str(msg)}')
+                # Continue even if backup script fails - not critical for main functionality
+                pass
 
             # Restart web server
             from plogical.installUtilities import installUtilities
