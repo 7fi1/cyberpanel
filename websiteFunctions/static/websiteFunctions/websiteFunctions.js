@@ -2684,10 +2684,6 @@ app.controller('listWebsites', function ($scope, $http, $window) {
                         wp.loadingTheme = false;
                     });
                     $("#listFail").hide();
-                    // Fetch details for each WordPress site
-                    site.wp_sites.forEach(function(wp) {
-                        fetchWPSiteData(wp);
-                    });
                 } else {
                     $("#listFail").fadeIn();
                     site.showWPSites = false;
@@ -2715,92 +2711,6 @@ app.controller('listWebsites', function ($scope, $http, $window) {
                 site.loadingWPSites = false;
             });
     };
-
-    function fetchWPSiteData(wp) {
-        wp.loading = true;
-        
-        var config = {
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'X-CSRFToken': getCookie('csrftoken')
-            }
-        };
-        
-        var data = $.param({
-            WPid: wp.id
-        });
-        
-        // Fetch site data
-        $http.post('/websites/FetchWPdata', data, config)
-            .then(function(response) {
-                if (response.data.status === 1) {
-                    var data = response.data.ret_data;
-                    wp.version = data.version;
-                    wp.phpVersion = data.phpVersion || 'PHP 7.4';
-                    wp.searchIndex = data.searchIndex === 1;
-                    wp.debugging = data.debugging === 1;
-                    wp.passwordProtection = data.passwordprotection === 1;
-                    wp.maintenanceMode = data.maintenanceMode === 1;
-                    fetchPluginData(wp);
-                    fetchThemeData(wp);
-                }
-            })
-            .finally(function() {
-                wp.loading = false;
-            });
-    }
-
-    function fetchPluginData(wp) {
-        wp.loadingPlugins = true;
-        
-        var config = {
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'X-CSRFToken': getCookie('csrftoken')
-            }
-        };
-        
-        var data = $.param({
-            WPid: wp.id
-        });
-        
-        $http.post('/websites/GetCurrentPlugins', data, config)
-            .then(function(response) {
-                if (response.data.status === 1) {
-                    var plugins = JSON.parse(response.data.plugins);
-                    wp.activePlugins = plugins.filter(function(p) { return p.status === 'active'; }).length;
-                    wp.totalPlugins = plugins.length;
-                }
-            })
-            .finally(function() {
-                wp.loadingPlugins = false;
-            });
-    }
-
-    function fetchThemeData(wp) {
-        wp.loadingTheme = true;
-        
-        var config = {
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'X-CSRFToken': getCookie('csrftoken')
-            }
-        };
-        
-        var data = $.param({
-            WPid: wp.id
-        });
-        
-        $http.post('/websites/GetCurrentTheme', data, config)
-            .then(function(response) {
-                if (response.data.status === 1) {
-                    wp.theme = response.data.theme;
-                }
-            })
-            .finally(function() {
-                wp.loadingTheme = false;
-            });
-    }
 
     $scope.visitSite = function(wp) {
         var url = wp.url || wp.domain;
@@ -5913,10 +5823,6 @@ app.controller('listWebsites', function ($scope, $http, $window) {
                         wp.loadingTheme = false;
                     });
                     $("#listFail").hide();
-                    // Fetch details for each WordPress site
-                    site.wp_sites.forEach(function(wp) {
-                        fetchWPSiteData(wp);
-                    });
                 } else {
                     $("#listFail").fadeIn();
                     site.showWPSites = false;
@@ -5944,92 +5850,6 @@ app.controller('listWebsites', function ($scope, $http, $window) {
                 site.loadingWPSites = false;
             });
     };
-
-    function fetchWPSiteData(wp) {
-        wp.loading = true;
-        
-        var config = {
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'X-CSRFToken': getCookie('csrftoken')
-            }
-        };
-        
-        var data = $.param({
-            WPid: wp.id
-        });
-        
-        // Fetch site data
-        $http.post('/websites/FetchWPdata', data, config)
-            .then(function(response) {
-                if (response.data.status === 1) {
-                    var data = response.data.ret_data;
-                    wp.version = data.version;
-                    wp.phpVersion = data.phpVersion || 'PHP 7.4';
-                    wp.searchIndex = data.searchIndex === 1;
-                    wp.debugging = data.debugging === 1;
-                    wp.passwordProtection = data.passwordprotection === 1;
-                    wp.maintenanceMode = data.maintenanceMode === 1;
-                    fetchPluginData(wp);
-                    fetchThemeData(wp);
-                }
-            })
-            .finally(function() {
-                wp.loading = false;
-            });
-    }
-
-    function fetchPluginData(wp) {
-        wp.loadingPlugins = true;
-        
-        var config = {
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'X-CSRFToken': getCookie('csrftoken')
-            }
-        };
-        
-        var data = $.param({
-            WPid: wp.id
-        });
-        
-        $http.post('/websites/GetCurrentPlugins', data, config)
-            .then(function(response) {
-                if (response.data.status === 1) {
-                    var plugins = JSON.parse(response.data.plugins);
-                    wp.activePlugins = plugins.filter(function(p) { return p.status === 'active'; }).length;
-                    wp.totalPlugins = plugins.length;
-                }
-            })
-            .finally(function() {
-                wp.loadingPlugins = false;
-            });
-    }
-
-    function fetchThemeData(wp) {
-        wp.loadingTheme = true;
-        
-        var config = {
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'X-CSRFToken': getCookie('csrftoken')
-            }
-        };
-        
-        var data = $.param({
-            WPid: wp.id
-        });
-        
-        $http.post('/websites/GetCurrentTheme', data, config)
-            .then(function(response) {
-                if (response.data.status === 1) {
-                    wp.theme = response.data.theme;
-                }
-            })
-            .finally(function() {
-                wp.loadingTheme = false;
-            });
-    }
 
     $scope.visitSite = function(wp) {
         var url = wp.url || wp.domain;
@@ -9716,10 +9536,6 @@ app.controller('listWebsites', function ($scope, $http, $window) {
                         wp.loadingTheme = false;
                     });
                     $("#listFail").hide();
-                    // Fetch details for each WordPress site
-                    site.wp_sites.forEach(function(wp) {
-                        fetchWPSiteData(wp);
-                    });
                 } else {
                     $("#listFail").fadeIn();
                     site.showWPSites = false;
@@ -9747,92 +9563,6 @@ app.controller('listWebsites', function ($scope, $http, $window) {
                 site.loadingWPSites = false;
             });
     };
-
-    function fetchWPSiteData(wp) {
-        wp.loading = true;
-        
-        var config = {
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'X-CSRFToken': getCookie('csrftoken')
-            }
-        };
-        
-        var data = $.param({
-            WPid: wp.id
-        });
-        
-        // Fetch site data
-        $http.post('/websites/FetchWPdata', data, config)
-            .then(function(response) {
-                if (response.data.status === 1) {
-                    var data = response.data.ret_data;
-                    wp.version = data.version;
-                    wp.phpVersion = data.phpVersion || 'PHP 7.4';
-                    wp.searchIndex = data.searchIndex === 1;
-                    wp.debugging = data.debugging === 1;
-                    wp.passwordProtection = data.passwordprotection === 1;
-                    wp.maintenanceMode = data.maintenanceMode === 1;
-                    fetchPluginData(wp);
-                    fetchThemeData(wp);
-                }
-            })
-            .finally(function() {
-                wp.loading = false;
-            });
-    }
-
-    function fetchPluginData(wp) {
-        wp.loadingPlugins = true;
-        
-        var config = {
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'X-CSRFToken': getCookie('csrftoken')
-            }
-        };
-        
-        var data = $.param({
-            WPid: wp.id
-        });
-        
-        $http.post('/websites/GetCurrentPlugins', data, config)
-            .then(function(response) {
-                if (response.data.status === 1) {
-                    var plugins = JSON.parse(response.data.plugins);
-                    wp.activePlugins = plugins.filter(function(p) { return p.status === 'active'; }).length;
-                    wp.totalPlugins = plugins.length;
-                }
-            })
-            .finally(function() {
-                wp.loadingPlugins = false;
-            });
-    }
-
-    function fetchThemeData(wp) {
-        wp.loadingTheme = true;
-        
-        var config = {
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'X-CSRFToken': getCookie('csrftoken')
-            }
-        };
-        
-        var data = $.param({
-            WPid: wp.id
-        });
-        
-        $http.post('/websites/GetCurrentTheme', data, config)
-            .then(function(response) {
-                if (response.data.status === 1) {
-                    wp.theme = response.data.theme;
-                }
-            })
-            .finally(function() {
-                wp.loadingTheme = false;
-            });
-    }
 
     $scope.visitSite = function(wp) {
         var url = wp.url || wp.domain;
@@ -13884,10 +13614,6 @@ app.controller('manageAliasController', function ($scope, $http, $timeout, $wind
                         wp.loadingTheme = false;
                     });
                     $("#listFail").hide();
-                    // Fetch details for each WordPress site
-                    site.wp_sites.forEach(function(wp) {
-                        fetchWPSiteData(wp);
-                    });
                 } else {
                     $("#listFail").fadeIn();
                     site.showWPSites = false;
@@ -13915,92 +13641,6 @@ app.controller('manageAliasController', function ($scope, $http, $timeout, $wind
                 site.loadingWPSites = false;
             });
     };
-
-    function fetchWPSiteData(wp) {
-        wp.loading = true;
-        
-        var config = {
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'X-CSRFToken': getCookie('csrftoken')
-            }
-        };
-        
-        var data = $.param({
-            WPid: wp.id
-        });
-        
-        // Fetch site data
-        $http.post('/websites/FetchWPdata', data, config)
-            .then(function(response) {
-                if (response.data.status === 1) {
-                    var data = response.data.ret_data;
-                    wp.version = data.version;
-                    wp.phpVersion = data.phpVersion || 'PHP 7.4';
-                    wp.searchIndex = data.searchIndex === 1;
-                    wp.debugging = data.debugging === 1;
-                    wp.passwordProtection = data.passwordprotection === 1;
-                    wp.maintenanceMode = data.maintenanceMode === 1;
-                    fetchPluginData(wp);
-                    fetchThemeData(wp);
-                }
-            })
-            .finally(function() {
-                wp.loading = false;
-            });
-    }
-
-    function fetchPluginData(wp) {
-        wp.loadingPlugins = true;
-        
-        var config = {
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'X-CSRFToken': getCookie('csrftoken')
-            }
-        };
-        
-        var data = $.param({
-            WPid: wp.id
-        });
-        
-        $http.post('/websites/GetCurrentPlugins', data, config)
-            .then(function(response) {
-                if (response.data.status === 1) {
-                    var plugins = JSON.parse(response.data.plugins);
-                    wp.activePlugins = plugins.filter(function(p) { return p.status === 'active'; }).length;
-                    wp.totalPlugins = plugins.length;
-                }
-            })
-            .finally(function() {
-                wp.loadingPlugins = false;
-            });
-    }
-
-    function fetchThemeData(wp) {
-        wp.loadingTheme = true;
-        
-        var config = {
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'X-CSRFToken': getCookie('csrftoken')
-            }
-        };
-        
-        var data = $.param({
-            WPid: wp.id
-        });
-        
-        $http.post('/websites/GetCurrentTheme', data, config)
-            .then(function(response) {
-                if (response.data.status === 1) {
-                    wp.theme = response.data.theme;
-                }
-            })
-            .finally(function() {
-                wp.loadingTheme = false;
-            });
-    }
 
     $scope.updateSetting = function(wp, setting) {
         var settingMap = {
