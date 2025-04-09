@@ -801,6 +801,12 @@ services:
             command = f"mkdir -p {base_dir}"
             ProcessUtilities.executioner(command)
 
+            command = f"chown 1000:1000 {base_dir}"
+            ProcessUtilities.executioner(command)
+
+            command = f"chmod 755 {base_dir}"
+            ProcessUtilities.executioner(command)
+
             # Generate encryption key - store in self.data for use in docker-compose
             # Using base64 to ensure key is properly formatted
             import base64
@@ -822,7 +828,7 @@ services:
                 command = f"mkdir -p {directory}"
                 ProcessUtilities.executioner(command)
                 
-                command = f"chown -R 1000:1000 {directory}"
+                command = f"chown 1000:1000 {directory}"
                 ProcessUtilities.executioner(command)
                 
                 command = f"chmod 755 {directory}"
@@ -875,6 +881,25 @@ services:
             command = f"chmod 644 {gitignore_file}"
             ProcessUtilities.executioner(command)
 
+            # Write encryption key to debug file
+            debug_file = f"{base_dir}/.n8n/.n8n/encryption_key_debug"
+            
+            # Write to temp file first
+            temp_debug = f'/home/cyberpanel/{str(randint(1000, 9999))}-debug'
+            with open(temp_debug, 'w') as f:
+                f.write(f"Config file key: {encryption_key}\nEnvironment variable: {self.data['N8N_ENCRYPTION_KEY']}")
+
+            # Set ownership and permissions on temp file
+            command = f"chown 1000:1000 {temp_debug}"
+            ProcessUtilities.executioner(command)
+
+            command = f"chmod 600 {temp_debug}"
+            ProcessUtilities.executioner(command)
+
+            # Move to final location
+            command = f"mv {temp_debug} {debug_file}"
+            ProcessUtilities.executioner(command)
+
             # Final recursive permission setup
             command = f"chown -R 1000:1000 {base_dir}"
             ProcessUtilities.executioner(command)
@@ -885,16 +910,8 @@ services:
             command = f"find {base_dir} -type f -exec chmod 644 {{}} \\;"
             ProcessUtilities.executioner(command)
 
-            # Special permission for config file
+            # Special permission for config and debug files
             command = f"chmod 600 {config_file}"
-            ProcessUtilities.executioner(command)
-
-            # Write encryption key to debug file for verification
-            debug_file = f"{base_dir}/.n8n/.n8n/encryption_key_debug"
-            with open(debug_file, 'w') as f:
-                f.write(f"Config file key: {encryption_key}\nEnvironment variable: {self.data['N8N_ENCRYPTION_KEY']}")
-
-            command = f"chown 1000:1000 {debug_file}"
             ProcessUtilities.executioner(command)
 
             command = f"chmod 600 {debug_file}"
