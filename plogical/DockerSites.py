@@ -791,6 +791,9 @@ services:
                 'proxy_configured': False
             }
 
+            # Setup service name first
+            self.data['ServiceName'] = self.data["SiteName"].replace(' ', '-')
+
             # Validate environment variables
             self.validate_environment()
             logging.statusWriter(self.JobID, 'Environment validation completed..,5')
@@ -809,9 +812,6 @@ services:
 
             self.containerState['docker_installed'] = True
             logging.statusWriter(self.JobID, 'Docker is ready to use..,15')
-
-            # Setup service name
-            self.data['ServiceName'] = self.data["SiteName"].replace(' ', '-')
 
             # Generate Docker Compose configuration
             compose_config = f'''
@@ -996,15 +996,32 @@ tar -czf /home/docker/{self.data['finalURL']}/backups/n8n_$(date +%Y%m%d).tar.gz
             print(str(msg))
 
     def validate_environment(self):
+        """
+        Validate required environment variables
+        """
         required_vars = [
             'MySQLDBName', 'MySQLDBNUser', 'MySQLPassword',
-            'finalURL', 'port', 'ServiceName', 'adminUser',
+            'finalURL', 'port', 'SiteName', 'adminUser',
             'CPUsMySQL', 'MemoryMySQL', 'CPUsSite', 'MemorySite'
         ]
         
         for var in required_vars:
             if var not in self.data or not self.data[var]:
                 raise Exception(f"Missing required environment variable: {var}")
+            
+        # Validate numeric values
+        numeric_vars = ['CPUsMySQL', 'MemoryMySQL', 'CPUsSite', 'MemorySite']
+        for var in numeric_vars:
+            try:
+                float(self.data[var])
+            except (ValueError, TypeError):
+                raise Exception(f"Invalid numeric value for {var}: {self.data[var]}")
+            
+        # Validate minimum memory requirements
+        if int(self.data['MemoryMySQL']) < 256:
+            raise Exception("Minimum MySQL memory requirement is 256MB")
+        if int(self.data['MemorySite']) < 256:
+            raise Exception("Minimum site memory requirement is 256MB")
 
     def cleanup(self):
         try:
