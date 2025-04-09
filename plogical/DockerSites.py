@@ -802,7 +802,10 @@ services:
             ProcessUtilities.executioner(command)
 
             # Generate encryption key - store in self.data for use in docker-compose
-            encryption_key = randomPassword.generate_pass(32)
+            # Using base64 to ensure key is properly formatted
+            import base64
+            raw_key = randomPassword.generate_pass(32)
+            encryption_key = base64.b64encode(raw_key.encode()).decode()
             self.data['N8N_ENCRYPTION_KEY'] = encryption_key
 
             # Create necessary directories with proper ownership from the start
@@ -834,7 +837,8 @@ services:
                 "settings": {
                     "instanceId": f"n8n_{randomPassword.generate_pass(12)}",
                     "tunnelSubdomain": None,
-                    "deployment": "default"
+                    "deployment": "default",
+                    "encryptionKey": encryption_key  # Add encryption key to settings as well
                 },
                 "versionNotifications": {
                     "enabled": False,
@@ -883,6 +887,17 @@ services:
 
             # Special permission for config file
             command = f"chmod 600 {config_file}"
+            ProcessUtilities.executioner(command)
+
+            # Write encryption key to debug file for verification
+            debug_file = f"{base_dir}/.n8n/.n8n/encryption_key_debug"
+            with open(debug_file, 'w') as f:
+                f.write(f"Config file key: {encryption_key}\nEnvironment variable: {self.data['N8N_ENCRYPTION_KEY']}")
+
+            command = f"chown 1000:1000 {debug_file}"
+            ProcessUtilities.executioner(command)
+
+            command = f"chmod 600 {debug_file}"
             ProcessUtilities.executioner(command)
 
             # Verify final permissions
