@@ -162,7 +162,13 @@
                                         <div class="wp-site-header">
                                             <div class="row">
                                                 <div class="col-sm-8">
-                                                    <h4><i class="fa-brands fa-wordpress" style="color: #00749C; margin-right: 8px;"></i>{$ wp.title $}</h4>
+                                                    <h4>
+                                                        <i class="fa-brands fa-wordpress" style="color: #00749C; margin-right: 8px;"></i>
+                                                        {$ wp.title $}
+                                                        <span ng-if="wp.loading || wp.loadingPlugins || wp.loadingTheme" class="loading-indicator">
+                                                            <i class="fa fa-spinner fa-spin" style="color: #00749C; font-size: 14px;"></i>
+                                                        </span>
+                                                    </h4>
                                                 </div>
                                                 <div class="col-sm-4 text-right">
                                                     <button class="btn btn-outline-primary btn-sm wp-action-btn" ng-click="manageWP(wp.id)">
@@ -196,25 +202,29 @@
                                                         <div class="col-sm-3">
                                                             <div class="info-box">
                                                                 <label>WordPress</label>
-                                                                <span>{$ wp.version || 'Unknown' $}</span>
+                                                                <span>{$ wp.version || 'Loading...' $}</span>
+                                                                <i ng-if="wp.loading" class="fa fa-spinner fa-spin" style="margin-left: 5px; font-size: 12px;"></i>
                                                             </div>
                                                         </div>
                                                         <div class="col-sm-3">
                                                             <div class="info-box">
                                                                 <label>PHP Version</label>
                                                                 <span>{$ wp.phpVersion || 'Loading...' $}</span>
+                                                                <i ng-if="wp.loading" class="fa fa-spinner fa-spin" style="margin-left: 5px; font-size: 12px;"></i>
                                                             </div>
                                                         </div>
                                                         <div class="col-sm-3">
                                                             <div class="info-box">
                                                                 <label>Theme</label>
-                                                                <span>{$ wp.theme || 'twentytwentyfive' $}</span>
+                                                                <span>{$ wp.theme || 'Loading...' $}</span>
+                                                                <i ng-if="wp.loadingTheme" class="fa fa-spinner fa-spin" style="margin-left: 5px; font-size: 12px;"></i>
                                                             </div>
                                                         </div>
                                                         <div class="col-sm-3">
                                                             <div class="info-box">
                                                                 <label>Plugins</label>
                                                                 <span>{$ wp.activePlugins || '0' $} active</span>
+                                                                <i ng-if="wp.loadingPlugins" class="fa fa-spinner fa-spin" style="margin-left: 5px; font-size: 12px;"></i>
                                                             </div>
                                                         </div>
                                                     </div>
