@@ -809,25 +809,28 @@ services:
             }
         }
 
-        # Write config to a temporary file first
-        temp_config = f'/home/cyberpanel/{str(randint(1000, 9999))}-config.json'
-        with open(temp_config, 'w') as f:
-            json.dump(config_content, f, indent=2)
-
-        # Create necessary directories with proper permissions
+        # Create necessary directories
         required_dirs = [
             f"{base_dir}/.n8n",
-            f"{base_dir}/.n8n/config"
+            f"{base_dir}/.n8n/database",
+            f"{base_dir}/.n8n/workflows",
+            f"{base_dir}/.n8n/credentials"
         ]
 
         for directory in required_dirs:
             command = f"mkdir -p {directory}"
             ProcessUtilities.executioner(command)
 
-        # Move config to final location
-        config_file = f"{base_dir}/.n8n/config/config"
-        command = f"mv {temp_config} {config_file}"
+        # Write config directly to the config file
+        config_file = f"{base_dir}/.n8n/.n8n/config"
+        
+        # Ensure parent directory exists
+        command = f"mkdir -p {base_dir}/.n8n/.n8n"
         ProcessUtilities.executioner(command)
+        
+        # Write config file
+        with open(config_file, 'w') as f:
+            json.dump(config_content, f, indent=2)
 
         # Set ownership recursively
         command = f"chown -R 1000:1000 {base_dir}"
@@ -841,20 +844,13 @@ services:
         command = f"find {base_dir} -type f -exec chmod 644 {{}} \\;"
         ProcessUtilities.executioner(command)
 
-        # Create empty directories that n8n expects
-        additional_dirs = [
-            f"{base_dir}/.n8n/database",
-            f"{base_dir}/.n8n/workflows",
-            f"{base_dir}/.n8n/credentials"
-        ]
-
-        for directory in additional_dirs:
-            command = f"mkdir -p {directory}"
-            ProcessUtilities.executioner(command)
-            command = f"chown 1000:1000 {directory}"
-            ProcessUtilities.executioner(command)
-            command = f"chmod 755 {directory}"
-            ProcessUtilities.executioner(command)
+        # Create empty .gitignore to prevent permission issues
+        command = f"touch {base_dir}/.n8n/.gitignore"
+        ProcessUtilities.executioner(command)
+        command = f"chown 1000:1000 {base_dir}/.n8n/.gitignore"
+        ProcessUtilities.executioner(command)
+        command = f"chmod 644 {base_dir}/.n8n/.gitignore"
+        ProcessUtilities.executioner(command)
 
     def DeployN8NContainer(self):
         try:
