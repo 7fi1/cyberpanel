@@ -789,7 +789,7 @@ services:
 
     ##### N8N Container
 
-    def check_container_health(self, container_name, max_retries=3, delay=10):
+    def check_container_health(self, container_name, max_retries=6, delay=20):
         """
         Check if a container is healthy and running
         """
@@ -799,17 +799,29 @@ services:
                 container = client.containers.get(container_name)
                 
                 if container.status == 'running':
-                    health = container.attrs.get('State', {}).get('Health', {}).get('Status')
-                    
-                    if health == 'healthy' or health is None:
+                    # For n8n container, check logs for successful startup
+                    if container_name.endswith(self.data['ServiceName']):
+                        logs = container.logs(tail=200).decode('utf-8')
+                        if 'Editor is now accessible' in logs or 'Version:' in logs:
+                            return True
+                        elif 'error' in logs.lower() and 'fatal' in logs.lower():
+                            logging.writeToFile(f'Container {container_name} logs show fatal error')
+                            return False
+                    # For database container
+                    elif container_name.endswith('db'):
+                        health = container.attrs.get('State', {}).get('Health', {}).get('Status')
+                        if health == 'healthy' or health is None:
+                            return True
+                        elif health == 'unhealthy':
+                            health_logs = container.attrs.get('State', {}).get('Health', {}).get('Log', [])
+                            if health_logs:
+                                last_log = health_logs[-1]
+                                logging.writeToFile(f'Container health check failed: {last_log.get("Output", "")}')
+                    else:
+                        # For other containers, just check if they're running
                         return True
-                    elif health == 'unhealthy':
-                        health_logs = container.attrs.get('State', {}).get('Health', {}).get('Log', [])
-                        if health_logs:
-                            last_log = health_logs[-1]
-                            logging.writeToFile(f'Container health check failed: {last_log.get("Output", "")}')
                 
-                logging.writeToFile(f'Container {container_name} not healthy, attempt {attempt + 1}/{max_retries}')
+                logging.writeToFile(f'Container {container_name} still initializing, attempt {attempt + 1}/{max_retries}')
                 time.sleep(delay)
                 
             return False
@@ -1103,8 +1115,10 @@ services:
                     raise DockerDeploymentError(f"Failed to deploy containers: {message}")
                 logging.statusWriter(self.JobID, 'Containers deployed...,60')
 
-                # Wait for containers to be healthy
-                time.sleep(25)
+                # Wait longer for containers to be healthy
+                logging.statusWriter(self.JobID, 'Waiting for containers to initialize...,50')
+                time.sleep(45)
+                
                 if not self.check_container_health(f"{self.data['ServiceName']}-db") or \
                    not self.check_container_health(self.data['ServiceName']):
                     raise DockerDeploymentError("Containers failed to reach healthy state", self.ERROR_CONTAINER_FAILED)
