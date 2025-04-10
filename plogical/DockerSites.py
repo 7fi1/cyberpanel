@@ -978,7 +978,7 @@ services:
                 command = f"docker exec {db_container_name} pg_isready -U postgres"
                 result, output = ProcessUtilities.outputExecutioner(command, None, None, None, 1)
                 
-                if result == 0 and "accepting connections" in output:
+                if "accepting connections" in output:
                     db_ready = True
                     break
                 
@@ -986,7 +986,7 @@ services:
                 command = f"docker inspect --format='{{{{.State.Status}}}}' {db_container_name}"
                 result, db_status = ProcessUtilities.outputExecutioner(command, None, None, None, 1)
                 
-                if result == 0 and db_status not in ['running', 'starting', 'unhealthy']:
+                if db_status not in ['running', 'starting', 'unhealthy']:
                     raise DockerDeploymentError(f"Database container is in {db_status} state")
                 
                 retry_count += 1
@@ -1000,7 +1000,7 @@ services:
             command = f"docker exec {n8n_container_name} node -e \"const pg = require('pg'); const client = new pg.Client({{ user: 'postgres', password: '{self.data['MySQLPassword']}', host: '{self.data['ServiceName']}-db', port: 5432, database: '{self.data['MySQLDBName']}' }}); client.connect().then(() => {{ console.log('Connected successfully'); process.exit(0); }}).catch(err => {{ console.error(err); process.exit(1); }});\""
             result, output = ProcessUtilities.outputExecutioner(command, None, None, None, 1)
 
-            if result != 0 or "Connected successfully" not in output:
+            if "Connected successfully" not in output:
                 raise DockerDeploymentError(f"Failed to verify database connection: {output}")
 
             return True
