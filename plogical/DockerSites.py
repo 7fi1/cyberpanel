@@ -1211,7 +1211,7 @@ services:
         """
         postgres_config = {
             'image': 'postgres:16-alpine',
-            'user': 'root',
+            'user': 'postgres',
             'healthcheck': {
                 'test': ["CMD-SHELL", "pg_isready -U postgres"],
                 'interval': '10s',
@@ -1222,13 +1222,14 @@ services:
             'environment': {
                 'POSTGRES_USER': 'postgres',
                 'POSTGRES_PASSWORD': self.data['MySQLPassword'],
-                'POSTGRES_DB': self.data['MySQLDBName']
+                'POSTGRES_DB': self.data['MySQLDBName'],
+                'POSTGRES_HOST_AUTH_METHOD': 'trust'
             }
         }
 
         n8n_config = {
             'image': 'docker.n8n.io/n8nio/n8n',
-            'user': 'root',
+            'user': 'node',
             'healthcheck': {
                 'test': ["CMD", "wget", "--spider", "http://localhost:5678"],
                 'interval': '20s',
@@ -1249,7 +1250,8 @@ services:
                 'GENERIC_TIMEZONE': 'UTC',
                 'N8N_ENCRYPTION_KEY': 'auto',
                 'N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS': 'true',
-                'DB_POSTGRESDB_SCHEMA': 'public'
+                'DB_POSTGRESDB_SCHEMA': 'public',
+                'N8N_DB_POSTGRESDB_SSL': 'false'
             }
         }
 
