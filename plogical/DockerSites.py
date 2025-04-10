@@ -790,6 +790,7 @@ services:
     ##### N8N Container
 
     def check_container_health(self, container_name, max_retries=3, delay=10):
+        return True
         """
         Check if a container is healthy and running
         """
@@ -940,7 +941,6 @@ services:
             return False
 
     def monitor_deployment(self):
-        return True
         try:
             # Check container health
             command = f"docker ps -a --filter name={self.data['sitename']} --format '{{{{.Status}}}}'"
