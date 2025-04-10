@@ -801,22 +801,40 @@ services:
                 if container.status == 'running':
                     # For n8n container, check logs for successful startup
                     if container_name.endswith(self.data['ServiceName']):
-                        logs = container.logs(tail=200).decode('utf-8')
-                        if 'Editor is now accessible' in logs or 'Version:' in logs:
-                            return True
+                        # First check if container is marked as healthy or still starting
+                        command = f"docker ps --filter name={container_name} --format '{{{{.Status}}}}'"
+                        result, status = ProcessUtilities.outputExecutioner(command, None, None, None, 1)
+                        
+                        if '(healthy)' in status or 'Up' in status:
+                            logs = container.logs(tail=200).decode('utf-8')
+                            if 'Editor is now accessible' in logs or 'Version:' in logs:
+                                return True
+                            
+                        # If container is still starting and we have migrations in logs, consider it healthy
+                        elif '(health: starting)' in status:
+                            logs = container.logs(tail=200).decode('utf-8')
+                            if ('Editor is now accessible' in logs or 
+                                'Version:' in logs or 
+                                'Finished migration' in logs):
+                                return True
+                        
+                        # Only consider it unhealthy if we see actual errors
                         elif 'error' in logs.lower() and 'fatal' in logs.lower():
                             logging.writeToFile(f'Container {container_name} logs show fatal error')
                             return False
+                            
                     # For database container
                     elif container_name.endswith('db'):
-                        health = container.attrs.get('State', {}).get('Health', {}).get('Status')
-                        if health == 'healthy' or health is None:
+                        command = f"docker ps --filter name={container_name} --format '{{{{.Status}}}}'"
+                        result, status = ProcessUtilities.outputExecutioner(command, None, None, None, 1)
+                        
+                        if '(healthy)' in status or 'Up' in status:
                             return True
-                        elif health == 'unhealthy':
-                            health_logs = container.attrs.get('State', {}).get('Health', {}).get('Log', [])
-                            if health_logs:
-                                last_log = health_logs[-1]
-                                logging.writeToFile(f'Container health check failed: {last_log.get("Output", "")}')
+                        elif '(health: starting)' in status:
+                            # For PostgreSQL, check if it's accepting connections
+                            exec_result = container.exec_run('pg_isready -U postgres')
+                            if exec_result.exit_code == 0:
+                                return True
                     else:
                         # For other containers, just check if they're running
                         return True
@@ -954,17 +972,36 @@ services:
     def monitor_deployment(self):
         try:
             # Check container health
-            command = f"docker ps -a --filter name={self.data['sitename']} --format '{{{{.Status}}}}'"
-            status = ProcessUtilities.outputExecutioner(command, None, None, None, 1)
-
-            if "unhealthy" in status or "exited" in status:
-                # Get container logs
+            command = f"docker ps -a --filter name={self.data['sitename']} --format '{{{{.Status}}}},{{{{.Names}}}}'"
+            result, status_output = ProcessUtilities.outputExecutioner(command, None, None, None, 1)
+            
+            if result == 0:
+                raise DockerDeploymentError("Failed to get container status")
+                
+            status, container_name = status_output.split(',')
+            
+            if "exited" in status:
+                # Container has stopped - this is a real problem
                 command = f"docker logs {self.data['sitename']}"
-                logs = ProcessUtilities.outputExecutioner(command, None, None, None, 1)
-                raise DockerDeploymentError(f"Container unhealthy or exited. Logs: {logs}")
-
+                _, logs = ProcessUtilities.outputExecutioner(command, None, None, None, 1)
+                raise DockerDeploymentError(f"Container exited. Logs: {logs}")
+                
+            if container_name.endswith(self.data['ServiceName']):
+                # For n8n container, check logs even if marked unhealthy
+                command = f"docker logs {self.data['sitename']}"
+                _, logs = ProcessUtilities.outputExecutioner(command, None, None, None, 1)
+                
+                # If we see these indicators, consider it healthy regardless of Docker's health check
+                if 'Editor is now accessible' in logs or 'Version:' in logs:
+                    return True
+                    
+                if "unhealthy" in status:
+                    raise DockerDeploymentError(f"Container unhealthy and no success indicators in logs. Logs: {logs}")
+            
             return True
 
+        except DockerDeploymentError as e:
+            raise e
         except Exception as e:
             raise DockerDeploymentError(f"Monitoring failed: {str(e)}")
 
@@ -1117,7 +1154,7 @@ services:
 
                 # Wait longer for containers to be healthy
                 logging.statusWriter(self.JobID, 'Waiting for containers to initialize...,50')
-                time.sleep(45)
+                time.sleep(60)  # Increased from 45 to 60 seconds to allow for migrations
                 
                 if not self.check_container_health(f"{self.data['ServiceName']}-db") or \
                    not self.check_container_health(self.data['ServiceName']):
@@ -1192,10 +1229,11 @@ services:
             'image': 'docker.n8n.io/n8nio/n8n',
             'user': 'root',
             'healthcheck': {
-                'test': ["CMD", "wget", "--spider", "http://localhost:5678"],
-                'interval': '20s',
+                'test': ["CMD-SHELL", "curl -f http://localhost:5678/healthz || exit 1"],
+                'interval': '30s',
                 'timeout': '10s',
-                'retries': 3
+                'retries': 3,
+                'start_period': '60s'  # Give more time for initial startup
             },
             'environment': {
                 'DB_TYPE': 'postgresdb',
@@ -1208,7 +1246,11 @@ services:
                 'NODE_ENV': 'production',
                 'WEBHOOK_URL': f"https://{self.data['finalURL']}",
                 'N8N_PUSH_BACKEND': 'sse',
-                'GENERIC_TIMEZONE': 'UTC'
+                'GENERIC_TIMEZONE': 'UTC',
+                'N8N_METRICS': 'true',  # Enable metrics for better monitoring
+                'N8N_DIAGNOSTICS_ENABLED': 'true',
+                'N8N_DIAGNOSTICS_CONFIG': '{"enabled":true,"logsEnabled":true}',
+                'N8N_RUNNERS_ENABLED': 'true'  # Enable task runners as recommended
             }
         }
 
@@ -1255,6 +1297,7 @@ services:
       interval: {n8n_config['healthcheck']['interval']}
       timeout: {n8n_config['healthcheck']['timeout']}
       retries: {n8n_config['healthcheck']['retries']}
+      start_period: {n8n_config['healthcheck']['start_period']}
     environment:
       - DB_TYPE={n8n_config['environment']['DB_TYPE']}
       - DB_POSTGRESDB_HOST={n8n_config['environment']['DB_POSTGRESDB_HOST']}
@@ -1267,6 +1310,10 @@ services:
       - WEBHOOK_URL={n8n_config['environment']['WEBHOOK_URL']}
       - N8N_PUSH_BACKEND={n8n_config['environment']['N8N_PUSH_BACKEND']}
       - GENERIC_TIMEZONE={n8n_config['environment']['GENERIC_TIMEZONE']}
+      - N8N_METRICS={n8n_config['environment']['N8N_METRICS']}
+      - N8N_DIAGNOSTICS_ENABLED={n8n_config['environment']['N8N_DIAGNOSTICS_ENABLED']}
+      - N8N_DIAGNOSTICS_CONFIG={n8n_config['environment']['N8N_DIAGNOSTICS_CONFIG']}
+      - N8N_RUNNERS_ENABLED={n8n_config['environment']['N8N_RUNNERS_ENABLED']}
     ports:
       - "{self.data['port']}:5678"
     depends_on:
