@@ -7,6 +7,139 @@
     {% get_current_language as LANGUAGE_CODE %}
     <!-- Current language: {{ LANGUAGE_CODE }} -->
 
+    <style>
+        .info-box {
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+            transition: all 0.3s ease;
+        }
+
+        .info-box:hover {
+            box-shadow: 0 3px 6px rgba(0,0,0,0.16);
+        }
+
+        .info-box h4 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            color: #333;
+            font-weight: 600;
+            border-bottom: 2px solid #f5f5f5;
+            padding-bottom: 8px;
+        }
+
+        .progress {
+            margin-bottom: 15px;
+            height: 20px;
+            background-color: #f5f5f5;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            background-color: #2196F3;
+            color: white;
+            text-align: center;
+            line-height: 20px;
+            transition: width 0.6s ease;
+        }
+
+        .progress-bar.high {
+            background-color: #f44336;
+        }
+
+        .label {
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .label-success {
+            background-color: #4CAF50;
+        }
+
+        .label-danger {
+            background-color: #F44336;
+        }
+
+        .label-warning {
+            background-color: #FF9800;
+        }
+
+        .table-striped > tbody > tr:nth-of-type(odd) {
+            background-color: #f9f9f9;
+        }
+
+        .table {
+            margin-bottom: 0;
+            background-color: white;
+        }
+
+        .table > thead > tr > th {
+            border-bottom: 2px solid #ddd;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .table > tbody > tr > td {
+            vertical-align: middle;
+            padding: 12px 8px;
+        }
+
+        .table-responsive {
+            border: none;
+            margin-bottom: 0;
+        }
+
+        /* Resource usage colors */
+        .progress-bar[aria-valuenow^="8"],
+        .progress-bar[aria-valuenow^="9"] {
+            background-color: #f44336;
+        }
+
+        .progress-bar[aria-valuenow^="7"] {
+            background-color: #ff9800;
+        }
+
+        /* Container status colors */
+        .status-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+
+        .status-running {
+            background-color: #4CAF50;
+        }
+
+        .status-stopped {
+            background-color: #F44336;
+        }
+
+        /* Tooltips */
+        [data-toggle="tooltip"] {
+            cursor: help;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .info-box {
+                margin-bottom: 15px;
+            }
+            
+            .table-responsive {
+                border: 1px solid #ddd;
+            }
+        }
+    </style>
+
     <script>
         $(document).ready(function () {
             $('[data-toggle="tooltip"]').tooltip();
@@ -216,88 +349,113 @@
                 <div class="example-box-wrapper">
 
                     <div class="panel panel-body">
-
                         <h3 class="content-box-header">
                             {% trans "Container Information" %}
                             <img id="infoLoading" src="/static/images/loading.gif" style="display: none;">
                         </h3>
 
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="info-box">
+                                    <h4>Basic Information</h4>
+                                    <p><strong>Container ID:</strong> {$ cid $}</p>
+                                    <p><strong>Status:</strong> <span class="label" ng-class="{'label-success': status === 'running', 'label-danger': status === 'stopped', 'label-warning': status !== 'running' && status !== 'stopped'}">{$ status $}</span></p>
+                                    <p><strong>Created:</strong> {$ created | date:'medium' $}</p>
+                                    <p><strong>Uptime:</strong> {$ uptime $}</p>
+                                </div>
 
-                        <div class="content-box-wrapper">
-                            <div class="row">
-
-                                <div class="col-md-6">
-                                    <div class="panel">
-                                        <div class="panel-body">
-                                            <div class="example-box-wrapper">
-                                                <h3 class="title-hero">
-                                                    {% trans "Memory Usage" %}
-                                                </h3>
-                                                <div class="progressbar" data-value="{$ appmemoryUsage $}">
-                                                    <div class="progressbar-value bg-primary">
-                                                        <div class="progress-overlay"></div>
-                                                        <div class="progress-label" title="{$ appmemoryUsage $}%">
-
-                                                        </div>
-                                                    </div>
-                                                </div>
-
-
-                                                <h3 class="title-hero">
-                                                    {% trans "CPU Usage" %}
-                                                </h3>
-                                                <div class="progressbar" data-value="{$ appcpuUsage $}">
-                                                    <div class="progressbar-value bg-primary">
-                                                        <div class="progress-overlay"></div>
-                                                        <div class="progress-label" title="{$ appcpuUsage $}"></div>
-                                                    </div>
-                                                </div>
-
-
-                                            </div>
-
+                                <div class="info-box">
+                                    <h4>Resource Usage</h4>
+                                    <div class="progress">
+                                        <div class="progress-bar" role="progressbar" ng-style="{'width': memoryUsagePercent + '%'}" aria-valuenow="{$ memoryUsagePercent $}" aria-valuemin="0" aria-valuemax="100">
+                                            Memory: {$ memoryUsagePercent | number:1 $}%
+                                        </div>
+                                    </div>
+                                    <div class="progress">
+                                        <div class="progress-bar" role="progressbar" ng-style="{'width': cpuUsagePercent + '%'}" aria-valuenow="{$ cpuUsagePercent $}" aria-valuemin="0" aria-valuemax="100">
+                                            CPU: {$ cpuUsagePercent | number:1 $}%
                                         </div>
                                     </div>
                                 </div>
+                            </div>
 
-                                <div class="col-md-6">
-                                    <div class="panel">
-                                        <div class="panel-body">
-                                            <div class="example-box-wrapper">
-                                                <h3 class="title-hero" >Main Actions
-                                                    <img id="actionLoading" src="/static/images/loading.gif"
-                                                         style="display: none;width: 20px;">
-                                                </h3>
-                                                <b>Status:</b> <span ng-bind="status"></span>
-                                                <span ng-click='refreshStatus()' style="cursor:pointer;"
-                                                      class="pull-right"
-                                                      title="Refresh status"><i
-                                                        class="fa fa-refresh btn-icon"></i></span>
-                                                <hr>
-                                                <button ng-disabled="status=='running'" class="btn btn-primary"
-                                                        ng-click="cAction('start')"><i
-                                                        class="fa fa-play btn-icon"></i> Start
-                                                </button>
-                                                <button ng-disabled="status!='running'" class="btn btn-primary"
-                                                        ng-click="restarthStatus()"><i
-                                                        class="fa fa-refresh btn-icon"></i>
-                                                    Restart
-                                                </button>
-                                                <button ng-disabled="status!='running'" class="btn btn-primary"
-                                                        ng-click="StopContainerAPP()"><i
-                                                        class="fa fa-stop btn-icon"></i> Stop
-                                                </button>
-
-                                            </div>
-                                        </div>
+                            <div class="col-md-6">
+                                <div class="info-box">
+                                    <h4>Network & Ports</h4>
+                                    <div ng-if="ports && (ports | objLength) > 0">
+                                        <table class="table table-striped">
+                                            <thead>
+                                                <tr>
+                                                    <th>Container Port</th>
+                                                    <th>Host Binding</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr ng-repeat="(containerPort, hostBindings) in ports">
+                                                    <td>{$ containerPort $}</td>
+                                                    <td>
+                                                        <span ng-repeat="binding in hostBindings">
+                                                            {$ binding.HostIp || '0.0.0.0' $}:{$ binding.HostPort $}
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div ng-if="!ports || (ports | objLength) === 0">
+                                        <p>No ports exposed</p>
                                     </div>
                                 </div>
 
+                                <div class="info-box">
+                                    <h4>Volumes</h4>
+                                    <div ng-if="volumes && volumes.length > 0">
+                                        <table class="table table-striped">
+                                            <thead>
+                                                <tr>
+                                                    <th>Source</th>
+                                                    <th>Destination</th>
+                                                    <th>Mode</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr ng-repeat="volume in volumes">
+                                                    <td>{$ volume.Source $}</td>
+                                                    <td>{$ volume.Destination $}</td>
+                                                    <td>{$ volume.Mode $}</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div ng-if="!volumes || volumes.length === 0">
+                                        <p>No volumes mounted</p>
+                                    </div>
+                                </div>
 
+                                <div class="info-box">
+                                    <h4>Environment Variables</h4>
+                                    <div ng-if="environment && environment.length > 0">
+                                        <table class="table table-striped">
+                                            <thead>
+                                                <tr>
+                                                    <th>Variable</th>
+                                                    <th>Value</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr ng-repeat="env in environment">
+                                                    <td>{$ env.split('=')[0] $}</td>
+                                                    <td>{$ env.split('=')[1] $}</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div ng-if="!environment || environment.length === 0">
+                                        <p>No environment variables set</p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-
-
                     </div>
                 </div>
                 <div id="Recreatedockerapp" class="modal fade" role="dialog">

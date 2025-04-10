@@ -3,6 +3,7 @@
 import os.path
 import sys
 import django
+from datetime import datetime
 
 from plogical.DockerSites import Docker_Sites
 
@@ -1116,26 +1117,66 @@ class ContainerManager(multi.Thread):
             if admin.acl.adminStatus != 1:
                 return ACLManager.loadError()
 
-
             name = data['name']
             containerID = data['id']
 
-            passdata = {}
-            passdata["JobID"] = None
-            passdata['name'] = name
-            passdata['containerID'] = containerID
-            da = Docker_Sites(None, passdata)
-            retdata = da.ContainerInfo()
+            # Create a Docker client
+            client = docker.from_env()
+            container = client.containers.get(containerID)
 
+            # Get detailed container info
+            container_info = container.attrs
 
-            data_ret = {'status': 1, 'error_message': 'None', 'data':retdata}
+            # Calculate uptime
+            started_at = container_info.get('State', {}).get('StartedAt', '')
+            if started_at:
+                started_time = datetime.strptime(started_at.split('.')[0], '%Y-%m-%dT%H:%M:%S')
+                uptime = datetime.now() - started_time
+                uptime_str = str(uptime).split('.')[0]  # Format as HH:MM:SS
+            else:
+                uptime_str = "N/A"
+
+            # Get container details
+            details = {
+                'id': container.short_id,
+                'name': container.name,
+                'status': container.status,
+                'created': container_info.get('Created', ''),
+                'started_at': started_at,
+                'uptime': uptime_str,
+                'ports': container_info.get('NetworkSettings', {}).get('Ports', {}),
+                'volumes': container_info.get('Mounts', []),
+                'environment': self._mask_sensitive_env(container_info.get('Config', {}).get('Env', [])),
+                'memory_usage': container.stats(stream=False)['memory_stats'].get('usage', 0),
+                'cpu_usage': container.stats(stream=False)['cpu_stats']['cpu_usage'].get('total_usage', 0)
+            }
+
+            data_ret = {'status': 1, 'error_message': 'None', 'data': [1, details]}
             json_data = json.dumps(data_ret)
             return HttpResponse(json_data)
 
         except BaseException as msg:
-            data_ret = {'removeImageStatus': 0, 'error_message': str(msg)}
+            data_ret = {'status': 0, 'error_message': str(msg)}
             json_data = json.dumps(data_ret)
             return HttpResponse(json_data)
+
+    def _mask_sensitive_env(self, env_vars):
+        """Helper method to mask sensitive data in environment variables"""
+        masked_vars = []
+        sensitive_keywords = ['password', 'secret', 'key', 'token', 'auth']
+        
+        for var in env_vars:
+            if '=' in var:
+                name, value = var.split('=', 1)
+                # Check if this is a sensitive variable
+                if any(keyword in name.lower() for keyword in sensitive_keywords):
+                    masked_vars.append(f"{name}=********")
+                else:
+                    masked_vars.append(var)
+            else:
+                masked_vars.append(var)
+        
+        return masked_vars
 
     def getContainerApplog(self, userID=None, data=None):
         try:
