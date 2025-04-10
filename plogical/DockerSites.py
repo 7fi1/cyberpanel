@@ -795,16 +795,20 @@ services:
         Total wait time will be 4 minutes (3 retries * 80 seconds)
         """
         try:
+            # Format container name to match Docker's naming convention
+            formatted_name = f"{self.data['ServiceName']}-{container_name}-1"
+            logging.writeToFile(f'Checking container health for: {formatted_name}')
+            
             for attempt in range(max_retries):
                 client = docker.from_env()
-                container = client.containers.get(container_name)
+                container = client.containers.get(formatted_name)
                 
                 if container.status == 'running':
                     health = container.attrs.get('State', {}).get('Health', {}).get('Status')
                     
                     # Accept healthy, unhealthy, and starting states as long as container is running
                     if health in ['healthy', 'unhealthy', 'starting'] or health is None:
-                        logging.writeToFile(f'Container {container_name} is running with status: {health}')
+                        logging.writeToFile(f'Container {formatted_name} is running with status: {health}')
                         return True
                     else:
                         health_logs = container.attrs.get('State', {}).get('Health', {}).get('Log', [])
@@ -812,13 +816,13 @@ services:
                             last_log = health_logs[-1]
                             logging.writeToFile(f'Container health check failed: {last_log.get("Output", "")}')
                 
-                logging.writeToFile(f'Container {container_name} status: {container.status}, health: {health}, attempt {attempt + 1}/{max_retries}')
+                logging.writeToFile(f'Container {formatted_name} status: {container.status}, health: {health}, attempt {attempt + 1}/{max_retries}')
                 time.sleep(delay)
                 
             return False
             
         except docker.errors.NotFound:
-            logging.writeToFile(f'Container {container_name} not found')
+            logging.writeToFile(f'Container {formatted_name} not found')
             return False
         except Exception as e:
             logging.writeToFile(f'Error checking container health: {str(e)}')
