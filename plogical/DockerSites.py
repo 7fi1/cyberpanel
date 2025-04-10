@@ -1211,7 +1211,7 @@ services:
         """
         postgres_config = {
             'image': 'postgres:16-alpine',
-            'user': 'postgres',
+            'user': 'root',
             'healthcheck': {
                 'test': ["CMD-SHELL", "pg_isready -U postgres"],
                 'interval': '10s',
@@ -1222,8 +1222,7 @@ services:
             'environment': {
                 'POSTGRES_USER': 'postgres',
                 'POSTGRES_PASSWORD': self.data['MySQLPassword'],
-                'POSTGRES_DB': self.data['MySQLDBName'],
-                'POSTGRES_HOST_AUTH_METHOD': 'trust'
+                'POSTGRES_DB': self.data['MySQLDBName']
             }
         }
 
@@ -1249,10 +1248,8 @@ services:
                 'N8N_PUSH_BACKEND': 'sse',
                 'GENERIC_TIMEZONE': 'UTC',
                 'N8N_ENCRYPTION_KEY': 'auto',
-                'N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS': 'false',
-                'DB_POSTGRESDB_SCHEMA': 'public',
-                'N8N_DB_POSTGRESDB_SSL': 'false',
-                'N8N_USER_FOLDER': '/root/.n8n'
+                'N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS': 'true',
+                'DB_POSTGRESDB_SCHEMA': 'public'
             }
         }
 
