@@ -8,169 +8,134 @@
     <!-- Current language: {{ LANGUAGE_CODE }} -->
 
     <style>
-        .container-fluid {
-            padding: 20px;
-        }
-
-        .page-header {
-            margin-bottom: 30px;
-            border-bottom: 1px solid #eee;
-            padding-bottom: 15px;
-        }
-
-        .page-header h2 {
-            margin: 0;
-            font-size: 24px;
-            color: #333;
-        }
-
-        .alert {
-            border-radius: 4px;
-            margin-bottom: 20px;
-        }
-
         .info-box {
             background: #fff;
-            border-radius: 6px;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            padding: 15px;
+            margin-bottom: 20px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.12);
-            margin-bottom: 24px;
+            transition: all 0.3s ease;
+        }
+
+        .info-box:hover {
+            box-shadow: 0 3px 6px rgba(0,0,0,0.16);
+        }
+
+        .info-box h4 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            color: #333;
+            font-weight: 600;
+            border-bottom: 2px solid #f5f5f5;
+            padding-bottom: 8px;
+        }
+
+        .progress {
+            margin-bottom: 15px;
+            height: 20px;
+            background-color: #f5f5f5;
+            border-radius: 10px;
             overflow: hidden;
         }
 
-        .info-box-header {
-            padding: 15px 20px;
-            border-bottom: 1px solid #eee;
-            background: #f8f9fa;
+        .progress-bar {
+            background-color: #2196F3;
+            color: white;
+            text-align: center;
+            line-height: 20px;
+            transition: width 0.6s ease;
         }
 
-        .info-box-header h4 {
-            margin: 0;
-            font-size: 16px;
-            font-weight: 600;
-            color: #2c3e50;
+        .progress-bar.high {
+            background-color: #f44336;
         }
 
-        .info-box-content {
-            padding: 20px;
-        }
-
-        .status-badge {
-            display: inline-block;
-            padding: 4px 8px;
-            border-radius: 12px;
+        .label {
+            padding: 5px 10px;
+            border-radius: 3px;
             font-size: 12px;
-            font-weight: 500;
+            font-weight: 600;
             text-transform: uppercase;
         }
 
-        .status-running {
-            background: #e3fcef;
-            color: #00a651;
+        .label-success {
+            background-color: #4CAF50;
         }
 
-        .status-stopped {
-            background: #fee7e7;
-            color: #dc3545;
+        .label-danger {
+            background-color: #F44336;
         }
 
-        .resource-meter {
-            background: #f1f3f4;
-            border-radius: 8px;
-            height: 8px;
-            margin: 8px 0;
-            overflow: hidden;
+        .label-warning {
+            background-color: #FF9800;
         }
 
-        .resource-meter-fill {
-            height: 100%;
-            background: #2196F3;
-            transition: width 0.3s ease;
+        .table-striped > tbody > tr:nth-of-type(odd) {
+            background-color: #f9f9f9;
         }
 
-        .resource-meter-fill.warning {
-            background: #ff9800;
+        .table {
+            margin-bottom: 0;
+            background-color: white;
         }
 
-        .resource-meter-fill.danger {
-            background: #f44336;
+        .table > thead > tr > th {
+            border-bottom: 2px solid #ddd;
+            font-weight: 600;
+            color: #333;
         }
 
-        .detail-table {
-            width: 100%;
+        .table > tbody > tr > td {
+            vertical-align: middle;
+            padding: 12px 8px;
+        }
+
+        .table-responsive {
+            border: none;
             margin-bottom: 0;
         }
 
-        .detail-table th {
-            background: #f8f9fa;
-            font-weight: 600;
-            padding: 12px;
-            border-bottom: 2px solid #eee;
+        /* Resource usage colors */
+        .progress-bar[aria-valuenow^="8"],
+        .progress-bar[aria-valuenow^="9"] {
+            background-color: #f44336;
         }
 
-        .detail-table td {
-            padding: 12px;
-            border-bottom: 1px solid #eee;
-            color: #444;
+        .progress-bar[aria-valuenow^="7"] {
+            background-color: #ff9800;
         }
 
-        .detail-table tr:last-child td {
-            border-bottom: none;
+        /* Container status colors */
+        .status-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 5px;
         }
 
-        .env-var {
-            font-family: monospace;
-            background: #f8f9fa;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-size: 13px;
+        .status-running {
+            background-color: #4CAF50;
         }
 
-        .masked-value {
-            color: #6c757d;
-            font-style: italic;
+        .status-stopped {
+            background-color: #F44336;
         }
 
-        .action-buttons {
-            margin-top: 20px;
-        }
-
-        .action-buttons .btn {
-            margin-right: 10px;
-            border-radius: 4px;
-            padding: 6px 15px;
-        }
-
-        .logs-section {
-            background: #1e1e1e;
-            color: #fff;
-            padding: 15px;
-            border-radius: 6px;
-            font-family: monospace;
-            margin-top: 20px;
-            max-height: 400px;
-            overflow-y: auto;
-        }
-
-        .logs-section pre {
-            margin: 0;
-            white-space: pre-wrap;
-            word-wrap: break-word;
+        /* Tooltips */
+        [data-toggle="tooltip"] {
+            cursor: help;
         }
 
         /* Responsive adjustments */
         @media (max-width: 768px) {
-            .container-fluid {
-                padding: 15px;
-            }
-            
             .info-box {
                 margin-bottom: 15px;
             }
             
-            .action-buttons .btn {
-                margin-bottom: 10px;
-                width: 100%;
-                margin-right: 0;
+            .table-responsive {
+                border: 1px solid #ddd;
             }
         }
     </style>
@@ -182,152 +147,599 @@
     </script>
 
 
-    <div class="container-fluid" ng-controller="ListDockersitecontainer">
-        <div class="page-header">
-            <h2>{% trans "Container Management" %}</h2>
+    <div class="container" ng-controller="ListDockersitecontainer">
+
+        <div id="page-title">
+            <h2 id="domainNamePage">{% trans "Containers" %} <img id="cyberpanelLoading" ng-hide="cyberpanelLoading"
+                                             src="{% static 'images/loading.gif' %}">
+                <a class="pull-right btn btn-primary" href="{% url "CreateDockersite" %}">Create</a>
+            </h2>
+            <p>{% trans "Manage containers on server" %}</p>
         </div>
 
-        <div class="row">
-            <div class="col-md-12">
-                <div class="info-box">
-                    <div class="info-box-header">
-                        <h4>Basic Information</h4>
-                    </div>
-                    <div class="info-box-content">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <p><strong>Container ID:</strong> <span class="env-var">{$ cid $}</span></p>
-                                <p><strong>Status:</strong> 
-                                    <span class="status-badge" ng-class="{'status-running': status === 'running', 'status-stopped': status === 'stopped'}">{$ status $}</span>
-                                </p>
-                                <p><strong>Created:</strong> {$ created | date:'medium' $}</p>
-                                <p><strong>Uptime:</strong> {$ uptime $}</p>
-                            </div>
-                            <div class="col-md-6">
-                                <p><strong>Memory Usage</strong></p>
-                                <div class="resource-meter">
-                                    <div class="resource-meter-fill" 
-                                         ng-class="{'warning': memoryUsagePercent > 70, 'danger': memoryUsagePercent > 85}"
-                                         ng-style="{'width': memoryUsagePercent + '%'}">
-                                    </div>
-                                </div>
-                                <p class="text-muted">{$ memoryUsage $}</p>
+        <div class="panel" ng-hide="listcontainerview">
+            <div class="panel-body">
+                <h3 class="content-box-header">
+                    {% trans "Containers" %} {{ dockerSite.SiteName }}<img id="imageLoading"
+                                                                           src="/static/images/loading.gif"
+                                                                           style="display: none;">
+                </h3>
+                <span style="display: none" id="sitename">{{ dockerSite.SiteName }}</span>
+                <div class="example-box-wrapper ">
 
-                                <p><strong>CPU Usage</strong></p>
-                                <div class="resource-meter">
-                                    <div class="resource-meter-fill"
-                                         ng-class="{'warning': cpuUsagePercent > 70, 'danger': cpuUsagePercent > 85}"
-                                         ng-style="{'width': cpuUsagePercent + '%'}">
-                                    </div>
-                                </div>
-                                <p class="text-muted">{$ cpuUsagePercent | number:1 $}%</p>
-                            </div>
+                    <table cellpadding="0" cellspacing="0" border="0" class="table table-striped" id="datatable-example"
+                           style="padding:0px;">
+                        <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Launch</th>
+                            {#                            <th>Owner</th>#}
+                            {#                            <th>Image</th>#}
+                            {#                            <th>Tag</th>#}
+{#                            <th>Actions</th>#}
+                        </tr>
+                        </thead>
+                        <tbody>
+
+                        <tr ng-repeat="web in ContainerList track by $index">
+                            <td ng-bind="web.name"></td>
+                            <td ng-click="Lunchcontainer(web.id)"><img width="30px" height="30" class=""
+                                                                       src="{% static 'baseTemplate/assets/image-resources/webPanel.png' %}">
+                            </td>
+                            {#                            <td ng-bind="web.admin"></td>#}
+                            {#                            <td ng-bind="web.image"></td>#}
+                            {#                            <td ng-bind="web.tag"></td>#}
+{#                            <td>#}
+{#                                <button class="btn btn-primary" ng-click="delContainer(web.name)"><i#}
+{#                                        class="fa fa-trash btn-icon"></i></button>#}
+                                {#                                <button class="btn btn-primary" ng-click="showLog(web.name)"><i#}
+                                {#                                        class="fa fa-file btn-icon"></i></button>#}
+{#                            </td>#}
+                        </tr>
+
+                        </tbody>
+                    </table>
+
+
+                    <div id="listFail" class="alert alert-danger">
+                        <p>{% trans "Error message:" %} {$ errorMessage $}</p>
+                    </div>
+
+                    <div class="row text-center">
+
+                        <div class="col-sm-4 col-sm-offset-8">
+
+                            <nav aria-label="Page navigation">
+                                <ul class="pagination">
+
+
+                                    {% for items in pagination %}
+
+                                        <li ng-click="getFurtherContainersFromDB({{ forloop.counter }})" id="webPages">
+                                            <a href="">{{ forloop.counter }}</a></li>
+
+                                    {% endfor %}
+
+                                </ul>
+                            </nav>
+
+
                         </div>
-                    </div>
-                </div>
 
-                <div class="info-box">
-                    <div class="info-box-header">
-                        <h4>Network & Ports</h4>
+
                     </div>
-                    <div class="info-box-content">
-                        <table class="detail-table" ng-if="ports && (ports | objLength) > 0">
+
+                    {% if showUnlistedContainer %}
+                        <h3 class="title-hero">
+                            {% trans "Unlisted Containers" %} <i class="fa fa-question-circle"
+                                                                 title="{% trans "Containers listed below were either not created through panel or were not saved to database properly" %}"></i>
+                        </h3>
+
+                        <table cellpadding="0" cellspacing="0" border="0" class="table table-striped table-bordered"
+                               id="datatable-example">
                             <thead>
-                                <tr>
-                                    <th>Container Port</th>
-                                    <th>Host Binding</th>
-                                </tr>
+                            <tr>
+                                <th>Name</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
                             </thead>
                             <tbody>
-                                <tr ng-repeat="(containerPort, hostBindings) in ports">
-                                    <td class="env-var">{$ containerPort $}</td>
+
+                            {% for container in unlistedContainers %}
+                                <tr>
+                                    <td>{{ container.name }}</td>
+                                    <td>{{ container.status }}</td>
                                     <td>
-                                        <span ng-repeat="binding in hostBindings" class="env-var">
-                                            {$ binding.HostIp || '0.0.0.0' $}:{$ binding.HostPort $}
-                                        </span>
+                                        <button class="btn btn-primary"
+                                                ng-click="delContainer('{{ container.name }}', true)"><i
+                                                class="fa fa-trash"></i></button>
+                                        <button class="btn btn-primary" ng-click="showLog('{{ container.name }}')"><i
+                                                class="fa fa-file"></i></button>
+                                        <button class="btn btn-primary"
+                                                ng-click="assignContainer('{{ container.name }}')"><i
+                                                class="fa fa-user"></i></button>
                                     </td>
                                 </tr>
+                            {% endfor %}
+
                             </tbody>
                         </table>
-                        <p ng-if="!ports || (ports | objLength) === 0" class="text-muted">No ports exposed</p>
-                    </div>
-                </div>
 
-                <div class="info-box">
-                    <div class="info-box-header">
-                        <h4>Volumes</h4>
-                    </div>
-                    <div class="info-box-content">
-                        <table class="detail-table" ng-if="volumes && volumes.length > 0">
-                            <thead>
-                                <tr>
-                                    <th>Source</th>
-                                    <th>Destination</th>
-                                    <th>Mode</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr ng-repeat="volume in volumes">
-                                    <td class="env-var">{$ volume.Source $}</td>
-                                    <td class="env-var">{$ volume.Destination $}</td>
-                                    <td>{$ volume.Mode $}</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                        <p ng-if="!volumes || volumes.length === 0" class="text-muted">No volumes mounted</p>
-                    </div>
-                </div>
+                    {% endif %}
 
-                <div class="info-box">
-                    <div class="info-box-header">
-                        <h4>Environment Variables</h4>
-                    </div>
-                    <div class="info-box-content">
-                        <table class="detail-table" ng-if="environment && environment.length > 0">
-                            <thead>
-                                <tr>
-                                    <th>Variable</th>
-                                    <th>Value</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr ng-repeat="env in environment">
-                                    <td class="env-var">{$ env.split('=')[0] $}</td>
-                                    <td ng-class="{'masked-value': env.includes('********')}">{$ env.split('=')[1] $}</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                        <p ng-if="!environment || environment.length === 0" class="text-muted">No environment variables set</p>
-                    </div>
-                </div>
+                    <div id="logs" class="modal fade" role="dialog">
+                        <div class="modal-dialog">
 
-                <div class="info-box">
-                    <div class="info-box-header">
-                        <h4>Container Logs</h4>
-                    </div>
-                    <div class="info-box-content">
-                        <div class="logs-section">
-                            <pre ng-bind="logs"></pre>
+                            <!-- Modal content-->
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                    <h4 class="modal-title">Container logs</h4>
+                                </div>
+                                <div class="modal-body">
+                                    <textarea name="logs" class="form-control" id="" cols="30"
+                                              rows="10">{$ logs $}</textarea>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-primary" ng-click="showLog('', true)">Refresh
+                                    </button>
+                                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                                </div>
+                            </div>
+
                         </div>
                     </div>
-                </div>
 
-                <div class="action-buttons">
-                    <button class="btn btn-success" ng-disabled="status=='running'" ng-click="cAction('start')">
-                        <i class="fa fa-play"></i> Start
-                    </button>
-                    <button class="btn btn-warning" ng-disabled="status!='running'" ng-click="restarthStatus()">
-                        <i class="fa fa-refresh"></i> Restart
-                    </button>
-                    <button class="btn btn-danger" ng-disabled="status!='running'" ng-click="StopContainerAPP()">
-                        <i class="fa fa-stop"></i> Stop
-                    </button>
-                    <button class="btn btn-info" ng-click="refreshStatus()">
-                        <i class="fa fa-sync"></i> Refresh
-                    </button>
+                    <div id="assign" class="modal fade" role="dialog">
+                        <div class="modal-dialog">
+
+                            <!-- Modal content-->
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                    <h4 class="modal-title">Assign Container to user</h4>
+                                </div>
+                                <div class="modal-body">
+                                    <form action="/" class="form-horizontal">
+                                        <div ng-hide="installationDetailsForm" class="form-group">
+                                            <label class="col-sm-3 control-label">{% trans "Select Owner" %}</label>
+                                            <div class="col-sm-6">
+                                                <select ng-model="dockerOwner" class="form-control">
+                                                    {% for user in adminNames %}
+                                                        <option>{{ user }}</option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-primary" ng-click="submitAssignContainer()">
+                                        Submit
+                                    </button>
+                                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </div>
+        <div ng-hide="conatinerview">
+            <div>
+
+
+                <div id="page-title">
+                    <h2 id="domainNamePage">{% trans "Currently managing: " %} {$ cName $}
+                        <button class="btn btn-warning pull-right" data-toggle="modal"
+                                data-target="#Recreatedockerapp"><i
+                                class="fa fa-refresh btn-icon"></i> Recreate
+                        </button>
+                    </h2>
+                    <p>
+                        {% trans "Container ID" %}: {$ cid $}
+                    </p>
+
+                </div>
+
+
+                <div class="example-box-wrapper">
+
+                    <div class="panel panel-body">
+                        <h3 class="content-box-header">
+                            {% trans "Container Information" %}
+                            <img id="infoLoading" src="/static/images/loading.gif" style="display: none;">
+                        </h3>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="info-box">
+                                    <h4>Basic Information</h4>
+                                    <p><strong>Container ID:</strong> {$ cid $}</p>
+                                    <p><strong>Status:</strong> <span class="label" ng-class="{'label-success': status === 'running', 'label-danger': status === 'stopped', 'label-warning': status !== 'running' && status !== 'stopped'}">{$ status $}</span></p>
+                                    <p><strong>Created:</strong> {$ created | date:'medium' $}</p>
+                                    <p><strong>Uptime:</strong> {$ uptime $}</p>
+                                </div>
+
+                                <div class="info-box">
+                                    <h4>Resource Usage</h4>
+                                    <div class="progress">
+                                        <div class="progress-bar" role="progressbar" ng-style="{'width': memoryUsagePercent + '%'}" aria-valuenow="{$ memoryUsagePercent $}" aria-valuemin="0" aria-valuemax="100">
+                                            Memory: {$ memoryUsagePercent | number:1 $}%
+                                        </div>
+                                    </div>
+                                    <div class="progress">
+                                        <div class="progress-bar" role="progressbar" ng-style="{'width': cpuUsagePercent + '%'}" aria-valuenow="{$ cpuUsagePercent $}" aria-valuemin="0" aria-valuemax="100">
+                                            CPU: {$ cpuUsagePercent | number:1 $}%
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="info-box">
+                                    <h4>Network & Ports</h4>
+                                    <div ng-if="ports && (ports | objLength) > 0">
+                                        <table class="table table-striped">
+                                            <thead>
+                                                <tr>
+                                                    <th>Container Port</th>
+                                                    <th>Host Binding</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr ng-repeat="(containerPort, hostBindings) in ports">
+                                                    <td>{$ containerPort $}</td>
+                                                    <td>
+                                                        <span ng-repeat="binding in hostBindings">
+                                                            {$ binding.HostIp || '0.0.0.0' $}:{$ binding.HostPort $}
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div ng-if="!ports || (ports | objLength) === 0">
+                                        <p>No ports exposed</p>
+                                    </div>
+                                </div>
+
+                                <div class="info-box">
+                                    <h4>Volumes</h4>
+                                    <div ng-if="volumes && volumes.length > 0">
+                                        <table class="table table-striped">
+                                            <thead>
+                                                <tr>
+                                                    <th>Source</th>
+                                                    <th>Destination</th>
+                                                    <th>Mode</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr ng-repeat="volume in volumes">
+                                                    <td>{$ volume.Source $}</td>
+                                                    <td>{$ volume.Destination $}</td>
+                                                    <td>{$ volume.Mode $}</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div ng-if="!volumes || volumes.length === 0">
+                                        <p>No volumes mounted</p>
+                                    </div>
+                                </div>
+
+                                <div class="info-box">
+                                    <h4>Environment Variables</h4>
+                                    <div ng-if="environment && environment.length > 0">
+                                        <table class="table table-striped">
+                                            <thead>
+                                                <tr>
+                                                    <th>Variable</th>
+                                                    <th>Value</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr ng-repeat="env in environment">
+                                                    <td>{$ env.split('=')[0] $}</td>
+                                                    <td>{$ env.split('=')[1] $}</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div ng-if="!environment || environment.length === 0">
+                                        <p>No environment variables set</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="Recreatedockerapp" class="modal fade" role="dialog">
+                    <div class="modal-dialog modal-lg">
+                        <!-- Modal content-->
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <button type="button" class="close"
+                                        data-dismiss="modal">&times;
+                                </button>
+                                <h4 class="modal-title">{% trans "Recreate Container" %} <img
+                                        ng-hide="cyberPanelLoading"
+                                        src="{% static 'images/loading.gif' %}">
+                                </h4>
+                            </div>
+                            <div class="modal-body">
+                                <form name="websiteCreationForm" action="/"
+                                      id="createPackages"
+                                      class="form-horizontal bordered-row panel-body">
+                                    <div ng-hide="installationDetailsForm"
+                                         class="form-group">
+                                        <label class="col-sm-3 control-label">{% trans "Username" %}</label>
+                                        <div class="col-sm-6">
+                                            <input name="Username" type="text"
+                                                   class="form-control"
+                                                   ng-model="WPUsername"
+                                                   required>
+                                        </div>
+                                    </div>
+                                    <div ng-hide="installationDetailsForm"
+                                         class="form-group">
+                                        <label class="col-sm-3 control-label">{% trans "Email" %}</label>
+                                        <div class="col-sm-6">
+                                            <input type="email" name="email"
+                                                   class="form-control"
+                                                   ng-model="adminEmail" required>
+                                        </div>
+                                    </div>
+                                    <div ng-hide="installationDetailsForm"
+                                         class="form-group">
+                                        <label class="col-sm-3 control-label">{% trans "Password" %}</label>
+                                        <div class="col-sm-6">
+                                            <input name="password" type="password"
+                                                   class="form-control"
+                                                   ng-model="WPPassword"
+                                                   required>
+                                        </div>
+
+                                    </div>
+                                </form>
+
+
+                            </div>
+                            <div class="modal-footer">
+                                <button class="btn btn-warning"
+                                        ng-click="recreateappcontainer()"> Recreate
+                                </button>
+                                <button class="btn btn-default"
+                                        data-dismiss="modal"> Close
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="example-box-wrapper">
+
+                    <div class="content-box panel-body">
+
+                        <h3 class="content-box-header" ng-init="loadLogs('{{ name }}')">
+                            {% trans "Logs" %}
+                            <span style="cursor:pointer;" class="pull-right" ng-click="loadLogs('{{ name }}')"><i
+                                    class="fa fa-refresh btn-icon"></i></span>
+                        </h3>
+
+
+                        <div class="content-box-wrapper">
+                            <div class="row">
+
+                                    <textarea name="logs" class="form-control" id="" cols="30"
+                                              rows="10">{$ logs $}</textarea><br>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+
+                <div id="settings" class="modal fade" role="dialog">
+                    <div class="modal-dialog">
+
+                        <!-- Modal content-->
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                <h4 class="modal-title">Container Settings
+                                    <img id="containerSettingLoading" src="/static/images/loading.gif"
+                                         style="display: none;">
+                                </h4>
+                            </div>
+                            <div class="modal-body">
+
+                                <form name="containerSettingsForm" action="/" class="form-horizontal">
+                                    <div ng-hide="installationDetailsForm" class="form-group">
+                                        <label class="col-sm-3 control-label">{% trans "Memory limit" %}</label>
+                                        <div class="col-sm-6" ng-init="memory={{ memoryLimit }}">
+                                            <input name="memory" type="number" class="form-control"
+                                                   ng-model="memory" required>
+                                        </div>
+                                        <div class="current-pack ng-binding">MB</div>
+                                    </div>
+
+                                    <div ng-hide="installationDetailsForm" class="form-group">
+                                        <label class="col-sm-3 control-label">Start on reboot</label>
+                                        <div class="col-sm-9">
+                                            <div class="checkbox" ng-init="startOnReboot={{ startOnReboot }}">
+                                                <label>
+                                                    <input ng-model="startOnReboot" type="checkbox" value=""
+                                                           class="ng-pristine ng-untouched ng-valid ng-empty">
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <hr>
+                                    <div ng-hide="installationDetailsForm" class="form-group">
+                                        <label class="col-sm-3 control-label">{% trans "Confirmation" %}</label>
+                                        <div class="col-sm-9">
+                                            <div class="checkbox">
+                                                <label>
+                                                    <input ng-model="envConfirmation" type="checkbox">
+                                                    Editing ENV or Volume will recreate container.
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <hr>
+                                    <span ng-init="envList = {}"></span>
+                                    {% for env, value in envList.items %}
+
+                                        <span ng-init="envList[{{ forloop.counter0 }}] =  {'name':'{{ env }}' , 'value':'{{ value }}'} "></span>
+
+                                    {% endfor %}
+
+                                    <div ng-repeat="env in envList track by $index">
+
+                                        <div ng-hide="installationDetailsForm" class="form-group">
+                                            <label class="col-sm-3 control-label">
+                                                <div ng-show="$first">
+                                                    {% trans "ENV" %}
+                                                </div>
+                                            </label>
+                                            <div class="col-sm-2">
+                                                <input name="$index" ng-disabled="!envConfirmation" type="text"
+                                                       class="form-control" ng-model="envList[$index].name"
+                                                       required>
+                                            </div>
+                                            <div class="col-sm-4">
+                                                <input name="$index" ng-disabled="!envConfirmation" type="text"
+                                                       class="form-control" ng-model="envList[$index].value"
+                                                       required>
+                                            </div>
+                                        </div>
+
+                                    </div>
+
+                                    <div class="col-md-offset-3">
+                                        <button type="button" ng-disabled="!envConfirmation" class="btn btn-info"
+                                                ng-click="addEnvField()">Add more
+                                        </button>
+                                    </div>
+                                    <br>
+
+                                    <span ng-init="volList = {}"></span>
+                                    <span ng-init="volListNumber=1"></span>
+                                    {% for key, value in volList.items %}
+                                        <span ng-init="volList[{{ forloop.counter0 }}] =  {'dest':'{{ value.bind }}' , 'src':'{{ key }}'}"></span>
+                                        <span ng-init="volListNumber={{ forloop.counter0 }} + 1"></span>
+                                    {% endfor %}
+
+                                    <hr>
+
+                                    <div ng-hide="installationDetailsForm" class="form-group text-center">
+                                        <label class="control-label">
+                                            {% trans "Map Volumes" %}
+                                        </label>
+                                    </div>
+                                    <div ng-repeat="volume in volList track by $index">
+                                        <div ng-hide="installationDetailsForm" class="form-group">
+                                            <div class="col-sm-5">
+                                                <input type="text" ng-disabled="!envConfirmation"
+                                                       class="form-control"
+                                                       ng-model="volList[$index].dest" placeholder="Destination"
+                                                       required>
+                                            </div>
+                                            <div class="col-sm-5">
+                                                <input type="text" ng-disabled="!envConfirmation"
+                                                       class="form-control"
+                                                       ng-model="volList[$index].src" placeholder="Source" required>
+                                            </div>
+                                            <div ng-show="$last">
+                                                <div class="col-sm-1">
+                                                    <button class="btn btn-primary" ng-disabled="!envConfirmation"
+                                                            type="button"
+                                                            ng-click="removeVolField()"><i
+                                                            style="position: inherit; top: 0px; left: 0px"
+                                                            class="fa fa-times"></i></button>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </div>
+
+                                    <div ng-hide="installationDetailsForm" class="text-center">
+                                        <button type="button" ng-disabled="!envConfirmation" class="btn btn-info"
+                                                ng-click="addVolField()">{% trans "Add field" %}</button>
+                                    </div>
+                                    <br>
+
+                                </form>
+
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" ng-disabled="savingSettings" class="btn btn-primary"
+                                        ng-click="saveSettings()">Save
+                                </button>
+                                <button type="button" ng-disabled="savingSettings" class="btn btn-default"
+                                        data-dismiss="modal">
+                                    Close
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="processes" class="modal fade" role="dialog">
+                    <div class="modal-dialog" style="width: 96%;">
+
+                        <!-- Modal content-->
+                        <div class="modal-content panel-body">
+                            <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                <h4 class="modal-title content-box=header">Container Processes</h4>
+                            </div>
+                            <div class="modal-body">
+
+                                <table cellpadding="0" cellspacing="0" border="0" class="table table-striped"
+                                       id="datatable-example">
+                                    <thead>
+                                    <tr>
+                                        <th ng-repeat="item in topHead track by $index">{$ item $}</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+
+                                    <tr ng-repeat="process in topProcesses track by $index">
+                                        <th ng-repeat="item in process track by $index">{$ item $}</th>
+                                    </tr>
+
+                                    </tbody>
+                                </table>
+
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" ng-disabled="savingSettings" class="btn btn-primary"
+                                        ng-click="showTop()">
+                                    Refresh
+                                </button>
+                                <button type="button" ng-disabled="savingSettings" class="btn btn-default"
+                                        data-dismiss="modal">
+                                    Close
+                                </button>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+
+            </div>
+        </div>
     </div>
+    </div>
+
 
 {% endblock %}
