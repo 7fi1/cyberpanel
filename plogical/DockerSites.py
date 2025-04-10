@@ -943,12 +943,12 @@ services:
     def monitor_deployment(self):
         try:
             # Check container health
-            command = f"docker ps -a --filter name={self.data['sitename']} --format '{{{{.Status}}}}'"
+            command = f"docker ps -a --filter name={self.data['ServiceName']} --format '{{{{.Status}}}}'"
             status = ProcessUtilities.outputExecutioner(command, None, None, None, 1)
 
             if "unhealthy" in status or "exited" in status:
                 # Get container logs
-                command = f"docker logs {self.data['sitename']}"
+                command = f"docker logs {self.data['ServiceName']}"
                 logs = ProcessUtilities.outputExecutioner(command, None, None, None, 1)
                 raise DockerDeploymentError(f"Container unhealthy or exited. Logs: {logs}")
 
