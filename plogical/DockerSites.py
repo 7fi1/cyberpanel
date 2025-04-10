@@ -790,7 +790,7 @@ services:
     ##### N8N Container
 
     def check_container_health(self, container_name, max_retries=3, delay=10):
-        return True
+        return 0
         """
         Check if a container is healthy and running
         """
@@ -943,24 +943,19 @@ services:
     def monitor_deployment(self):
         try:
             # Check container health
-            command = f"docker ps -a --filter name={self.data['ServiceName']} --format '{{{{.Status}}}}'"
-            result, status = ProcessUtilities.outputExecutioner(command, None, None, None, 1)
-            
-            if result == 0:
-                return True  # Consider it successful if command fails, as container might still be starting
-                
-            if status and ("unhealthy" in status or "exited" in status):
+            command = f"docker ps -a --filter name={self.data['sitename']} --format '{{{{.Status}}}}'"
+            status = ProcessUtilities.outputExecutioner(command, None, None, None, 1)
+
+            if "unhealthy" in status or "exited" in status:
                 # Get container logs
-                command = f"docker logs {self.data['ServiceName']}"
-                result, logs = ProcessUtilities.outputExecutioner(command, None, None, None, 1)
-                if result == 1 and logs:
-                    raise DockerDeploymentError(f"Container unhealthy or exited. Logs: {logs}")
+                command = f"docker logs {self.data['sitename']}"
+                logs = ProcessUtilities.outputExecutioner(command, None, None, None, 1)
+                raise DockerDeploymentError(f"Container unhealthy or exited. Logs: {logs}")
 
             return True
 
         except Exception as e:
-            logging.writeToFile(f"Monitoring error: {str(e)}")
-            return True  # Return True anyway since we've already verified the container is running
+            raise DockerDeploymentError(f"Monitoring failed: {str(e)}")
 
     def handle_deployment_failure(self, error, cleanup=True):
         """
@@ -1163,7 +1158,7 @@ services:
         Generate the docker-compose configuration with improved security and reliability
         """
         postgres_config = {
-            'image': 'docker.io/bitnami/postgresql:16',
+            'image': 'postgres:16-alpine',
             'user': 'root',
             'healthcheck': {
                 'test': ["CMD-SHELL", "pg_isready -U postgres"],
@@ -1173,9 +1168,9 @@ services:
                 'start_period': '30s'
             },
             'environment': {
-                'POSTGRESQL_POSTGRES_PASSWORD': self.data['MySQLPassword'],
-                'POSTGRESQL_DATABASE': self.data['MySQLDBName'],
-                'POSTGRESQL_PASSWORD': self.data['MySQLPassword']
+                'POSTGRES_USER': 'postgres',
+                'POSTGRES_PASSWORD': self.data['MySQLPassword'],
+                'POSTGRES_DB': self.data['MySQLDBName']
             }
         }
 
@@ -1226,11 +1221,11 @@ services:
       retries: {postgres_config['healthcheck']['retries']}
       start_period: {postgres_config['healthcheck']['start_period']}
     environment:
-      - POSTGRESQL_POSTGRES_PASSWORD={postgres_config['environment']['POSTGRESQL_POSTGRES_PASSWORD']}
-      - POSTGRESQL_DATABASE={postgres_config['environment']['POSTGRESQL_DATABASE']}
-      - POSTGRESQL_PASSWORD={postgres_config['environment']['POSTGRESQL_PASSWORD']}
+      - POSTGRES_USER={postgres_config['environment']['POSTGRES_USER']}
+      - POSTGRES_PASSWORD={postgres_config['environment']['POSTGRES_PASSWORD']}
+      - POSTGRES_DB={postgres_config['environment']['POSTGRES_DB']}
     volumes:
-      - "/home/docker/{self.data['finalURL']}/db:/bitnami/postgresql"
+      - "/home/docker/{self.data['finalURL']}/db:/var/lib/postgresql/data"
     networks:
       - n8n-network
     deploy:
