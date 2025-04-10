@@ -958,8 +958,8 @@ services:
             command = f"docker ps -a --filter name={self.data['ServiceName']} --format '{{{{.Status}}}}'"
             result, status = ProcessUtilities.outputExecutioner(command, None, None, None, 1)
 
-            if result == 0:
-                raise DockerDeploymentError(f"Failed to check container status: {status}")
+            # if result == 0:
+            #     raise DockerDeploymentError(f"Failed to check container status: {status}")
 
             # Accept unhealthy status as well
             if "exited" in status:
