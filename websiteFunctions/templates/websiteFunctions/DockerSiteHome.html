@@ -215,6 +215,36 @@
                 border: none;
             }
         }
+
+        .container-name {
+            font-weight: 500;
+            color: #333;
+        }
+        .actions {
+            display: flex;
+            gap: 8px;
+        }
+        .btn-sm {
+            padding: 5px 10px;
+            font-size: 12px;
+        }
+        .btn-sm i {
+            margin-right: 4px;
+        }
+        .text-muted {
+            color: #666;
+            font-size: 13px;
+            margin-left: 8px;
+        }
+        .d-flex {
+            display: flex;
+        }
+        .justify-content-between {
+            justify-content: space-between;
+        }
+        .align-items-center {
+            align-items: center;
+        }
     </style>
 
     <div class="container-fluid" ng-controller="ListDockersitecontainer">
@@ -232,92 +262,146 @@
             <small>{% trans "Manage containers on server" %}</small>
         </div>
 
-        <div class="info-section">
+        <!-- Container List Section -->
+        <div class="info-section" ng-show="conatinerview">
             <div class="header">
-                <h3>{% trans "CONTAINERS" %} {$ cName $}</h3>
+                <h3>{% trans "Available Containers" %}</h3>
+                <span style="display: none" id="sitename">{{ dockerSite.SiteName }}</span>
             </div>
             <div class="content">
-                <div class="info-grid">
-                    <!-- Basic Information -->
-                    <div class="info-item">
-                        <h4>{% trans "Basic Information" %}</h4>
-                        <p><strong>Container ID:</strong> {$ cid $}</p>
-                        <p>
-                            <strong>Status:</strong> 
-                            <span class="status-badge" ng-class="{'status-running': status === 'running', 'status-stopped': status !== 'running'}">
-                                {$ status $}
-                            </span>
-                        </p>
-                        <p><strong>Created:</strong> {$ created | date:'medium' $}</p>
-                        <p><strong>Uptime:</strong> {$ uptime $}</p>
-                    </div>
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Launch</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr ng-repeat="web in ContainerList track by $index">
+                                <td>
+                                    <div class="container-name">{$ web.name $}</div>
+                                </td>
+                                <td>
+                                    <button class="btn btn-primary btn-sm" ng-click="Lunchcontainer(web.id)">
+                                        <i class="fa fa-external-link"></i> Launch
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div id="listFail" class="alert alert-danger" style="display: none;">
+                    <p>{% trans "Error message:" %} {$ errorMessage $}</p>
+                </div>
+            </div>
+        </div>
 
-                    <!-- Resource Usage -->
-                    <div class="info-item">
-                        <h4>{% trans "Resource Usage" %}</h4>
-                        <p>Memory Usage</p>
-                        <div class="resource-bar">
-                            <div class="fill" ng-class="{'high': memoryUsagePercent > 80}" 
-                                 ng-style="{'width': memoryUsagePercent + '%'}"></div>
+        <!-- Container Details Section -->
+        <div ng-hide="conatinerview">
+            <div class="info-section">
+                <div class="header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h3>
+                            {% trans "Container:" %} {$ cName $}
+                            <small class="text-muted">ID: {$ cid $}</small>
+                        </h3>
+                        <div class="actions">
+                            <button class="btn btn-primary btn-sm" ng-click="refreshStatus()">
+                                <i class="fa fa-refresh"></i> Refresh
+                            </button>
+                            <button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#Recreatedockerapp">
+                                <i class="fa fa-recycle"></i> Recreate
+                            </button>
+                            <button class="btn btn-default btn-sm" ng-click="conatinerview = true">
+                                <i class="fa fa-arrow-left"></i> Back
+                            </button>
                         </div>
-                        <p>CPU Usage</p>
-                        <div class="resource-bar">
-                            <div class="fill" ng-class="{'high': cpuUsagePercent > 80}" 
-                                 ng-style="{'width': cpuUsagePercent + '%'}"></div>
+                    </div>
+                </div>
+                <div class="content">
+                    <div class="info-grid">
+                        <!-- Basic Information -->
+                        <div class="info-item">
+                            <h4>{% trans "Basic Information" %}</h4>
+                            <p><strong>Container ID:</strong> {$ cid $}</p>
+                            <p>
+                                <strong>Status:</strong> 
+                                <span class="status-badge" ng-class="{'status-running': status === 'running', 'status-stopped': status !== 'running'}">
+                                    {$ status $}
+                                </span>
+                            </p>
+                            <p><strong>Created:</strong> {$ created | date:'medium' $}</p>
+                            <p><strong>Uptime:</strong> {$ uptime $}</p>
+                        </div>
+
+                        <!-- Resource Usage -->
+                        <div class="info-item">
+                            <h4>{% trans "Resource Usage" %}</h4>
+                            <p>Memory Usage</p>
+                            <div class="resource-bar">
+                                <div class="fill" ng-class="{'high': memoryUsagePercent > 80}" 
+                                     ng-style="{'width': memoryUsagePercent + '%'}"></div>
+                            </div>
+                            <p>CPU Usage</p>
+                            <div class="resource-bar">
+                                <div class="fill" ng-class="{'high': cpuUsagePercent > 80}" 
+                                     ng-style="{'width': cpuUsagePercent + '%'}"></div>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- Volumes -->
-                <div class="info-item">
-                    <h4>{% trans "Volumes" %}</h4>
-                    <div class="table-responsive" ng-if="volumes && volumes.length">
-                        <table class="table table-striped">
-                            <thead>
-                                <tr>
-                                    <th>Source</th>
-                                    <th>Destination</th>
-                                    <th>Mode</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr ng-repeat="volume in volumes">
-                                    <td>{$ volume.Source $}</td>
-                                    <td>{$ volume.Destination $}</td>
-                                    <td>{$ volume.Mode $}</td>
-                                </tr>
-                            </tbody>
-                        </table>
+                    <!-- Volumes -->
+                    <div class="info-item">
+                        <h4>{% trans "Volumes" %}</h4>
+                        <div class="table-responsive" ng-if="volumes && volumes.length">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Source</th>
+                                        <th>Destination</th>
+                                        <th>Mode</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr ng-repeat="volume in volumes">
+                                        <td>{$ volume.Source $}</td>
+                                        <td>{$ volume.Destination $}</td>
+                                        <td>{$ volume.Mode $}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <p ng-if="!volumes || !volumes.length" class="text-muted">No volumes mounted</p>
                     </div>
-                    <p ng-if="!volumes || !volumes.length" class="text-muted">No volumes mounted</p>
-                </div>
 
-                <!-- Environment Variables -->
-                <div class="info-item">
-                    <h4>{% trans "Environment Variables" %}</h4>
-                    <div class="table-responsive" ng-if="environment && environment.length">
-                        <table class="table table-striped env-table">
-                            <thead>
-                                <tr>
-                                    <th>Variable</th>
-                                    <th>Value</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr ng-repeat="env in environment">
-                                    <td>{$ env.split('=')[0] $}</td>
-                                    <td ng-class="{'masked-value': env.includes('********')}">{$ env.split('=')[1] $}</td>
-                                </tr>
-                            </tbody>
-                        </table>
+                    <!-- Environment Variables -->
+                    <div class="info-item">
+                        <h4>{% trans "Environment Variables" %}</h4>
+                        <div class="table-responsive" ng-if="environment && environment.length">
+                            <table class="table table-striped env-table">
+                                <thead>
+                                    <tr>
+                                        <th>Variable</th>
+                                        <th>Value</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr ng-repeat="env in environment">
+                                        <td>{$ env.split('=')[0] $}</td>
+                                        <td ng-class="{'masked-value': env.includes('********')}">{$ env.split('=')[1] $}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <p ng-if="!environment || !environment.length" class="text-muted">No environment variables set</p>
                     </div>
-                    <p ng-if="!environment || !environment.length" class="text-muted">No environment variables set</p>
-                </div>
 
-                <!-- Logs -->
-                <div class="logs-section">
-                    <h4>{% trans "Container Logs" %}</h4>
-                    <pre ng-bind="logs"></pre>
+                    <!-- Logs -->
+                    <div class="logs-section">
+                        <h4>{% trans "Container Logs" %}</h4>
+                        <pre ng-bind="logs"></pre>
+                    </div>
                 </div>
             </div>
         </div>
@@ -325,9 +409,6 @@
 
     <script>
         $(document).ready(function() {
-            // Initialize tooltips
             $('[data-toggle="tooltip"]').tooltip();
         });
     </script>
-
-{% endblock %}
