@@ -332,211 +332,150 @@
             <div>
 
 
-                <div class="container-fluid px-4 py-3">
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <div>
-                            <h1 class="h3 mb-2">{% trans "Currently managing" %}</h1>
-                            <div class="d-flex align-items-center">
-                                <h2 class="h4 mb-0 text-primary">{$ cName $}</h2>
-                                <span class="ms-3 badge rounded-pill" ng-class="{'bg-success': status === 'running', 'bg-danger': status === 'stopped', 'bg-warning': status !== 'running' && status !== 'stopped'}">{$ status $}</span>
+                <div id="page-title" class="mb-4">
+                    <h2 id="domainNamePage" class="d-flex justify-content-between align-items-center">
+                        <span>{% trans "Currently managing: " %} {$ cName $}</span>
+                        <button class="btn btn-warning" data-toggle="modal" data-target="#Recreatedockerapp">
+                            <i class="fa fa-refresh btn-icon"></i> Recreate
+                        </button>
+                    </h2>
+                    <p class="text-muted">
+                        {% trans "Container ID" %}: <code>{$ cid $}</code>
+                    </p>
+                </div>
+
+
+                <div class="container-fluid p-0">
+                    <div class="panel panel-body">
+                        <h3 class="content-box-header d-flex justify-content-between align-items-center mb-4">
+                            {% trans "Container Information" %}
+                            <img id="infoLoading" src="/static/images/loading.gif" style="display: none;">
+                        </h3>
+
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <div class="info-box shadow-sm">
+                                    <h4 class="border-bottom pb-2 mb-3">Basic Information</h4>
+                                    <div class="info-list">
+                                        <p class="mb-2"><strong>Container ID:</strong> <code>{$ cid $}</code></p>
+                                        <p class="mb-2"><strong>Status:</strong> 
+                                            <span class="label px-3 py-1 rounded" ng-class="{'label-success': status === 'running', 'label-danger': status === 'stopped', 'label-warning': status !== 'running' && status !== 'stopped'}">
+                                                {$ status $}
+                                            </span>
+                                        </p>
+                                        <p class="mb-2"><strong>Created:</strong> {$ created | date:'medium' $}</p>
+                                        <p class="mb-2"><strong>Uptime:</strong> {$ uptime $}</p>
+                                    </div>
+                                </div>
+
+                                <div class="info-box shadow-sm mt-4">
+                                    <h4 class="border-bottom pb-2 mb-3">Resource Usage</h4>
+                                    <div class="mb-3">
+                                        <label class="mb-2">Memory Usage</label>
+                                        <div class="progress" style="height: 20px;">
+                                            <div class="progress-bar" role="progressbar" 
+                                                ng-style="{'width': memoryUsagePercent + '%'}" 
+                                                aria-valuenow="{$ memoryUsagePercent $}" 
+                                                aria-valuemin="0" 
+                                                aria-valuemax="100">
+                                                {$ memoryUsagePercent | number:1 $}%
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="mb-2">CPU Usage</label>
+                                        <div class="progress" style="height: 20px;">
+                                            <div class="progress-bar" role="progressbar" 
+                                                ng-style="{'width': cpuUsagePercent + '%'}" 
+                                                aria-valuenow="{$ cpuUsagePercent $}" 
+                                                aria-valuemin="0" 
+                                                aria-valuemax="100">
+                                                {$ cpuUsagePercent | number:1 $}%
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                            <p class="text-muted mb-0 mt-2">
-                                <i class="fa fa-cube me-1"></i> {% trans "Container ID" %}: <code class="ms-1">{$ cid $}</code>
-                            </p>
-                        </div>
-                        <div>
-                            <button class="btn btn-warning btn-lg" data-toggle="modal" data-target="#Recreatedockerapp">
-                                <i class="fa fa-refresh btn-icon me-2"></i> Recreate
-                            </button>
-                        </div>
-                    </div>
 
-                    <div class="container-fluid p-0">
-                        <div class="card border-0 shadow-sm">
-                            <div class="card-body">
-                                <div class="d-flex justify-content-between align-items-center mb-4">
-                                    <h3 class="card-title mb-0">{% trans "Container Information" %}</h3>
-                                    <img id="infoLoading" src="/static/images/loading.gif" style="display: none;">
-                                </div>
-
-                                <div class="row g-4">
-                                    <div class="col-md-6">
-                                        <div class="card h-100 border-0 shadow-sm">
-                                            <div class="card-body">
-                                                <h4 class="card-title border-bottom pb-2 mb-3 d-flex align-items-center">
-                                                    <i class="fa fa-info-circle me-2"></i>
-                                                    Basic Information
-                                                </h4>
-                                                <div class="info-list">
-                                                    <div class="mb-3">
-                                                        <label class="text-muted small mb-1">Container ID</label>
-                                                        <p class="mb-0"><code>{$ cid $}</code></p>
-                                                    </div>
-                                                    <div class="mb-3">
-                                                        <label class="text-muted small mb-1">Status</label>
-                                                        <p class="mb-0">
-                                                            <span class="badge px-3 py-2 rounded-pill" ng-class="{'bg-success': status === 'running', 'bg-danger': status === 'stopped', 'bg-warning': status !== 'running' && status !== 'stopped'}">
-                                                                <i class="fa" ng-class="{'fa-play': status === 'running', 'fa-stop': status === 'stopped', 'fa-exclamation-circle': status !== 'running' && status !== 'stopped'}"></i>
-                                                                <span class="ms-1">{$ status $}</span>
+                            <div class="col-md-6">
+                                <div class="info-box shadow-sm">
+                                    <h4 class="border-bottom pb-2 mb-3">Network & Ports</h4>
+                                    <div ng-if="ports && (ports | objLength) > 0">
+                                        <div class="table-responsive">
+                                            <table class="table table-striped table-hover mb-0">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Container Port</th>
+                                                        <th>Host Binding</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr ng-repeat="(containerPort, hostBindings) in ports">
+                                                        <td><code>{$ containerPort $}</code></td>
+                                                        <td>
+                                                            <span ng-repeat="binding in hostBindings" class="badge bg-light text-dark me-2">
+                                                                {$ binding.HostIp || '0.0.0.0' $}:{$ binding.HostPort $}
                                                             </span>
-                                                        </p>
-                                                    </div>
-                                                    <div class="mb-3">
-                                                        <label class="text-muted small mb-1">Created</label>
-                                                        <p class="mb-0">{$ created | date:'medium' $}</p>
-                                                    </div>
-                                                    <div>
-                                                        <label class="text-muted small mb-1">Uptime</label>
-                                                        <p class="mb-0">{$ uptime $}</p>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div class="card border-0 shadow-sm mt-4">
-                                            <div class="card-body">
-                                                <h4 class="card-title border-bottom pb-2 mb-3 d-flex align-items-center">
-                                                    <i class="fa fa-chart-bar me-2"></i>
-                                                    Resource Usage
-                                                </h4>
-                                                <div class="mb-4">
-                                                    <div class="d-flex justify-content-between align-items-center mb-2">
-                                                        <label class="text-muted small mb-0">Memory Usage</label>
-                                                        <span class="badge bg-primary">{$ memoryUsagePercent | number:1 $}%</span>
-                                                    </div>
-                                                    <div class="progress" style="height: 10px;">
-                                                        <div class="progress-bar" role="progressbar" 
-                                                            ng-style="{'width': memoryUsagePercent + '%'}" 
-                                                            ng-class="{'bg-success': memoryUsagePercent < 70, 'bg-warning': memoryUsagePercent >= 70 && memoryUsagePercent < 90, 'bg-danger': memoryUsagePercent >= 90}"
-                                                            aria-valuenow="{$ memoryUsagePercent $}" 
-                                                            aria-valuemin="0" 
-                                                            aria-valuemax="100">
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div>
-                                                    <div class="d-flex justify-content-between align-items-center mb-2">
-                                                        <label class="text-muted small mb-0">CPU Usage</label>
-                                                        <span class="badge bg-primary">{$ cpuUsagePercent | number:1 $}%</span>
-                                                    </div>
-                                                    <div class="progress" style="height: 10px;">
-                                                        <div class="progress-bar" role="progressbar" 
-                                                            ng-style="{'width': cpuUsagePercent + '%'}" 
-                                                            ng-class="{'bg-success': cpuUsagePercent < 70, 'bg-warning': cpuUsagePercent >= 70 && cpuUsagePercent < 90, 'bg-danger': cpuUsagePercent >= 90}"
-                                                            aria-valuenow="{$ cpuUsagePercent $}" 
-                                                            aria-valuemin="0" 
-                                                            aria-valuemax="100">
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
                                         </div>
                                     </div>
-
-                                    <div class="col-md-6">
-                                        <div class="card h-100 border-0 shadow-sm">
-                                            <div class="card-body">
-                                                <h4 class="card-title border-bottom pb-2 mb-3 d-flex align-items-center">
-                                                    <i class="fa fa-network-wired me-2"></i>
-                                                    Network & Ports
-                                                </h4>
-                                                <div ng-if="ports && (ports | objLength) > 0">
-                                                    <div class="table-responsive">
-                                                        <table class="table table-hover align-middle mb-0">
-                                                            <thead class="bg-light">
-                                                                <tr>
-                                                                    <th class="border-0">Container Port</th>
-                                                                    <th class="border-0">Host Binding</th>
-                                                                </tr>
-                                                            </thead>
-                                                            <tbody>
-                                                                <tr ng-repeat="(containerPort, hostBindings) in ports">
-                                                                    <td><code class="bg-light px-2 py-1 rounded">{$ containerPort $}</code></td>
-                                                                    <td>
-                                                                        <span ng-repeat="binding in hostBindings" class="badge bg-light text-dark me-2 px-3 py-2">
-                                                                            <i class="fa fa-link me-1"></i>
-                                                                            {$ binding.HostIp || '0.0.0.0' $}:{$ binding.HostPort $}
-                                                                        </span>
-                                                                    </td>
-                                                                </tr>
-                                                            </tbody>
-                                                        </table>
-                                                    </div>
-                                                </div>
-                                                <div ng-if="!ports || (ports | objLength) === 0" class="text-center text-muted py-4">
-                                                    <i class="fa fa-info-circle fa-2x mb-2"></i>
-                                                    <p class="mb-0">No ports exposed</p>
-                                                </div>
-                                            </div>
-                                        </div>
+                                    <div ng-if="!ports || (ports | objLength) === 0" class="text-muted">
+                                        <p class="mb-0">No ports exposed</p>
                                     </div>
                                 </div>
 
-                                <div class="row g-4 mt-0">
-                                    <div class="col-md-12">
-                                        <div class="card border-0 shadow-sm mt-4">
-                                            <div class="card-body">
-                                                <h4 class="card-title border-bottom pb-2 mb-3 d-flex align-items-center">
-                                                    <i class="fa fa-hdd me-2"></i>
-                                                    Volumes
-                                                </h4>
-                                                <div ng-if="volumes && volumes.length > 0">
-                                                    <div class="table-responsive">
-                                                        <table class="table table-hover align-middle mb-0">
-                                                            <thead class="bg-light">
-                                                                <tr>
-                                                                    <th class="border-0">Source</th>
-                                                                    <th class="border-0">Destination</th>
-                                                                    <th class="border-0" style="width: 100px;">Mode</th>
-                                                                </tr>
-                                                            </thead>
-                                                            <tbody>
-                                                                <tr ng-repeat="volume in volumes">
-                                                                    <td><code class="bg-light px-2 py-1 rounded">{$ volume.Source $}</code></td>
-                                                                    <td><code class="bg-light px-2 py-1 rounded">{$ volume.Destination $}</code></td>
-                                                                    <td><span class="badge bg-secondary">{$ volume.Mode $}</span></td>
-                                                                </tr>
-                                                            </tbody>
-                                                        </table>
-                                                    </div>
-                                                </div>
-                                                <div ng-if="!volumes || volumes.length === 0" class="text-center text-muted py-4">
-                                                    <i class="fa fa-hdd fa-2x mb-2"></i>
-                                                    <p class="mb-0">No volumes mounted</p>
-                                                </div>
-                                            </div>
+                                <div class="info-box shadow-sm mt-4">
+                                    <h4 class="border-bottom pb-2 mb-3">Volumes</h4>
+                                    <div ng-if="volumes && volumes.length > 0">
+                                        <div class="table-responsive">
+                                            <table class="table table-striped table-hover mb-0">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Source</th>
+                                                        <th>Destination</th>
+                                                        <th>Mode</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr ng-repeat="volume in volumes">
+                                                        <td><code>{$ volume.Source $}</code></td>
+                                                        <td><code>{$ volume.Destination $}</code></td>
+                                                        <td><span class="badge bg-secondary">{$ volume.Mode $}</span></td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
                                         </div>
+                                    </div>
+                                    <div ng-if="!volumes || volumes.length === 0" class="text-muted">
+                                        <p class="mb-0">No volumes mounted</p>
+                                    </div>
+                                </div>
 
-                                        <div class="card border-0 shadow-sm mt-4">
-                                            <div class="card-body">
-                                                <h4 class="card-title border-bottom pb-2 mb-3 d-flex align-items-center">
-                                                    <i class="fa fa-cog me-2"></i>
-                                                    Environment Variables
-                                                </h4>
-                                                <div ng-if="environment && environment.length > 0">
-                                                    <div class="table-responsive">
-                                                        <table class="table table-hover align-middle mb-0">
-                                                            <thead class="bg-light">
-                                                                <tr>
-                                                                    <th class="border-0">Variable</th>
-                                                                    <th class="border-0">Value</th>
-                                                                </tr>
-                                                            </thead>
-                                                            <tbody>
-                                                                <tr ng-repeat="env in environment">
-                                                                    <td style="width: 40%;"><code class="bg-light px-2 py-1 rounded">{$ env.split('=')[0] $}</code></td>
-                                                                    <td><code class="bg-light px-2 py-1 rounded text-break">{$ env.split('=')[1] $}</code></td>
-                                                                </tr>
-                                                            </tbody>
-                                                        </table>
-                                                    </div>
-                                                </div>
-                                                <div ng-if="!environment || environment.length === 0" class="text-center text-muted py-4">
-                                                    <i class="fa fa-cog fa-2x mb-2"></i>
-                                                    <p class="mb-0">No environment variables set</p>
-                                                </div>
-                                            </div>
+                                <div class="info-box shadow-sm mt-4">
+                                    <h4 class="border-bottom pb-2 mb-3">Environment Variables</h4>
+                                    <div ng-if="environment && environment.length > 0">
+                                        <div class="table-responsive">
+                                            <table class="table table-striped table-hover mb-0">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Variable</th>
+                                                        <th>Value</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr ng-repeat="env in environment">
+                                                        <td><code>{$ env.split('=')[0] $}</code></td>
+                                                        <td><code>{$ env.split('=')[1] $}</code></td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
                                         </div>
+                                    </div>
+                                    <div ng-if="!environment || environment.length === 0" class="text-muted">
+                                        <p class="mb-0">No environment variables set</p>
                                     </div>
                                 </div>
                             </div>
