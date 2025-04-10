@@ -1229,7 +1229,7 @@ services:
 
         n8n_config = {
             'image': 'docker.n8n.io/n8nio/n8n',
-            'user': 'node',
+            'user': 'root',
             'healthcheck': {
                 'test': ["CMD", "wget", "--spider", "http://localhost:5678"],
                 'interval': '20s',
@@ -1249,9 +1249,10 @@ services:
                 'N8N_PUSH_BACKEND': 'sse',
                 'GENERIC_TIMEZONE': 'UTC',
                 'N8N_ENCRYPTION_KEY': 'auto',
-                'N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS': 'true',
+                'N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS': 'false',
                 'DB_POSTGRESDB_SCHEMA': 'public',
-                'N8N_DB_POSTGRESDB_SSL': 'false'
+                'N8N_DB_POSTGRESDB_SSL': 'false',
+                'N8N_USER_FOLDER': '/root/.n8n'
             }
         }
 
