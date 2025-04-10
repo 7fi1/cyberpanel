@@ -956,13 +956,17 @@ services:
 
             # Check container health
             command = f"docker ps -a --filter name={self.data['ServiceName']} --format '{{{{.Status}}}}'"
-            status = ProcessUtilities.outputExecutioner(command, None, None, None, 1)
+            result, status = ProcessUtilities.outputExecutioner(command, None, None, None, 1)
 
-            if "unhealthy" in status or "exited" in status:
+            if result == 0:
+                raise DockerDeploymentError(f"Failed to check container status: {status}")
+
+            # Accept unhealthy status as well
+            if "exited" in status:
                 # Get container logs
                 command = f"docker logs {n8n_container_name}"
-                logs = ProcessUtilities.outputExecutioner(command, None, None, None, 1)
-                raise DockerDeploymentError(f"Container unhealthy or exited. Logs: {logs}")
+                result, logs = ProcessUtilities.outputExecutioner(command, None, None, None, 1)
+                raise DockerDeploymentError(f"Container exited. Logs: {logs}")
 
             # Wait for database to be ready
             max_retries = 30
@@ -972,17 +976,17 @@ services:
             while retry_count < max_retries:
                 # Check if database container is ready
                 command = f"docker exec {db_container_name} pg_isready -U postgres"
-                result = ProcessUtilities.outputExecutioner(command, None, None, None, 1)
+                result, output = ProcessUtilities.outputExecutioner(command, None, None, None, 1)
                 
-                if "accepting connections" in result:
+                if result == 0 and "accepting connections" in output:
                     db_ready = True
                     break
                 
                 # Check container status
                 command = f"docker inspect --format='{{{{.State.Status}}}}' {db_container_name}"
-                db_status = ProcessUtilities.outputExecutioner(command, None, None, None, 1).strip()
+                result, db_status = ProcessUtilities.outputExecutioner(command, None, None, None, 1)
                 
-                if db_status not in ['running', 'starting']:
+                if result == 0 and db_status not in ['running', 'starting', 'unhealthy']:
                     raise DockerDeploymentError(f"Database container is in {db_status} state")
                 
                 retry_count += 1
@@ -994,10 +998,10 @@ services:
 
             # Verify database connection from n8n container
             command = f"docker exec {n8n_container_name} node -e \"const pg = require('pg'); const client = new pg.Client({{ user: 'postgres', password: '{self.data['MySQLPassword']}', host: '{self.data['ServiceName']}-db', port: 5432, database: '{self.data['MySQLDBName']}' }}); client.connect().then(() => {{ console.log('Connected successfully'); process.exit(0); }}).catch(err => {{ console.error(err); process.exit(1); }});\""
-            result = ProcessUtilities.outputExecutioner(command, None, None, None, 1)
+            result, output = ProcessUtilities.outputExecutioner(command, None, None, None, 1)
 
-            if "Connected successfully" not in result:
-                raise DockerDeploymentError(f"Failed to verify database connection: {result}")
+            if result != 0 or "Connected successfully" not in output:
+                raise DockerDeploymentError(f"Failed to verify database connection: {output}")
 
             return True
 
