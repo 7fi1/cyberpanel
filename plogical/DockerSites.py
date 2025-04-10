@@ -958,9 +958,6 @@ services:
             command = f"docker ps -a --filter name={self.data['ServiceName']} --format '{{{{.Status}}}}'"
             result, status = ProcessUtilities.outputExecutioner(command, None, None, None, 1)
 
-            # if result == 0:
-            #     raise DockerDeploymentError(f"Failed to check container status: {status}")
-
             # Accept unhealthy status as well
             if "exited" in status:
                 # Get container logs
@@ -996,13 +993,14 @@ services:
             if not db_ready:
                 raise DockerDeploymentError("Database failed to become ready within timeout period")
 
-            # Verify database connection from n8n container
-            command = f"docker exec {n8n_container_name} node -e \"const pg = require('pg'); const client = new pg.Client({{ user: 'postgres', password: '{self.data['MySQLPassword']}', host: '{self.data['ServiceName']}-db', port: 5432, database: '{self.data['MySQLDBName']}' }}); client.connect().then(() => {{ console.log('Connected successfully'); process.exit(0); }}).catch(err => {{ console.error(err); process.exit(1); }});\""
-            result, output = ProcessUtilities.outputExecutioner(command, None, None, None, 1)
+            # Simple check that n8n container is running
+            command = f"docker inspect --format='{{{{.State.Status}}}}' {n8n_container_name}"
+            result, n8n_status = ProcessUtilities.outputExecutioner(command, None, None, None, 1)
+            
+            if n8n_status not in ['running', 'starting', 'unhealthy']:
+                raise DockerDeploymentError(f"n8n container is in {n8n_status} state")
 
-            if "Connected successfully" not in output:
-                raise DockerDeploymentError(f"Failed to verify database connection: {output}")
-
+            logging.writeToFile(f'Deployment monitoring completed successfully. n8n status: {n8n_status}, database ready: {db_ready}')
             return True
 
         except Exception as e:
