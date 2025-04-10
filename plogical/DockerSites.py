@@ -1173,10 +1173,9 @@ services:
                 'start_period': '30s'
             },
             'environment': {
-                'POSTGRESQL_USERNAME': self.data['MySQLDBNUser'],
+                'POSTGRESQL_USERNAME': 'postgres',
                 'POSTGRESQL_DATABASE': self.data['MySQLDBName'],
-                'POSTGRESQL_PASSWORD': self.data['MySQLPassword'],
-                'POSTGRESQL_POSTGRES_PASSWORD': self.data['MySQLPassword']
+                'POSTGRESQL_PASSWORD': self.data['MySQLPassword']
             }
         }
 
@@ -1194,13 +1193,16 @@ services:
                 'DB_POSTGRESDB_HOST': f"{self.data['ServiceName']}-db",
                 'DB_POSTGRESDB_PORT': '5432',
                 'DB_POSTGRESDB_DATABASE': self.data['MySQLDBName'],
-                'DB_POSTGRESDB_USER': self.data['MySQLDBNUser'],
+                'DB_POSTGRESDB_USER': 'postgres',
                 'DB_POSTGRESDB_PASSWORD': self.data['MySQLPassword'],
                 'N8N_HOST': self.data['finalURL'],
                 'NODE_ENV': 'production',
                 'WEBHOOK_URL': f"https://{self.data['finalURL']}",
-                'N8N_PUSH_BACKEND': 'sse',
-                'GENERIC_TIMEZONE': 'UTC'
+                'N8N_PUSH_BACKEND': 'websocket',
+                'GENERIC_TIMEZONE': 'UTC',
+                'N8N_ENCRYPTION_KEY': 'auto',
+                'N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS': 'true',
+                'DB_POSTGRESDB_SCHEMA': 'public'
             }
         }
 
@@ -1227,7 +1229,6 @@ services:
       - POSTGRESQL_USERNAME={postgres_config['environment']['POSTGRESQL_USERNAME']}
       - POSTGRESQL_DATABASE={postgres_config['environment']['POSTGRESQL_DATABASE']}
       - POSTGRESQL_PASSWORD={postgres_config['environment']['POSTGRESQL_PASSWORD']}
-      - POSTGRESQL_POSTGRES_PASSWORD={postgres_config['environment']['POSTGRESQL_POSTGRES_PASSWORD']}
     volumes:
       - "/home/docker/{self.data['finalURL']}/db:/bitnami/postgresql"
     networks:
@@ -1254,11 +1255,14 @@ services:
       - DB_POSTGRESDB_DATABASE={n8n_config['environment']['DB_POSTGRESDB_DATABASE']}
       - DB_POSTGRESDB_USER={n8n_config['environment']['DB_POSTGRESDB_USER']}
       - DB_POSTGRESDB_PASSWORD={n8n_config['environment']['DB_POSTGRESDB_PASSWORD']}
+      - DB_POSTGRESDB_SCHEMA={n8n_config['environment']['DB_POSTGRESDB_SCHEMA']}
       - N8N_HOST={n8n_config['environment']['N8N_HOST']}
       - NODE_ENV={n8n_config['environment']['NODE_ENV']}
       - WEBHOOK_URL={n8n_config['environment']['WEBHOOK_URL']}
       - N8N_PUSH_BACKEND={n8n_config['environment']['N8N_PUSH_BACKEND']}
       - GENERIC_TIMEZONE={n8n_config['environment']['GENERIC_TIMEZONE']}
+      - N8N_ENCRYPTION_KEY={n8n_config['environment']['N8N_ENCRYPTION_KEY']}
+      - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS={n8n_config['environment']['N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS']}
     ports:
       - "{self.data['port']}:5678"
     depends_on:
