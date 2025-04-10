@@ -791,7 +791,7 @@ services:
 
     def check_container_health(self, container_name, max_retries=3, delay=80):
         """
-        Check if a container is running, accepting both healthy and unhealthy states
+        Check if a container is running, accepting healthy, unhealthy, and starting states
         Total wait time will be 4 minutes (3 retries * 80 seconds)
         """
         try:
@@ -802,8 +802,9 @@ services:
                 if container.status == 'running':
                     health = container.attrs.get('State', {}).get('Health', {}).get('Status')
                     
-                    # Accept both healthy and unhealthy states as long as container is running
-                    if health in ['healthy', 'unhealthy'] or health is None:
+                    # Accept healthy, unhealthy, and starting states as long as container is running
+                    if health in ['healthy', 'unhealthy', 'starting'] or health is None:
+                        logging.writeToFile(f'Container {container_name} is running with status: {health}')
                         return True
                     else:
                         health_logs = container.attrs.get('State', {}).get('Health', {}).get('Log', [])
@@ -811,7 +812,7 @@ services:
                             last_log = health_logs[-1]
                             logging.writeToFile(f'Container health check failed: {last_log.get("Output", "")}')
                 
-                logging.writeToFile(f'Container {container_name} not running, attempt {attempt + 1}/{max_retries}')
+                logging.writeToFile(f'Container {container_name} status: {container.status}, health: {health}, attempt {attempt + 1}/{max_retries}')
                 time.sleep(delay)
                 
             return False
