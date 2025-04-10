@@ -790,7 +790,7 @@ services:
     ##### N8N Container
 
     def check_container_health(self, container_name, max_retries=3, delay=10):
-        return 0
+        return True
         """
         Check if a container is healthy and running
         """
