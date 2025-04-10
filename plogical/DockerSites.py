@@ -1173,7 +1173,7 @@ services:
                 'start_period': '30s'
             },
             'environment': {
-                'POSTGRESQL_USERNAME': 'postgres',
+                'POSTGRESQL_POSTGRES_PASSWORD': self.data['MySQLPassword'],
                 'POSTGRESQL_DATABASE': self.data['MySQLDBName'],
                 'POSTGRESQL_PASSWORD': self.data['MySQLPassword']
             }
@@ -1226,7 +1226,7 @@ services:
       retries: {postgres_config['healthcheck']['retries']}
       start_period: {postgres_config['healthcheck']['start_period']}
     environment:
-      - POSTGRESQL_USERNAME={postgres_config['environment']['POSTGRESQL_USERNAME']}
+      - POSTGRESQL_POSTGRES_PASSWORD={postgres_config['environment']['POSTGRESQL_POSTGRES_PASSWORD']}
       - POSTGRESQL_DATABASE={postgres_config['environment']['POSTGRESQL_DATABASE']}
       - POSTGRESQL_PASSWORD={postgres_config['environment']['POSTGRESQL_PASSWORD']}
     volumes:
