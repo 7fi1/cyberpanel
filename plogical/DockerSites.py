@@ -958,7 +958,7 @@ services:
             command = f"docker ps -a --filter name={self.data['ServiceName']} --format '{{{{.Status}}}}'"
             result, status = ProcessUtilities.outputExecutioner(command, None, None, None, 1)
 
-            # Accept unhealthy status as well
+            # Only raise error if container is exited
             if "exited" in status:
                 # Get container logs
                 command = f"docker logs {n8n_container_name}"
@@ -983,7 +983,8 @@ services:
                 command = f"docker inspect --format='{{{{.State.Status}}}}' {db_container_name}"
                 result, db_status = ProcessUtilities.outputExecutioner(command, None, None, None, 1)
                 
-                if db_status not in ['running', 'starting', 'unhealthy']:
+                # Only raise error if database container is in a failed state
+                if db_status == 'exited':
                     raise DockerDeploymentError(f"Database container is in {db_status} state")
                 
                 retry_count += 1
@@ -993,17 +994,19 @@ services:
             if not db_ready:
                 raise DockerDeploymentError("Database failed to become ready within timeout period")
 
-            # Simple check that n8n container is running
+            # Check n8n container status
             command = f"docker inspect --format='{{{{.State.Status}}}}' {n8n_container_name}"
             result, n8n_status = ProcessUtilities.outputExecutioner(command, None, None, None, 1)
             
-            if n8n_status not in ['running', 'starting', 'unhealthy']:
+            # Only raise error if n8n container is in a failed state
+            if n8n_status == 'exited':
                 raise DockerDeploymentError(f"n8n container is in {n8n_status} state")
 
             logging.writeToFile(f'Deployment monitoring completed successfully. n8n status: {n8n_status}, database ready: {db_ready}')
             return True
 
         except Exception as e:
+            logging.writeToFile(f'Error during monitoring: {str(e)}')
             raise DockerDeploymentError(f"Monitoring failed: {str(e)}")
 
     def handle_deployment_failure(self, error, cleanup=True):
