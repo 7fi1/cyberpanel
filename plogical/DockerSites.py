@@ -825,7 +825,10 @@ services:
         try:
             # Check available disk space using root access
             command = "df -B 1G /home/docker --output=avail | tail -1"
-            available_gb = int(ProcessUtilities.outputExecutioner(command, None, None, None, 1).strip())
+            result, output = ProcessUtilities.outputExecutioner(command, None, None, None, 1)
+            if result == 0:
+                raise DockerDeploymentError("Failed to check disk space")
+            available_gb = int(output.strip())
 
             if available_gb < 5:  # Require minimum 5GB free space
                 raise DockerDeploymentError(
@@ -835,16 +838,20 @@ services:
 
             # Check if Docker is running and accessible
             command = "systemctl is-active docker"
-            docker_status = ProcessUtilities.outputExecutioner(command, None, None, None, 1).strip()
-            if docker_status != "active":
+            result, docker_status = ProcessUtilities.outputExecutioner(command, None, None, None, 1)
+            if result == 0:
+                raise DockerDeploymentError("Failed to check Docker status")
+            if docker_status.strip() != "active":
                 raise DockerDeploymentError("Docker service is not running")
 
             # Check Docker system info for resource limits
             command = "docker info --format '{{.MemTotal}}'"
-            total_memory = int(ProcessUtilities.outputExecutioner(command, None, None, None, 1).strip())
+            result, total_memory = ProcessUtilities.outputExecutioner(command, None, None, None, 1)
+            if result == 0:
+                raise DockerDeploymentError("Failed to get Docker memory info")
             
             # Convert total_memory from bytes to MB
-            total_memory_mb = total_memory / (1024 * 1024)
+            total_memory_mb = int(total_memory.strip()) / (1024 * 1024)
             
             # Calculate required memory from site and MySQL requirements
             required_memory = int(self.data['MemoryMySQL']) + int(self.data['MemorySite'])
@@ -857,12 +864,14 @@ services:
 
             # Verify Docker group and permissions
             command = "getent group docker"
-            docker_group = ProcessUtilities.outputExecutioner(command, None, None, None, 1)
-            if not docker_group:
+            result, docker_group = ProcessUtilities.outputExecutioner(command, None, None, None, 1)
+            if result == 0 or not docker_group:
                 raise DockerDeploymentError("Docker group does not exist")
 
             return True
 
+        except DockerDeploymentError as e:
+            raise e
         except Exception as e:
             raise DockerDeploymentError(f"Resource verification failed: {str(e)}")
 
