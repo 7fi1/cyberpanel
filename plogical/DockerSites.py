@@ -4,6 +4,9 @@ import os
 import sys
 import time
 from random import randint
+import socket
+import shutil
+import docker
 
 sys.path.append('/usr/local/CyberCP')
 
@@ -24,10 +27,24 @@ from plogical.CyberCPLogFileWriter import CyberCPLogFileWriter as logging
 import argparse
 import threading as multi
 
+class DockerDeploymentError(Exception):
+    def __init__(self, message, error_code=None, recovery_possible=True):
+        self.message = message
+        self.error_code = error_code
+        self.recovery_possible = recovery_possible
+        super().__init__(self.message)
 
 class Docker_Sites(multi.Thread):
     Wordpress = 1
     Joomla = 2
+
+    # Error codes
+    ERROR_DOCKER_NOT_INSTALLED = 'DOCKER_NOT_INSTALLED'
+    ERROR_PORT_IN_USE = 'PORT_IN_USE'
+    ERROR_CONTAINER_FAILED = 'CONTAINER_FAILED'
+    ERROR_NETWORK_FAILED = 'NETWORK_FAILED'
+    ERROR_VOLUME_FAILED = 'VOLUME_FAILED'
+    ERROR_DB_FAILED = 'DB_FAILED'
 
     def __init__(self, function_run, data):
         multi.Thread.__init__(self)
@@ -614,8 +631,6 @@ services:
 
             ### forcefully delete containers
 
-            import docker
-
             # Create a Docker client
             client = docker.from_env()
 
@@ -651,8 +666,6 @@ services:
     ## This function need site name which was passed while creating the app
     def ListContainers(self):
         try:
-
-            import docker
 
             # Create a Docker client
             client = docker.from_env()
@@ -697,7 +710,6 @@ services:
     ### pass container id and number of lines to fetch from logs
     def ContainerLogs(self):
         try:
-            import docker
             # Create a Docker client
             client = docker.from_env()
 
@@ -716,7 +728,6 @@ services:
 
     def ContainerInfo(self):
         try:
-            import docker
             # Create a Docker client
             client = docker.from_env()
 
@@ -748,7 +759,6 @@ services:
 
     def RestartContainer(self):
         try:
-            import docker
             # Create a Docker client
             client = docker.from_env()
 
@@ -764,7 +774,6 @@ services:
 
     def StopContainer(self):
         try:
-            import docker
             # Create a Docker client
             client = docker.from_env()
 
@@ -780,319 +789,434 @@ services:
 
     ##### N8N Container
 
-    def setup_n8n_data_directory(self):
-        """Helper method to create and set up n8n data directory with proper permissions"""
+    def check_container_health(self, container_name, max_retries=3, delay=10):
+        """
+        Check if a container is healthy and running
+        """
         try:
-            # Create base n8n data directory
-            base_dir = f"/home/docker/{self.data['finalURL']}/n8n_data"
-            
-            # Create each directory in the path with proper permissions
-            path_parts = base_dir.split('/')
-            current_path = ''
-            
-            # Build path incrementally ensuring proper permissions at each level
-            for part in path_parts:
-                if part:  # Skip empty parts
-                    current_path += f'/{part}'
-                    
-                    # Create directory if it doesn't exist
-                    command = f"mkdir -p {current_path}"
-                    ProcessUtilities.executioner(command)
-                    
-                    # Set ownership and permissions
-                    if current_path == '/home/docker':
-                        # Root directory
-                        command = f"chown root:root {current_path}"
-                        ProcessUtilities.executioner(command)
-                        
-                        command = f"chmod 755 {current_path}"
-                        ProcessUtilities.executioner(command)
-                    else:
-                        # n8n directories
-                        command = f"chown 1000:1000 {current_path}"
-                        ProcessUtilities.executioner(command)
-                        
-                        command = f"chmod 755 {current_path}"
-                        ProcessUtilities.executioner(command)
-
-            # Generate encryption key - store in self.data for use in docker-compose
-            encryption_key = randomPassword.generate_pass(32)
-            self.data['N8N_ENCRYPTION_KEY'] = encryption_key
-
-            # Create n8n subdirectories
-            required_dirs = [
-                f"{base_dir}/.n8n",
-                f"{base_dir}/.n8n/.n8n",
-                f"{base_dir}/.n8n/database",
-                f"{base_dir}/.n8n/workflows",
-                f"{base_dir}/.n8n/credentials"
-            ]
-
-            # Create each required directory with proper permissions
-            for directory in required_dirs:
-                command = f"mkdir -p {directory}"
-                ProcessUtilities.executioner(command)
+            for attempt in range(max_retries):
+                client = docker.from_env()
+                container = client.containers.get(container_name)
                 
-                command = f"chown 1000:1000 {directory}"
-                ProcessUtilities.executioner(command)
+                if container.status == 'running':
+                    health = container.attrs.get('State', {}).get('Health', {}).get('Status')
+                    
+                    if health == 'healthy' or health is None:
+                        return True
+                    elif health == 'unhealthy':
+                        health_logs = container.attrs.get('State', {}).get('Health', {}).get('Log', [])
+                        if health_logs:
+                            last_log = health_logs[-1]
+                            logging.writeToFile(f'Container health check failed: {last_log.get("Output", "")}')
                 
-                command = f"chmod 755 {directory}"
-                ProcessUtilities.executioner(command)
-
-            # Create n8n config with the encryption key
-            config_content = {
-                "database": {
-                    "type": "postgresdb",
-                    "postgresdb": {
-                        "host": f"{self.data['ServiceName']}-db",
-                        "port": 5432,
-                        "database": self.data['MySQLDBName'],
-                        "user": self.data['MySQLDBNUser'],
-                        "password": self.data['MySQLPassword']
-                    }
-                },
-                "credentials": {
-                    "overwrite": {
-                        "defaults": False,
-                        "oauth2": False
-                    }
-                },
-                "userManagement": {
-                    "disabled": False,
-                    "jwtAuth": {
-                        "jwtExpiration": "7d",
-                        "jwtRefreshExpiration": "30d"
-                    }
-                },
-                "nodes": {
-                    "exclude": [],
-                    "include": []
-                },
-                "encryptionKey": encryption_key,
-                "onboardingCallPromptEnabled": False,
-                "instanceId": f"n8n_{randomPassword.generate_pass(12)}",
-                "deployment": {
-                    "type": "default"
-                },
-                "generic": {
-                    "timezone": "UTC"
-                },
-                "security": {
-                    "basicAuth": {
-                        "active": True,
-                        "user": self.data['adminUser'],
-                        "password": self.data['MySQLPassword']
-                    }
-                },
-                "endpoints": {
-                    "rest": "/"
-                },
-                "executions": {
-                    "process": "main",
-                    "mode": "regular",
-                    "timeout": 3600,
-                    "maxTimeout": 7200
-                },
-                "workflowTagsDisabled": False,
-                "logLevel": "info",
-                "versionNotifications": {
-                    "enabled": False
-                }
-            }
-
-            # Write config to a temporary file first
-            temp_config = f'/home/cyberpanel/{str(randint(1000, 9999))}-config'
-            with open(temp_config, 'w') as f:
-                json.dump(config_content, f, indent=2)
-
-            # Set proper ownership and permissions on temp file
-            command = f"chown 1000:1000 {temp_config}"
-            ProcessUtilities.executioner(command)
-
-            command = f"chmod 644 {temp_config}"
-            ProcessUtilities.executioner(command)
-
-            # Create config directory if it doesn't exist
-            config_dir = f"{base_dir}/.n8n/.n8n"
-            command = f"mkdir -p {config_dir}"
-            ProcessUtilities.executioner(command)
-
-            command = f"chown 1000:1000 {config_dir}"
-            ProcessUtilities.executioner(command)
-
-            command = f"chmod 755 {config_dir}"
-            ProcessUtilities.executioner(command)
-
-            # Move config to final location
-            config_file = f"{config_dir}/config"
-            command = f"mv {temp_config} {config_file}"
-            ProcessUtilities.executioner(command)
-
-            command = f"chmod 600 {config_file}"
-            ProcessUtilities.executioner(command)
-
-            # Create empty .gitignore
-            gitignore_file = f"{base_dir}/.n8n/.gitignore"
-            command = f"touch {gitignore_file}"
-            ProcessUtilities.executioner(command)
-
-            command = f"chown 1000:1000 {gitignore_file}"
-            ProcessUtilities.executioner(command)
-
-            command = f"chmod 644 {gitignore_file}"
-            ProcessUtilities.executioner(command)
-
-            # Write debug file to verify encryption key
-            debug_file = f"{base_dir}/.n8n/.n8n/debug_encryption_key"
+                logging.writeToFile(f'Container {container_name} not healthy, attempt {attempt + 1}/{max_retries}')
+                time.sleep(delay)
+                
+            return False
             
-            # Create debug file with proper permissions first
-            command = f"touch {debug_file}"
-            ProcessUtilities.executioner(command)
+        except docker.errors.NotFound:
+            logging.writeToFile(f'Container {container_name} not found')
+            return False
+        except Exception as e:
+            logging.writeToFile(f'Error checking container health: {str(e)}')
+            return False
+
+    def verify_system_resources(self):
+        try:
+            # Check available disk space using root access
+            command = "df -B 1G /home/docker --output=avail | tail -1"
+            available_gb = int(ProcessUtilities.outputExecutioner(command, None, None, None, 1).strip())
+
+            if available_gb < 5:  # Require minimum 5GB free space
+                raise DockerDeploymentError(
+                    f"Insufficient disk space. Need at least 5GB but only {available_gb}GB available.",
+                    self.ERROR_VOLUME_FAILED
+                )
+
+            # Check if Docker is running and accessible
+            command = "systemctl is-active docker"
+            docker_status = ProcessUtilities.outputExecutioner(command, None, None, None, 1).strip()
+            if docker_status != "active":
+                raise DockerDeploymentError("Docker service is not running")
+
+            # Check Docker system info for resource limits
+            command = "docker info --format '{{.MemTotal}}'"
+            total_memory = int(ProcessUtilities.outputExecutioner(command, None, None, None, 1).strip())
             
-            command = f"chown 1000:1000 {debug_file}"
-            ProcessUtilities.executioner(command)
+            # Convert total_memory from bytes to MB
+            total_memory_mb = total_memory / (1024 * 1024)
             
-            command = f"chmod 600 {debug_file}"
-            ProcessUtilities.executioner(command)
+            # Calculate required memory from site and MySQL requirements
+            required_memory = int(self.data['MemoryMySQL']) + int(self.data['MemorySite'])
             
-            # Now write the content
-            with open(debug_file, 'w') as f:
-                f.write(f"Config file key: {encryption_key}\nEnvironment variable: {self.data['N8N_ENCRYPTION_KEY']}")
+            if total_memory_mb < required_memory:
+                raise DockerDeploymentError(
+                    f"Insufficient memory. Need {required_memory}MB but only {int(total_memory_mb)}MB available",
+                    'INSUFFICIENT_MEMORY'
+                )
+
+            # Verify Docker group and permissions
+            command = "getent group docker"
+            docker_group = ProcessUtilities.outputExecutioner(command, None, None, None, 1)
+            if not docker_group:
+                raise DockerDeploymentError("Docker group does not exist")
 
             return True
 
-        except BaseException as msg:
-            logging.writeToFile(f'Error in setup_n8n_data_directory: {str(msg)}')
-            raise
+        except Exception as e:
+            raise DockerDeploymentError(f"Resource verification failed: {str(e)}")
+
+    def setup_docker_environment(self):
+        try:
+            # Create docker directory with root
+            command = f"mkdir -p /home/docker/{self.data['finalURL']}"
+            ProcessUtilities.outputExecutioner(command, None, None, None, 1)
+
+            # Set proper permissions
+            command = f"chown -R {self.data['externalApp']}:docker /home/docker/{self.data['finalURL']}"
+            ProcessUtilities.outputExecutioner(command, None, None, None, 1)
+
+            # Create docker network if doesn't exist
+            command = "docker network ls | grep cyberpanel"
+            network_exists = ProcessUtilities.outputExecutioner(command, None, None, None, 1)
+            if not network_exists:
+                command = "docker network create cyberpanel"
+                ProcessUtilities.outputExecutioner(command, None, None, None, 1)
+
+            return True
+
+        except Exception as e:
+            raise DockerDeploymentError(f"Environment setup failed: {str(e)}")
+
+    def deploy_containers(self):
+        try:
+            # Write docker-compose file
+            command = f"cat > {self.data['ComposePath']} << 'EOF'\n{self.data['ComposeContent']}\nEOF"
+            ProcessUtilities.outputExecutioner(command, None, None, None, 1)
+
+            # Set proper permissions on compose file
+            command = f"chmod 600 {self.data['ComposePath']} && chown root:root {self.data['ComposePath']}"
+            ProcessUtilities.outputExecutioner(command, None, None, None, 1)
+
+            # Deploy with docker-compose
+            command = f"cd {os.path.dirname(self.data['ComposePath'])} && docker-compose up -d"
+            result = ProcessUtilities.outputExecutioner(command, None, None, None, 1)
+
+            if "error" in result.lower():
+                raise DockerDeploymentError(f"Container deployment failed: {result}")
+
+            return True
+
+        except Exception as e:
+            raise DockerDeploymentError(f"Deployment failed: {str(e)}")
+
+    def cleanup_failed_deployment(self):
+        try:
+            # Stop and remove containers
+            command = f"cd {os.path.dirname(self.data['ComposePath'])} && docker-compose down -v"
+            ProcessUtilities.outputExecutioner(command, None, None, None, 1)
+
+            # Remove docker directory
+            command = f"rm -rf /home/docker/{self.data['finalURL']}"
+            ProcessUtilities.outputExecutioner(command, None, None, None, 1)
+
+            # Remove compose file
+            command = f"rm -f {self.data['ComposePath']}"
+            ProcessUtilities.outputExecutioner(command, None, None, None, 1)
+
+            return True
+
+        except Exception as e:
+            logging.writeToFile(f"Cleanup failed: {str(e)}")
+            return False
+
+    def monitor_deployment(self):
+        try:
+            # Check container health
+            command = f"docker ps -a --filter name={self.data['sitename']} --format '{{{{.Status}}}}'"
+            status = ProcessUtilities.outputExecutioner(command, None, None, None, 1)
+
+            if "unhealthy" in status or "exited" in status:
+                # Get container logs
+                command = f"docker logs {self.data['sitename']}"
+                logs = ProcessUtilities.outputExecutioner(command, None, None, None, 1)
+                raise DockerDeploymentError(f"Container unhealthy or exited. Logs: {logs}")
+
+            return True
+
+        except Exception as e:
+            raise DockerDeploymentError(f"Monitoring failed: {str(e)}")
+
+    def handle_deployment_failure(self, error, cleanup=True):
+        """
+        Handle deployment failures and attempt recovery
+        """
+        try:
+            logging.writeToFile(f'Deployment failed: {str(error)}')
+            
+            if cleanup:
+                self.cleanup_failed_deployment()
+            
+            if isinstance(error, DockerDeploymentError):
+                if error.error_code == self.ERROR_DOCKER_NOT_INSTALLED:
+                    # Attempt to install Docker
+                    execPath = "/usr/local/CyberCP/bin/python /usr/local/CyberCP/dockerManager/dockerInstall.py"
+                    ProcessUtilities.executioner(execPath)
+                    return True
+                    
+                elif error.error_code == self.ERROR_PORT_IN_USE:
+                    # Find next available port
+                    new_port = int(self.data['port']) + 1
+                    while new_port < 65535:
+                        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                        result = sock.connect_ex(('127.0.0.1', new_port))
+                        sock.close()
+                        if result != 0:
+                            self.data['port'] = str(new_port)
+                            return True
+                        new_port += 1
+                        
+                elif error.error_code == self.ERROR_DB_FAILED:
+                    # Attempt database recovery
+                    return self.recover_database()
+                    
+            return False
+            
+        except Exception as e:
+            logging.writeToFile(f'Error during failure handling: {str(e)}')
+            return False
+
+    def recover_database(self):
+        """
+        Attempt to recover the database container
+        """
+        try:
+            client = docker.from_env()
+            db_container_name = f"{self.data['ServiceName']}-db"
+            
+            try:
+                db_container = client.containers.get(db_container_name)
+                
+                if db_container.status == 'running':
+                    exec_result = db_container.exec_run(
+                        'pg_isready -U postgres'
+                    )
+                    
+                    if exec_result.exit_code != 0:
+                        db_container.restart()
+                        time.sleep(10)
+                        
+                        if self.check_container_health(db_container_name):
+                            return True
+                            
+            except docker.errors.NotFound:
+                pass
+                
+            return False
+            
+        except Exception as e:
+            logging.writeToFile(f'Database recovery failed: {str(e)}')
+            return False
+
+    def log_deployment_metrics(self, metrics):
+        """
+        Log deployment metrics for analysis
+        """
+        if metrics:
+            try:
+                log_file = f"/var/log/cyberpanel/docker/{self.data['ServiceName']}_metrics.json"
+                os.makedirs(os.path.dirname(log_file), exist_ok=True)
+                
+                with open(log_file, 'w') as f:
+                    json.dump(metrics, f, indent=2)
+                    
+            except Exception as e:
+                logging.writeToFile(f'Error logging metrics: {str(e)}')
 
     def DeployN8NContainer(self):
-        try:
-            # Initialize container state tracking
-            self.containerState = {
-                'docker_installed': False,
-                'directories_created': False,
-                'compose_written': False,
-                'containers_started': False,
-                'proxy_configured': False
-            }
-
-            # Setup service name first
-            self.data['ServiceName'] = self.data["SiteName"].replace(' ', '-')
-
-            # Validate environment variables
-            logging.statusWriter(self.JobID, 'Starting environment validation..,2')
-            self.validate_environment()
-            logging.statusWriter(self.JobID, 'Environment validation completed..,5')
-
-            # Check Docker installation
-            logging.statusWriter(self.JobID, 'Checking if Docker is installed..,10')
-            command = 'docker --help'
-            result = ProcessUtilities.outputExecutioner(command)
-
-            if result.find("not found") > -1:
-                logging.statusWriter(self.JobID, 'Docker not found, installing..,12')
-                execPath = "/usr/local/CyberCP/bin/python /usr/local/CyberCP/dockerManager/dockerInstall.py"
-                ProcessUtilities.executioner(execPath)
-
-            self.containerState['docker_installed'] = True
-            logging.statusWriter(self.JobID, 'Docker is ready to use..,15')
-
-            # Create and setup base docker directory first
-            logging.statusWriter(self.JobID, 'Setting up base docker directory..,18')
-            
-            # Create /home/docker if it doesn't exist
-            command = "mkdir -p /home/docker"
-            result = ProcessUtilities.executioner(command)
-            if not result:
-                logging.statusWriter(self.JobID, 'Failed to create base docker directory. [404]')
-                return 0
-
-            # Set proper permissions on base docker directory
-            command = "chown root:root /home/docker"
-            ProcessUtilities.executioner(command)
-            
-            command = "chmod 755 /home/docker"
-            ProcessUtilities.executioner(command)
-            
-            # Create site-specific directory
-            parent_dir = f"/home/docker/{self.data['finalURL']}"
-            logging.statusWriter(self.JobID, f'Creating site directory {parent_dir}..,20')
-            
-            command = f"mkdir -p {parent_dir}"
-            result = ProcessUtilities.executioner(command)
-            if not result:
-                logging.statusWriter(self.JobID, f'Failed to create site directory {parent_dir}. [404]')
-                return 0
-
-            # Set site directory permissions
-            command = f"chown root:root {parent_dir}"
-            ProcessUtilities.executioner(command)
-            
-            command = f"chmod 755 {parent_dir}"
-            ProcessUtilities.executioner(command)
-
-            # Create backups directory
-            logging.statusWriter(self.JobID, 'Creating backups directory..,25')
-            command = f"mkdir -p {parent_dir}/backups"
-            result = ProcessUtilities.executioner(command)
-            if not result:
-                logging.statusWriter(self.JobID, f'Failed to create backups directory. [404]')
-                return 0
-
-            # Set backups directory permissions
-            command = f"chown root:root {parent_dir}/backups"
-            ProcessUtilities.executioner(command)
-            
-            command = f"chmod 755 {parent_dir}/backups"
-            ProcessUtilities.executioner(command)
-
-            # Set up n8n data directory
-            logging.statusWriter(self.JobID, 'Setting up n8n data directory..,30')
+        """
+        Main deployment method with error handling
+        """
+        max_retries = 3
+        current_try = 0
+        
+        while current_try < max_retries:
             try:
-                self.setup_n8n_data_directory()
+                logging.statusWriter(self.JobID, 'Starting deployment verification...,0')
+                
+                # Verify system resources
+                self.verify_system_resources()
+                logging.statusWriter(self.JobID, 'System resources verified...,10')
+                
+                # Check Docker installation
+                command = 'docker --help'
+                result = ProcessUtilities.outputExecutioner(command)
+                if result.find("not found") > -1:
+                    raise DockerDeploymentError(
+                        "Docker not installed",
+                        self.ERROR_DOCKER_NOT_INSTALLED
+                    )
+                logging.statusWriter(self.JobID, 'Docker installation verified...,20')
+
+                # Create directories
+                command = f"mkdir -p /home/docker/{self.data['finalURL']}"
+                result, message = ProcessUtilities.outputExecutioner(command, None, None, None, 1)
+                if result == 0:
+                    raise DockerDeploymentError(f"Failed to create directories: {message}")
+                logging.statusWriter(self.JobID, 'Directories created...,30')
+
+                # Generate and write docker-compose file
+                self.data['ServiceName'] = self.data["SiteName"].replace(' ', '-')
+                compose_config = self.generate_compose_config()
+                
+                TempCompose = f'/home/cyberpanel/{self.data["finalURL"]}-docker-compose.yml'
+                with open(TempCompose, 'w') as f:
+                    f.write(compose_config)
+                
+                command = f"mv {TempCompose} {self.data['ComposePath']}"
+                result, message = ProcessUtilities.outputExecutioner(command, None, None, None, 1)
+                if result == 0:
+                    raise DockerDeploymentError(f"Failed to move compose file: {message}")
+                
+                command = f"chmod 600 {self.data['ComposePath']} && chown root:root {self.data['ComposePath']}"
+                ProcessUtilities.executioner(command, 'root', True)
+                logging.statusWriter(self.JobID, 'Docker compose file created...,40')
+
+                # Deploy containers
+                if ProcessUtilities.decideDistro() == ProcessUtilities.cent8 or ProcessUtilities.decideDistro() == ProcessUtilities.centos:
+                    dockerCommand = 'docker compose'
+                else:
+                    dockerCommand = 'docker-compose'
+
+                command = f"{dockerCommand} -f {self.data['ComposePath']} -p '{self.data['SiteName']}' up -d"
+                result, message = ProcessUtilities.outputExecutioner(command, None, None, None, 1)
+                if result == 0:
+                    raise DockerDeploymentError(f"Failed to deploy containers: {message}")
+                logging.statusWriter(self.JobID, 'Containers deployed...,60')
+
+                # Wait for containers to be healthy
+                time.sleep(25)
+                if not self.check_container_health(f"{self.data['ServiceName']}-db") or \
+                   not self.check_container_health(self.data['ServiceName']):
+                    raise DockerDeploymentError("Containers failed to reach healthy state", self.ERROR_CONTAINER_FAILED)
+                logging.statusWriter(self.JobID, 'Containers healthy...,70')
+
+                # Setup proxy
+                execPath = "/usr/local/CyberCP/bin/python /usr/local/CyberCP/plogical/DockerSites.py"
+                execPath = execPath + f" SetupProxy --port {self.data['port']}"
+                ProcessUtilities.executioner(execPath)
+                logging.statusWriter(self.JobID, 'Proxy configured...,80')
+
+                # Setup ht access
+                execPath = "/usr/local/CyberCP/bin/python /usr/local/CyberCP/plogical/DockerSites.py"
+                execPath = execPath + f" SetupHTAccess --port {self.data['port']} --htaccess {self.data['htaccessPath']}"
+                ProcessUtilities.executioner(execPath, self.data['externalApp'])
+                logging.statusWriter(self.JobID, 'HTAccess configured...,90')
+
+                # Restart web server
+                from plogical.installUtilities import installUtilities
+                installUtilities.reStartLiteSpeedSocket()
+
+                # Monitor deployment
+                metrics = self.monitor_deployment()
+                self.log_deployment_metrics(metrics)
+
+                logging.statusWriter(self.JobID, 'Deployment completed successfully. [200]')
+                return True
+                
+            except DockerDeploymentError as e:
+                logging.writeToFile(f'Deployment error: {str(e)}')
+                
+                if self.handle_deployment_failure(e):
+                    current_try += 1
+                    continue
+                else:
+                    logging.statusWriter(self.JobID, f'Deployment failed: {str(e)} [404]')
+                    return False
+                    
             except Exception as e:
-                logging.statusWriter(self.JobID, f'Failed to set up n8n data directory: {str(e)} [404]')
-                return 0
+                logging.writeToFile(f'Unexpected error: {str(e)}')
+                self.handle_deployment_failure(e)
+                logging.statusWriter(self.JobID, f'Deployment failed: {str(e)} [404]')
+                return False
+                
+        logging.statusWriter(self.JobID, f'Deployment failed after {max_retries} attempts [404]')
+        return False
 
-            if 'N8N_ENCRYPTION_KEY' not in self.data:
-                logging.statusWriter(self.JobID, f'Error: N8N_ENCRYPTION_KEY not set after directory setup. [404]')
-                return 0
+    def generate_compose_config(self):
+        """
+        Generate the docker-compose configuration with improved security and reliability
+        """
+        postgres_config = {
+            'image': 'docker.io/bitnami/postgresql:16',
+            'user': 'root',
+            'healthcheck': {
+                'test': ["CMD-SHELL", "pg_isready -U postgres"],
+                'interval': '10s',
+                'timeout': '5s',
+                'retries': 5,
+                'start_period': '30s'
+            },
+            'environment': {
+                'POSTGRESQL_USERNAME': self.data['MySQLDBNUser'],
+                'POSTGRESQL_DATABASE': self.data['MySQLDBName'],
+                'POSTGRESQL_PASSWORD': self.data['MySQLPassword'],
+                'POSTGRESQL_POSTGRES_PASSWORD': self.data['MySQLPassword']
+            }
+        }
 
-            self.containerState['directories_created'] = True
-            logging.statusWriter(self.JobID, 'Directory setup completed successfully..,35')
+        n8n_config = {
+            'image': 'docker.n8n.io/n8nio/n8n',
+            'user': 'root',
+            'healthcheck': {
+                'test': ["CMD", "wget", "--spider", "http://localhost:5678"],
+                'interval': '20s',
+                'timeout': '10s',
+                'retries': 3
+            },
+            'environment': {
+                'DB_TYPE': 'postgresdb',
+                'DB_POSTGRESDB_HOST': f"{self.data['ServiceName']}-db",
+                'DB_POSTGRESDB_PORT': '5432',
+                'DB_POSTGRESDB_DATABASE': self.data['MySQLDBName'],
+                'DB_POSTGRESDB_USER': self.data['MySQLDBNUser'],
+                'DB_POSTGRESDB_PASSWORD': self.data['MySQLPassword'],
+                'N8N_HOST': self.data['finalURL'],
+                'NODE_ENV': 'production',
+                'WEBHOOK_URL': f"https://{self.data['finalURL']}",
+                'N8N_PUSH_BACKEND': 'sse',
+                'GENERIC_TIMEZONE': 'UTC'
+            }
+        }
 
-            # Generate Docker Compose configuration
-            compose_config = f'''
-version: '3.8'
+        return f'''version: '3.8'
 
 volumes:
-  {self.data['ServiceName']}_db:
+  db_storage:
     driver: local
-  {self.data['ServiceName']}_data:
+  n8n_storage:
     driver: local
-
-networks:
-  n8n_net:
-    driver: bridge
 
 services:
   '{self.data['ServiceName']}-db':
-    image: docker.io/bitnami/postgresql:16
-    user: root
+    image: {postgres_config['image']}
+    user: {postgres_config['user']}
     restart: always
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U {self.data['MySQLDBNUser']}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      test: {postgres_config['healthcheck']['test']}
+      interval: {postgres_config['healthcheck']['interval']}
+      timeout: {postgres_config['healthcheck']['timeout']}
+      retries: {postgres_config['healthcheck']['retries']}
+      start_period: {postgres_config['healthcheck']['start_period']}
     environment:
-      - POSTGRESQL_USERNAME={self.data['MySQLDBNUser']}
-      - POSTGRESQL_DATABASE={self.data['MySQLDBName']}
-      - POSTGRESQL_PASSWORD={self.data['MySQLPassword']}
+      - POSTGRESQL_USERNAME={postgres_config['environment']['POSTGRESQL_USERNAME']}
+      - POSTGRESQL_DATABASE={postgres_config['environment']['POSTGRESQL_DATABASE']}
+      - POSTGRESQL_PASSWORD={postgres_config['environment']['POSTGRESQL_PASSWORD']}
+      - POSTGRESQL_POSTGRES_PASSWORD={postgres_config['environment']['POSTGRESQL_POSTGRES_PASSWORD']}
     volumes:
-      - "{self.data['ServiceName']}_db:/bitnami/postgresql"
+      - "/home/docker/{self.data['finalURL']}/db:/bitnami/postgresql"
     networks:
-      - n8n_net
+      - n8n-network
     deploy:
       resources:
         limits:
@@ -1100,164 +1224,44 @@ services:
           memory: {self.data["MemoryMySQL"]}M
 
   '{self.data['ServiceName']}':
-    image: docker.n8n.io/n8nio/n8n
-    user: "1000:1000"
+    image: {n8n_config['image']}
+    user: {n8n_config['user']}
     restart: always
     healthcheck:
-      test: ["CMD", "wget", "--spider", "http://localhost:5678"]
-      interval: 20s
-      timeout: 10s
-      retries: 3
+      test: {n8n_config['healthcheck']['test']}
+      interval: {n8n_config['healthcheck']['interval']}
+      timeout: {n8n_config['healthcheck']['timeout']}
+      retries: {n8n_config['healthcheck']['retries']}
     environment:
-      - DB_TYPE=postgresdb
-      - DB_POSTGRESDB_HOST={self.data['ServiceName']}-db
-      - DB_POSTGRESDB_PORT=5432
-      - DB_POSTGRESDB_DATABASE={self.data['MySQLDBName']}
-      - DB_POSTGRESDB_USER={self.data['MySQLDBNUser']}
-      - DB_POSTGRESDB_PASSWORD={self.data['MySQLPassword']}
-      - N8N_HOST={self.data['finalURL']}
-      - NODE_ENV=production
-      - WEBHOOK_URL=https://{self.data['finalURL']}
-      - N8N_PUSH_BACKEND=sse
-      - N8N_BASIC_AUTH_ACTIVE=true
-      - N8N_BASIC_AUTH_USER={self.data['adminUser']}
-      - N8N_BASIC_AUTH_PASSWORD={self.data['MySQLPassword']}
-      - N8N_ENCRYPTION_KEY={self.data['N8N_ENCRYPTION_KEY']}
-      - N8N_USER_FOLDER=/home/node/.n8n
-      - GENERIC_TIMEZONE=UTC
-      - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=false
+      - DB_TYPE={n8n_config['environment']['DB_TYPE']}
+      - DB_POSTGRESDB_HOST={n8n_config['environment']['DB_POSTGRESDB_HOST']}
+      - DB_POSTGRESDB_PORT={n8n_config['environment']['DB_POSTGRESDB_PORT']}
+      - DB_POSTGRESDB_DATABASE={n8n_config['environment']['DB_POSTGRESDB_DATABASE']}
+      - DB_POSTGRESDB_USER={n8n_config['environment']['DB_POSTGRESDB_USER']}
+      - DB_POSTGRESDB_PASSWORD={n8n_config['environment']['DB_POSTGRESDB_PASSWORD']}
+      - N8N_HOST={n8n_config['environment']['N8N_HOST']}
+      - NODE_ENV={n8n_config['environment']['NODE_ENV']}
+      - WEBHOOK_URL={n8n_config['environment']['WEBHOOK_URL']}
+      - N8N_PUSH_BACKEND={n8n_config['environment']['N8N_PUSH_BACKEND']}
+      - GENERIC_TIMEZONE={n8n_config['environment']['GENERIC_TIMEZONE']}
     ports:
       - "{self.data['port']}:5678"
-    volumes:
-      - "/home/docker/{self.data['finalURL']}/n8n_data:/home/node/.n8n"
     depends_on:
-      {self.data['ServiceName']}-db:
-        condition: service_healthy
+      - {self.data['ServiceName']}-db
+    volumes:
+      - "/home/docker/{self.data['finalURL']}/data:/home/node/.n8n"
     networks:
-      - n8n_net
+      - n8n-network
     deploy:
       resources:
         limits:
           cpus: '{self.data["CPUsSite"]}'
           memory: {self.data["MemorySite"]}M
-'''
 
-            # Write Docker Compose file
-            logging.statusWriter(self.JobID, 'Writing Docker Compose configuration..,40')
-            TempCompose = f'/home/cyberpanel/{self.data["finalURL"]}-docker-compose.yml'
-
-            WriteToFile = open(TempCompose, 'w')
-            WriteToFile.write(compose_config)
-            WriteToFile.close()
-
-            command = f"mv {TempCompose} {self.data['ComposePath']}"
-            result = ProcessUtilities.executioner(command)
-            if not result:
-                logging.statusWriter(self.JobID, f'Failed to move compose file to final location. [404]')
-                return 0
-
-            command = f"chmod 600 {self.data['ComposePath']} && chown root:root {self.data['ComposePath']}"
-            ProcessUtilities.executioner(command)
-
-            self.containerState['compose_written'] = True
-
-            # Start containers
-            logging.statusWriter(self.JobID, 'Starting containers..,50')
-
-            if ProcessUtilities.decideDistro() == ProcessUtilities.cent8 or ProcessUtilities.decideDistro() == ProcessUtilities.centos:
-                dockerCommand = 'docker compose'
-            else:
-                dockerCommand = 'docker-compose'
-
-            command = f"{dockerCommand} -f {self.data['ComposePath']} -p '{self.data['SiteName']}' up -d"
-            result = ProcessUtilities.executioner(command)
-            if not result:
-                logging.statusWriter(self.JobID, f'Failed to start containers. [404]')
-                return 0
-
-            logging.statusWriter(self.JobID, 'Waiting for containers to be healthy..,60')
-            time.sleep(25)
-
-            # Check container health
-            passdata = {}
-            passdata["JobID"] = None
-            passdata['name'] = self.data['ServiceName']
-            da = Docker_Sites(None, passdata)
-            retdata, containers = da.ListContainers()
-
-            containers = json.loads(containers)
-
-            if len(containers) < 2:
-                logging.writeToFile(f'Unknown error, containers not running. [DeployN8NContainer]')
-                logging.statusWriter(self.JobID, f'Unknown error, containers not running. [DeployN8NContainer] . [404]')
-                return 0
-
-            self.containerState['containers_started'] = True
-
-            # Setup proxy
-            logging.statusWriter(self.JobID, 'Configuring proxy..,80')
-            execPath = "/usr/local/CyberCP/bin/python /usr/local/CyberCP/plogical/DockerSites.py"
-            execPath = execPath + f" SetupProxy --port {self.data['port']}"
-            ProcessUtilities.executioner(execPath)
-
-            execPath = "/usr/local/CyberCP/bin/python /usr/local/CyberCP/plogical/DockerSites.py"
-            execPath = execPath + f" SetupHTAccess --port {self.data['port']} --htaccess {self.data['htaccessPath']}"
-            ProcessUtilities.executioner(execPath, self.data['externalApp'])
-
-            self.containerState['proxy_configured'] = True
-
-            # Restart web server
-            from plogical.installUtilities import installUtilities
-            installUtilities.reStartLiteSpeedSocket()
-
-            logging.statusWriter(self.JobID, 'Deployment completed successfully. [200]')
-
-        except BaseException as msg:
-            self.cleanup()
-            logging.writeToFile(f'{str(msg)}. [DeployN8NContainer]')
-            logging.statusWriter(self.JobID, f'Error: {str(msg)} . [404]')
-            print(str(msg))
-
-    def validate_environment(self):
-        """
-        Validate required environment variables
-        """
-        required_vars = [
-            'MySQLDBName', 'MySQLDBNUser', 'MySQLPassword',
-            'finalURL', 'port', 'SiteName', 'adminUser',
-            'CPUsMySQL', 'MemoryMySQL', 'CPUsSite', 'MemorySite'
-        ]
-        
-        for var in required_vars:
-            if var not in self.data or not self.data[var]:
-                raise Exception(f"Missing required environment variable: {var}")
-            
-        # Validate numeric values
-        numeric_vars = ['CPUsMySQL', 'MemoryMySQL', 'CPUsSite', 'MemorySite']
-        for var in numeric_vars:
-            try:
-                float(self.data[var])
-            except (ValueError, TypeError):
-                raise Exception(f"Invalid numeric value for {var}: {self.data[var]}")
-            
-        # Validate minimum memory requirements
-        if int(self.data['MemoryMySQL']) < 256:
-            raise Exception("Minimum MySQL memory requirement is 256MB")
-        if int(self.data['MemorySite']) < 256:
-            raise Exception("Minimum site memory requirement is 256MB")
-
-    def cleanup(self):
-        try:
-            if not self.containerState.get('containers_started', False):
-                command = f"rm -rf /home/docker/{self.data['finalURL']}"
-                ProcessUtilities.executioner(command)
-            
-            if self.containerState.get('proxy_configured', False):
-                # Cleanup proxy configurations if needed
-                pass
-        except:
-            pass
-
+networks:
+  n8n-network:
+    driver: bridge
+    name: {self.data['ServiceName']}_network'''
 
 def Main():
     try:
