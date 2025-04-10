@@ -952,6 +952,33 @@ services:
                 logs = ProcessUtilities.outputExecutioner(command, None, None, None, 1)
                 raise DockerDeploymentError(f"Container unhealthy or exited. Logs: {logs}")
 
+            # Wait for database to be ready
+            max_retries = 30
+            retry_count = 0
+            db_ready = False
+
+            while retry_count < max_retries:
+                # Check if database container is ready
+                command = f"docker exec {self.data['ServiceName']}-db pg_isready -U postgres"
+                result = ProcessUtilities.outputExecutioner(command, None, None, None, 1)
+                
+                if "accepting connections" in result:
+                    db_ready = True
+                    break
+                
+                retry_count += 1
+                time.sleep(2)
+
+            if not db_ready:
+                raise DockerDeploymentError("Database failed to become ready within timeout period")
+
+            # Verify database connection from n8n container
+            command = f"docker exec {self.data['ServiceName']} node -e \"const pg = require('pg'); const client = new pg.Client({{ user: 'postgres', password: '{self.data['MySQLPassword']}', host: '{self.data['ServiceName']}-db', port: 5432, database: '{self.data['MySQLDBName']}' }}); client.connect().then(() => {{ console.log('Connected successfully'); process.exit(0); }}).catch(err => {{ console.error(err); process.exit(1); }});\""
+            result = ProcessUtilities.outputExecutioner(command, None, None, None, 1)
+
+            if "Connected successfully" not in result:
+                raise DockerDeploymentError(f"Failed to verify database connection: {result}")
+
             return True
 
         except Exception as e:
