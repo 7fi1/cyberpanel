@@ -342,11 +342,11 @@
                                                     <label class="mb-2">Memory Usage</label>
                                                     <div class="progress" style="height: 20px;">
                                                         <div class="progress-bar" role="progressbar" 
-                                                            ng-style="{'width': memoryUsagePercent + '%'}" 
-                                                            aria-valuenow="{$ memoryUsagePercent $}" 
+                                                            ng-style="{'width': web.memoryUsagePercent + '%'}" 
+                                                            aria-valuenow="{$ web.memoryUsagePercent $}" 
                                                             aria-valuemin="0" 
                                                             aria-valuemax="100">
-                                                            {$ memoryUsage $}
+                                                            {$ web.memoryUsage $}
                                                         </div>
                                                     </div>
                                                 </div>
@@ -354,11 +354,11 @@
                                                     <label class="mb-2">CPU Usage</label>
                                                     <div class="progress" style="height: 20px;">
                                                         <div class="progress-bar" role="progressbar" 
-                                                            ng-style="{'width': cpuUsagePercent + '%'}" 
-                                                            aria-valuenow="{$ cpuUsagePercent $}" 
+                                                            ng-style="{'width': web.cpuUsagePercent + '%'}" 
+                                                            aria-valuenow="{$ web.cpuUsagePercent $}" 
                                                             aria-valuemin="0" 
                                                             aria-valuemax="100">
-                                                            {$ cpuUsagePercent | number:1 $}%
+                                                            {$ web.cpuUsagePercent | number:1 $}%
                                                         </div>
                                                     </div>
                                                 </div>
@@ -368,7 +368,7 @@
                                         <div class="col-md-6">
                                             <div class="info-box shadow-sm">
                                                 <h4 class="border-bottom pb-2 mb-3">Network & Ports</h4>
-                                                <div ng-if="ports">
+                                                <div ng-if="web.ports">
                                                     <div class="table-responsive">
                                                         <table class="table table-striped table-hover mb-0">
                                                             <thead>
@@ -378,7 +378,7 @@
                                                                 </tr>
                                                             </thead>
                                                             <tbody>
-                                                                <tr ng-repeat="(containerPort, hostBindings) in ports">
+                                                                <tr ng-repeat="(containerPort, hostBindings) in web.ports">
                                                                     <td><code>{$ containerPort $}</code></td>
                                                                     <td>
                                                                         <span ng-repeat="binding in hostBindings" class="badge bg-light text-dark me-2">
@@ -390,14 +390,14 @@
                                                         </table>
                                                     </div>
                                                 </div>
-                                                <div ng-if="!ports" class="text-muted">
+                                                <div ng-if="!web.ports" class="text-muted">
                                                     <p class="mb-0">No ports exposed</p>
                                                 </div>
                                             </div>
 
                                             <div class="info-box shadow-sm mt-4">
                                                 <h4 class="border-bottom pb-2 mb-3">Volumes</h4>
-                                                <div ng-if="volumes && volumes.length > 0">
+                                                <div ng-if="web.volumes && web.volumes.length > 0">
                                                     <div class="table-responsive">
                                                         <table class="table table-striped table-hover mb-0">
                                                             <thead>
@@ -408,7 +408,7 @@
                                                                 </tr>
                                                             </thead>
                                                             <tbody>
-                                                                <tr ng-repeat="volume in volumes">
+                                                                <tr ng-repeat="volume in web.volumes">
                                                                     <td><code>{$ volume.Source $}</code></td>
                                                                     <td><code>{$ volume.Destination $}</code></td>
                                                                     <td><span class="badge bg-secondary">{$ volume.Mode $}</span></td>
@@ -417,14 +417,14 @@
                                                         </table>
                                                     </div>
                                                 </div>
-                                                <div ng-if="!volumes || volumes.length === 0" class="text-muted">
+                                                <div ng-if="!web.volumes || web.volumes.length === 0" class="text-muted">
                                                     <p class="mb-0">No volumes mounted</p>
                                                 </div>
                                             </div>
 
                                             <div class="info-box shadow-sm mt-4">
                                                 <h4 class="border-bottom pb-2 mb-3">Environment Variables</h4>
-                                                <div ng-if="environment && environment.length > 0">
+                                                <div ng-if="web.environment && web.environment.length > 0">
                                                     <div class="table-responsive">
                                                         <table class="table table-striped table-hover mb-0">
                                                             <thead>
@@ -434,7 +434,7 @@
                                                                 </tr>
                                                             </thead>
                                                             <tbody>
-                                                                <tr ng-repeat="env in environment">
+                                                                <tr ng-repeat="env in web.environment">
                                                                     <td><code>{$ env.split('=')[0] $}</code></td>
                                                                     <td>
                                                                         <code ng-if="env.split('=')[1] === '********'">{$ env.split('=')[1] $}</code>
@@ -445,7 +445,7 @@
                                                         </table>
                                                     </div>
                                                 </div>
-                                                <div ng-if="!environment || environment.length === 0" class="text-muted">
+                                                <div ng-if="!web.environment || web.environment.length === 0" class="text-muted">
                                                     <p class="mb-0">No environment variables set</p>
                                                 </div>
                                             </div>

@@ -17321,13 +17321,6 @@ app.controller('ListDockersitecontainer', function ($scope, $http) {
     $scope.conatinerview = true;
     $('#cyberpanelLoading').hide();
 
-    // Add filter for object length
-    app.filter('objLength', function() {
-        return function(obj) {
-            return obj ? Object.keys(obj).length : 0;
-        };
-    });
-
     // Format bytes to human readable
     function formatBytes(bytes, decimals = 2) {
         if (bytes === 0) return '0 Bytes';
@@ -17400,36 +17393,34 @@ app.controller('ListDockersitecontainer', function ($scope, $http) {
             if (response.data.status === 1) {
                 var containerInfo = response.data.data[1];
                 
-                // Basic Information
-                $scope.cid = containerInfo.id;
-                $scope.status = containerInfo.status;
-                $scope.created = new Date(containerInfo.created);
-                $scope.uptime = containerInfo.uptime;
-                $scope.cName = containerInfo.name;
+                // Find the container in the list and update its information
+                for (var i = 0; i < $scope.ContainerList.length; i++) {
+                    if ($scope.ContainerList[i].id === containerid) {
+                        // Basic Information
+                        $scope.ContainerList[i].status = containerInfo.status;
+                        $scope.ContainerList[i].created = new Date(containerInfo.created);
+                        $scope.ContainerList[i].uptime = containerInfo.uptime;
 
-                // Resource Usage
-                var memoryBytes = containerInfo.memory_usage;
-                $scope.memoryUsage = formatBytes(memoryBytes);
-                $scope.memoryUsagePercent = (memoryBytes / (1024 * 1024 * 1024)) * 100; // Assuming 1GB limit
-                $scope.cpuUsagePercent = (containerInfo.cpu_usage / 10000000000) * 100; // Normalize to percentage
+                        // Resource Usage
+                        var memoryBytes = containerInfo.memory_usage;
+                        $scope.ContainerList[i].memoryUsage = formatBytes(memoryBytes);
+                        $scope.ContainerList[i].memoryUsagePercent = (memoryBytes / (1024 * 1024 * 1024)) * 100; // Assuming 1GB limit
+                        $scope.ContainerList[i].cpuUsagePercent = (containerInfo.cpu_usage / 10000000000) * 100; // Normalize to percentage
 
-                // Network & Ports
-                $scope.ports = containerInfo.ports;
+                        // Network & Ports
+                        $scope.ContainerList[i].ports = containerInfo.ports;
 
-                // Volumes
-                $scope.volumes = containerInfo.volumes;
+                        // Volumes
+                        $scope.ContainerList[i].volumes = containerInfo.volumes;
 
-                // Environment Variables
-                $scope.environment = containerInfo.environment;
+                        // Environment Variables
+                        $scope.ContainerList[i].environment = containerInfo.environment;
+                        break;
+                    }
+                }
 
                 // Get container logs
                 $scope.getcontainerlog(containerid);
-
-                new PNotify({
-                    title: 'Success!',
-                    text: 'Container information loaded successfully.',
-                    type: 'success'
-                });
             } else {
                 new PNotify({
                     title: 'Operation Failed!',
