@@ -7,8 +7,6 @@
     {% get_current_language as LANGUAGE_CODE %}
     <!-- Current language: {{ LANGUAGE_CODE }} -->
 
-    <script src="{% static 'websiteFunctions/dockerController.js' %}"></script>
-
     <style>
         .info-box {
             background: #fff;
@@ -149,7 +147,7 @@
     </script>
 
 
-    <div class="container" ng-controller="DockerContainerManager">
+    <div class="container" ng-controller="ListDockersitecontainer">
 
         <div id="page-title">
             <h2 id="domainNamePage">{% trans "Containers" %} <img id="cyberpanelLoading" ng-hide="cyberpanelLoading"
@@ -306,31 +304,27 @@
                             <div id="page-title" class="mb-4">
                                 <h2 id="domainNamePage" class="d-flex justify-content-between align-items-center">
                                     <span>{% trans "Currently managing: " %} {$ web.name $}</span>
+                                    <div class="btn-group">
+                                        <button class="btn btn-success" ng-click="cAction('start')" ng-if="web.status !== 'running'">
+                                            <i class="fa fa-play"></i> Start
+                                        </button>
+                                        <button class="btn btn-warning" ng-click="cAction('restart')" ng-if="web.status === 'running'">
+                                            <i class="fa fa-refresh"></i> Restart
+                                        </button>
+                                        <button class="btn btn-danger" ng-click="cAction('stop')" ng-if="web.status === 'running'">
+                                            <i class="fa fa-stop"></i> Stop
+                                        </button>
+                                        <button class="btn btn-primary" ng-click="openSettings(web)">
+                                            <i class="fa fa-cog"></i> Settings
+                                        </button>
+                                        <a class="btn btn-info" href="http://{$ location.hostname $}:{$ web.ports['5678/tcp'][0].HostPort $}" target="_blank" ng-if="web.status === 'running'">
+                                            <i class="fa fa-external-link"></i> Open n8n
+                                        </a>
+                                    </div>
                                 </h2>
                                 <p class="text-muted">
                                     {% trans "Container ID" %}: <code>{$ web.id $}</code>
                                 </p>
-                                
-                                <div class="action-buttons mb-4">
-                                    <button class="btn btn-primary me-2" ng-click="openN8NEditor(web)">
-                                        <i class="fa fa-external-link"></i> Open N8N Editor
-                                    </button>
-                                    <button class="btn btn-success me-2" ng-click="startContainer(web.id)" ng-if="web.status !== 'running'">
-                                        <i class="fa fa-play"></i> Start
-                                    </button>
-                                    <button class="btn btn-warning me-2" ng-click="restartContainer(web.id)" ng-if="web.status === 'running'">
-                                        <i class="fa fa-refresh"></i> Restart
-                                    </button>
-                                    <button class="btn btn-danger me-2" ng-click="stopContainer(web.id)" ng-if="web.status === 'running'">
-                                        <i class="fa fa-stop"></i> Stop
-                                    </button>
-                                    <button class="btn btn-info me-2" data-toggle="modal" data-target="#settings">
-                                        <i class="fa fa-cog"></i> Settings
-                                    </button>
-                                    <button class="btn btn-secondary" ng-click="showProcesses(web.id)">
-                                        <i class="fa fa-tasks"></i> Processes
-                                    </button>
-                                </div>
                             </div>
 
                             <div class="container-fluid p-0">
@@ -380,80 +374,6 @@
                                                             aria-valuemax="100">
                                                             {$ web.cpuUsagePercent | number:1 $}%
                                                         </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <div class="info-box shadow-sm mt-4">
-                                                <h4 class="border-bottom pb-2 mb-3">N8N Health Status</h4>
-                                                <div class="mb-3">
-                                                    <div class="d-flex justify-content-between align-items-center mb-2">
-                                                        <label class="mb-0">Active Workflows</label>
-                                                        <span class="badge bg-primary">{$ web.n8nStats.activeWorkflows || 0 $}</span>
-                                                    </div>
-                                                    <div class="d-flex justify-content-between align-items-center mb-2">
-                                                        <label class="mb-0">Queued Executions</label>
-                                                        <span class="badge bg-warning">{$ web.n8nStats.queuedExecutions || 0 $}</span>
-                                                    </div>
-                                                    <div class="d-flex justify-content-between align-items-center mb-2">
-                                                        <label class="mb-0">Database Connection</label>
-                                                        <span class="badge" ng-class="{'bg-success': web.n8nStats.dbConnected, 'bg-danger': !web.n8nStats.dbConnected}">
-                                                            {$ web.n8nStats.dbConnected ? 'Connected' : 'Disconnected' $}
-                                                        </span>
-                                                    </div>
-                                                    <div class="d-flex justify-content-between align-items-center">
-                                                        <label class="mb-0">Last Execution</label>
-                                                        <span>{$ web.n8nStats.lastExecution | date:'medium' $}</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <div class="info-box shadow-sm mt-4">
-                                                <h4 class="border-bottom pb-2 mb-3">Backup Management</h4>
-                                                <div class="mb-3">
-                                                    <div class="row mb-3">
-                                                        <div class="col-md-8">
-                                                            <button class="btn btn-primary" ng-click="createBackup(web.id)">
-                                                                <i class="fa fa-download"></i> Create New Backup
-                                                            </button>
-                                                        </div>
-                                                        <div class="col-md-4 text-end">
-                                                            <button class="btn btn-outline-primary" ng-click="refreshBackups(web.id)">
-                                                                <i class="fa fa-refresh"></i>
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                    
-                                                    <div class="table-responsive" ng-if="web.backups && web.backups.length > 0">
-                                                        <table class="table table-striped table-hover mb-0">
-                                                            <thead>
-                                                                <tr>
-                                                                    <th>Date</th>
-                                                                    <th>Size</th>
-                                                                    <th>Actions</th>
-                                                                </tr>
-                                                            </thead>
-                                                            <tbody>
-                                                                <tr ng-repeat="backup in web.backups">
-                                                                    <td>{$ backup.date | date:'medium' $}</td>
-                                                                    <td>{$ backup.size | bytes $}</td>
-                                                                    <td>
-                                                                        <button class="btn btn-sm btn-success me-1" ng-click="restoreBackup(web.id, backup.id)">
-                                                                            <i class="fa fa-upload"></i> Restore
-                                                                        </button>
-                                                                        <button class="btn btn-sm btn-primary me-1" ng-click="downloadBackup(web.id, backup.id)">
-                                                                            <i class="fa fa-download"></i> Download
-                                                                        </button>
-                                                                        <button class="btn btn-sm btn-danger" ng-click="deleteBackup(web.id, backup.id)">
-                                                                            <i class="fa fa-trash"></i>
-                                                                        </button>
-                                                                    </td>
-                                                                </tr>
-                                                            </tbody>
-                                                        </table>
-                                                    </div>
-                                                    <div ng-if="!web.backups || web.backups.length === 0" class="text-muted">
-                                                        <p class="mb-0">No backups available</p>
                                                     </div>
                                                 </div>
                                             </div>

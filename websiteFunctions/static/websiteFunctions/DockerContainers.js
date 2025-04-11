@@ -1,7 +1,6 @@
-app.controller('DockerContainerManager', function ($scope, $http) {
-    $scope.cyberpanelLoading = true;
+app.controller('ListDockersitecontainer', function ($scope, $http) {
+    $scope.cyberPanelLoading = true;
     $scope.conatinerview = true;
-    $scope.ContainerList = [];
     $('#cyberpanelLoading').hide();
 
     // Format bytes to human readable
@@ -30,7 +29,7 @@ app.controller('DockerContainerManager', function ($scope, $http) {
         function ListInitialData(response) {
             $('#cyberpanelLoading').hide();
             if (response.data.status === 1) {
-                $scope.cyberpanelLoading = true;
+                $scope.cyberPanelLoading = true;
                 var finalData = JSON.parse(response.data.data[1]);
                 $scope.ContainerList = finalData;
                 $("#listFail").hide();
@@ -41,7 +40,7 @@ app.controller('DockerContainerManager', function ($scope, $http) {
         }
 
         function cantLoadInitialData(response) {
-            $scope.cyberpanelLoading = true;
+            $scope.cyberPanelLoading = true;
             $('#cyberpanelLoading').hide();
             new PNotify({
                 title: 'Operation Failed!',
@@ -98,20 +97,18 @@ app.controller('DockerContainerManager', function ($scope, $http) {
 
                         // Environment Variables
                         $scope.ContainerList[i].environment = containerInfo.environment;
-
-                        // N8N Stats
-                        $scope.ContainerList[i].n8nStats = containerInfo.n8nStats || {
-                            dbConnected: null,
-                            activeWorkflows: 0,
-                            queuedExecutions: 0,
-                            lastExecution: null
-                        };
-
-                        // Load backups
-                        $scope.refreshBackups($scope.ContainerList[i].id);
                         break;
                     }
                 }
+
+                // Get container logs
+                $scope.getcontainerlog(containerid);
+            } else {
+                new PNotify({
+                    title: 'Operation Failed!',
+                    text: response.data.error_message,
+                    type: 'error'
+                });
             }
         }
 
@@ -120,209 +117,16 @@ app.controller('DockerContainerManager', function ($scope, $http) {
             $('#cyberpanelLoading').hide();
             new PNotify({
                 title: 'Operation Failed!',
-                text: response.data.error_message || 'Could not connect to server',
-                type: 'error'
-            });
-        }
-    };
-
-    $scope.createBackup = function(containerId) {
-        $scope.cyberpanelLoading = false;
-        $('#cyberpanelLoading').show();
-
-        var url = "/docker/createBackup";
-        var data = {
-            'name': $('#sitename').html(),
-            'id': containerId
-        };
-
-        var config = {
-            headers: {
-                'X-CSRFToken': getCookie('csrftoken')
-            }
-        };
-
-        $http.post(url, data, config).then(function(response) {
-            $scope.cyberpanelLoading = true;
-            $('#cyberpanelLoading').hide();
-
-            if (response.data.status === 1) {
-                // Refresh backups list
-                $scope.refreshBackups(containerId);
-                new PNotify({
-                    title: 'Success!',
-                    text: 'Backup created successfully.',
-                    type: 'success'
-                });
-            } else {
-                new PNotify({
-                    title: 'Error!',
-                    text: response.data.error_message,
-                    type: 'error'
-                });
-            }
-        }, function(error) {
-            $scope.cyberpanelLoading = true;
-            $('#cyberpanelLoading').hide();
-            new PNotify({
-                title: 'Error!',
-                text: 'Could not connect to server.',
-                type: 'error'
-            });
-        });
-    };
-
-    $scope.refreshBackups = function(containerId) {
-        var url = "/docker/listBackups";
-        var data = {
-            'name': $('#sitename').html(),
-            'id': containerId
-        };
-
-        var config = {
-            headers: {
-                'X-CSRFToken': getCookie('csrftoken')
-            }
-        };
-
-        $http.post(url, data, config).then(function(response) {
-            if (response.data.status === 1) {
-                // Find the container and update its backups
-                for (var i = 0; i < $scope.ContainerList.length; i++) {
-                    if ($scope.ContainerList[i].id === containerId) {
-                        $scope.ContainerList[i].backups = response.data.backups;
-                        break;
-                    }
-                }
-            }
-        });
-    };
-
-    $scope.restoreBackup = function(containerId, backupId) {
-        if (!confirm("Are you sure you want to restore this backup? The container will be stopped during restoration.")) {
-            return;
-        }
-
-        $scope.cyberpanelLoading = false;
-        $('#cyberpanelLoading').show();
-
-        var url = "/docker/restoreBackup";
-        var data = {
-            'name': $('#sitename').html(),
-            'id': containerId,
-            'backup_id': backupId
-        };
-
-        var config = {
-            headers: {
-                'X-CSRFToken': getCookie('csrftoken')
-            }
-        };
-
-        $http.post(url, data, config).then(function(response) {
-            $scope.cyberpanelLoading = true;
-            $('#cyberpanelLoading').hide();
-
-            if (response.data.status === 1) {
-                new PNotify({
-                    title: 'Success!',
-                    text: 'Backup restored successfully.',
-                    type: 'success'
-                });
-                // Refresh container info
-                $scope.Lunchcontainer(containerId);
-            } else {
-                new PNotify({
-                    title: 'Error!',
-                    text: response.data.error_message,
-                    type: 'error'
-                });
-            }
-        }, function(error) {
-            $scope.cyberpanelLoading = true;
-            $('#cyberpanelLoading').hide();
-            new PNotify({
-                title: 'Error!',
-                text: 'Could not connect to server.',
-                type: 'error'
-            });
-        });
-    };
-
-    $scope.deleteBackup = function(containerId, backupId) {
-        if (!confirm("Are you sure you want to delete this backup?")) {
-            return;
-        }
-
-        var url = "/docker/deleteBackup";
-        var data = {
-            'name': $('#sitename').html(),
-            'id': containerId,
-            'backup_id': backupId
-        };
-
-        var config = {
-            headers: {
-                'X-CSRFToken': getCookie('csrftoken')
-            }
-        };
-
-        $http.post(url, data, config).then(function(response) {
-            if (response.data.status === 1) {
-                new PNotify({
-                    title: 'Success!',
-                    text: 'Backup deleted successfully.',
-                    type: 'success'
-                });
-                // Refresh backups list
-                $scope.refreshBackups(containerId);
-            } else {
-                new PNotify({
-                    title: 'Error!',
-                    text: response.data.error_message,
-                    type: 'error'
-                });
-            }
-        }, function(error) {
-            new PNotify({
-                title: 'Error!',
-                text: 'Could not connect to server.',
-                type: 'error'
-            });
-        });
-    };
-
-    $scope.downloadBackup = function(containerId, backupId) {
-        window.location.href = "/docker/downloadBackup?name=" + encodeURIComponent($('#sitename').html()) + 
-                             "&id=" + encodeURIComponent(containerId) + 
-                             "&backup_id=" + encodeURIComponent(backupId);
-    };
-
-    $scope.openN8NEditor = function(container) {
-        // Find the N8N port from the container's port bindings
-        var n8nPort = null;
-        if (container.ports) {
-            for (var port in container.ports) {
-                if (container.ports[port] && container.ports[port].length > 0) {
-                    n8nPort = container.ports[port][0].HostPort;
-                    break;
-                }
-            }
-        }
-
-        if (n8nPort) {
-            window.open("http://localhost:" + n8nPort, "_blank");
-        } else {
-            new PNotify({
-                title: 'Error!',
-                text: 'Could not find N8N port configuration.',
+                text: 'Connection disrupted, refresh the page.',
                 type: 'error'
             });
         }
     };
 
     $scope.getcontainerlog = function (containerid) {
+        $scope.cyberpanelLoading = false;
         var url = "/docker/getContainerApplog";
+
         var data = {
             'name': $('#sitename').html(),
             'id': containerid
@@ -334,16 +138,195 @@ app.controller('DockerContainerManager', function ($scope, $http) {
             }
         };
 
-        $http.post(url, data, config).then(function(response) {
+        $http.post(url, data, config).then(ListInitialData, cantLoadInitialData);
+
+        function ListInitialData(response) {
+            $scope.cyberpanelLoading = true;
+            $scope.conatinerview = false;
+            $('#cyberpanelLoading').hide();
+            
             if (response.data.status === 1) {
-                // Find the container and update its logs
+                // Find the container in the list and update its logs
                 for (var i = 0; i < $scope.ContainerList.length; i++) {
                     if ($scope.ContainerList[i].id === containerid) {
                         $scope.ContainerList[i].logs = response.data.data[1];
                         break;
                     }
                 }
+            } else {
+                new PNotify({
+                    title: 'Operation Failed!',
+                    text: response.data.error_message,
+                    type: 'error'
+                });
             }
-        });
+        }
+
+        function cantLoadInitialData(response) {
+            $scope.cyberpanelLoading = true;
+            $('#cyberpanelLoading').hide();
+            $scope.conatinerview = false;
+            new PNotify({
+                title: 'Operation Failed!',
+                text: 'Connection disrupted, refresh the page.',
+                type: 'error'
+            });
+        }
     };
-}); 
+
+    // Auto-refresh container info every 30 seconds
+    var refreshInterval;
+    $scope.$watch('conatinerview', function(newValue, oldValue) {
+        if (newValue === false) {  // When container view is shown
+            refreshInterval = setInterval(function() {
+                if ($scope.cid) {
+                    $scope.Lunchcontainer($scope.cid);
+                }
+            }, 30000);  // 30 seconds
+        } else {  // When container view is hidden
+            if (refreshInterval) {
+                clearInterval(refreshInterval);
+            }
+        }
+    });
+
+    // Clean up on controller destruction
+    $scope.$on('$destroy', function() {
+        if (refreshInterval) {
+            clearInterval(refreshInterval);
+        }
+    });
+
+    // Initialize
+    $scope.getcontainer();
+
+    // Keep your existing functions
+    $scope.recreateappcontainer = function() { /* ... */ };
+    $scope.refreshStatus = function() { /* ... */ };
+    $scope.restarthStatus = function() { /* ... */ };
+    $scope.StopContainerAPP = function() { /* ... */ };
+    $scope.cAction = function(action) {
+        $scope.cyberpanelLoading = false;
+        $('#cyberpanelLoading').show();
+        
+        var url;
+        switch(action) {
+            case 'start':
+                url = "/docker/StartContainerAPP";
+                break;
+            case 'stop':
+                url = "/docker/StopContainerAPP";
+                break;
+            case 'restart':
+                url = "/docker/RestartContainerAPP";
+                break;
+            default:
+                return;
+        }
+
+        var data = {
+            'name': $('#sitename').html(),
+            'id': $scope.selectedContainer.id
+        };
+
+        var config = {
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        };
+
+        $http.post(url, data, config).then(ListInitialData, cantLoadInitialData);
+
+        function ListInitialData(response) {
+            $scope.cyberpanelLoading = true;
+            $('#cyberpanelLoading').hide();
+
+            if (response.data.status === 1) {
+                new PNotify({
+                    title: 'Success!',
+                    text: 'Container ' + action + ' successful.',
+                    type: 'success'
+                });
+                // Refresh container info after action
+                $scope.Lunchcontainer($scope.selectedContainer.id);
+            } else {
+                new PNotify({
+                    title: 'Operation Failed!',
+                    text: response.data.error_message,
+                    type: 'error'
+                });
+            }
+        }
+
+        function cantLoadInitialData(response) {
+            $scope.cyberpanelLoading = true;
+            $('#cyberpanelLoading').hide();
+            new PNotify({
+                title: 'Operation Failed!',
+                text: 'Connection disrupted, refresh the page.',
+                type: 'error'
+            });
+        }
+    };
+
+    $scope.openSettings = function(container) {
+        $scope.selectedContainer = container;
+        $('#settings').modal('show');
+    };
+
+    $scope.saveSettings = function() {
+        $scope.cyberpanelLoading = false;
+        $('#cyberpanelLoading').show();
+        
+        var url = "/docker/updateContainerSettings";
+        var data = {
+            'name': $('#sitename').html(),
+            'id': $scope.selectedContainer.id,
+            'memoryLimit': $scope.selectedContainer.memoryLimit,
+            'startOnReboot': $scope.selectedContainer.startOnReboot
+        };
+
+        var config = {
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        };
+
+        $http.post(url, data, config).then(ListInitialData, cantLoadInitialData);
+
+        function ListInitialData(response) {
+            $scope.cyberpanelLoading = true;
+            $('#cyberpanelLoading').hide();
+
+            if (response.data.status === 1) {
+                new PNotify({
+                    title: 'Success!',
+                    text: 'Container settings updated successfully.',
+                    type: 'success'
+                });
+                $('#settings').modal('hide');
+                // Refresh container info after update
+                $scope.Lunchcontainer($scope.selectedContainer.id);
+            } else {
+                new PNotify({
+                    title: 'Operation Failed!',
+                    text: response.data.error_message,
+                    type: 'error'
+                });
+            }
+        }
+
+        function cantLoadInitialData(response) {
+            $scope.cyberpanelLoading = true;
+            $('#cyberpanelLoading').hide();
+            new PNotify({
+                title: 'Operation Failed!',
+                text: 'Connection disrupted, refresh the page.',
+                type: 'error'
+            });
+        }
+    };
+
+    // Add location service to the controller for the n8n URL
+    $scope.location = window.location;
+});
