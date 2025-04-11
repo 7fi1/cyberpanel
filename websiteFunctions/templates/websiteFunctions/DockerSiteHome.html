@@ -475,6 +475,100 @@
 
                 <div ng-show="ContainerList.length > 0">
                     <div ng-repeat="web in ContainerList">
+                        <!-- Database Container Section -->
+                        <div ng-if="web.name.includes('-db-')" class="mb-5">
+                            <div id="page-title" class="mb-4">
+                                <h2 id="domainNamePage" class="d-flex justify-content-between align-items-center">
+                                    <span>{% trans "Database Container: " %} {$ web.name $}</span>
+                                    <div class="btn-group" role="group" aria-label="Container Actions">
+                                        <button class="btn btn-success btn-sm" ng-click="handleAction('start', web)" ng-if="web.status !== 'running'" title="Start Container">
+                                            <i class="fa fa-play"></i> Start
+                                        </button>
+                                        <button class="btn btn-warning btn-sm" ng-click="handleAction('restart', web)" ng-if="web.status === 'running'" title="Restart Container">
+                                            <i class="fa fa-refresh"></i> Restart
+                                        </button>
+                                        <button class="btn btn-danger btn-sm" ng-click="handleAction('stop', web)" ng-if="web.status === 'running'" title="Stop Container">
+                                            <i class="fa fa-stop"></i> Stop
+                                        </button>
+                                        <button class="btn btn-primary btn-sm" ng-click="openSettings(web)" title="Container Settings">
+                                            <i class="fa fa-cog"></i> Settings
+                                        </button>
+                                    </div>
+                                </h2>
+                                <p class="text-muted">
+                                    {% trans "Container ID" %}: <code>{$ web.id $}</code>
+                                </p>
+                            </div>
+
+                            <div class="container-fluid p-0">
+                                <div class="panel panel-body">
+                                    <h3 class="content-box-header d-flex justify-content-between align-items-center mb-4">
+                                        {% trans "Database Container Information" %}
+                                        <img id="infoLoading" src="/static/images/loading.gif" style="display: none;">
+                                    </h3>
+
+                                    <div class="row g-4">
+                                        <div class="col-md-6">
+                                            <div class="info-box shadow-sm">
+                                                <h4 class="border-bottom pb-2 mb-3">Basic Information</h4>
+                                                <div class="info-list">
+                                                    <p class="mb-2"><strong>Container ID:</strong> <code>{$ web.id $}</code></p>
+                                                    <p class="mb-2"><strong>Status:</strong> 
+                                                        <span class="label px-3 py-1 rounded" ng-class="{'label-success': web.status === 'running', 'label-danger': web.status === 'stopped', 'label-warning': web.status !== 'running' && web.status !== 'stopped'}">
+                                                            {$ web.status $}
+                                                        </span>
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <div class="info-box shadow-sm">
+                                                <h4 class="border-bottom pb-2 mb-3">Environment Variables</h4>
+                                                <div ng-if="web.environment && web.environment.length > 0">
+                                                    <div class="table-responsive">
+                                                        <table class="table table-striped table-hover mb-0">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th>Variable</th>
+                                                                    <th>Value</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                <tr ng-repeat="env in web.environment">
+                                                                    <td><code>{$ env.split('=')[0] $}</code></td>
+                                                                    <td>
+                                                                        <code ng-if="env.split('=')[1] === '********'">{$ env.split('=')[1] $}</code>
+                                                                        <code ng-if="env.split('=')[1] !== '********' && env.includes('PASSWORD')">[hidden]</code>
+                                                                        <code ng-if="env.split('=')[1] !== '********' && !env.includes('PASSWORD')">{$ env.split('=')[1] $}</code>
+                                                                    </td>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                                <div ng-if="!web.environment || web.environment.length === 0" class="text-muted">
+                                                    <p class="mb-0">No environment variables set</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="info-box shadow-sm mt-4">
+                                    <h4 class="border-bottom pb-2 mb-3">
+                                            {% trans "Logs" %}
+                                        <span style="cursor:pointer;" class="float-end" ng-click="getcontainerlog(web.id)">
+                                            <i class="fa fa-refresh btn-icon"></i>
+                                        </span>
+                                    </h4>
+                                        <div class="content-box-wrapper">
+                                        <textarea name="logs" class="form-control" cols="30" rows="10">{$ web.logs $}</textarea>
+                                        </div>
+                                </div>
+                            </div>
+                        </div>
+                        
                         <!-- n8n Container Section -->
                         <div ng-if="web.environment && (web.environment | filter:'n8n').length > 0" class="n8n-container">
                             <div class="d-flex justify-content-between align-items-center">
@@ -638,10 +732,10 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div class="row g-4">
+                                <div class="row g-4">
                                                 <!-- Version Management Section -->
-                                                <div class="col-md-6">
-                                                    <div class="info-box shadow-sm">
+                                    <div class="col-md-6">
+                                        <div class="info-box shadow-sm">
                                                         <h4 class="border-bottom pb-2 mb-3">
                                                             <i class="fa fa-code-fork"></i> Version Management
                                                         </h4>
@@ -652,13 +746,13 @@
                                                                     <p class="mb-0 lead">
                                                                         <span class="label label-info">{$ web.n8nVersion || 'Unknown' $}</span>
                                                                     </p>
-                                                                </div>
+                                                        </div>
                                                                 <div>
                                                                     <button class="btn btn-sm btn-info" ng-click="checkForUpdates(web)">
                                                                         <i class="fa fa-refresh"></i> Check for Updates
                                                                     </button>
-                                                                </div>
-                                                            </div>
+                                                    </div>
+                                                </div>
                                                         </div>
                                                         
                                                         <div ng-if="web.updateAvailable" class="update-available-info mb-4">
@@ -672,28 +766,28 @@
                                                                     <button class="btn btn-link" ng-click="showReleaseNotes(web)">
                                                                         <i class="fa fa-file-text-o"></i> View Release Notes
                                                                     </button>
-                                                                </div>
-                                                            </div>
-                                                        </div>
+                                                    </div>
+                                                </div>
+                                                </div>
                                                         
                                                         <div ng-if="!web.updateAvailable && web.n8nVersion" class="up-to-date-info mb-4">
                                                             <div class="alert alert-success">
                                                                 <i class="fa fa-check-circle"></i> You are running the latest version.
-                                                            </div>
-                                                        </div>
-                                                        
+                                            </div>
+                                        </div>
+
                                                         <div class="version-history">
                                                             <h5 class="border-bottom pb-2 mb-2">Version History</h5>
-                                                            <div class="table-responsive">
-                                                                <table class="table table-striped table-hover mb-0">
-                                                                    <thead>
-                                                                        <tr>
+                                                <div class="table-responsive">
+                                                    <table class="table table-striped table-hover mb-0">
+                                                        <thead>
+                                                            <tr>
                                                                             <th>Date</th>
                                                                             <th>Version</th>
                                                                             <th>Action</th>
-                                                                        </tr>
-                                                                    </thead>
-                                                                    <tbody>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
                                                                         <tr ng-repeat="version in web.versionHistory">
                                                                             <td>{$ version.date | date:'medium' $}</td>
                                                                             <td><span class="label label-default">{$ version.version $}</span></td>
@@ -701,18 +795,18 @@
                                                                                 <button class="btn btn-xs btn-default" ng-click="showVersionChanges(web, version)">
                                                                                     <i class="fa fa-search"></i> Details
                                                                                 </button>
-                                                                            </td>
-                                                                        </tr>
-                                                                    </tbody>
-                                                                </table>
-                                                            </div>
-                                                        </div>
-                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                        </tbody>
+                                                    </table>
                                                 </div>
+                                            </div>
+                                        </div>
+                                    </div>
 
                                 <!-- Credential Security Dashboard -->
-                                <div class="col-md-6">
-                                    <div class="info-box shadow-sm">
+                                    <div class="col-md-6">
+                                        <div class="info-box shadow-sm">
                                         <h4 class="border-bottom pb-2 mb-3">
                                             <i class="fa fa-lock"></i> Credential Management
                                             <button class="btn btn-sm btn-primary float-end" ng-click="refreshCredentials(web)">
@@ -729,25 +823,25 @@
                                                 <div class="text-center">
                                                     <h5>{$ web.unusedCredentials.length $}</h5>
                                                     <p class="text-muted mb-0">Unused Credentials</p>
-                                                </div>
+                                            </div>
                                                 <div class="text-center">
                                                     <h5>{$ web.insecureCredentials.length $}</h5>
                                                     <p class="text-muted mb-0">Insecure Credentials</p>
-                                                </div>
                                             </div>
-                                            
-                                            <div class="table-responsive">
+                                        </div>
+
+                                                <div class="table-responsive">
                                                 <table class="table table-striped table-hover">
-                                                    <thead>
-                                                        <tr>
+                                                        <thead>
+                                                            <tr>
                                                             <th>Name</th>
                                                             <th>Type</th>
                                                             <th>Usage</th>
                                                             <th>Security</th>
                                                             <th>Actions</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
                                                         <tr ng-repeat="credential in web.credentials">
                                                             <td>{$ credential.name $}</td>
                                                             <td>
@@ -780,11 +874,11 @@
                                                                         <i class="fa fa-trash"></i>
                                                                     </button>
                                                                 </div>
-                                                            </td>
-                                                        </tr>
-                                                    </tbody>
-                                                </table>
-                                            </div>
+                                                                </td>
+                                                            </tr>
+                                                        </tbody>
+                                                    </table>
+                                                </div>
                                             
                                             <div class="credential-actions text-right mt-3">
                                                 <a class="btn btn-success" 
@@ -796,9 +890,9 @@
                                                         ng-disabled="web.unusedCredentials.length === 0">
                                                     <i class="fa fa-broom"></i> Cleanup Unused
                                                 </button>
-                                            </div>
-                                        </div>
-                                        
+                                    </div>
+                                </div>
+
                                         <div ng-if="!web.credentials || web.credentials.length === 0" class="text-center py-5">
                                             <i class="fa fa-lock fa-3x text-muted mb-3"></i>
                                             <p class="text-muted">No credentials found or container is not running</p>
@@ -998,7 +1092,7 @@
                                                                         <i class="fa fa-refresh"></i> Generate
                                                                     </button>
                                                                 </span>
-                                                            </div>
+                                            </div>
                                                             
                                                             <div ng-if="web.webhookTools.generatedUrl" class="alert alert-info">
                                                                 <div class="d-flex justify-content-between align-items-center">
@@ -1006,10 +1100,10 @@
                                                                     <button class="btn btn-sm btn-default" ng-click="copyToClipboard(web.webhookTools.generatedUrl)">
                                                                         <i class="fa fa-copy"></i> Copy
                                                                     </button>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                        
+                                        </div>
+                                    </div>
+                                </div>
+
                                                         <div class="webhook-tester">
                                                             <h5>Test Webhook</h5>
                                                             <div class="row">
@@ -1092,14 +1186,14 @@
 
                                 <div class="info-box shadow-sm mt-4">
                                     <h4 class="border-bottom pb-2 mb-3">
-                                        {% trans "Logs" %}
+                                            {% trans "Logs" %}
                                         <span style="cursor:pointer;" class="float-end" ng-click="getcontainerlog(web.id)">
                                             <i class="fa fa-refresh btn-icon"></i>
                                         </span>
                                     </h4>
-                                    <div class="content-box-wrapper">
+                                        <div class="content-box-wrapper">
                                         <textarea name="logs" class="form-control" cols="30" rows="10">{$ web.logs $}</textarea>
-                                    </div>
+                                        </div>
                                 </div>
                                 
                                 <!-- Custom Domain Configuration -->
@@ -1114,7 +1208,7 @@
                                                 <div class="card">
                                                     <div class="card-header bg-light">
                                                         <h5 class="mb-0">Current Domain Settings</h5>
-                                                    </div>
+                                    </div>
                                                     <div class="card-body">
                                                         <div ng-if="web.customDomain">
                                                             <div class="alert alert-success">
@@ -1132,7 +1226,7 @@
                                                                                 <i class="fa fa-unlock"></i> Disabled
                                                                             </span>
                                                                         </p>
-                                                                    </div>
+                                </div>
                                                                     <div>
                                                                         <button class="btn btn-sm btn-danger" ng-click="removeCustomDomain(web)">
                                                                             <i class="fa fa-trash"></i> Remove
@@ -1430,9 +1524,9 @@
                                                     <option value="error">Failed</option>
                                                     <option value="waiting">Waiting</option>
                                                 </select>
-                                            </div>
-                                        </div>
-                                    </div>
+            </div>
+        </div>
+    </div>
                                     
                                     <div class="table-responsive">
                                         <table class="table table-striped table-hover">
@@ -1647,152 +1741,6 @@
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="settings" class="modal fade" role="dialog">
-                    <div class="modal-dialog">
-
-                        <!-- Modal content-->
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <button type="button" class="close" data-dismiss="modal">&times;</button>
-                                <h4 class="modal-title">Container Settings
-                                    <img id="containerSettingLoading" src="/static/images/loading.gif"
-                                         style="display: none;">
-                                </h4>
-                            </div>
-                            <div class="modal-body">
-
-                                <form name="containerSettingsForm" action="/" class="form-horizontal">
-                                    <div ng-hide="installationDetailsForm" class="form-group">
-                                        <label class="col-sm-3 control-label">{% trans "Memory limit" %}</label>
-                                        <div class="col-sm-6">
-                                            <input name="memory" type="number" class="form-control"
-                                                   ng-model="web.memoryLimit" required>
-                                        </div>
-                                        <div class="current-pack ng-binding">MB</div>
-                                    </div>
-
-                                    <div ng-hide="installationDetailsForm" class="form-group">
-                                        <label class="col-sm-3 control-label">Start on reboot</label>
-                                        <div class="col-sm-9">
-                                            <div class="checkbox">
-                                                <label>
-                                                    <input ng-model="web.startOnReboot" type="checkbox">
-                                                </label>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <hr>
-                                    <div ng-hide="installationDetailsForm" class="form-group">
-                                        <label class="col-sm-3 control-label">{% trans "Confirmation" %}</label>
-                                        <div class="col-sm-9">
-                                            <div class="checkbox">
-                                                <label>
-                                                    <input ng-model="envConfirmation" type="checkbox">
-                                                    Editing ENV or Volume will recreate container.
-                                                </label>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <hr>
-                                    <span ng-init="envList = {}"></span>
-                                    {% for env, value in envList.items %}
-
-                                        <span ng-init="envList[{{ forloop.counter0 }}] =  {'name':'{{ env }}' , 'value':'{{ value }}'} "></span>
-
-                                    {% endfor %}
-
-                                    <div ng-repeat="env in envList track by $index">
-
-                                        <div ng-hide="installationDetailsForm" class="form-group">
-                                            <label class="col-sm-3 control-label">
-                                                <div ng-show="$first">
-                                                    {% trans "ENV" %}
-                                                </div>
-                                            </label>
-                                            <div class="col-sm-2">
-                                                <input name="$index" ng-disabled="!envConfirmation" type="text"
-                                                       class="form-control" ng-model="envList[$index].name"
-                                                       required>
-                                            </div>
-                                            <div class="col-sm-4">
-                                                <input name="$index" ng-disabled="!envConfirmation" type="text"
-                                                       class="form-control" ng-model="envList[$index].value"
-                                                       required>
-                                            </div>
-                                        </div>
-
-                                    </div>
-
-                                    <div class="col-md-offset-3">
-                                        <button type="button" ng-disabled="!envConfirmation" class="btn btn-info"
-                                                ng-click="addEnvField()">Add more
-                                        </button>
-                                    </div>
-                                    <br>
-
-                                    <span ng-init="volList = {}"></span>
-                                    <span ng-init="volListNumber=1"></span>
-                                    {% for key, value in volList.items %}
-                                        <span ng-init="volList[{{ forloop.counter0 }}] =  {'dest':'{{ value.bind }}' , 'src':'{{ key }}'}"></span>
-                                        <span ng-init="volListNumber={{ forloop.counter0 }} + 1"></span>
-                                    {% endfor %}
-
-                                    <hr>
-
-                                    <div ng-hide="installationDetailsForm" class="form-group text-center">
-                                        <label class="control-label">
-                                            {% trans "Map Volumes" %}
-                                        </label>
-                                    </div>
-                                    <div ng-repeat="volume in volList track by $index">
-                                        <div ng-hide="installationDetailsForm" class="form-group">
-                                            <div class="col-sm-5">
-                                                <input type="text" ng-disabled="!envConfirmation"
-                                                       class="form-control"
-                                                       ng-model="volList[$index].dest" placeholder="Destination"
-                                                       required>
-                                            </div>
-                                            <div class="col-sm-5">
-                                                <input type="text" ng-disabled="!envConfirmation"
-                                                       class="form-control"
-                                                       ng-model="volList[$index].src" placeholder="Source" required>
-                                            </div>
-                                            <div ng-show="$last">
-                                                <div class="col-sm-1">
-                                                    <button class="btn btn-primary" ng-disabled="!envConfirmation"
-                                                            type="button"
-                                                            ng-click="removeVolField()"><i
-                                                            style="position: inherit; top: 0px; left: 0px"
-                                                            class="fa fa-times"></i></button>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                    </div>
-
-                                    <div ng-hide="installationDetailsForm" class="text-center">
-                                        <button type="button" ng-disabled="!envConfirmation" class="btn btn-info"
-                                                ng-click="addVolField()">{% trans "Add field" %}</button>
-                                    </div>
-                                    <br>
-
-                                </form>
-
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" ng-disabled="savingSettings" class="btn btn-primary"
-                                        ng-click="saveSettings()">Save
-                                </button>
-                                <button type="button" ng-disabled="savingSettings" class="btn btn-default"
-                                        data-dismiss="modal">
-                                    Close
-                                </button>
                             </div>
                         </div>
                     </div>

@@ -1161,8 +1161,77 @@ app.controller('ListDockersitecontainer', function ($scope, $http) {
     
     // Helper function to handle container actions
     $scope.handleAction = function(action, container) {
-        $scope.selectedContainer = container;
-        $scope.cAction(action);
+        $scope.cyberpanelLoading = false;
+        $('#cyberpanelLoading').show();
+        
+        var url = "/docker/";
+        switch(action) {
+            case 'start':
+                url += "startContainer";
+                break;
+            case 'stop':
+                url += "stopContainer";
+                break;
+            case 'restart':
+                url += "restartContainer";
+                break;
+            default:
+                console.error("Unknown action:", action);
+                $('#cyberpanelLoading').hide();
+                return;
+        }
+
+        var data = {
+            'name': $('#sitename').html(),
+            'container_id': container.id
+        };
+
+        var config = {
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        };
+
+        $http.post(url, data, config).then(
+            function(response) {
+                $scope.cyberpanelLoading = true;
+                $('#cyberpanelLoading').hide();
+
+                if (response.data.status === 1) {
+                    new PNotify({
+                        title: 'Success!',
+                        text: 'Container ' + action + ' successful.',
+                        type: 'success'
+                    });
+                    
+                    // Update container status after action
+                    container.status = action === 'stop' ? 'stopped' : 'running';
+                    
+                    // Refresh container info after short delay to allow Docker to update
+                    setTimeout(function() {
+                        $scope.Lunchcontainer(container.id);
+                    }, 1000);
+                } else {
+                    new PNotify({
+                        title: 'Operation Failed!',
+                        text: response.data.error_message || 'An unknown error occurred.',
+                        type: 'error'
+                    });
+                }
+            },
+            function(error) {
+                $scope.cyberpanelLoading = true;
+                $('#cyberpanelLoading').hide();
+                
+                new PNotify({
+                    title: 'Operation Failed!',
+                    text: 'Connection disrupted or server error occurred.',
+                    type: 'error'
+                });
+                
+                console.error("Error during container action:", error);
+            }
+        );
     };
 
     // Keep your existing functions
