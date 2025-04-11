@@ -14,7 +14,9 @@ from websiteFunctions.models import wpplugins
 from websiteFunctions.website import WebsiteManager
 from websiteFunctions.pluginManager import pluginManager
 from django.views.decorators.csrf import csrf_exempt
-from .dockerviews import startContainer, stopContainer, restartContainer
+from .dockerviews import startContainer as docker_startContainer
+from .dockerviews import stopContainer as docker_stopContainer
+from .dockerviews import restartContainer as docker_restartContainer
 
 def loadWebsitesHome(request):
     val = request.session['userID']
@@ -1852,5 +1854,32 @@ def fetchWPDetails(request):
         }
         wm = WebsiteManager()
         return wm.fetchWPSitesForDomain(userID, data)
+    except KeyError:
+        return redirect(loadLoginPage)
+
+@csrf_exempt
+def startContainer(request):
+    try:
+        if request.method == 'POST':
+            return docker_startContainer(request)
+        return HttpResponse('Not allowed')
+    except KeyError:
+        return redirect(loadLoginPage)
+
+@csrf_exempt
+def stopContainer(request):
+    try:
+        if request.method == 'POST':
+            return docker_stopContainer(request)
+        return HttpResponse('Not allowed')
+    except KeyError:
+        return redirect(loadLoginPage)
+
+@csrf_exempt
+def restartContainer(request):
+    try:
+        if request.method == 'POST':
+            return docker_restartContainer(request)
+        return HttpResponse('Not allowed')
     except KeyError:
         return redirect(loadLoginPage)
