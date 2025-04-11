@@ -241,9 +241,10 @@
         .n8n-container {
             background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
             border-left: 4px solid #2ecc71;
-            padding: 15px;
+            padding: 20px;
             margin-bottom: 20px;
             border-radius: 4px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
         
         .n8n-metrics {
@@ -277,6 +278,7 @@
             gap: 10px;
             margin-top: 15px;
             margin-bottom: 20px;
+            flex-wrap: wrap;
         }
         
         .quick-action-btn {
@@ -312,6 +314,121 @@
         .workflow-status.error {
             background: #fff1f0;
             color: #f5222d;
+        }
+
+        /* Additional n8n styling for better layouts */
+        .n8n-dashboard-section {
+            background: white;
+            border-radius: 6px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .n8n-section-header {
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .n8n-section-header h4 {
+            margin: 0;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .n8n-container .row {
+            margin-left: -15px;
+            margin-right: -15px;
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        .n8n-container .col-md-6 {
+            padding-left: 15px;
+            padding-right: 15px;
+            flex: 0 0 50%;
+            max-width: 50%;
+        }
+
+        .n8n-empty-state {
+            text-align: center;
+            padding: 30px;
+            background: #f9f9f9;
+            border-radius: 4px;
+        }
+
+        .n8n-empty-state i {
+            font-size: 48px;
+            color: #ccc;
+            display: block;
+            margin-bottom: 15px;
+        }
+
+        .n8n-empty-state p {
+            color: #888;
+            margin-bottom: 15px;
+        }
+
+        /* Fix for status messages */
+        .no-data-message {
+            text-align: center;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 4px;
+            margin: 15px 0;
+        }
+
+        /* Design fixes for card layouts */
+        .n8n-card {
+            background: white;
+            border-radius: 6px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+            margin-bottom: 15px;
+        }
+
+        .n8n-card-header {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+            background: #f5f7fa;
+            border-radius: 6px 6px 0 0;
+        }
+
+        .n8n-card-header h5 {
+            margin: 0;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .n8n-card-body {
+            padding: 15px;
+        }
+        
+        /* Fix version management styles */
+        .version-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 50px;
+            background: #e8f4fd;
+            color: #1976d2;
+            font-weight: 600;
+        }
+        
+        .up-to-date-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 15px;
+            background: #e8f7e8;
+            border-radius: 4px;
+            margin: 15px 0;
+        }
+        
+        .up-to-date-badge i {
+            color: #388e3c;
         }
     </style>
 
@@ -598,13 +715,14 @@
                             </div>
                             
                             <!-- Workflow Management Dashboard -->
-                            <div class="info-box shadow-sm mt-4">
-                                <h4 class="border-bottom pb-2 mb-3">
-                                    <i class="fa fa-sitemap"></i> Workflow Management
-                                    <button class="btn btn-sm btn-primary float-end" ng-click="refreshWorkflows(web)">
+                            <div class="n8n-dashboard-section mt-4">
+                                <div class="n8n-section-header">
+                                    <h4><i class="fa fa-sitemap"></i> Workflow Management</h4>
+                                    <button class="btn btn-sm btn-primary" ng-click="refreshWorkflows(web)">
                                         <i class="fa fa-refresh"></i> Refresh
                                     </button>
-                                </h4>
+                                </div>
+                                
                                 <div ng-if="web.workflows && web.workflows.length > 0">
                                     <div class="table-responsive">
                                         <table class="table table-striped table-hover">
@@ -661,9 +779,9 @@
                                         </table>
                                     </div>
                                 </div>
-                                <div ng-if="!web.workflows || web.workflows.length === 0" class="text-center py-5">
-                                    <i class="fa fa-info-circle fa-3x text-muted mb-3"></i>
-                                    <p class="text-muted">No workflows found or container is not running</p>
+                                <div ng-if="!web.workflows || web.workflows.length === 0" class="n8n-empty-state">
+                                    <i class="fa fa-info-circle"></i>
+                                    <p>No workflows found or container is not running</p>
                                     <a ng-if="web.status === 'running'" class="btn btn-primary" 
                                        href="http://{$ location.hostname $}:{$ web.ports['5678/tcp'][0].HostPort $}/workflow/new"
                                        target="_blank">
@@ -672,176 +790,175 @@
                                 </div>
                             </div>
                             
-                            <div class="container-fluid p-0 mt-4">
-                                <!-- Backup & Restore Section -->
-                                <div class="row g-4 mb-4">
-                                    <div class="col-md-12">
-                                        <div class="info-box shadow-sm">
-                                            <h4 class="border-bottom pb-2 mb-3">
-                                                <i class="fa fa-cloud-download"></i> Backup & Restore
-                                            </h4>
-                                            <div class="row">
-                                                <div class="col-md-6">
-                                                    <div class="card">
-                                                        <div class="card-header bg-light">
-                                                            <h5 class="mb-0">
-                                                                <i class="fa fa-download"></i> Backup
-                                                            </h5>
-                                                        </div>
-                                                        <div class="card-body">
-                                                            <p>Create a backup of all workflows, credentials, and settings.</p>
-                                                            <div class="form-group mb-3">
-                                                                <div class="checkbox">
-                                                                    <label>
-                                                                        <input type="checkbox" ng-model="web.backupOptions.includeCredentials"> Include credentials
-                                                                    </label>
-                                                                </div>
-                                                                <div class="checkbox">
-                                                                    <label>
-                                                                        <input type="checkbox" ng-model="web.backupOptions.includeExecutions"> Include execution history
-                                                                    </label>
-                                                                </div>
-                                                            </div>
-                                                            <button class="btn btn-primary" ng-click="createBackup(web)">
-                                                                <i class="fa fa-download"></i> Create Backup
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <div class="card">
-                                                        <div class="card-header bg-light">
-                                                            <h5 class="mb-0">
-                                                                <i class="fa fa-upload"></i> Restore
-                                                            </h5>
-                                                        </div>
-                                                        <div class="card-body">
-                                                            <p>Restore from a previous backup.</p>
-                                                            <div class="form-group">
-                                                                <label class="control-label">Select backup file</label>
-                                                                <div class="input-group">
-                                                                    <input type="file" id="backupFile" class="form-control" ng-model="web.restoreFile">
-                                                                    <span class="input-group-btn">
-                                                                        <button class="btn btn-primary" ng-click="restoreFromBackup(web)">
-                                                                            <i class="fa fa-upload"></i> Restore
-                                                                        </button>
-                                                                    </span>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                <div class="row g-4">
-                                                <!-- Version Management Section -->
+                            <!-- Backup & Restore Section -->
+                            <div class="n8n-dashboard-section">
+                                <div class="n8n-section-header">
+                                    <h4><i class="fa fa-cloud-download"></i> Backup & Restore</h4>
+                                </div>
+                                <div class="row">
                                     <div class="col-md-6">
-                                        <div class="info-box shadow-sm">
-                                                        <h4 class="border-bottom pb-2 mb-3">
-                                                            <i class="fa fa-code-fork"></i> Version Management
-                                                        </h4>
-                                                        <div class="version-info mb-4">
-                                                            <div class="d-flex justify-content-between align-items-center">
-                                                                <div>
-                                                                    <h5 class="mb-1">Current Version</h5>
-                                                                    <p class="mb-0 lead">
-                                                                        <span class="label label-info">{$ web.n8nVersion || 'Unknown' $}</span>
-                                                                    </p>
-                                                        </div>
-                                                                <div>
-                                                                    <button class="btn btn-sm btn-info" ng-click="checkForUpdates(web)">
-                                                                        <i class="fa fa-refresh"></i> Check for Updates
-                                                                    </button>
+                                        <div class="n8n-card">
+                                            <div class="n8n-card-header">
+                                                <h5><i class="fa fa-download"></i> Backup</h5>
+                                            </div>
+                                            <div class="n8n-card-body">
+                                                <p>Create a backup of all workflows, credentials, and settings.</p>
+                                                <div class="form-group mb-3">
+                                                    <div class="checkbox">
+                                                        <label>
+                                                            <input type="checkbox" ng-model="web.backupOptions.includeCredentials"> Include credentials
+                                                        </label>
+                                                    </div>
+                                                    <div class="checkbox">
+                                                        <label>
+                                                            <input type="checkbox" ng-model="web.backupOptions.includeExecutions"> Include execution history
+                                                        </label>
                                                     </div>
                                                 </div>
-                                                        </div>
-                                                        
-                                                        <div ng-if="web.updateAvailable" class="update-available-info mb-4">
-                                                            <div class="alert alert-info">
-                                                                <h5><i class="fa fa-info-circle"></i> Update Available!</h5>
-                                                                <p>A new version ({$ web.latestVersion $}) is available. You are currently running {$ web.n8nVersion $}.</p>
-                                                                <div class="update-actions mt-3">
-                                                                    <button class="btn btn-success" ng-click="updateN8N(web)">
-                                                                        <i class="fa fa-arrow-circle-up"></i> Update Now
-                                                                    </button>
-                                                                    <button class="btn btn-link" ng-click="showReleaseNotes(web)">
-                                                                        <i class="fa fa-file-text-o"></i> View Release Notes
-                                                                    </button>
-                                                    </div>
-                                                </div>
-                                                </div>
-                                                        
-                                                        <div ng-if="!web.updateAvailable && web.n8nVersion" class="up-to-date-info mb-4">
-                                                            <div class="alert alert-success">
-                                                                <i class="fa fa-check-circle"></i> You are running the latest version.
+                                                <button class="btn btn-primary" ng-click="createBackup(web)">
+                                                    <i class="fa fa-download"></i> Create Backup
+                                                </button>
                                             </div>
                                         </div>
-
-                                                        <div class="version-history">
-                                                            <h5 class="border-bottom pb-2 mb-2">Version History</h5>
-                                                <div class="table-responsive">
-                                                    <table class="table table-striped table-hover mb-0">
-                                                        <thead>
-                                                            <tr>
-                                                                            <th>Date</th>
-                                                                            <th>Version</th>
-                                                                            <th>Action</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                                        <tr ng-repeat="version in web.versionHistory">
-                                                                            <td>{$ version.date | date:'medium' $}</td>
-                                                                            <td><span class="label label-default">{$ version.version $}</span></td>
-                                                                            <td>
-                                                                                <button class="btn btn-xs btn-default" ng-click="showVersionChanges(web, version)">
-                                                                                    <i class="fa fa-search"></i> Details
-                                                                                </button>
-                                                                </td>
-                                                            </tr>
-                                                        </tbody>
-                                                    </table>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="n8n-card">
+                                            <div class="n8n-card-header">
+                                                <h5><i class="fa fa-upload"></i> Restore</h5>
+                                            </div>
+                                            <div class="n8n-card-body">
+                                                <p>Restore from a previous backup.</p>
+                                                <div class="form-group">
+                                                    <label class="control-label">Select backup file</label>
+                                                    <div class="input-group">
+                                                        <input type="file" id="backupFile" class="form-control" ng-model="web.restoreFile">
+                                                        <span class="input-group-btn">
+                                                            <button class="btn btn-primary" ng-click="restoreFromBackup(web)">
+                                                                <i class="fa fa-upload"></i> Restore
+                                                            </button>
+                                                        </span>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-
-                                <!-- Credential Security Dashboard -->
-                                    <div class="col-md-6">
-                                        <div class="info-box shadow-sm">
-                                        <h4 class="border-bottom pb-2 mb-3">
-                                            <i class="fa fa-lock"></i> Credential Management
-                                            <button class="btn btn-sm btn-primary float-end" ng-click="refreshCredentials(web)">
-                                                <i class="fa fa-refresh"></i> Refresh
-                                            </button>
-                                        </h4>
-                                        
-                                        <div ng-if="web.credentials && web.credentials.length > 0">
-                                            <div class="credential-stats d-flex justify-content-around mb-4">
-                                                <div class="text-center">
-                                                    <h5>{$ web.credentials.length $}</h5>
-                                                    <p class="text-muted mb-0">Total Credentials</p>
+                                </div>
+                            </div>
+                                
+                            <div class="row">
+                                <!-- Version Management Section -->
+                                <div class="col-md-6">
+                                    <div class="n8n-dashboard-section">
+                                        <div class="n8n-section-header">
+                                            <h4><i class="fa fa-code-fork"></i> Version Management</h4>
+                                        </div>
+                                        <div class="version-info mb-4">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <h5 class="mb-1">Current Version</h5>
+                                                    <div class="version-badge">
+                                                        {$ web.n8nVersion || 'Unknown' $}
+                                                    </div>
                                                 </div>
-                                                <div class="text-center">
-                                                    <h5>{$ web.unusedCredentials.length $}</h5>
-                                                    <p class="text-muted mb-0">Unused Credentials</p>
-                                            </div>
-                                                <div class="text-center">
-                                                    <h5>{$ web.insecureCredentials.length $}</h5>
-                                                    <p class="text-muted mb-0">Insecure Credentials</p>
+                                                <div>
+                                                    <button class="btn btn-sm btn-info" ng-click="checkForUpdates(web)">
+                                                        <i class="fa fa-refresh"></i> Check for Updates
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
+                                        
+                                        <div ng-if="web.updateAvailable" class="update-available-info mb-4">
+                                            <div class="alert alert-info">
+                                                <h5><i class="fa fa-info-circle"></i> Update Available!</h5>
+                                                <p>A new version ({$ web.latestVersion $}) is available. You are currently running {$ web.n8nVersion $}.</p>
+                                                <div class="update-actions mt-3">
+                                                    <button class="btn btn-success" ng-click="updateN8N(web)">
+                                                        <i class="fa fa-arrow-circle-up"></i> Update Now
+                                                    </button>
+                                                    <button class="btn btn-link" ng-click="showReleaseNotes(web)">
+                                                        <i class="fa fa-file-text-o"></i> View Release Notes
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div ng-if="!web.updateAvailable && web.n8nVersion" class="up-to-date-badge">
+                                            <i class="fa fa-check-circle"></i> You are running the latest version.
+                                        </div>
 
-                                                <div class="table-responsive">
+                                        <div class="version-history">
+                                            <h5 class="border-bottom pb-2 mb-2">Version History</h5>
+                                            <div class="table-responsive">
+                                                <table class="table table-striped table-hover mb-0">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Date</th>
+                                                            <th>Version</th>
+                                                            <th>Action</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr ng-repeat="version in web.versionHistory">
+                                                            <td>{$ version.date | date:'medium' $}</td>
+                                                            <td><span class="label label-default">{$ version.version $}</span></td>
+                                                            <td>
+                                                                <button class="btn btn-xs btn-default" ng-click="showVersionChanges(web, version)">
+                                                                    <i class="fa fa-search"></i> Details
+                                                                </button>
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Credential Security Dashboard -->
+                                <div class="col-md-6">
+                                    <div class="n8n-dashboard-section">
+                                        <div class="n8n-section-header">
+                                            <h4><i class="fa fa-lock"></i> Credential Management</h4>
+                                            <button class="btn btn-sm btn-primary" ng-click="refreshCredentials(web)">
+                                                <i class="fa fa-refresh"></i> Refresh
+                                            </button>
+                                        </div>
+                                        
+                                        <div ng-if="web.credentials && web.credentials.length > 0">
+                                            <div class="row text-center mb-4">
+                                                <div class="col-md-4">
+                                                    <div class="metric-card">
+                                                        <h5>Total Credentials</h5>
+                                                        <div class="value">{$ web.credentials.length $}</div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <div class="metric-card">
+                                                        <h5>Unused</h5>
+                                                        <div class="value">{$ web.unusedCredentials.length $}</div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <div class="metric-card">
+                                                        <h5>Insecure</h5>
+                                                        <div class="value">{$ web.insecureCredentials.length $}</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="table-responsive">
                                                 <table class="table table-striped table-hover">
-                                                        <thead>
-                                                            <tr>
+                                                    <thead>
+                                                        <tr>
                                                             <th>Name</th>
                                                             <th>Type</th>
                                                             <th>Usage</th>
                                                             <th>Security</th>
                                                             <th>Actions</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
                                                         <tr ng-repeat="credential in web.credentials">
                                                             <td>{$ credential.name $}</td>
                                                             <td>
@@ -874,13 +991,13 @@
                                                                         <i class="fa fa-trash"></i>
                                                                     </button>
                                                                 </div>
-                                                                </td>
-                                                            </tr>
-                                                        </tbody>
-                                                    </table>
-                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
                                             
-                                            <div class="credential-actions text-right mt-3">
+                                            <div class="text-right mt-3">
                                                 <a class="btn btn-success" 
                                                    href="http://{$ location.hostname $}:{$ web.ports['5678/tcp'][0].HostPort $}/credentials/new"
                                                    target="_blank">
@@ -890,12 +1007,12 @@
                                                         ng-disabled="web.unusedCredentials.length === 0">
                                                     <i class="fa fa-broom"></i> Cleanup Unused
                                                 </button>
-                                    </div>
-                                </div>
+                                            </div>
+                                        </div>
 
-                                        <div ng-if="!web.credentials || web.credentials.length === 0" class="text-center py-5">
-                                            <i class="fa fa-lock fa-3x text-muted mb-3"></i>
-                                            <p class="text-muted">No credentials found or container is not running</p>
+                                        <div ng-if="!web.credentials || web.credentials.length === 0" class="n8n-empty-state">
+                                            <i class="fa fa-lock"></i>
+                                            <p>No credentials found or container is not running</p>
                                             <a ng-if="web.status === 'running'" class="btn btn-primary" 
                                                href="http://{$ location.hostname $}:{$ web.ports['5678/tcp'][0].HostPort $}/credentials/new"
                                                target="_blank">
