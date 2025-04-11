@@ -558,9 +558,9 @@
                                 <form name="containerSettingsForm" action="/" class="form-horizontal">
                                     <div ng-hide="installationDetailsForm" class="form-group">
                                         <label class="col-sm-3 control-label">{% trans "Memory limit" %}</label>
-                                        <div class="col-sm-6" ng-init="memory={{ web.memoryLimit }}">
+                                        <div class="col-sm-6">
                                             <input name="memory" type="number" class="form-control"
-                                                   ng-model="memory" required>
+                                                   ng-model="web.memoryLimit" required>
                                         </div>
                                         <div class="current-pack ng-binding">MB</div>
                                     </div>
@@ -568,10 +568,9 @@
                                     <div ng-hide="installationDetailsForm" class="form-group">
                                         <label class="col-sm-3 control-label">Start on reboot</label>
                                         <div class="col-sm-9">
-                                            <div class="checkbox" ng-init="startOnReboot={{ web.startOnReboot }}">
+                                            <div class="checkbox">
                                                 <label>
-                                                    <input ng-model="startOnReboot" type="checkbox" value=""
-                                                           class="ng-pristine ng-untouched ng-valid ng-empty">
+                                                    <input ng-model="web.startOnReboot" type="checkbox">
                                                 </label>
                                             </div>
                                         </div>
