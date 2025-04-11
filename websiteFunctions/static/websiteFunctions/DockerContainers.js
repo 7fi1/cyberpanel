@@ -387,46 +387,53 @@ app.controller('ListDockersitecontainer', function ($scope, $http) {
             }
         };
         
-        $http.post(url, data, config).then(function(response) {
-            $scope.cyberpanelLoading = true;
-            $('#cyberpanelLoading').hide();
-            
-            if (response.data.status === 1) {
-                // Download the backup file
-                var backupData = response.data.backup;
-                var fileName = 'n8n-backup-' + new Date().toISOString().slice(0, 10) + '.json';
+        $http.post(url, data, config).then(
+            // Success handler
+            function(response) {
+                $scope.cyberpanelLoading = true;
+                $('#cyberpanelLoading').hide();
                 
-                // Create a download link
-                var a = document.createElement('a');
-                var blob = new Blob([JSON.stringify(backupData)], {type: 'application/json'});
-                var url = window.URL.createObjectURL(blob);
-                a.href = url;
-                a.download = fileName;
-                a.click();
-                window.URL.revokeObjectURL(url);
+                if (response.data.status === 1) {
+                    // Download the backup file
+                    var backupData = response.data.backup;
+                    var fileName = 'n8n-backup-' + new Date().toISOString().slice(0, 10) + '.json';
+                    
+                    // Create a download link
+                    var a = document.createElement('a');
+                    var blob = new Blob([JSON.stringify(backupData)], {type: 'application/json'});
+                    var url = window.URL.createObjectURL(blob);
+                    a.href = url;
+                    a.download = fileName;
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    
+                    new PNotify({
+                        title: 'Success!',
+                        text: 'Backup created and downloaded successfully.',
+                        type: 'success'
+                    });
+                } else {
+                    new PNotify({
+                        title: 'Operation Failed!',
+                        text: response.data.error_message || 'Unknown error occurred',
+                        type: 'error'
+                    });
+                }
+            },
+            // Error handler
+            function(error) {
+                $scope.cyberpanelLoading = true;
+                $('#cyberpanelLoading').hide();
                 
-                new PNotify({
-                    title: 'Success!',
-                    text: 'Backup created and downloaded successfully.',
-                    type: 'success'
-                });
-            } else {
                 new PNotify({
                     title: 'Operation Failed!',
-                    text: response.data.error_message,
+                    text: 'Connection disrupted, refresh the page.',
                     type: 'error'
                 });
+                
+                console.error('Error creating backup:', error);
             }
-        }, function(response) {
-            $scope.cyberpanelLoading = true;
-            $('#cyberpanelLoading').hide();
-            
-            new PNotify({
-                title: 'Operation Failed!',
-                text: 'Connection disrupted, refresh the page.',
-                type: 'error'
-            });
-        });
+        );
     };
     
     // Restore from a backup
@@ -447,6 +454,7 @@ app.controller('ListDockersitecontainer', function ($scope, $http) {
         
         // Read the backup file
         var reader = new FileReader();
+        
         reader.onload = function(e) {
             try {
                 var backupData = JSON.parse(e.target.result);
@@ -464,36 +472,43 @@ app.controller('ListDockersitecontainer', function ($scope, $http) {
                     }
                 };
                 
-                $http.post(url, data, config).then(function(response) {
-                    $scope.cyberpanelLoading = true;
-                    $('#cyberpanelLoading').hide();
-                    
-                    if (response.data.status === 1) {
-                        new PNotify({
-                            title: 'Success!',
-                            text: 'Backup restored successfully.',
-                            type: 'success'
-                        });
+                $http.post(url, data, config).then(
+                    // Success handler
+                    function(response) {
+                        $scope.cyberpanelLoading = true;
+                        $('#cyberpanelLoading').hide();
                         
-                        // Refresh workflows after restore
-                        $scope.refreshWorkflows(container);
-                    } else {
+                        if (response.data.status === 1) {
+                            new PNotify({
+                                title: 'Success!',
+                                text: 'Backup restored successfully.',
+                                type: 'success'
+                            });
+                            
+                            // Refresh workflows after restore
+                            $scope.refreshWorkflows(container);
+                        } else {
+                            new PNotify({
+                                title: 'Operation Failed!',
+                                text: response.data.error_message || 'Unknown error occurred',
+                                type: 'error'
+                            });
+                        }
+                    }, 
+                    // Error handler
+                    function(error) {
+                        $scope.cyberpanelLoading = true;
+                        $('#cyberpanelLoading').hide();
+                        
                         new PNotify({
                             title: 'Operation Failed!',
-                            text: response.data.error_message,
+                            text: 'Connection disrupted, refresh the page.',
                             type: 'error'
                         });
+                        
+                        console.error('Error restoring backup:', error);
                     }
-                }, function(response) {
-                    $scope.cyberpanelLoading = true;
-                    $('#cyberpanelLoading').hide();
-                    
-                    new PNotify({
-                        title: 'Operation Failed!',
-                        text: 'Connection disrupted, refresh the page.',
-                        type: 'error'
-                    });
-                });
+                );
             } catch (error) {
                 $scope.cyberpanelLoading = true;
                 $('#cyberpanelLoading').hide();
@@ -503,6 +518,8 @@ app.controller('ListDockersitecontainer', function ($scope, $http) {
                     text: 'Invalid backup file format: ' + error.message,
                     type: 'error'
                 });
+                
+                console.error('Error parsing backup file:', error);
             }
         };
         
