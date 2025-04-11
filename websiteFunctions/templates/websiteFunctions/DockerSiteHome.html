@@ -236,6 +236,82 @@
             z-index: 10;
             margin-bottom: 5px;
         }
+
+        /* n8n specific styles */
+        .n8n-container {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-left: 4px solid #2ecc71;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+        
+        .n8n-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .metric-card {
+            background: white;
+            padding: 15px;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .metric-card h5 {
+            color: #666;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        
+        .metric-card .value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .quick-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .quick-action-btn {
+            padding: 8px 15px;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 14px;
+            transition: all 0.2s ease;
+        }
+        
+        .quick-action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .workflow-status {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .workflow-status.active {
+            background: #e3fcef;
+            color: #00a854;
+        }
+        
+        .workflow-status.error {
+            background: #fff1f0;
+            color: #f5222d;
+        }
     </style>
 
     <script>
@@ -398,7 +474,73 @@
 
                 <div ng-show="ContainerList.length > 0">
                     <div ng-repeat="web in ContainerList">
-                        <div class="mb-5">
+                        <!-- n8n Container Section -->
+                        <div ng-if="web.name.includes('n8n')" class="n8n-container">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h3 class="m-0">
+                                    <i class="fa fa-cube"></i> n8n Container
+                                    <span class="workflow-status" ng-class="{'active': web.status === 'running', 'error': web.status !== 'running'}">
+                                        {$ web.status $}
+                                    </span>
+                                </h3>
+                                <div class="quick-actions">
+                                    <button class="quick-action-btn btn-success" ng-click="handleAction('start', web)" ng-if="web.status !== 'running'">
+                                        <i class="fa fa-play"></i> Start
+                                    </button>
+                                    <button class="quick-action-btn btn-warning" ng-click="handleAction('restart', web)" ng-if="web.status === 'running'">
+                                        <i class="fa fa-refresh"></i> Restart
+                                    </button>
+                                    <button class="quick-action-btn btn-danger" ng-click="handleAction('stop', web)" ng-if="web.status === 'running'">
+                                        <i class="fa fa-stop"></i> Stop
+                                    </button>
+                                    <a class="quick-action-btn btn-primary" href="http://{$ location.hostname $}:{$ web.ports['5678/tcp'][0].HostPort $}" target="_blank" ng-if="web.status === 'running'">
+                                        <i class="fa fa-external-link"></i> Open n8n
+                                    </a>
+                                </div>
+                            </div>
+                            
+                            <div class="n8n-metrics">
+                                <div class="metric-card">
+                                    <h5>Memory Usage</h5>
+                                    <div class="value">{$ web.memoryUsage $}</div>
+                                    <div class="progress mt-2">
+                                        <div class="progress-bar" role="progressbar" 
+                                            ng-style="{'width': web.memoryUsagePercent + '%'}" 
+                                            aria-valuenow="{$ web.memoryUsagePercent $}" 
+                                            aria-valuemin="0" 
+                                            aria-valuemax="100">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="metric-card">
+                                    <h5>CPU Usage</h5>
+                                    <div class="value">{$ web.cpuUsagePercent | number:1 $}%</div>
+                                    <div class="progress mt-2">
+                                        <div class="progress-bar" role="progressbar" 
+                                            ng-style="{'width': web.cpuUsagePercent + '%'}" 
+                                            aria-valuenow="{$ web.cpuUsagePercent $}" 
+                                            aria-valuemin="0" 
+                                            aria-valuemax="100">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="metric-card">
+                                    <h5>Container Uptime</h5>
+                                    <div class="value">{$ web.uptime $}</div>
+                                </div>
+                                <div class="metric-card">
+                                    <h5>Port Mapping</h5>
+                                    <div class="value">
+                                        <span class="badge bg-light text-dark">
+                                            {$ web.ports['5678/tcp'][0].HostPort $}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Regular Container Section -->
+                        <div ng-if="!web.name.includes('n8n')" class="mb-5">
                             <div id="page-title" class="mb-4">
                                 <h2 id="domainNamePage" class="d-flex justify-content-between align-items-center">
                                     <span>{% trans "Currently managing: " %} {$ web.name $}</span>
