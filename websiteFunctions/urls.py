@@ -200,4 +200,9 @@ urlpatterns = [
     # Catch all for domains
     path('<domain>/<childDomain>', views.launchChild, name='launchChild'),
     path('<domain>', views.domain, name='domain'),
+
+    # N8N API endpoints
+    path('n8n/get_workflows', views.n8n_api.get_n8n_workflows, name='get_n8n_workflows'),
+    path('n8n/toggle_workflow', views.n8n_api.toggle_workflow, name='toggle_workflow'),
+    path('n8n/create_backup', views.n8n_api.create_n8n_backup, name='create_n8n_backup'),
 ]

@@ -8,178 +8,310 @@
     <!-- Current language: {{ LANGUAGE_CODE }} -->
 
     <style>
-        /* Modern Card Styles */
-        .container-card {
+        .info-box {
             background: #fff;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            margin-bottom: 24px;
-            transition: box-shadow 0.3s ease;
             border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+            transition: all 0.3s ease;
         }
 
-        .container-card:hover {
-            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        .info-box:hover {
+            box-shadow: 0 3px 6px rgba(0,0,0,0.16);
         }
 
-        .container-header {
-            padding: 20px;
-            border-bottom: 1px solid #e0e0e0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        .info-box h4 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            color: #333;
+            font-weight: 600;
+            border-bottom: 2px solid #f5f5f5;
+            padding-bottom: 8px;
         }
 
-        .container-body {
-            padding: 20px;
+        .progress {
+            margin-bottom: 15px;
+            height: 20px;
+            background-color: #f5f5f5;
+            border-radius: 10px;
+            overflow: hidden;
         }
 
-        /* Status Indicators */
-        .status-badge {
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 0.875rem;
-            font-weight: 500;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
+        .progress-bar {
+            background-color: #2196F3;
+            color: white;
+            text-align: center;
+            line-height: 20px;
+            transition: width 0.6s ease;
         }
 
-        .status-badge.running {
-            background-color: #e3fcef;
-            color: #00a854;
+        .progress-bar.high {
+            background-color: #f44336;
         }
 
-        .status-badge.stopped {
-            background-color: #fff1f0;
-            color: #f5222d;
+        .label {
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
         }
 
-        /* Modern Button Styles */
-        .action-button {
-            padding: 8px 16px;
-            border-radius: 6px;
-            font-weight: 500;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.2s ease;
-            border: none;
-            cursor: pointer;
+        .label-success {
+            background-color: #4CAF50;
         }
 
-        .action-button:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        .label-danger {
+            background-color: #F44336;
         }
 
-        .action-button i {
-            font-size: 14px;
+        .label-warning {
+            background-color: #FF9800;
         }
 
-        /* Resource Usage Cards */
-        .resource-card {
-            background: #f8f9fa;
-            border-radius: 8px;
-            padding: 16px;
-            margin-bottom: 16px;
+        .table-striped > tbody > tr:nth-of-type(odd) {
+            background-color: #f9f9f9;
         }
 
-        .resource-title {
-            color: #666;
-            font-size: 0.875rem;
-            margin-bottom: 8px;
+        .table {
+            margin-bottom: 0;
+            background-color: white;
         }
 
-        .resource-value {
-            font-size: 1.5rem;
+        .table > thead > tr > th {
+            border-bottom: 2px solid #ddd;
             font-weight: 600;
             color: #333;
         }
 
-        /* Progress Bars */
-        .progress {
-            height: 8px;
-            border-radius: 4px;
-            background-color: #e9ecef;
-            margin-top: 8px;
+        .table > tbody > tr > td {
+            vertical-align: middle;
+            padding: 12px 8px;
         }
 
-        .progress-bar {
-            border-radius: 4px;
-            transition: width 0.6s ease;
-        }
-
-        /* Tables */
-        .info-table {
-            width: 100%;
-            border-collapse: separate;
-            border-spacing: 0;
-        }
-
-        .info-table th {
-            background: #f8f9fa;
-            font-weight: 600;
-            padding: 12px;
-            border-bottom: 2px solid #e0e0e0;
-        }
-
-        .info-table td {
-            padding: 12px;
-            border-bottom: 1px solid #e0e0e0;
-        }
-
-        /* Modal Styles */
-        .modern-modal .modal-content {
-            border-radius: 12px;
+        .table-responsive {
             border: none;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-bottom: 0;
         }
 
-        .modern-modal .modal-header {
-            border-bottom: 1px solid #e0e0e0;
-            padding: 20px;
+        /* Resource usage colors */
+        .progress-bar[aria-valuenow^="8"],
+        .progress-bar[aria-valuenow^="9"] {
+            background-color: #f44336;
         }
 
-        .modern-modal .modal-body {
-            padding: 20px;
+        .progress-bar[aria-valuenow^="7"] {
+            background-color: #ff9800;
         }
 
-        .modern-modal .modal-footer {
-            border-top: 1px solid #e0e0e0;
-            padding: 20px;
+        /* Container status colors */
+        .status-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 5px;
         }
 
-        /* Form Controls */
-        .form-control {
-            border-radius: 6px;
-            border: 1px solid #e0e0e0;
-            padding: 8px 12px;
-            transition: border-color 0.2s ease;
+        .status-running {
+            background-color: #4CAF50;
         }
 
-        .form-control:focus {
-            border-color: #2196F3;
-            box-shadow: 0 0 0 2px rgba(33,150,243,0.1);
+        .status-stopped {
+            background-color: #F44336;
         }
 
-        /* Responsive Adjustments */
+        /* Tooltips */
+        [data-toggle="tooltip"] {
+            cursor: help;
+        }
+
+        /* Responsive adjustments */
         @media (max-width: 768px) {
-            .container-header {
-                flex-direction: column;
-                gap: 16px;
+            .info-box {
+                margin-bottom: 15px;
             }
+            
+            .table-responsive {
+                border: 1px solid #ddd;
+            }
+        }
 
-            .action-buttons {
-                display: grid;
-                grid-template-columns: repeat(2, 1fr);
-                gap: 8px;
-                width: 100%;
-            }
+        /* Button Group Styles */
+        .btn-group {
+            box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+            border-radius: 4px;
+            overflow: hidden;
+        }
 
-            .resource-cards {
-                grid-template-columns: 1fr;
-            }
+        .btn-group .btn {
+            border: none;
+            padding: 8px 16px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            margin: 0;
+            position: relative;
+        }
+
+        .btn-group .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .btn-group .btn:active {
+            transform: translateY(0);
+            box-shadow: none;
+        }
+
+        .btn-group .btn i {
+            margin-right: 5px;
+        }
+
+        .btn-group .btn-sm {
+            font-size: 0.875rem;
+            line-height: 1.5;
+        }
+
+        /* Button Colors */
+        .btn-success {
+            background-color: #2ecc71;
+        }
+        
+        .btn-warning {
+            background-color: #f1c40f;
+        }
+        
+        .btn-danger {
+            background-color: #e74c3c;
+        }
+        
+        .btn-primary {
+            background-color: #3498db;
+        }
+        
+        .btn-info {
+            background-color: #2980b9;
+        }
+
+        /* Button Hover States */
+        .btn-success:hover {
+            background-color: #27ae60;
+        }
+        
+        .btn-warning:hover {
+            background-color: #f39c12;
+        }
+        
+        .btn-danger:hover {
+            background-color: #c0392b;
+        }
+        
+        .btn-primary:hover {
+            background-color: #2980b9;
+        }
+        
+        .btn-info:hover {
+            background-color: #2472a4;
+        }
+
+        /* Tooltip enhancement */
+        [title] {
+            position: relative;
+        }
+
+        [title]:hover:after {
+            content: attr(title);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            white-space: nowrap;
+            z-index: 10;
+            margin-bottom: 5px;
+        }
+
+        /* n8n specific styles */
+        .n8n-container {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-left: 4px solid #2ecc71;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+        
+        .n8n-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .metric-card {
+            background: white;
+            padding: 15px;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .metric-card h5 {
+            color: #666;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        
+        .metric-card .value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .quick-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .quick-action-btn {
+            padding: 8px 15px;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 14px;
+            transition: all 0.2s ease;
+        }
+        
+        .quick-action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .workflow-status {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .workflow-status.active {
+            background: #e3fcef;
+            color: #00a854;
+        }
+        
+        .workflow-status.error {
+            background: #fff1f0;
+            color: #f5222d;
         }
     </style>
 
@@ -192,341 +324,1484 @@
 
     <div class="container" ng-controller="ListDockersitecontainer">
 
-        <div class="page-header d-flex justify-content-between align-items-center mb-4">
-            <div>
-                <h2 class="mb-2">{% trans "Containers" %}</h2>
-                <p class="text-muted mb-0">{% trans "Manage containers on server" %}</p>
-            </div>
-            <a href="{% url 'CreateDockersite' %}" class="action-button btn-primary">
-                <i class="fa fa-plus"></i> Create
-            </a>
+        <div id="page-title">
+            <h2 id="domainNamePage">{% trans "Containers" %} <img id="cyberpanelLoading" ng-hide="cyberpanelLoading"
+                                             src="{% static 'images/loading.gif' %}">
+                <a class="pull-right btn btn-primary" href="{% url "CreateDockersite" %}">Create</a>
+            </h2>
+            <p>{% trans "Manage containers on server" %}</p>
         </div>
 
-        <!-- Container List -->
-        <div ng-show="ContainerList.length > 0">
-            <div ng-repeat="web in ContainerList" class="container-card">
-                <div class="container-header">
-                    <div class="d-flex align-items-center gap-3">
-                        <h3 class="mb-0">{$ web.name $}</h3>
-                        <span class="status-badge" ng-class="web.status">
-                            <i class="fa" ng-class="{'fa-check-circle': web.status === 'running', 'fa-times-circle': web.status !== 'running'}"></i>
-                            {$ web.status $}
-                        </span>
+        <div class="panel" ng-hide="true">
+            <div class="panel-body">
+                <h3 class="content-box-header">
+                    {% trans "Containers" %} {{ dockerSite.SiteName }}<img id="imageLoading"
+                                                                           src="/static/images/loading.gif"
+                                                                           style="display: none;">
+                </h3>
+                <span style="display: none" id="sitename">{{ dockerSite.SiteName }}</span>
+                <div class="example-box-wrapper">
+                    <div ng-repeat="web in ContainerList track by $index" ng-init="Lunchcontainer(web.id)"></div>
+                </div>
+
+                <div id="listFail" class="alert alert-danger">
+                    <p>{% trans "Error message:" %} {$ errorMessage $}</p>
+                </div>
+
+                <div class="row text-center">
+
+                    <div class="col-sm-4 col-sm-offset-8">
+
+                        <nav aria-label="Page navigation">
+                            <ul class="pagination">
+
+
+                                {% for items in pagination %}
+
+                                    <li ng-click="getFurtherContainersFromDB({{ forloop.counter }})" id="webPages">
+                                        <a href="">{{ forloop.counter }}</a></li>
+
+                                {% endfor %}
+
+                            </ul>
+                        </nav>
+
+
                     </div>
-                    <div class="action-buttons d-flex gap-2">
-                        <button class="action-button btn-success" ng-click="handleAction('start', web)" ng-if="web.status !== 'running'">
-                            <i class="fa fa-play"></i> Start
-                        </button>
-                        <button class="action-button btn-warning" ng-click="handleAction('restart', web)" ng-if="web.status === 'running'">
-                            <i class="fa fa-refresh"></i> Restart
-                        </button>
-                        <button class="action-button btn-danger" ng-click="handleAction('stop', web)" ng-if="web.status === 'running'">
-                            <i class="fa fa-stop"></i> Stop
-                        </button>
-                        <button class="action-button btn-primary" ng-click="openSettings(web)">
-                            <i class="fa fa-cog"></i> Settings
-                        </button>
+
+
+                </div>
+
+                {% if showUnlistedContainer %}
+                    <h3 class="title-hero">
+                        {% trans "Unlisted Containers" %} <i class="fa fa-question-circle"
+                                                             title="{% trans "Containers listed below were either not created through panel or were not saved to database properly" %}"></i>
+                    </h3>
+
+                    <table cellpadding="0" cellspacing="0" border="0" class="table table-striped table-bordered"
+                           id="datatable-example">
+                        <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+
+                        {% for container in unlistedContainers %}
+                            <tr>
+                                <td>{{ container.name }}</td>
+                                <td>{{ container.status }}</td>
+                                <td>
+                                    <button class="btn btn-primary"
+                                            ng-click="delContainer('{{ container.name }}', true)"><i
+                                            class="fa fa-trash"></i></button>
+                                    <button class="btn btn-primary" ng-click="showLog('{{ container.name }}')"><i
+                                            class="fa fa-file"></i></button>
+                                    <button class="btn btn-primary"
+                                            ng-click="assignContainer('{{ container.name }}')"><i
+                                            class="fa fa-user"></i></button>
+                                </td>
+                            </tr>
+                        {% endfor %}
+
+                        </tbody>
+                    </table>
+
+                {% endif %}
+
+                <div id="logs" class="modal fade" role="dialog">
+                    <div class="modal-dialog">
+
+                        <!-- Modal content-->
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                <h4 class="modal-title">Container logs</h4>
+                            </div>
+                            <div class="modal-body">
+                                <textarea name="logs" class="form-control" id="" cols="30"
+                                          rows="10">{$ logs $}</textarea>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-primary" ng-click="showLog('', true)">Refresh
+                                </button>
+                                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
 
-                <div class="container-body">
-                    <!-- Resource Usage Section -->
-                    <div class="row mb-4">
-                        <div class="col-md-6">
-                            <div class="resource-card">
-                                <div class="resource-title">Memory Usage</div>
-                                <div class="resource-value">{$ web.memoryUsage $}</div>
-                                <div class="progress">
-                                    <div class="progress-bar" role="progressbar" 
-                                        ng-style="{'width': web.memoryUsagePercent + '%'}" 
-                                        aria-valuenow="{$ web.memoryUsagePercent $}" 
-                                        aria-valuemin="0" 
-                                        aria-valuemax="100">
-                                    </div>
-                                </div>
+                <div id="assign" class="modal fade" role="dialog">
+                    <div class="modal-dialog">
+
+                        <!-- Modal content-->
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                <h4 class="modal-title">Assign Container to user</h4>
                             </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="resource-card">
-                                <div class="resource-title">CPU Usage</div>
-                                <div class="resource-value">{$ web.cpuUsagePercent | number:1 $}%</div>
-                                <div class="progress">
-                                    <div class="progress-bar" role="progressbar" 
-                                        ng-style="{'width': web.cpuUsagePercent + '%'}" 
-                                        aria-valuenow="{$ web.cpuUsagePercent $}" 
-                                        aria-valuemin="0" 
-                                        aria-valuemax="100">
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Container Details -->
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="info-section mb-4">
-                                <h4 class="mb-3">Network & Ports</h4>
-                                <div class="table-responsive">
-                                    <table class="info-table">
-                                        <thead>
-                                            <tr>
-                                                <th>Container Port</th>
-                                                <th>Host Binding</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr ng-repeat="(containerPort, hostBindings) in web.ports">
-                                                <td><code>{$ containerPort $}</code></td>
-                                                <td>
-                                                    <span ng-repeat="binding in hostBindings" class="badge bg-light text-dark me-2">
-                                                        {$ binding.HostIp || '0.0.0.0' $}:{$ binding.HostPort $}
-                                                    </span>
-                                                </td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="info-section mb-4">
-                                <h4 class="mb-3">Volumes</h4>
-                                <div class="table-responsive">
-                                    <table class="info-table">
-                                        <thead>
-                                            <tr>
-                                                <th>Source</th>
-                                                <th>Destination</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr ng-repeat="volume in web.volumes">
-                                                <td><code>{$ volume.Source $}</code></td>
-                                                <td><code>{$ volume.Destination $}</code></td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Logs Section -->
-                    <div class="logs-section">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h4 class="mb-0">{% trans "Logs" %}</h4>
-                            <button class="action-button btn-light" ng-click="getcontainerlog(web.id)">
-                                <i class="fa fa-refresh"></i> Refresh
-                            </button>
-                        </div>
-                        <textarea class="form-control" rows="10" readonly>{$ web.logs $}</textarea>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Empty State -->
-        <div ng-show="ContainerList.length === 0" class="text-center py-5">
-            <i class="fa fa-docker fa-3x text-muted mb-3"></i>
-            <h3>No Containers Found</h3>
-            <p class="text-muted">Create your first container to get started</p>
-            <a href="{% url 'CreateDockersite' %}" class="action-button btn-primary">
-                <i class="fa fa-plus"></i> Create Container
-            </a>
-        </div>
-
-        <!-- Settings Modal -->
-        <div id="settings" class="modal fade modern-modal" role="dialog">
-            <div class="modal-dialog">
-
-                <!-- Modal content-->
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <button type="button" class="close" data-dismiss="modal">&times;</button>
-                        <h4 class="modal-title">Container Settings
-                            <img id="containerSettingLoading" src="/static/images/loading.gif"
-                                 style="display: none;">
-                        </h4>
-                    </div>
-                    <div class="modal-body">
-
-                        <form name="containerSettingsForm" action="/" class="form-horizontal">
-                            <div ng-hide="installationDetailsForm" class="form-group">
-                                <label class="col-sm-3 control-label">{% trans "Memory limit" %}</label>
-                                <div class="col-sm-6">
-                                    <input name="memory" type="number" class="form-control"
-                                           ng-model="web.memoryLimit" required>
-                                </div>
-                                <div class="current-pack ng-binding">MB</div>
-                            </div>
-
-                            <div ng-hide="installationDetailsForm" class="form-group">
-                                <label class="col-sm-3 control-label">Start on reboot</label>
-                                <div class="col-sm-9">
-                                    <div class="checkbox">
-                                        <label>
-                                            <input ng-model="web.startOnReboot" type="checkbox">
-                                        </label>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <hr>
-                            <div ng-hide="installationDetailsForm" class="form-group">
-                                <label class="col-sm-3 control-label">{% trans "Confirmation" %}</label>
-                                <div class="col-sm-9">
-                                    <div class="checkbox">
-                                        <label>
-                                            <input ng-model="envConfirmation" type="checkbox">
-                                            Editing ENV or Volume will recreate container.
-                                        </label>
-                                    </div>
-                                </div>
-                            </div>
-                            <hr>
-                            <span ng-init="envList = {}"></span>
-                            {% for env, value in envList.items %}
-
-                                <span ng-init="envList[{{ forloop.counter0 }}] =  {'name':'{{ env }}' , 'value':'{{ value }}'} "></span>
-
-                            {% endfor %}
-
-                            <div ng-repeat="env in envList track by $index">
-
-                                <div ng-hide="installationDetailsForm" class="form-group">
-                                    <label class="col-sm-3 control-label">
-                                        <div ng-show="$first">
-                                            {% trans "ENV" %}
+                            <div class="modal-body">
+                                <form action="/" class="form-horizontal">
+                                    <div ng-hide="installationDetailsForm" class="form-group">
+                                        <label class="col-sm-3 control-label">{% trans "Select Owner" %}</label>
+                                        <div class="col-sm-6">
+                                            <select ng-model="dockerOwner" class="form-control">
+                                                {% for user in adminNames %}
+                                                    <option>{{ user }}</option>
+                                                {% endfor %}
+                                            </select>
                                         </div>
-                                    </label>
-                                    <div class="col-sm-2">
-                                        <input name="$index" ng-disabled="!envConfirmation" type="text"
-                                               class="form-control" ng-model="envList[$index].name"
-                                               required>
                                     </div>
-                                    <div class="col-sm-4">
-                                        <input name="$index" ng-disabled="!envConfirmation" type="text"
-                                               class="form-control" ng-model="envList[$index].value"
-                                               required>
+                                </form>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-primary" ng-click="submitAssignContainer()">
+                                    Submit
+                                </button>
+                                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        <div ng-hide="conatinerview">
+            <div>
+
+                <div ng-show="ContainerList.length > 0">
+                    <div ng-repeat="web in ContainerList">
+                        <!-- n8n Container Section -->
+                        <div ng-if="web.environment && (web.environment | filter:'n8n').length > 0" class="n8n-container">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h3 class="m-0">
+                                    <i class="fa fa-cube"></i> n8n Container: {$ web.name $}
+                                    <span class="workflow-status" ng-class="{'active': web.status === 'running', 'error': web.status !== 'running'}">
+                                        {$ web.status $}
+                                    </span>
+                                </h3>
+                                <div class="quick-actions">
+                                    <button class="quick-action-btn btn-success" ng-click="handleAction('start', web)" ng-if="web.status !== 'running'">
+                                        <i class="fa fa-play"></i> Start
+                                    </button>
+                                    <button class="quick-action-btn btn-warning" ng-click="handleAction('restart', web)" ng-if="web.status === 'running'">
+                                        <i class="fa fa-refresh"></i> Restart
+                                    </button>
+                                    <button class="quick-action-btn btn-danger" ng-click="handleAction('stop', web)" ng-if="web.status === 'running'">
+                                        <i class="fa fa-stop"></i> Stop
+                                    </button>
+                                    <button class="quick-action-btn btn-primary" ng-click="openSettings(web)">
+                                        <i class="fa fa-cog"></i> Settings
+                                    </button>
+                                    <a class="quick-action-btn btn-info" href="http://{$ location.hostname $}:{$ web.ports['5678/tcp'][0].HostPort $}" target="_blank" ng-if="web.status === 'running'">
+                                        <i class="fa fa-external-link"></i> Open n8n
+                                    </a>
+                                </div>
+                            </div>
+                            
+                            <!-- Workflow Management Dashboard -->
+                            <div class="info-box shadow-sm mt-4">
+                                <h4 class="border-bottom pb-2 mb-3">
+                                    <i class="fa fa-sitemap"></i> Workflow Management
+                                    <button class="btn btn-sm btn-primary float-end" ng-click="refreshWorkflows(web)">
+                                        <i class="fa fa-refresh"></i> Refresh
+                                    </button>
+                                </h4>
+                                <div ng-if="web.workflows && web.workflows.length > 0">
+                                    <div class="table-responsive">
+                                        <table class="table table-striped table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>Name</th>
+                                                    <th>Status</th>
+                                                    <th>Last Execution</th>
+                                                    <th>Success Rate</th>
+                                                    <th>Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr ng-repeat="workflow in web.workflows">
+                                                    <td>{$ workflow.name $}</td>
+                                                    <td>
+                                                        <span class="workflow-status" ng-class="{'active': workflow.active, 'error': !workflow.active}">
+                                                            {$ workflow.active ? 'Active' : 'Inactive' $}
+                                                        </span>
+                                                    </td>
+                                                    <td>{$ workflow.lastExecution | date:'medium' $}</td>
+                                                    <td>
+                                                        <div class="progress" style="height: 15px; margin-bottom: 0;">
+                                                            <div class="progress-bar" 
+                                                                ng-class="{'bg-success': workflow.successRate > 80, 'bg-warning': workflow.successRate > 50 && workflow.successRate <= 80, 'bg-danger': workflow.successRate <= 50}"
+                                                                role="progressbar" 
+                                                                ng-style="{'width': workflow.successRate + '%'}" 
+                                                                aria-valuenow="{$ workflow.successRate $}" 
+                                                                aria-valuemin="0" 
+                                                                aria-valuemax="100">
+                                                                {$ workflow.successRate $}%
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <div class="btn-group">
+                                                            <button class="btn btn-xs" 
+                                                                ng-class="{'btn-success': !workflow.active, 'btn-danger': workflow.active}"
+                                                                ng-click="toggleWorkflow(web, workflow.id, !workflow.active)">
+                                                                <i class="fa" ng-class="{'fa-play': !workflow.active, 'fa-stop': workflow.active}"></i>
+                                                            </button>
+                                                            <a class="btn btn-xs btn-primary" 
+                                                               href="http://{$ location.hostname $}:{$ web.ports['5678/tcp'][0].HostPort $}/workflow/{$ workflow.id $}"
+                                                               target="_blank">
+                                                                <i class="fa fa-pencil"></i>
+                                                            </a>
+                                                            <button class="btn btn-xs btn-info" ng-click="showWorkflowExecution(web, workflow.id)">
+                                                                <i class="fa fa-history"></i>
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div ng-if="!web.workflows || web.workflows.length === 0" class="text-center py-5">
+                                    <i class="fa fa-info-circle fa-3x text-muted mb-3"></i>
+                                    <p class="text-muted">No workflows found or container is not running</p>
+                                    <a ng-if="web.status === 'running'" class="btn btn-primary" 
+                                       href="http://{$ location.hostname $}:{$ web.ports['5678/tcp'][0].HostPort $}/workflow/new"
+                                       target="_blank">
+                                        <i class="fa fa-plus"></i> Create New Workflow
+                                    </a>
+                                </div>
+                            </div>
+                            
+                            <div class="container-fluid p-0 mt-4">
+                                <!-- Backup & Restore Section -->
+                                <div class="row g-4 mb-4">
+                                    <div class="col-md-12">
+                                        <div class="info-box shadow-sm">
+                                            <h4 class="border-bottom pb-2 mb-3">
+                                                <i class="fa fa-cloud-download"></i> Backup & Restore
+                                            </h4>
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="card">
+                                                        <div class="card-header bg-light">
+                                                            <h5 class="mb-0">
+                                                                <i class="fa fa-download"></i> Backup
+                                                            </h5>
+                                                        </div>
+                                                        <div class="card-body">
+                                                            <p>Create a backup of all workflows, credentials, and settings.</p>
+                                                            <div class="form-group mb-3">
+                                                                <div class="checkbox">
+                                                                    <label>
+                                                                        <input type="checkbox" ng-model="web.backupOptions.includeCredentials"> Include credentials
+                                                                    </label>
+                                                                </div>
+                                                                <div class="checkbox">
+                                                                    <label>
+                                                                        <input type="checkbox" ng-model="web.backupOptions.includeExecutions"> Include execution history
+                                                                    </label>
+                                                                </div>
+                                                            </div>
+                                                            <button class="btn btn-primary" ng-click="createBackup(web)">
+                                                                <i class="fa fa-download"></i> Create Backup
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="card">
+                                                        <div class="card-header bg-light">
+                                                            <h5 class="mb-0">
+                                                                <i class="fa fa-upload"></i> Restore
+                                                            </h5>
+                                                        </div>
+                                                        <div class="card-body">
+                                                            <p>Restore from a previous backup.</p>
+                                                            <div class="form-group">
+                                                                <label class="control-label">Select backup file</label>
+                                                                <div class="input-group">
+                                                                    <input type="file" id="backupFile" class="form-control" ng-model="web.restoreFile">
+                                                                    <span class="input-group-btn">
+                                                                        <button class="btn btn-primary" ng-click="restoreFromBackup(web)">
+                                                                            <i class="fa fa-upload"></i> Restore
+                                                                        </button>
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row g-4">
+                                                <!-- Version Management Section -->
+                                                <div class="col-md-6">
+                                                    <div class="info-box shadow-sm">
+                                                        <h4 class="border-bottom pb-2 mb-3">
+                                                            <i class="fa fa-code-fork"></i> Version Management
+                                                        </h4>
+                                                        <div class="version-info mb-4">
+                                                            <div class="d-flex justify-content-between align-items-center">
+                                                                <div>
+                                                                    <h5 class="mb-1">Current Version</h5>
+                                                                    <p class="mb-0 lead">
+                                                                        <span class="label label-info">{$ web.n8nVersion || 'Unknown' $}</span>
+                                                                    </p>
+                                                                </div>
+                                                                <div>
+                                                                    <button class="btn btn-sm btn-info" ng-click="checkForUpdates(web)">
+                                                                        <i class="fa fa-refresh"></i> Check for Updates
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        <div ng-if="web.updateAvailable" class="update-available-info mb-4">
+                                                            <div class="alert alert-info">
+                                                                <h5><i class="fa fa-info-circle"></i> Update Available!</h5>
+                                                                <p>A new version ({$ web.latestVersion $}) is available. You are currently running {$ web.n8nVersion $}.</p>
+                                                                <div class="update-actions mt-3">
+                                                                    <button class="btn btn-success" ng-click="updateN8N(web)">
+                                                                        <i class="fa fa-arrow-circle-up"></i> Update Now
+                                                                    </button>
+                                                                    <button class="btn btn-link" ng-click="showReleaseNotes(web)">
+                                                                        <i class="fa fa-file-text-o"></i> View Release Notes
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        <div ng-if="!web.updateAvailable && web.n8nVersion" class="up-to-date-info mb-4">
+                                                            <div class="alert alert-success">
+                                                                <i class="fa fa-check-circle"></i> You are running the latest version.
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        <div class="version-history">
+                                                            <h5 class="border-bottom pb-2 mb-2">Version History</h5>
+                                                            <div class="table-responsive">
+                                                                <table class="table table-striped table-hover mb-0">
+                                                                    <thead>
+                                                                        <tr>
+                                                                            <th>Date</th>
+                                                                            <th>Version</th>
+                                                                            <th>Action</th>
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody>
+                                                                        <tr ng-repeat="version in web.versionHistory">
+                                                                            <td>{$ version.date | date:'medium' $}</td>
+                                                                            <td><span class="label label-default">{$ version.version $}</span></td>
+                                                                            <td>
+                                                                                <button class="btn btn-xs btn-default" ng-click="showVersionChanges(web, version)">
+                                                                                    <i class="fa fa-search"></i> Details
+                                                                                </button>
+                                                                            </td>
+                                                                        </tr>
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                <!-- Credential Security Dashboard -->
+                                <div class="col-md-6">
+                                    <div class="info-box shadow-sm">
+                                        <h4 class="border-bottom pb-2 mb-3">
+                                            <i class="fa fa-lock"></i> Credential Management
+                                            <button class="btn btn-sm btn-primary float-end" ng-click="refreshCredentials(web)">
+                                                <i class="fa fa-refresh"></i> Refresh
+                                            </button>
+                                        </h4>
+                                        
+                                        <div ng-if="web.credentials && web.credentials.length > 0">
+                                            <div class="credential-stats d-flex justify-content-around mb-4">
+                                                <div class="text-center">
+                                                    <h5>{$ web.credentials.length $}</h5>
+                                                    <p class="text-muted mb-0">Total Credentials</p>
+                                                </div>
+                                                <div class="text-center">
+                                                    <h5>{$ web.unusedCredentials.length $}</h5>
+                                                    <p class="text-muted mb-0">Unused Credentials</p>
+                                                </div>
+                                                <div class="text-center">
+                                                    <h5>{$ web.insecureCredentials.length $}</h5>
+                                                    <p class="text-muted mb-0">Insecure Credentials</p>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="table-responsive">
+                                                <table class="table table-striped table-hover">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Name</th>
+                                                            <th>Type</th>
+                                                            <th>Usage</th>
+                                                            <th>Security</th>
+                                                            <th>Actions</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr ng-repeat="credential in web.credentials">
+                                                            <td>{$ credential.name $}</td>
+                                                            <td>
+                                                                <span class="label label-default">{$ credential.type $}</span>
+                                                            </td>
+                                                            <td>
+                                                                <span class="badge" ng-class="{'bg-success': credential.usedIn.length > 0, 'bg-warning': credential.usedIn.length === 0}">
+                                                                    {$ credential.usedIn.length $} workflows
+                                                                </span>
+                                                            </td>
+                                                            <td>
+                                                                <span ng-if="credential.securityIssues.length === 0" class="text-success">
+                                                                    <i class="fa fa-check-circle"></i> Secure
+                                                                </span>
+                                                                <span ng-if="credential.securityIssues.length > 0" class="text-danger" title="{$ credential.securityIssues.join(', ') $}">
+                                                                    <i class="fa fa-exclamation-triangle"></i> Insecure
+                                                                </span>
+                                                            </td>
+                                                            <td>
+                                                                <div class="btn-group">
+                                                                    <a class="btn btn-xs btn-primary" 
+                                                                       href="http://{$ location.hostname $}:{$ web.ports['5678/tcp'][0].HostPort $}/credentials/{$ credential.id $}"
+                                                                       target="_blank">
+                                                                        <i class="fa fa-pencil"></i>
+                                                                    </a>
+                                                                    <button class="btn btn-xs btn-info" ng-click="showCredentialUsage(web, credential.id)">
+                                                                        <i class="fa fa-sitemap"></i>
+                                                                    </button>
+                                                                    <button class="btn btn-xs btn-danger" ng-click="deleteCredential(web, credential.id)">
+                                                                        <i class="fa fa-trash"></i>
+                                                                    </button>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                            
+                                            <div class="credential-actions text-right mt-3">
+                                                <a class="btn btn-success" 
+                                                   href="http://{$ location.hostname $}:{$ web.ports['5678/tcp'][0].HostPort $}/credentials/new"
+                                                   target="_blank">
+                                                    <i class="fa fa-plus"></i> New Credential
+                                                </a>
+                                                <button class="btn btn-warning" ng-click="cleanupUnusedCredentials(web)" 
+                                                        ng-disabled="web.unusedCredentials.length === 0">
+                                                    <i class="fa fa-broom"></i> Cleanup Unused
+                                                </button>
+                                            </div>
+                                        </div>
+                                        
+                                        <div ng-if="!web.credentials || web.credentials.length === 0" class="text-center py-5">
+                                            <i class="fa fa-lock fa-3x text-muted mb-3"></i>
+                                            <p class="text-muted">No credentials found or container is not running</p>
+                                            <a ng-if="web.status === 'running'" class="btn btn-primary" 
+                                               href="http://{$ location.hostname $}:{$ web.ports['5678/tcp'][0].HostPort $}/credentials/new"
+                                               target="_blank">
+                                                <i class="fa fa-plus"></i> Create New Credential
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Regular Container Section -->
+                        <div ng-if="!web.environment || (web.environment | filter:'n8n').length === 0" class="mb-5">
+                            <div id="page-title" class="mb-4">
+                                <h2 id="domainNamePage" class="d-flex justify-content-between align-items-center">
+                                    <span>{% trans "Currently managing: " %} {$ web.name $}</span>
+                                    <div class="btn-group" role="group" aria-label="Container Actions">
+                                        <button class="btn btn-success btn-sm" ng-click="handleAction('start', web)" ng-if="web.status !== 'running'" title="Start Container">
+                                            <i class="fa fa-play"></i> Start
+                                        </button>
+                                        <button class="btn btn-warning btn-sm" ng-click="handleAction('restart', web)" ng-if="web.status === 'running'" title="Restart Container">
+                                            <i class="fa fa-refresh"></i> Restart
+                                        </button>
+                                        <button class="btn btn-danger btn-sm" ng-click="handleAction('stop', web)" ng-if="web.status === 'running'" title="Stop Container">
+                                            <i class="fa fa-stop"></i> Stop
+                                        </button>
+                                        <button class="btn btn-primary btn-sm" ng-click="openSettings(web)" title="Container Settings">
+                                            <i class="fa fa-cog"></i> Settings
+                                        </button>
+                                        <a class="btn btn-info btn-sm" href="http://{$ location.hostname $}:{$ web.ports['5678/tcp'][0].HostPort $}" target="_blank" ng-if="web.status === 'running'" title="Open n8n Interface">
+                                            <i class="fa fa-external-link"></i> Open n8n
+                                        </a>
+                                    </div>
+                                </h2>
+                                <p class="text-muted">
+                                    {% trans "Container ID" %}: <code>{$ web.id $}</code>
+                                </p>
+                            </div>
+
+                            <div class="container-fluid p-0">
+                                <div class="panel panel-body">
+                                    <h3 class="content-box-header d-flex justify-content-between align-items-center mb-4">
+                                        {% trans "Container Information" %}
+                                        <img id="infoLoading" src="/static/images/loading.gif" style="display: none;">
+                                    </h3>
+
+                                    <div class="row g-4">
+                                        <div class="col-md-6">
+                                            <div class="info-box shadow-sm">
+                                                <h4 class="border-bottom pb-2 mb-3">Basic Information</h4>
+                                                <div class="info-list">
+                                                    <p class="mb-2"><strong>Container ID:</strong> <code>{$ web.id $}</code></p>
+                                                    <p class="mb-2"><strong>Status:</strong> 
+                                                        <span class="label px-3 py-1 rounded" ng-class="{'label-success': web.status === 'running', 'label-danger': web.status === 'stopped', 'label-warning': web.status !== 'running' && web.status !== 'stopped'}">
+                                                            {$ web.status $}
+                                                        </span>
+                                                    </p>
+                                                    <p class="mb-2"><strong>Created:</strong> {$ web.created | date:'medium' $}</p>
+                                                    <p class="mb-2"><strong>Uptime:</strong> {$ web.uptime $}</p>
+                                                </div>
+                                            </div>
+
+                                            <div class="info-box shadow-sm mt-4">
+                                                <h4 class="border-bottom pb-2 mb-3">Resource Usage</h4>
+                                                <div class="mb-3">
+                                                    <label class="mb-2">Memory Usage</label>
+                                                    <div class="progress" style="height: 20px;">
+                                                        <div class="progress-bar" role="progressbar" 
+                                                            ng-style="{'width': web.memoryUsagePercent + '%'}" 
+                                                            aria-valuenow="{$ web.memoryUsagePercent $}" 
+                                                            aria-valuemin="0" 
+                                                            aria-valuemax="100">
+                                                            {$ web.memoryUsage $}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <label class="mb-2">CPU Usage</label>
+                                                    <div class="progress" style="height: 20px;">
+                                                        <div class="progress-bar" role="progressbar" 
+                                                            ng-style="{'width': web.cpuUsagePercent + '%'}" 
+                                                            aria-valuenow="{$ web.cpuUsagePercent $}" 
+                                                            aria-valuemin="0" 
+                                                            aria-valuemax="100">
+                                                            {$ web.cpuUsagePercent | number:1 $}%
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <div class="info-box shadow-sm">
+                                                <h4 class="border-bottom pb-2 mb-3">Network & Ports</h4>
+                                                <div ng-if="web.ports">
+                                                    <div class="table-responsive">
+                                                        <table class="table table-striped table-hover mb-0">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th>Container Port</th>
+                                                                    <th>Host Binding</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                <tr ng-repeat="(containerPort, hostBindings) in web.ports">
+                                                                    <td><code>{$ containerPort $}</code></td>
+                                                                    <td>
+                                                                        <span ng-repeat="binding in hostBindings" class="badge bg-light text-dark me-2">
+                                                                            {$ binding.HostIp || '0.0.0.0' $}:{$ binding.HostPort $}
+                                                                        </span>
+                                                                    </td>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                                <div ng-if="!web.ports" class="text-muted">
+                                                    <p class="mb-0">No ports exposed</p>
+                                                </div>
+                                            </div>
+
+                                            <div class="info-box shadow-sm mt-4">
+                                                <h4 class="border-bottom pb-2 mb-3">Volumes</h4>
+                                                <div ng-if="web.volumes && web.volumes.length > 0">
+                                                    <div class="table-responsive">
+                                                        <table class="table table-striped table-hover mb-0">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th>Source</th>
+                                                                    <th>Destination</th>
+                                                                    <th>Mode</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                <tr ng-repeat="volume in web.volumes">
+                                                                    <td><code>{$ volume.Source $}</code></td>
+                                                                    <td><code>{$ volume.Destination $}</code></td>
+                                                                    <td><span class="badge bg-secondary">{$ volume.Mode $}</span></td>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                                <div ng-if="!web.volumes || web.volumes.length === 0" class="text-muted">
+                                                    <p class="mb-0">No volumes mounted</p>
+                                                </div>
+                                            </div>
+
+                                            <div class="info-box shadow-sm mt-4">
+                                                <h4 class="border-bottom pb-2 mb-3">Environment Variables</h4>
+                                                <div ng-if="web.environment && web.environment.length > 0">
+                                                    <div class="table-responsive">
+                                                        <table class="table table-striped table-hover mb-0">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th>Variable</th>
+                                                                    <th>Value</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                <tr ng-repeat="env in web.environment">
+                                                                    <td><code>{$ env.split('=')[0] $}</code></td>
+                                                                    <td>
+                                                                        <code ng-if="env.split('=')[1] === '********'">{$ env.split('=')[1] $}</code>
+                                                                        <code ng-if="env.split('=')[1] !== '********'">{$ env.split('=')[1] $}</code>
+                                                                    </td>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                                <div ng-if="!web.environment || web.environment.length === 0" class="text-muted">
+                                                    <p class="mb-0">No environment variables set</p>
+                                                </div>
+                                                
+                                                <!-- Webhook Testing Tools -->
+                                                <div class="info-box shadow-sm mt-4">
+                                                    <h4 class="border-bottom pb-2 mb-3">
+                                                        <i class="fa fa-exchange"></i> Webhook Testing Tools
+                                                    </h4>
+                                                    
+                                                    <div class="webhook-tools-content">
+                                                        <div class="webhook-generator mb-4">
+                                                            <h5>Webhook URL Generator</h5>
+                                                            <div class="input-group mb-3">
+                                                                <span class="input-group-addon">Workflow ID</span>
+                                                                <select class="form-control" ng-model="web.webhookTools.selectedWorkflow">
+                                                                    <option ng-repeat="workflow in web.workflows" value="{$ workflow.id $}">
+                                                                        {$ workflow.name $}
+                                                                    </option>
+                                                                </select>
+                                                                <span class="input-group-btn">
+                                                                    <button class="btn btn-primary" ng-click="generateWebhookUrl(web)">
+                                                                        <i class="fa fa-refresh"></i> Generate
+                                                                    </button>
+                                                                </span>
+                                                            </div>
+                                                            
+                                                            <div ng-if="web.webhookTools.generatedUrl" class="alert alert-info">
+                                                                <div class="d-flex justify-content-between align-items-center">
+                                                                    <code class="webhook-url">{$ web.webhookTools.generatedUrl $}</code>
+                                                                    <button class="btn btn-sm btn-default" ng-click="copyToClipboard(web.webhookTools.generatedUrl)">
+                                                                        <i class="fa fa-copy"></i> Copy
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        <div class="webhook-tester">
+                                                            <h5>Test Webhook</h5>
+                                                            <div class="row">
+                                                                <div class="col-md-12">
+                                                                    <div class="form-group">
+                                                                        <label>URL to Test</label>
+                                                                        <input type="text" class="form-control" ng-model="web.webhookTools.testUrl" 
+                                                                            placeholder="Enter webhook URL to test" />
+                                                                    </div>
+                                                                    
+                                                                    <div class="form-group">
+                                                                        <label>HTTP Method</label>
+                                                                        <select class="form-control" ng-model="web.webhookTools.httpMethod">
+                                                                            <option value="GET">GET</option>
+                                                                            <option value="POST">POST</option>
+                                                                            <option value="PUT">PUT</option>
+                                                                            <option value="DELETE">DELETE</option>
+                                                                        </select>
+                                                                    </div>
+                                                                    
+                                                                    <div class="form-group" ng-if="web.webhookTools.httpMethod !== 'GET'">
+                                                                        <label>Request Body (JSON)</label>
+                                                                        <textarea class="form-control" ng-model="web.webhookTools.requestBody" 
+                                                                            rows="5" placeholder='{"key": "value"}'></textarea>
+                                                                    </div>
+                                                                    
+                                                                    <div class="form-group">
+                                                                        <label>Headers (optional)</label>
+                                                                        <div ng-repeat="header in web.webhookTools.headers track by $index" class="mb-2">
+                                                                            <div class="input-group">
+                                                                                <input type="text" class="form-control" ng-model="header.key" placeholder="Header name" />
+                                                                                <input type="text" class="form-control" ng-model="header.value" placeholder="Header value" />
+                                                                                <span class="input-group-btn">
+                                                                                    <button class="btn btn-danger" ng-click="removeWebhookHeader($index)">
+                                                                                        <i class="fa fa-times"></i>
+                                                                                    </button>
+                                                                                </span>
+                                                                            </div>
+                                                                        </div>
+                                                                        <button class="btn btn-sm btn-default mt-2" ng-click="addWebhookHeader()">
+                                                                            <i class="fa fa-plus"></i> Add Header
+                                                                        </button>
+                                                                    </div>
+                                                                    
+                                                                    <div class="form-group text-right">
+                                                                        <button class="btn btn-primary" ng-click="testWebhook(web)">
+                                                                            <i class="fa fa-paper-plane"></i> Send Request
+                                                                        </button>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            
+                                                            <div ng-if="web.webhookTools.testResult" class="webhook-test-result mt-3">
+                                                                <h5>Test Result</h5>
+                                                                <div class="card">
+                                                                    <div class="card-header" ng-class="{'bg-success': web.webhookTools.testResult.status < 400, 'bg-danger': web.webhookTools.testResult.status >= 400}">
+                                                                        <h5 class="mb-0 text-white">
+                                                                            Status: {$ web.webhookTools.testResult.status $} {$ web.webhookTools.testResult.statusText $}
+                                                                        </h5>
+                                                                    </div>
+                                                                    <div class="card-body">
+                                                                        <div class="mb-3">
+                                                                            <label>Response Headers</label>
+                                                                            <pre class="bg-light p-3">{$ web.webhookTools.testResult.headers | json $}</pre>
+                                                                        </div>
+                                                                        <div>
+                                                                            <label>Response Body</label>
+                                                                            <pre class="bg-light p-3">{$ web.webhookTools.testResult.body | json $}</pre>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
 
+                                <div class="info-box shadow-sm mt-4">
+                                    <h4 class="border-bottom pb-2 mb-3">
+                                        {% trans "Logs" %}
+                                        <span style="cursor:pointer;" class="float-end" ng-click="getcontainerlog(web.id)">
+                                            <i class="fa fa-refresh btn-icon"></i>
+                                        </span>
+                                    </h4>
+                                    <div class="content-box-wrapper">
+                                        <textarea name="logs" class="form-control" cols="30" rows="10">{$ web.logs $}</textarea>
+                                    </div>
+                                </div>
+                                
+                                <!-- Custom Domain Configuration -->
+                                <div class="info-box shadow-sm mt-4">
+                                    <h4 class="border-bottom pb-2 mb-3">
+                                        <i class="fa fa-globe"></i> Custom Domain Configuration
+                                    </h4>
+                                    
+                                    <div class="custom-domain-content">
+                                        <div class="row mb-4">
+                                            <div class="col-md-6">
+                                                <div class="card">
+                                                    <div class="card-header bg-light">
+                                                        <h5 class="mb-0">Current Domain Settings</h5>
+                                                    </div>
+                                                    <div class="card-body">
+                                                        <div ng-if="web.customDomain">
+                                                            <div class="alert alert-success">
+                                                                <div class="d-flex justify-content-between align-items-center">
+                                                                    <div>
+                                                                        <p class="mb-0">
+                                                                            <strong>Domain:</strong> {$ web.customDomain $}
+                                                                        </p>
+                                                                        <p class="mb-0">
+                                                                            <strong>SSL:</strong> 
+                                                                            <span ng-if="web.sslEnabled">
+                                                                                <i class="fa fa-lock"></i> Enabled (Expires: {$ web.sslExpiry | date $})
+                                                                            </span>
+                                                                            <span ng-if="!web.sslEnabled">
+                                                                                <i class="fa fa-unlock"></i> Disabled
+                                                                            </span>
+                                                                        </p>
+                                                                    </div>
+                                                                    <div>
+                                                                        <button class="btn btn-sm btn-danger" ng-click="removeCustomDomain(web)">
+                                                                            <i class="fa fa-trash"></i> Remove
+                                                                        </button>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            
+                                                            <div class="mt-3" ng-if="!web.sslEnabled">
+                                                                <button class="btn btn-success" ng-click="enableSSL(web)">
+                                                                    <i class="fa fa-lock"></i> Enable SSL
+                                                                </button>
+                                                            </div>
+                                                            
+                                                            <div class="mt-3" ng-if="web.sslEnabled">
+                                                                <button class="btn btn-warning" ng-click="renewSSL(web)">
+                                                                    <i class="fa fa-refresh"></i> Renew SSL
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        <div ng-if="!web.customDomain" class="text-center py-4">
+                                                            <i class="fa fa-globe fa-3x text-muted mb-3"></i>
+                                                            <p class="text-muted">No custom domain configured</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="col-md-6">
+                                                <div class="card">
+                                                    <div class="card-header bg-light">
+                                                        <h5 class="mb-0">Add Custom Domain</h5>
+                                                    </div>
+                                                    <div class="card-body">
+                                                        <form ng-submit="configureCustomDomain(web)">
+                                                            <div class="form-group">
+                                                                <label>Domain Name</label>
+                                                                <input type="text" class="form-control" ng-model="web.newDomain" 
+                                                                    placeholder="e.g., n8n.yourdomain.com" required />
+                                                            </div>
+                                                            
+                                                            <div class="checkbox">
+                                                                <label>
+                                                                    <input type="checkbox" ng-model="web.enableSSL">
+                                                                    Enable SSL with Let's Encrypt
+                                                                </label>
+                                                            </div>
+                                                            
+                                                            <div class="form-group text-right mt-3">
+                                                                <button type="submit" class="btn btn-primary">
+                                                                    <i class="fa fa-save"></i> Configure Domain
+                                                                </button>
+                                                            </div>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="card mt-3">
+                                                    <div class="card-header bg-light">
+                                                        <h5 class="mb-0">DNS Instructions</h5>
+                                                    </div>
+                                                    <div class="card-body">
+                                                        <p class="mb-2">To point your domain to this server, create the following DNS record:</p>
+                                                        <div class="alert alert-info">
+                                                            <p class="mb-1"><strong>Type:</strong> A</p>
+                                                            <p class="mb-1"><strong>Host:</strong> n8n (or @ for root domain)</p>
+                                                            <p class="mb-0"><strong>Value:</strong> {$ location.hostname $}</p>
+                                                        </div>
+                                                        <p class="mb-0 mt-2 text-muted">
+                                                            <small>DNS changes can take up to 24-48 hours to propagate globally.</small>
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
+                        </div>
+                    </div>
+                </div>
 
-                            <div class="col-md-offset-3">
-                                <button type="button" ng-disabled="!envConfirmation" class="btn btn-info"
-                                        ng-click="addEnvField()">Add more
+                <div id="settings" class="modal fade" role="dialog">
+                    <div class="modal-dialog">
+
+                        <!-- Modal content-->
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                <h4 class="modal-title">Container Settings
+                                    <img id="containerSettingLoading" src="/static/images/loading.gif"
+                                         style="display: none;">
+                                </h4>
+                            </div>
+                            <div class="modal-body">
+
+                                <form name="containerSettingsForm" action="/" class="form-horizontal">
+                                    <div ng-hide="installationDetailsForm" class="form-group">
+                                        <label class="col-sm-3 control-label">{% trans "Memory limit" %}</label>
+                                        <div class="col-sm-6">
+                                            <input name="memory" type="number" class="form-control"
+                                                   ng-model="web.memoryLimit" required>
+                                        </div>
+                                        <div class="current-pack ng-binding">MB</div>
+                                    </div>
+
+                                    <div ng-hide="installationDetailsForm" class="form-group">
+                                        <label class="col-sm-3 control-label">Start on reboot</label>
+                                        <div class="col-sm-9">
+                                            <div class="checkbox">
+                                                <label>
+                                                    <input ng-model="web.startOnReboot" type="checkbox">
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <hr>
+                                    <div ng-hide="installationDetailsForm" class="form-group">
+                                        <label class="col-sm-3 control-label">{% trans "Confirmation" %}</label>
+                                        <div class="col-sm-9">
+                                            <div class="checkbox">
+                                                <label>
+                                                    <input ng-model="envConfirmation" type="checkbox">
+                                                    Editing ENV or Volume will recreate container.
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <hr>
+                                    <span ng-init="envList = {}"></span>
+                                    {% for env, value in envList.items %}
+
+                                        <span ng-init="envList[{{ forloop.counter0 }}] =  {'name':'{{ env }}' , 'value':'{{ value }}'} "></span>
+
+                                    {% endfor %}
+
+                                    <div ng-repeat="env in envList track by $index">
+
+                                        <div ng-hide="installationDetailsForm" class="form-group">
+                                            <label class="col-sm-3 control-label">
+                                                <div ng-show="$first">
+                                                    {% trans "ENV" %}
+                                                </div>
+                                            </label>
+                                            <div class="col-sm-2">
+                                                <input name="$index" ng-disabled="!envConfirmation" type="text"
+                                                       class="form-control" ng-model="envList[$index].name"
+                                                       required>
+                                            </div>
+                                            <div class="col-sm-4">
+                                                <input name="$index" ng-disabled="!envConfirmation" type="text"
+                                                       class="form-control" ng-model="envList[$index].value"
+                                                       required>
+                                            </div>
+                                        </div>
+
+                                    </div>
+
+                                    <div class="col-md-offset-3">
+                                        <button type="button" ng-disabled="!envConfirmation" class="btn btn-info"
+                                                ng-click="addEnvField()">Add more
+                                        </button>
+                                    </div>
+                                    <br>
+
+                                    <span ng-init="volList = {}"></span>
+                                    <span ng-init="volListNumber=1"></span>
+                                    {% for key, value in volList.items %}
+                                        <span ng-init="volList[{{ forloop.counter0 }}] =  {'dest':'{{ value.bind }}' , 'src':'{{ key }}'}"></span>
+                                        <span ng-init="volListNumber={{ forloop.counter0 }} + 1"></span>
+                                    {% endfor %}
+
+                                    <hr>
+
+                                    <div ng-hide="installationDetailsForm" class="form-group text-center">
+                                        <label class="control-label">
+                                            {% trans "Map Volumes" %}
+                                        </label>
+                                    </div>
+                                    <div ng-repeat="volume in volList track by $index">
+                                        <div ng-hide="installationDetailsForm" class="form-group">
+                                            <div class="col-sm-5">
+                                                <input type="text" ng-disabled="!envConfirmation"
+                                                       class="form-control"
+                                                       ng-model="volList[$index].dest" placeholder="Destination"
+                                                       required>
+                                            </div>
+                                            <div class="col-sm-5">
+                                                <input type="text" ng-disabled="!envConfirmation"
+                                                       class="form-control"
+                                                       ng-model="volList[$index].src" placeholder="Source" required>
+                                            </div>
+                                            <div ng-show="$last">
+                                                <div class="col-sm-1">
+                                                    <button class="btn btn-primary" ng-disabled="!envConfirmation"
+                                                            type="button"
+                                                            ng-click="removeVolField()"><i
+                                                            style="position: inherit; top: 0px; left: 0px"
+                                                            class="fa fa-times"></i></button>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </div>
+
+                                    <div ng-hide="installationDetailsForm" class="text-center">
+                                        <button type="button" ng-disabled="!envConfirmation" class="btn btn-info"
+                                                ng-click="addVolField()">{% trans "Add field" %}</button>
+                                    </div>
+                                    <br>
+
+                                </form>
+
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" ng-disabled="savingSettings" class="btn btn-primary"
+                                        ng-click="saveSettings()">Save
+                                </button>
+                                <button type="button" ng-disabled="savingSettings" class="btn btn-default"
+                                        data-dismiss="modal">
+                                    Close
                                 </button>
                             </div>
-                            <br>
+                        </div>
+                    </div>
+                </div>
 
-                            <span ng-init="volList = {}"></span>
-                            <span ng-init="volListNumber=1"></span>
-                            {% for key, value in volList.items %}
-                                <span ng-init="volList[{{ forloop.counter0 }}] =  {'dest':'{{ value.bind }}' , 'src':'{{ key }}'}"></span>
-                                <span ng-init="volListNumber={{ forloop.counter0 }} + 1"></span>
-                            {% endfor %}
+                <div id="processes" class="modal fade" role="dialog">
+                    <div class="modal-dialog" style="width: 96%;">
 
-                            <hr>
-
-                            <div ng-hide="installationDetailsForm" class="form-group text-center">
-                                <label class="control-label">
-                                    {% trans "Map Volumes" %}
-                                </label>
+                        <!-- Modal content-->
+                        <div class="modal-content panel-body">
+                            <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                <h4 class="modal-title content-box=header">Container Processes</h4>
                             </div>
-                            <div ng-repeat="volume in volList track by $index">
-                                <div ng-hide="installationDetailsForm" class="form-group">
-                                    <div class="col-sm-5">
-                                        <input type="text" ng-disabled="!envConfirmation"
-                                               class="form-control"
-                                               ng-model="volList[$index].dest" placeholder="Destination"
-                                               required>
+                            <div class="modal-body">
+
+                                <table cellpadding="0" cellspacing="0" border="0" class="table table-striped"
+                                       id="datatable-example">
+                                    <thead>
+                                    <tr>
+                                        <th ng-repeat="item in topHead track by $index">{$ item $}</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+
+                                    <tr ng-repeat="process in topProcesses track by $index">
+                                        <th ng-repeat="item in process track by $index">{$ item $}</th>
+                                    </tr>
+
+                                    </tbody>
+                                </table>
+
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" ng-disabled="savingSettings" class="btn btn-primary"
+                                        ng-click="showTop()">
+                                    Refresh
+                                </button>
+                                <button type="button" ng-disabled="savingSettings" class="btn btn-default"
+                                        data-dismiss="modal">
+                                    Close
+                                </button>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Workflow Execution History Modal -->
+                <div id="executionHistory" class="modal fade" role="dialog">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                <h4 class="modal-title">
+                                    <i class="fa fa-history"></i> Workflow Execution History
+                                    <img id="executionHistoryLoading" src="/static/images/loading.gif" style="display: none;">
+                                </h4>
+                            </div>
+                            <div class="modal-body">
+                                <div ng-if="selectedWorkflow">
+                                    <h5>{$ selectedWorkflow.name $}</h5>
+                                    
+                                    <div class="row mb-3">
+                                        <div class="col-md-12">
+                                            <div class="form-group">
+                                                <label>Filter by status</label>
+                                                <select class="form-control" ng-model="executionFilter.status">
+                                                    <option value="">All statuses</option>
+                                                    <option value="success">Successful</option>
+                                                    <option value="error">Failed</option>
+                                                    <option value="waiting">Waiting</option>
+                                                </select>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div class="col-sm-5">
-                                        <input type="text" ng-disabled="!envConfirmation"
-                                               class="form-control"
-                                               ng-model="volList[$index].src" placeholder="Source" required>
+                                    
+                                    <div class="table-responsive">
+                                        <table class="table table-striped table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>Execution ID</th>
+                                                    <th>Status</th>
+                                                    <th>Started</th>
+                                                    <th>Duration</th>
+                                                    <th>Mode</th>
+                                                    <th>Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr ng-repeat="execution in filteredExecutions = (selectedWorkflow.executions | filter:executionFilter)">
+                                                    <td>{$ execution.id $}</td>
+                                                    <td>
+                                                        <span class="label" 
+                                                            ng-class="{'label-success': execution.status === 'success', 'label-danger': execution.status === 'error', 'label-warning': execution.status === 'waiting'}">
+                                                            {$ execution.status $}
+                                                        </span>
+                                                    </td>
+                                                    <td>{$ execution.startedAt | date:'medium' $}</td>
+                                                    <td>{$ execution.duration $}ms</td>
+                                                    <td>{$ execution.mode $}</td>
+                                                    <td>
+                                                        <button class="btn btn-xs btn-info" ng-click="viewExecutionData(execution)">
+                                                            <i class="fa fa-search"></i> Details
+                                                        </button>
+                                                        <button class="btn btn-xs btn-success" ng-click="retryExecution(execution.id)" ng-if="execution.status === 'error'">
+                                                            <i class="fa fa-refresh"></i> Retry
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
                                     </div>
-                                    <div ng-show="$last">
-                                        <div class="col-sm-1">
-                                            <button class="btn btn-primary" ng-disabled="!envConfirmation"
-                                                    type="button"
-                                                    ng-click="removeVolField()"><i
-                                                    style="position: inherit; top: 0px; left: 0px"
-                                                    class="fa fa-times"></i></button>
+                                    
+                                    <div ng-if="filteredExecutions.length === 0" class="text-center py-4">
+                                        <p class="text-muted">No execution history found matching the filter criteria</p>
+                                    </div>
+                                    
+                                    <div ng-if="selectedExecution" class="execution-details mt-4">
+                                        <h5>Execution Details</h5>
+                                        <div class="card">
+                                            <div class="card-header bg-light">
+                                                <h5 class="mb-0">Execution ID: {$ selectedExecution.id $}</h5>
+                                            </div>
+                                            <div class="card-body">
+                                                <ul class="nav nav-tabs">
+                                                    <li class="active"><a data-toggle="tab" href="#input">Input Data</a></li>
+                                                    <li><a data-toggle="tab" href="#output">Output Data</a></li>
+                                                    <li><a data-toggle="tab" href="#error" ng-if="selectedExecution.error">Error</a></li>
+                                                </ul>
+                                                
+                                                <div class="tab-content mt-3">
+                                                    <div id="input" class="tab-pane fade in active">
+                                                        <pre class="bg-light p-3">{$ selectedExecution.inputData | json $}</pre>
+                                                    </div>
+                                                    <div id="output" class="tab-pane fade">
+                                                        <pre class="bg-light p-3">{$ selectedExecution.outputData | json $}</pre>
+                                                    </div>
+                                                    <div id="error" class="tab-pane fade" ng-if="selectedExecution.error">
+                                                        <div class="alert alert-danger">
+                                                            <h5><i class="fa fa-exclamation-triangle"></i> Error</h5>
+                                                            <p>{$ selectedExecution.error.message $}</p>
+                                                            <pre class="bg-light p-3" ng-if="selectedExecution.error.stack">{$ selectedExecution.error.stack $}</pre>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-
                             </div>
-
-                            <div ng-hide="installationDetailsForm" class="text-center">
-                                <button type="button" ng-disabled="!envConfirmation" class="btn btn-info"
-                                        ng-click="addVolField()">{% trans "Add field" %}</button>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
                             </div>
-                            <br>
-
-                        </form>
-
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" ng-disabled="savingSettings" class="btn btn-primary"
-                                ng-click="saveSettings()">Save
-                        </button>
-                        <button type="button" ng-disabled="savingSettings" class="btn btn-default"
-                                data-dismiss="modal">
-                            Close
-                        </button>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </div>
-
-        <!-- Processes Modal -->
-        <div id="processes" class="modal fade modern-modal" role="dialog">
-            <div class="modal-dialog" style="width: 96%;">
-
-                <!-- Modal content-->
-                <div class="modal-content panel-body">
-                    <div class="modal-header">
-                        <button type="button" class="close" data-dismiss="modal">&times;</button>
-                        <h4 class="modal-title content-box=header">Container Processes</h4>
+                
+                <!-- OAuth Setup Wizard Modal -->
+                <div id="oauthSetup" class="modal fade" role="dialog">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                <h4 class="modal-title">
+                                    <i class="fa fa-key"></i> OAuth Setup Wizard
+                                </h4>
+                            </div>
+                            <div class="modal-body">
+                                <div class="setup-wizard">
+                                    <div class="step" ng-show="oauthSetup.step === 1">
+                                        <h5>Step 1: Select Service Provider</h5>
+                                        <div class="form-group">
+                                            <select class="form-control" ng-model="oauthSetup.provider">
+                                                <option value="">-- Select Provider --</option>
+                                                <option value="google">Google</option>
+                                                <option value="github">GitHub</option>
+                                                <option value="twitter">Twitter</option>
+                                                <option value="facebook">Facebook</option>
+                                                <option value="slack">Slack</option>
+                                                <option value="microsoft">Microsoft</option>
+                                                <option value="custom">Custom Provider</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <div ng-if="oauthSetup.provider === 'custom'" class="form-group">
+                                            <label>Provider Name</label>
+                                            <input type="text" class="form-control" ng-model="oauthSetup.customProvider" 
+                                                placeholder="Enter provider name">
+                                        </div>
+                                        
+                                        <div class="text-right">
+                                            <button class="btn btn-primary" ng-click="oauthSetup.step = 2" 
+                                                ng-disabled="!oauthSetup.provider || (oauthSetup.provider === 'custom' && !oauthSetup.customProvider)">
+                                                Next <i class="fa fa-arrow-right"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="step" ng-show="oauthSetup.step === 2">
+                                        <h5>Step 2: Set Up OAuth Application</h5>
+                                        
+                                        <div class="alert alert-info">
+                                            <h5><i class="fa fa-info-circle"></i> Instructions</h5>
+                                            <div ng-if="oauthSetup.provider === 'google'">
+                                                <p>1. Go to the <a href="https://console.developers.google.com/" target="_blank">Google Cloud Console</a></p>
+                                                <p>2. Create a new project or select an existing one</p>
+                                                <p>3. Navigate to "Credentials" and create an OAuth client ID</p>
+                                                <p>4. Use the redirect URL provided below</p>
+                                            </div>
+                                            <div ng-if="oauthSetup.provider === 'github'">
+                                                <p>1. Go to <a href="https://github.com/settings/developers" target="_blank">GitHub Developer Settings</a></p>
+                                                <p>2. Click "New OAuth App"</p>
+                                                <p>3. Fill in the details using the redirect URL below</p>
+                                            </div>
+                                            <!-- Other provider instructions would be added here -->
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label>Redirect URL</label>
+                                            <div class="input-group">
+                                                <input type="text" class="form-control" readonly 
+                                                    value="http://{$ location.hostname $}:{$ web.ports['5678/tcp'][0].HostPort $}/rest/oauth2-credential/callback">
+                                                <span class="input-group-btn">
+                                                    <button class="btn btn-default" ng-click="copyToClipboard('http://' + location.hostname + ':' + web.ports['5678/tcp'][0].HostPort + '/rest/oauth2-credential/callback')">
+                                                        <i class="fa fa-copy"></i>
+                                                    </button>
+                                                </span>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label>Client ID</label>
+                                            <input type="text" class="form-control" ng-model="oauthSetup.clientId" 
+                                                placeholder="Enter Client ID">
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label>Client Secret</label>
+                                            <input type="password" class="form-control" ng-model="oauthSetup.clientSecret" 
+                                                placeholder="Enter Client Secret">
+                                        </div>
+                                        
+                                        <div class="form-group" ng-if="oauthSetup.provider === 'custom'">
+                                            <label>Authorization URL</label>
+                                            <input type="text" class="form-control" ng-model="oauthSetup.authUrl" 
+                                                placeholder="Enter Authorization URL">
+                                        </div>
+                                        
+                                        <div class="form-group" ng-if="oauthSetup.provider === 'custom'">
+                                            <label>Token URL</label>
+                                            <input type="text" class="form-control" ng-model="oauthSetup.tokenUrl" 
+                                                placeholder="Enter Token URL">
+                                        </div>
+                                        
+                                        <div class="text-right">
+                                            <button class="btn btn-default" ng-click="oauthSetup.step = 1">
+                                                <i class="fa fa-arrow-left"></i> Back
+                                            </button>
+                                            <button class="btn btn-primary" ng-click="oauthSetup.step = 3" 
+                                                ng-disabled="!oauthSetup.clientId || !oauthSetup.clientSecret">
+                                                Next <i class="fa fa-arrow-right"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="step" ng-show="oauthSetup.step === 3">
+                                        <h5>Step 3: Test Connection</h5>
+                                        
+                                        <div class="alert alert-warning">
+                                            <p><i class="fa fa-info-circle"></i> Click the button below to test the OAuth connection.</p>
+                                            <p>You'll be redirected to the provider's login page. After authorization, you'll be redirected back to n8n.</p>
+                                        </div>
+                                        
+                                        <div class="text-center">
+                                            <button class="btn btn-lg btn-success" ng-click="testOAuth()">
+                                                <i class="fa fa-plug"></i> Test Connection
+                                            </button>
+                                        </div>
+                                        
+                                        <div class="mt-4 text-right">
+                                            <button class="btn btn-default" ng-click="oauthSetup.step = 2">
+                                                <i class="fa fa-arrow-left"></i> Back
+                                            </button>
+                                            <button class="btn btn-primary" ng-click="saveOAuth()">
+                                                Skip & Save <i class="fa fa-save"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="modal-body">
+                </div>
 
-                        <table cellpadding="0" cellspacing="0" border="0" class="table table-striped"
-                               id="datatable-example">
-                            <thead>
-                            <tr>
-                                <th ng-repeat="item in topHead track by $index">{$ item $}</th>
-                            </tr>
-                            </thead>
-                            <tbody>
+                <div id="settings" class="modal fade" role="dialog">
+                    <div class="modal-dialog">
 
-                            <tr ng-repeat="process in topProcesses track by $index">
-                                <th ng-repeat="item in process track by $index">{$ item $}</th>
-                            </tr>
+                        <!-- Modal content-->
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                <h4 class="modal-title">Container Settings
+                                    <img id="containerSettingLoading" src="/static/images/loading.gif"
+                                         style="display: none;">
+                                </h4>
+                            </div>
+                            <div class="modal-body">
 
-                            </tbody>
-                        </table>
+                                <form name="containerSettingsForm" action="/" class="form-horizontal">
+                                    <div ng-hide="installationDetailsForm" class="form-group">
+                                        <label class="col-sm-3 control-label">{% trans "Memory limit" %}</label>
+                                        <div class="col-sm-6">
+                                            <input name="memory" type="number" class="form-control"
+                                                   ng-model="web.memoryLimit" required>
+                                        </div>
+                                        <div class="current-pack ng-binding">MB</div>
+                                    </div>
 
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" ng-disabled="savingSettings" class="btn btn-primary"
-                                ng-click="showTop()">
-                            Refresh
-                        </button>
-                        <button type="button" ng-disabled="savingSettings" class="btn btn-default"
-                                data-dismiss="modal">
-                            Close
-                        </button>
+                                    <div ng-hide="installationDetailsForm" class="form-group">
+                                        <label class="col-sm-3 control-label">Start on reboot</label>
+                                        <div class="col-sm-9">
+                                            <div class="checkbox">
+                                                <label>
+                                                    <input ng-model="web.startOnReboot" type="checkbox">
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <hr>
+                                    <div ng-hide="installationDetailsForm" class="form-group">
+                                        <label class="col-sm-3 control-label">{% trans "Confirmation" %}</label>
+                                        <div class="col-sm-9">
+                                            <div class="checkbox">
+                                                <label>
+                                                    <input ng-model="envConfirmation" type="checkbox">
+                                                    Editing ENV or Volume will recreate container.
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <hr>
+                                    <span ng-init="envList = {}"></span>
+                                    {% for env, value in envList.items %}
+
+                                        <span ng-init="envList[{{ forloop.counter0 }}] =  {'name':'{{ env }}' , 'value':'{{ value }}'} "></span>
+
+                                    {% endfor %}
+
+                                    <div ng-repeat="env in envList track by $index">
+
+                                        <div ng-hide="installationDetailsForm" class="form-group">
+                                            <label class="col-sm-3 control-label">
+                                                <div ng-show="$first">
+                                                    {% trans "ENV" %}
+                                                </div>
+                                            </label>
+                                            <div class="col-sm-2">
+                                                <input name="$index" ng-disabled="!envConfirmation" type="text"
+                                                       class="form-control" ng-model="envList[$index].name"
+                                                       required>
+                                            </div>
+                                            <div class="col-sm-4">
+                                                <input name="$index" ng-disabled="!envConfirmation" type="text"
+                                                       class="form-control" ng-model="envList[$index].value"
+                                                       required>
+                                            </div>
+                                        </div>
+
+                                    </div>
+
+                                    <div class="col-md-offset-3">
+                                        <button type="button" ng-disabled="!envConfirmation" class="btn btn-info"
+                                                ng-click="addEnvField()">Add more
+                                        </button>
+                                    </div>
+                                    <br>
+
+                                    <span ng-init="volList = {}"></span>
+                                    <span ng-init="volListNumber=1"></span>
+                                    {% for key, value in volList.items %}
+                                        <span ng-init="volList[{{ forloop.counter0 }}] =  {'dest':'{{ value.bind }}' , 'src':'{{ key }}'}"></span>
+                                        <span ng-init="volListNumber={{ forloop.counter0 }} + 1"></span>
+                                    {% endfor %}
+
+                                    <hr>
+
+                                    <div ng-hide="installationDetailsForm" class="form-group text-center">
+                                        <label class="control-label">
+                                            {% trans "Map Volumes" %}
+                                        </label>
+                                    </div>
+                                    <div ng-repeat="volume in volList track by $index">
+                                        <div ng-hide="installationDetailsForm" class="form-group">
+                                            <div class="col-sm-5">
+                                                <input type="text" ng-disabled="!envConfirmation"
+                                                       class="form-control"
+                                                       ng-model="volList[$index].dest" placeholder="Destination"
+                                                       required>
+                                            </div>
+                                            <div class="col-sm-5">
+                                                <input type="text" ng-disabled="!envConfirmation"
+                                                       class="form-control"
+                                                       ng-model="volList[$index].src" placeholder="Source" required>
+                                            </div>
+                                            <div ng-show="$last">
+                                                <div class="col-sm-1">
+                                                    <button class="btn btn-primary" ng-disabled="!envConfirmation"
+                                                            type="button"
+                                                            ng-click="removeVolField()"><i
+                                                            style="position: inherit; top: 0px; left: 0px"
+                                                            class="fa fa-times"></i></button>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </div>
+
+                                    <div ng-hide="installationDetailsForm" class="text-center">
+                                        <button type="button" ng-disabled="!envConfirmation" class="btn btn-info"
+                                                ng-click="addVolField()">{% trans "Add field" %}</button>
+                                    </div>
+                                    <br>
+
+                                </form>
+
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" ng-disabled="savingSettings" class="btn btn-primary"
+                                        ng-click="saveSettings()">Save
+                                </button>
+                                <button type="button" ng-disabled="savingSettings" class="btn btn-default"
+                                        data-dismiss="modal">
+                                    Close
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
             </div>
         </div>
-
     </div>
+    </div>
+
 
 {% endblock %}
