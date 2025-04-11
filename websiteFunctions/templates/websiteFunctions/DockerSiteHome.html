@@ -403,13 +403,13 @@
                                 <h2 id="domainNamePage" class="d-flex justify-content-between align-items-center">
                                     <span>{% trans "Currently managing: " %} {$ web.name $}</span>
                                     <div class="btn-group" role="group" aria-label="Container Actions">
-                                        <button class="btn btn-success btn-sm" ng-click="cAction('start')" ng-if="web.status !== 'running'" title="Start Container">
+                                        <button class="btn btn-success btn-sm" ng-click="handleAction('start', web)" ng-if="web.status !== 'running'" title="Start Container">
                                             <i class="fa fa-play"></i> Start
                                         </button>
-                                        <button class="btn btn-warning btn-sm" ng-click="cAction('restart')" ng-if="web.status === 'running'" title="Restart Container">
+                                        <button class="btn btn-warning btn-sm" ng-click="handleAction('restart', web)" ng-if="web.status === 'running'" title="Restart Container">
                                             <i class="fa fa-refresh"></i> Restart
                                         </button>
-                                        <button class="btn btn-danger btn-sm" ng-click="cAction('stop')" ng-if="web.status === 'running'" title="Stop Container">
+                                        <button class="btn btn-danger btn-sm" ng-click="handleAction('stop', web)" ng-if="web.status === 'running'" title="Stop Container">
                                             <i class="fa fa-stop"></i> Stop
                                         </button>
                                         <button class="btn btn-primary btn-sm" ng-click="openSettings(web)" title="Container Settings">

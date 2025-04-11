@@ -209,24 +209,25 @@ app.controller('ListDockersitecontainer', function ($scope, $http) {
         $scope.cyberpanelLoading = false;
         $('#cyberpanelLoading').show();
         
-        var url;
+        var url = "/docker/";
         switch(action) {
             case 'start':
-                url = "/docker/StartContainerAPP";
+                url += "startContainer";
                 break;
             case 'stop':
-                url = "/docker/StopContainerAPP";
+                url += "stopContainer";
                 break;
             case 'restart':
-                url = "/docker/RestartContainerAPP";
+                url += "restartContainer";
                 break;
             default:
+                console.error("Unknown action:", action);
                 return;
         }
 
         var data = {
             'name': $('#sitename').html(),
-            'id': $scope.selectedContainer.id
+            'container_id': $scope.selectedContainer.id
         };
 
         var config = {
@@ -235,38 +236,55 @@ app.controller('ListDockersitecontainer', function ($scope, $http) {
             }
         };
 
-        $http.post(url, data, config).then(ListInitialData, cantLoadInitialData);
+        $http.post(url, data, config).then(
+            function(response) {
+                $scope.cyberpanelLoading = true;
+                $('#cyberpanelLoading').hide();
 
-        function ListInitialData(response) {
-            $scope.cyberpanelLoading = true;
-            $('#cyberpanelLoading').hide();
-
-            if (response.data.status === 1) {
-                new PNotify({
-                    title: 'Success!',
-                    text: 'Container ' + action + ' successful.',
-                    type: 'success'
-                });
-                // Refresh container info after action
-                $scope.Lunchcontainer($scope.selectedContainer.id);
-            } else {
+                if (response.data.status === 1) {
+                    new PNotify({
+                        title: 'Success!',
+                        text: 'Container ' + action + ' successful.',
+                        type: 'success'
+                    });
+                    
+                    // Update container status after action
+                    $scope.selectedContainer.status = action === 'stop' ? 'stopped' : 'running';
+                    
+                    // Refresh container info
+                    $scope.Lunchcontainer($scope.selectedContainer.id);
+                } else {
+                    new PNotify({
+                        title: 'Operation Failed!',
+                        text: response.data.error_message || 'An unknown error occurred.',
+                        type: 'error'
+                    });
+                }
+            },
+            function(error) {
+                $scope.cyberpanelLoading = true;
+                $('#cyberpanelLoading').hide();
+                
                 new PNotify({
                     title: 'Operation Failed!',
-                    text: response.data.error_message,
+                    text: 'Connection disrupted or server error occurred.',
                     type: 'error'
                 });
+                
+                console.error("Error during container action:", error);
             }
-        }
+        );
+    };
 
-        function cantLoadInitialData(response) {
-            $scope.cyberpanelLoading = true;
-            $('#cyberpanelLoading').hide();
-            new PNotify({
-                title: 'Operation Failed!',
-                text: 'Connection disrupted, refresh the page.',
-                type: 'error'
-            });
-        }
+    // Update the container selection when actions are triggered
+    $scope.setSelectedContainer = function(container) {
+        $scope.selectedContainer = container;
+    };
+
+    // Update the button click handlers to set selected container
+    $scope.handleAction = function(action, container) {
+        $scope.setSelectedContainer(container);
+        $scope.cAction(action);
     };
 
     $scope.openSettings = function(container) {
