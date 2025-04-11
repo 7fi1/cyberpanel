@@ -6755,29 +6755,41 @@ StrictHostKeyChecking no
         return proc.render()
 
     def CreateDockersite(self, request=None, userID=None, data=None):
-        adminNames = ACLManager.loadAllUsers(userID)
-        Data = {'adminNames': adminNames}
+        url = "https://platform.cyberpersons.com/CyberpanelAdOns/Adonpermission"
+        data = {
+            "name": "docker-manager",
+            "IP": ACLManager.GetServerIP()
+        }
 
+        import requests
+        response = requests.post(url, data=json.dumps(data))
+        Status = response.json()['status']
 
-        if PackageAssignment.objects.all().count() == 0:
+        if (Status == 1) or ProcessUtilities.decideServer() == ProcessUtilities.ent:
+            adminNames = ACLManager.loadAllUsers(userID)
+            Data = {'adminNames': adminNames}
 
-            name = 'Default'
-            cpu = 2
-            Memory = 1024
-            Bandwidth = '100'
-            disk = '100'
+            if PackageAssignment.objects.all().count() == 0:
+                name = 'Default'
+                cpu = 2
+                Memory = 1024
+                Bandwidth = '100'
+                disk = '100'
 
-            saveobj = DockerPackages(Name=name, CPUs=cpu, Ram=Memory, Bandwidth=Bandwidth, DiskSpace=disk, config='')
-            saveobj.save()
+                saveobj = DockerPackages(Name=name, CPUs=cpu, Ram=Memory, Bandwidth=Bandwidth, DiskSpace=disk, config='')
+                saveobj.save()
 
-            userobj = Administrator.objects.get(pk=1)
+                userobj = Administrator.objects.get(pk=1)
 
-            sv = PackageAssignment(user=userobj, package=saveobj)
-            sv.save()
+                sv = PackageAssignment(user=userobj, package=saveobj)
+                sv.save()
 
-        proc = httpProc(request, 'websiteFunctions/CreateDockerSite.html',
-                        Data, 'createWebsite')
-        return proc.render()
+            proc = httpProc(request, 'websiteFunctions/CreateDockerSite.html',
+                            Data, 'createWebsite')
+            return proc.render()
+        else:
+            from django.shortcuts import reverse
+            return redirect(reverse('pricing'))
 
     def AddDockerpackage(self, userID=None, data=None):
         try:
@@ -7083,153 +7095,30 @@ StrictHostKeyChecking no
             return HttpResponse(final_json)
 
     def Dockersitehome(self, request=None, userID=None, data=None, DeleteID=None):
+        url = "https://platform.cyberpersons.com/CyberpanelAdOns/Adonpermission"
+        data = {
+            "name": "docker-manager",
+            "IP": ACLManager.GetServerIP()
+        }
 
-        currentACL = ACLManager.loadedACL(userID)
-        admin = Administrator.objects.get(pk=userID)
+        import requests
+        response = requests.post(url, data=json.dumps(data))
+        Status = response.json()['status']
 
-        ds = DockerSites.objects.get(pk=self.domain)
+        if (Status == 1) or ProcessUtilities.decideServer() == ProcessUtilities.ent:
+            currentACL = ACLManager.loadedACL(userID)
+            admin = Administrator.objects.get(pk=userID)
 
-        if ACLManager.checkOwnership(ds.admin.domain, admin, currentACL) == 1:
-            pass
+            ds = DockerSites.objects.get(pk=self.domain)
+
+            if ACLManager.checkOwnership(ds.admin.domain, admin, currentACL) == 1:
+                pass
+            else:
+                return ACLManager.loadError()
+
+            proc = httpProc(request, 'websiteFunctions/DockerSiteHome.html',
+                            {'dockerSite': ds})
+            return proc.render()
         else:
-            return ACLManager.loadError()
-
-        proc = httpProc(request, 'websiteFunctions/DockerSiteHome.html',
-                        {'dockerSite': ds})
-        return proc.render()
-        try:
-            currentACL = ACLManager.loadedACL(userID)
-            admin = Administrator.objects.get(pk=userID)
-            
-            domain = data['domain']
-            website = Websites.objects.get(domain=domain)
-            
-            if ACLManager.checkOwnership(domain, admin, currentACL) != 1:
-                return ACLManager.loadErrorJson('fetchStatus', 0)
-
-            wp_sites = WPSites.objects.filter(owner=website)
-            sites = []
-            
-            Vhuser = website.externalApp
-            PHPVersion = website.phpSelection
-
-            php = ACLManager.getPHPString(PHPVersion)
-            FinalPHPPath = '/usr/local/lsws/lsphp%s/bin/php' % (php)
-            
-            for site in wp_sites:
-
-                command = 'sudo -u %s %s -d error_reporting=0 /usr/bin/wp core version --skip-plugins --skip-themes --path=%s 2>/dev/null' % (
-                    Vhuser, FinalPHPPath, site.path)
-                version = ProcessUtilities.outputExecutioner(command, None, True)
-                version = html.escape(version)
-
-
-            sites.append({
-                'id': site.id,
-                'title': site.title,
-                'url': site.FinalURL,
-                    'path': site.path,
-                    'version': version,
-                })
-                
-            data_ret = {'status': 1, 'fetchStatus': 1, 'error_message': "None", "sites": sites}
-            json_data = json.dumps(data_ret)
-            return HttpResponse(json_data)
-
-        except BaseException as msg:
-            data_ret = {'status': 0, 'fetchStatus': 0, 'error_message': str(msg)}
-            json_data = json.dumps(data_ret)
-            return HttpResponse(json_data)
-        
-    def fetchWPSitesForDomain(self, userID=None, data=None):
-        try:
-            currentACL = ACLManager.loadedACL(userID)
-            admin = Administrator.objects.get(pk=userID)
-            
-            domain = data['domain']
-            website = Websites.objects.get(domain=domain)
-            
-            if ACLManager.checkOwnership(domain, admin, currentACL) != 1:
-                return ACLManager.loadErrorJson('fetchStatus', 0)
-
-            wp_sites = WPSites.objects.filter(owner=website)
-            sites = []
-            
-            Vhuser = website.externalApp
-            PHPVersion = website.phpSelection
-
-            php = ACLManager.getPHPString(PHPVersion)
-            FinalPHPPath = '/usr/local/lsws/lsphp%s/bin/php' % (php)
-            
-            for site in wp_sites:
-                command = 'sudo -u %s %s -d error_reporting=0 /usr/bin/wp core version --skip-plugins --skip-themes --path=%s 2>/dev/null' % (
-                    Vhuser, FinalPHPPath, site.path)
-                version = ProcessUtilities.outputExecutioner(command, None, True)
-                version = html.escape(version)
-
-                # Get current theme
-                command = 'sudo -u %s %s -d error_reporting=0 /usr/bin/wp theme list --status=active --field=name --skip-plugins --skip-themes --path=%s 2>/dev/null' % (
-                    Vhuser, FinalPHPPath, site.path)
-                currentTheme = ProcessUtilities.outputExecutioner(command, None, True)
-                currentTheme = currentTheme.strip()
-
-                # Get number of plugins
-                command = 'sudo -u %s %s -d error_reporting=0 /usr/bin/wp plugin list --field=name --skip-plugins --skip-themes --path=%s 2>/dev/null' % (
-                    Vhuser, FinalPHPPath, site.path)
-                plugins = ProcessUtilities.outputExecutioner(command, None, True)
-                pluginCount = len([p for p in plugins.split('\n') if p.strip()])
-
-                # Generate screenshot URL
-                site_url = site.FinalURL
-                if not site_url.startswith(('http://', 'https://')):
-                    site_url = f'https://{site_url}'
-
-
-                command = 'sudo -u %s %s -d error_reporting=0 /usr/bin/wp config list --skip-plugins --skip-themes --path=%s' % (
-                Vhuser, FinalPHPPath, site.path)
-                stdout = ProcessUtilities.outputExecutioner(command)
-                debugging = 0
-                for items in stdout.split('\n'):
-                    if items.find('WP_DEBUG	true	constant') > -1:
-                        debugging = 1
-                        break
-
-                command = 'sudo -u %s %s -d error_reporting=0 /usr/bin/wp option get blog_public --skip-plugins --skip-themes --path=%s' % (
-                    Vhuser, FinalPHPPath, site.path)
-                stdoutput = ProcessUtilities.outputExecutioner(command)
-                searchindex = int(stdoutput.splitlines()[-1])
-                
-
-                command = 'sudo -u %s %s -d error_reporting=0 /usr/bin/wp maintenance-mode status --skip-plugins --skip-themes --path=%s' % (
-                    Vhuser, FinalPHPPath, site.path)
-                maintenanceMod = ProcessUtilities.outputExecutioner(command)
-
-                result = maintenanceMod.splitlines()[-1]
-                if result.find('not active') > -1:
-                    maintenanceMode = 0
-                else:
-                    maintenanceMode = 1
-
-                sites.append({
-                    'id': site.id,
-                    'title': site.title,
-                    'url': site.FinalURL,
-                    'path': site.path,
-                    'version': version,
-                    'phpVersion': site.owner.phpSelection,
-                    'theme': currentTheme,
-                    'activePlugins': pluginCount,
-                    'debugging': debugging,
-                    'searchIndex': searchindex,
-                    'maintenanceMode': maintenanceMode,
-                    'screenshot': f'https://api.microlink.io/?url={site_url}&screenshot=true&meta=false&embed=screenshot.url'
-                })
-                
-            data_ret = {'status': 1, 'fetchStatus': 1, 'error_message': "None", "sites": sites}
-            json_data = json.dumps(data_ret)
-            return HttpResponse(json_data)
-
-        except BaseException as msg:
-            data_ret = {'status': 0, 'fetchStatus': 0, 'error_message': str(msg)}
-            json_data = json.dumps(data_ret)
-            return HttpResponse(json_data)
+            from django.shortcuts import reverse
+            return redirect(reverse('pricing'))
