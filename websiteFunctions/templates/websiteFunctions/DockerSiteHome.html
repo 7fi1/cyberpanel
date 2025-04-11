@@ -452,6 +452,22 @@
                                         </div>
                                     </div>
                                 </div>
+
+                                <div class="example-box-wrapper">
+                                    <div class="content-box panel-body">
+                                        <h3 class="content-box-header">
+                                            {% trans "Logs" %}
+                                            <span style="cursor:pointer;" class="pull-right" ng-click="getcontainerlog(web.id)"><i
+                                                    class="fa fa-refresh btn-icon"></i></span>
+                                        </h3>
+                                        <div class="content-box-wrapper">
+                                            <div class="row">
+                                                <textarea name="logs" class="form-control" cols="30"
+                                                          rows="10">{$ web.logs $}</textarea><br>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -516,29 +532,6 @@
                                         data-dismiss="modal"> Close
                                 </button>
                             </div>
-                        </div>
-                    </div>
-                </div>
-
-
-                <div class="example-box-wrapper">
-
-                    <div class="content-box panel-body">
-
-                        <h3 class="content-box-header" ng-init="loadLogs('{{ web.name }}')">
-                            {% trans "Logs" %}
-                            <span style="cursor:pointer;" class="pull-right" ng-click="loadLogs('{{ web.name }}')"><i
-                                    class="fa fa-refresh btn-icon"></i></span>
-                        </h3>
-
-
-                        <div class="content-box-wrapper">
-                            <div class="row">
-
-                                    <textarea name="logs" class="form-control" id="" cols="30"
-                                              rows="10">{$ logs $}</textarea><br>
-                            </div>
-
                         </div>
                     </div>
                 </div>

@@ -17464,7 +17464,13 @@ app.controller('ListDockersitecontainer', function ($scope, $http) {
             $('#cyberpanelLoading').hide();
             
             if (response.data.status === 1) {
-                $scope.logs = response.data.data[1];
+                // Find the container in the list and update its logs
+                for (var i = 0; i < $scope.ContainerList.length; i++) {
+                    if ($scope.ContainerList[i].id === containerid) {
+                        $scope.ContainerList[i].logs = response.data.data[1];
+                        break;
+                    }
+                }
             } else {
                 new PNotify({
                     title: 'Operation Failed!',
