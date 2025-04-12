@@ -7,7 +7,6 @@ from random import randint
 import socket
 import shutil
 import docker
-import math
 
 sys.path.append('/usr/local/CyberCP')
 
@@ -738,34 +737,6 @@ services:
             # Fetch container stats
             stats = container.stats(stream=False)
 
-            # Calculate CPU percentage properly with safeguards
-            try:
-                cpu_stats = stats.get("cpu_stats", {})
-                precpu_stats = stats.get("precpu_stats", {})
-                
-                # Get CPU usage values
-                cpu_total = float(cpu_stats.get("cpu_usage", {}).get("total_usage", 0))
-                precpu_total = float(precpu_stats.get("cpu_usage", {}).get("total_usage", 0))
-                
-                # Get system CPU values
-                sys_total = float(cpu_stats.get("system_cpu_usage", 0))
-                presys_total = float(precpu_stats.get("system_cpu_usage", 0))
-                
-                cpu_delta = cpu_total - precpu_total
-                system_delta = sys_total - presys_total
-                
-                cpu_usage = 0.0
-                if system_delta > 0:
-                    # Calculate percentage of single CPU
-                    cpu_usage = (cpu_delta / system_delta) * 100.0
-                    
-                    # Ensure it's a reasonable value
-                    cpu_usage = max(0.0, min(100.0, cpu_usage))
-                
-            except Exception as e:
-                logging.writeToFile(f"CPU calculation error: {str(e)}")
-                cpu_usage = 0.0
-
             dic = {
                 'id': container.short_id,
                 'name': container.name,
@@ -773,8 +744,8 @@ services:
                 'volumes': container.attrs['HostConfig']['Binds'] if 'HostConfig' in container.attrs else [],
                 'logs_50': container.logs(tail=50).decode('utf-8'),
                 'ports': container.attrs['HostConfig']['PortBindings'] if 'HostConfig' in container.attrs else {},
-                'memory_usage': stats['memory_stats'].get('usage', 0),
-                'cpu_usage': round(cpu_usage, 2)  # Round to 2 decimal places
+                'memory': stats['memory_stats']['usage'],
+                'cpu' : stats['cpu_stats']['cpu_usage']['total_usage']
             }
 
             return 1, dic

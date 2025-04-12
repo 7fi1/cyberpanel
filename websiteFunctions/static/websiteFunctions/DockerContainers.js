@@ -98,12 +98,7 @@ app.controller('ListDockersitecontainer', function ($scope, $http) {
                         var memoryBytes = containerInfo.memory_usage;
                         $scope.ContainerList[i].memoryUsage = formatBytes(memoryBytes);
                         $scope.ContainerList[i].memoryUsagePercent = (memoryBytes / (1024 * 1024 * 1024)) * 100;
-                        
-                        // CPU Usage - ensure it's a valid number and keep original value
-                        var cpuUsage = parseFloat(containerInfo.cpu_usage);
-                        $scope.ContainerList[i].cpuUsagePercent = isNaN(cpuUsage) ? 0 : cpuUsage;
-
-                        console.log('Container CPU Usage:', containerInfo.name, cpuUsage);
+                        $scope.ContainerList[i].cpuUsagePercent = (containerInfo.cpu_usage / 10000000000) * 100;
 
                         // Network & Ports
                         $scope.ContainerList[i].ports = containerInfo.ports;
