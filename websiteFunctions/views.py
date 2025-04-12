@@ -17,6 +17,7 @@ from django.views.decorators.csrf import csrf_exempt
 from .dockerviews import startContainer as docker_startContainer
 from .dockerviews import stopContainer as docker_stopContainer
 from .dockerviews import restartContainer as docker_restartContainer
+from .dockerviews import DockerManager
 
 def loadWebsitesHome(request):
     val = request.session['userID']
@@ -1883,3 +1884,42 @@ def restartContainer(request):
         return HttpResponse('Not allowed')
     except KeyError:
         return redirect(loadLoginPage)
+
+@csrf_exempt
+def fetchN8nVersions(request):
+    try:
+        userID = request.session['userID']
+        data = json.loads(request.body)
+        container_id = data.get('container_id')
+
+        docker_manager = DockerManager()
+        container = docker_manager.get_container(container_id)
+        
+        if not container:
+            return HttpResponse(json.dumps({
+                'status': 0,
+                'error_message': 'Container not found'
+            }))
+
+        # Execute command in container to get current n8n version
+        current_version_cmd = container.exec_run("npm list n8n --json")
+        current_version_output = current_version_cmd.output.decode('utf-8')
+        current_version_data = json.loads(current_version_output)
+        current_version = current_version_data.get('dependencies', {}).get('n8n', {}).get('version', 'unknown')
+
+        # Get latest version from npm
+        latest_version_cmd = container.exec_run("npm show n8n version")
+        latest_version = latest_version_cmd.output.decode('utf-8').strip()
+
+        return HttpResponse(json.dumps({
+            'status': 1,
+            'current_version': current_version,
+            'latest_version': latest_version,
+            'update_available': current_version != latest_version
+        }))
+
+    except Exception as e:
+        return HttpResponse(json.dumps({
+            'status': 0,
+            'error_message': str(e)
+        }))

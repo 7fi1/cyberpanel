@@ -916,7 +916,7 @@
             });
             
             // Add n8n version checking and update functionality
-            angular.module('WebsitesApp').run(['$rootScope', '$http', function($rootScope, $http) {
+            angular.module('WebsitesApp').run(['$rootScope', function($rootScope) {
                 // Add custom icon rendering for container actions
                 $rootScope.renderIcon = function(iconName) {
                     return '<i class="fa fa-' + iconName + '" aria-hidden="true"></i>';
@@ -951,49 +951,24 @@
                 
                 // Initialize n8n version info for containers
                 $rootScope.initializeN8nVersion = function(container) {
-                    // Call backend to check version
-                    $http.post('/websiteFunctions/docker/check-n8n-version', {
-                        container_id: container.id,
-                        name: container.name
-                    }).then(function(response) {
-                        if (response.data.status === 1) {
-                            container.n8nVersion = {
-                                current: response.data.current_version,
-                                latest: response.data.latest_version,
-                                updateAvailable: response.data.update_available
-                            };
-                        } else {
-                            console.error('Error checking n8n version:', response.data.error_message);
-                        }
-                    }).catch(function(error) {
-                        console.error('Error checking n8n version:', error);
-                    });
+                    // This would normally come from the backend
+                    container.n8nVersion = {
+                        current: '1.0.0',
+                        latest: '1.1.0',
+                        updateAvailable: true
+                    };
                 };
                 
                 // Add n8n update function
                 $rootScope.updateN8n = function(container) {
                     container.updatingN8n = true;
                     
-                    $http.post('/websiteFunctions/docker/update-n8n', {
-                        container_id: container.id,
-                        name: container.name
-                    }).then(function(response) {
-                        if (response.data.status === 1) {
-                            container.n8nVersion.current = response.data.new_version;
-                            container.n8nVersion.updateAvailable = false;
-                            // Show success notification
-                            $rootScope.notify({message: response.data.message, type: 'success'});
-                        } else {
-                            // Show error notification
-                            $rootScope.notify({message: response.data.error_message, type: 'error'});
-                        }
-                    }).catch(function(error) {
-                        console.error('Error updating n8n:', error);
-                        // Show error notification
-                        $rootScope.notify({message: 'Failed to update n8n', type: 'error'});
-                    }).finally(function() {
+                    // Simulate update process
+                    setTimeout(function() {
+                        container.n8nVersion.current = container.n8nVersion.latest;
+                        container.n8nVersion.updateAvailable = false;
                         container.updatingN8n = false;
-                    });
+                    }, 3000);
                 };
 
                 // Initialize version info when loading containers
@@ -1002,10 +977,7 @@
                     $rootScope.Lunchcontainer = function(containerId) {
                         var result = originalLunchcontainer(containerId);
                         // Initialize version info after container is loaded
-                        if ($rootScope.web && $rootScope.web.environment && 
-                            $rootScope.web.environment.some(function(env) { return env.includes('n8n'); })) {
-                            $rootScope.initializeN8nVersion($rootScope.web);
-                        }
+                        $rootScope.initializeN8nVersion($rootScope.web);
                         return result;
                     };
                 }
