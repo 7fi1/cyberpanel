@@ -740,27 +740,26 @@ services:
 
             # Calculate CPU percentage properly with safeguards
             try:
-                cpu_count = len(stats["cpu_stats"]["cpu_usage"]["percpu_usage"])
+                # Get the CPU stats
+                cpu_stats = stats["cpu_stats"]
+                precpu_stats = stats["precpu_stats"]
                 
-                # Get the total CPU usage
-                cpu_total = float(stats["cpu_stats"]["cpu_usage"]["total_usage"])
-                precpu_total = float(stats["precpu_stats"]["cpu_usage"]["total_usage"])
+                # Calculate CPU delta
+                cpu_delta = float(cpu_stats["cpu_usage"]["total_usage"]) - float(precpu_stats["cpu_usage"]["total_usage"])
                 
-                # Get the system CPU usage
-                sys_total = float(stats["cpu_stats"]["system_cpu_usage"])
-                presys_total = float(stats["precpu_stats"]["system_cpu_usage"])
+                # Calculate system CPU delta
+                system_delta = float(cpu_stats["system_cpu_usage"]) - float(precpu_stats["system_cpu_usage"])
                 
-                # Calculate the change in CPU usage
-                cpu_delta = cpu_total - precpu_total
-                system_delta = sys_total - presys_total
+                # Get number of CPUs
+                online_cpus = cpu_stats.get("online_cpus", len(cpu_stats["cpu_usage"]["percpu_usage"]))
                 
                 cpu_usage = 0.0
                 if system_delta > 0 and cpu_delta >= 0:
-                    # Calculate the percentage of CPU time used
-                    cpu_percent = (cpu_delta / system_delta) * 100.0 * cpu_count
+                    # Calculate percentage of total CPU used
+                    cpu_usage = (cpu_delta / system_delta) * online_cpus * 100.0
                     
-                    # Ensure it's a reasonable value (max 100% per core)
-                    cpu_usage = min(cpu_percent, 100.0 * cpu_count)
+                    # Cap at 100% per core
+                    cpu_usage = min(cpu_usage, online_cpus * 100.0)
                 
                 # Ensure we return a valid number
                 if cpu_usage < 0 or math.isnan(cpu_usage):
