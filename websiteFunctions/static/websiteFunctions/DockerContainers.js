@@ -367,18 +367,17 @@ app.controller('ListDockersitecontainer', function ($scope, $http) {
     
     // Create a backup
     $scope.createBackup = function(container) {
-        $scope.cyberpanelLoading = false;
-        $('#cyberpanelLoading').show();
-        
         // Initialize backup options if they don't exist
         $scope.initBackupOptions(container);
+        
+        $scope.cyberpanelLoading = false;
+        $('#cyberpanelLoading').show();
         
         var url = "/websites/n8n/create_backup";
         
         var data = {
             'container_id': container.id,
-            'include_credentials': container.backupOptions.includeCredentials,
-            'include_executions': container.backupOptions.includeExecutions
+            'include_credentials': container.backupOptions.includeCredentials
         };
         
         var config = {
@@ -387,9 +386,8 @@ app.controller('ListDockersitecontainer', function ($scope, $http) {
             }
         };
         
-        $http.post(url, data, config).then(
-            // Success handler
-            function(response) {
+        $http.post(url, data, config)
+            .then(function(response) {
                 $scope.cyberpanelLoading = true;
                 $('#cyberpanelLoading').hide();
                 
@@ -415,25 +413,31 @@ app.controller('ListDockersitecontainer', function ($scope, $http) {
                 } else {
                     new PNotify({
                         title: 'Operation Failed!',
-                        text: response.data.error_message || 'Unknown error occurred',
+                        text: response.data.error_message || 'Unknown error occurred during backup creation',
                         type: 'error'
                     });
+                    console.error('Backup creation failed:', response.data);
                 }
-            },
-            // Error handler
-            function(error) {
+            })
+            .catch(function(error) {
                 $scope.cyberpanelLoading = true;
                 $('#cyberpanelLoading').hide();
                 
+                var errorMessage = 'Connection disrupted, refresh the page.';
+                if (error.data && error.data.error_message) {
+                    errorMessage = error.data.error_message;
+                } else if (error.statusText) {
+                    errorMessage = 'Server error: ' + error.statusText;
+                }
+                
                 new PNotify({
                     title: 'Operation Failed!',
-                    text: 'Connection disrupted, refresh the page.',
+                    text: errorMessage,
                     type: 'error'
                 });
                 
                 console.error('Error creating backup:', error);
-            }
-        );
+            });
     };
     
     // Restore from a backup
@@ -472,9 +476,8 @@ app.controller('ListDockersitecontainer', function ($scope, $http) {
                     }
                 };
                 
-                $http.post(url, data, config).then(
-                    // Success handler
-                    function(response) {
+                $http.post(url, data, config)
+                    .then(function(response) {
                         $scope.cyberpanelLoading = true;
                         $('#cyberpanelLoading').hide();
                         
@@ -494,21 +497,24 @@ app.controller('ListDockersitecontainer', function ($scope, $http) {
                                 type: 'error'
                             });
                         }
-                    }, 
-                    // Error handler
-                    function(error) {
+                    })
+                    .catch(function(error) {
                         $scope.cyberpanelLoading = true;
                         $('#cyberpanelLoading').hide();
                         
+                        var errorMessage = 'Connection disrupted, refresh the page.';
+                        if (error.data && error.data.error_message) {
+                            errorMessage = error.data.error_message;
+                        }
+                        
                         new PNotify({
                             title: 'Operation Failed!',
-                            text: 'Connection disrupted, refresh the page.',
+                            text: errorMessage,
                             type: 'error'
                         });
                         
                         console.error('Error restoring backup:', error);
-                    }
-                );
+                    });
             } catch (error) {
                 $scope.cyberpanelLoading = true;
                 $('#cyberpanelLoading').hide();
@@ -521,6 +527,17 @@ app.controller('ListDockersitecontainer', function ($scope, $http) {
                 
                 console.error('Error parsing backup file:', error);
             }
+        };
+        
+        reader.onerror = function() {
+            $scope.cyberpanelLoading = true;
+            $('#cyberpanelLoading').hide();
+            
+            new PNotify({
+                title: 'Error!',
+                text: 'Failed to read the backup file.',
+                type: 'error'
+            });
         };
         
         reader.readAsText(fileInput.files[0]);
