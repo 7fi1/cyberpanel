@@ -376,10 +376,17 @@
         /* Icon fixes */
         .fa {
             display: inline-block;
+            font: normal normal normal 14px/1 FontAwesome;
+            font-size: inherit;
+            text-rendering: auto;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .btn .fa {
+            position: relative;
+            top: 1px;
             margin-right: 5px;
-            font-size: 14px;
-            width: 16px;
-            text-align: center;
         }
 
         /* Container header icon styling */
@@ -468,6 +475,130 @@
             margin-right: 6px;
             display: inline-block;
         }
+
+        .icon-fixes .fa {
+            font: normal normal normal 14px/1 FontAwesome;
+            display: inline-block;
+            font-size: inherit;
+            text-rendering: auto;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            margin-right: 5px;
+        }
+
+        /* Icon overrides for compatibility */
+        .fa-file-text-o:before {
+            content: "\f15c";
+        }
+
+        .fa-bar-chart:before {
+            content: "\f080";
+        }
+
+        .fa-exchange:before {
+            content: "\f0ec";
+        }
+
+        .fa-hdd-o:before {
+            content: "\f0a0";
+        }
+
+        .fa-code:before {
+            content: "\f121";
+        }
+
+        .fa-server:before {
+            content: "\f233";
+        }
+
+        .fa-cubes:before {
+            content: "\f1b3";
+        }
+
+        .fa-cube:before {
+            content: "\f1b2";
+        }
+
+        /* Fix status indicators with explicit colors */
+        .status-running {
+            background-color: #2ecc71;
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+
+        .status-stopped {
+            background-color: #e74c3c;
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+
+        /* Improve container card header to ensure consistent spacing */
+        .container-header h3 {
+            margin: 0;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+        }
+
+        .container-header h3 .fa {
+            margin-right: 8px;
+            font-size: 16px;
+        }
+
+        /* Replace specific icon declarations for compatibility */
+        .fa-bar-chart:before {
+            content: "\f080"; /* fa-bar-chart */
+        }
+
+        .fa-exchange:before {
+            content: "\f0ec"; /* fa-exchange */
+        }
+
+        .fa-hdd-o:before {
+            content: "\f0a0"; /* fa-hdd-o */
+        }
+
+        .fa-code:before {
+            content: "\f121"; /* fa-code */
+        }
+
+        .fa-file-text-o:before {
+            content: "\f15c"; /* fa-file-text-o */
+        }
+
+        .fa-info-circle:before {
+            content: "\f05a"; /* fa-info-circle */
+        }
+
+        .fa-warning:before {
+            content: "\f071"; /* fa-warning/exclamation-triangle */
+        }
+
+        .fa-exclamation-triangle:before {
+            content: "\f071"; /* fa-exclamation-triangle */
+        }
+
+        .fa-server:before {
+            content: "\f233"; /* fa-server */
+        }
+
+        .fa-plus:before {
+            content: "\f067"; /* fa-plus */
+        }
+
+        .fa-save:before {
+            content: "\f0c7"; /* fa-save/floppy-o */
+        }
+
+        .fa-times:before {
+            content: "\f00d"; /* fa-times */
+        }
     </style>
 
     <script>
@@ -497,12 +628,12 @@
     </script>
 
 
-    <div class="container" ng-controller="ListDockersitecontainer">
+    <div class="container icon-fixes" ng-controller="ListDockersitecontainer">
 
         <div class="page-title">
             <div>
                 <h2 id="domainNamePage">
-                    <i class="fa fa-cubes"></i> {% trans "Containers" %} 
+                    <i class="fa fa-cube"></i> {% trans "Containers" %} 
                     <span class="loading-spinner" ng-hide="cyberpanelLoading">
                         <img src="{% static 'images/loading.gif' %}">
                     </span>
@@ -510,7 +641,7 @@
                 <p>{% trans "Manage containers on server" %}</p>
             </div>
             <a class="create-btn" href="{% url "CreateDockersite" %}">
-                <i class="fa fa-plus"></i> {% trans "Create Container" %}
+                <i class="fa fa-plus-circle"></i> {% trans "Create Container" %}
             </a>
         </div>
 
@@ -660,7 +791,7 @@
                         <!-- n8n Container Section -->
                         <div ng-if="web.environment && (web.environment | filter:'n8n').length > 0" class="container-card">
                             <div class="container-header">
-                                <h3 class="m-0">
+                                <h3>
                                     <i class="fa fa-cube"></i> n8n Container: {$ web.name $}
                                     <span class="workflow-status" ng-class="{'active': web.status === 'running', 'error': web.status !== 'running'}">
                                         <span ng-if="web.status === 'running'" class="status-running"></span>
@@ -691,7 +822,7 @@
                                 <div class="row">
                                     <div class="col-md-6">
                                         <div class="info-box">
-                                            <h4><i class="fa fa-bar-chart"></i> Resource Usage</h4>
+                                            <h4><i class="fa fa-bar-chart-o"></i> Resource Usage</h4>
                                             <div class="metrics-grid">
                                                 <div class="metric-card">
                                                     <h5>Memory Usage</h5>
@@ -777,7 +908,7 @@
                                         </div>
 
                                         <div class="info-box">
-                                            <h4><i class="fa fa-code"></i> Environment Variables</h4>
+                                            <h4><i class="fa fa-list"></i> Environment Variables</h4>
                                             <div ng-if="web.environment && web.environment.length > 0" class="table-responsive">
                                                 <table class="table table-hover">
                                                     <thead>
@@ -864,7 +995,7 @@
                                         </div>
 
                                         <div class="info-box">
-                                            <h4><i class="fa fa-bar-chart"></i> Resource Usage</h4>
+                                            <h4><i class="fa fa-bar-chart-o"></i> Resource Usage</h4>
                                             <div class="mb-3">
                                                 <label class="mb-2">Memory Usage: {$ web.memoryUsage $}</label>
                                                 <div class="progress">
@@ -946,7 +1077,7 @@
                                 <div class="row">
                                     <div class="col-md-12">
                                         <div class="info-box">
-                                            <h4><i class="fa fa-code"></i> Environment Variables</h4>
+                                            <h4><i class="fa fa-list"></i> Environment Variables</h4>
                                             <div ng-if="web.environment && web.environment.length > 0" class="table-responsive">
                                                 <table class="table table-hover">
                                                     <thead>
@@ -998,7 +1129,7 @@
                             <div class="modal-body">
                                 <form name="containerSettingsForm" action="/" class="form-horizontal">
                                     <div class="info-box">
-                                        <h4><i class="fa fa-server"></i> Resource Settings</h4>
+                                        <h4><i class="fa fa-cog"></i> Resource Settings</h4>
                                         <div class="form-group">
                                             <label class="col-sm-4 control-label">{% trans "Memory limit (MB)" %}</label>
                                             <div class="col-sm-8">
@@ -1024,7 +1155,7 @@
                                     </div>
 
                                     <div class="info-box">
-                                        <h4><i class="fa fa-exclamation-triangle"></i> Advanced Settings</h4>
+                                        <h4><i class="fa fa-warning"></i> Advanced Settings</h4>
                                         <div class="alert alert-warning">
                                             <i class="fa fa-warning"></i> Editing environment variables or volumes will recreate the container. Data outside mounted volumes may be lost.
                                         </div>
@@ -1042,7 +1173,7 @@
                                     </div>
 
                                     <div class="info-box" ng-class="{'disabled': !envConfirmation}">
-                                        <h4><i class="fa fa-code"></i> Environment Variables</h4>
+                                        <h4><i class="fa fa-list"></i> Environment Variables</h4>
                                         
                                         <div ng-repeat="env in envList track by $index" class="form-group">
                                             <div class="col-sm-5">
