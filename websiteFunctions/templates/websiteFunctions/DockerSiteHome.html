@@ -684,17 +684,18 @@
         /* Improved Font Awesome Icon Styling */
         .fa {
             display: inline-block;
-            margin-right: 6px;
+            margin-right: 8px !important;
             position: relative;
-            top: 1px;
+            top: 0;
             line-height: 1;
         }
 
         .btn .fa {
             font-size: 14px;
-            margin-right: 4px;
+            margin-right: 8px !important;
             position: relative;
             top: 0;
+            vertical-align: middle;
         }
 
         .title-hero .fa {
@@ -705,28 +706,31 @@
 
         .page-title h2 .fa {
             color: var(--primary-color);
-            margin-right: 8px;
+            margin-right: 12px !important;
             font-size: 24px;
             vertical-align: middle;
         }
 
         .create-btn .fa {
             font-size: 16px;
-            margin-right: 6px;
+            margin-right: 10px !important;
             position: relative;
-            top: 1px;
+            top: 0;
+            vertical-align: middle;
         }
 
         /* Action Button Icons */
         .btn-group .btn .fa {
-            margin: 0;
+            margin-right: 6px !important;
             font-size: 14px;
+            vertical-align: middle;
         }
 
         /* Container Status Icons */
         .status-icon .fa {
-            margin-right: 4px;
+            margin-right: 6px !important;
             font-size: 12px;
+            vertical-align: middle;
         }
 
         .fa-running {
@@ -735,6 +739,71 @@
 
         .fa-stopped {
             color: var(--danger-color);
+        }
+
+        /* Fix icon spacing */
+        .fa {
+            display: inline-block;
+            margin-right: 8px !important;
+            position: relative;
+            top: 0;
+            line-height: 1;
+        }
+
+        .btn .fa {
+            font-size: 14px;
+            margin-right: 8px !important;
+            position: relative;
+            top: 0;
+            vertical-align: middle;
+        }
+
+        .page-title h2 .fa {
+            color: var(--primary-color);
+            margin-right: 12px !important;
+            font-size: 24px;
+            vertical-align: middle;
+        }
+
+        .create-btn .fa {
+            font-size: 16px;
+            margin-right: 10px !important;
+            position: relative;
+            top: 0;
+            vertical-align: middle;
+        }
+
+        /* Container header icons */
+        .container-header h3 .fa {
+            margin-right: 12px !important;
+            font-size: 18px;
+            vertical-align: middle;
+        }
+
+        /* Info box header icons */
+        .info-box h4 .fa {
+            margin-right: 8px !important;
+            vertical-align: middle;
+        }
+
+        /* Ensure text and icons are properly aligned in buttons */
+        .btn {
+            display: inline-flex !important;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        /* Fix specific icon placements */
+        .container-header h3 {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .page-title h2 {
+            display: flex;
+            align-items: center;
         }
     </style>
 
@@ -967,28 +1036,33 @@
                         <div ng-if="web.environment && (web.environment | filter:'n8n').length > 0" class="container-card">
                             <div class="container-header">
                                 <h3>
-                                    <i class="fa fa-cube"></i> <span>n8n Container: {$ web.name $}</span>
+                                    <i class="fa fa-cube" aria-hidden="true"></i>
+                                    <span>n8n Container: {$ web.name $}</span>
                                     <span class="workflow-status" ng-class="{'active': web.status === 'running', 'error': web.status !== 'running'}">
-                                        <span ng-if="web.status === 'running'" class="status-running"></span>
-                                        <span ng-if="web.status !== 'running'" class="status-stopped"></span>
-                                        {$ web.status $}
+                                        <i class="fa" ng-class="{'fa-check-circle fa-running': web.status === 'running', 'fa-times-circle fa-stopped': web.status !== 'running'}" aria-hidden="true"></i>
+                                        <span>{$ web.status $}</span>
                                     </span>
                                 </h3>
                                 <div class="btn-group">
                                     <button class="btn btn-success" ng-click="handleAction('start', web)" ng-if="web.status !== 'running'">
-                                        <i class="fa fa-play"></i><span> Start</span>
+                                        <i class="fa fa-play" aria-hidden="true"></i>
+                                        <span>Start</span>
                                     </button>
                                     <button class="btn btn-warning" ng-click="handleAction('restart', web)" ng-if="web.status === 'running'">
-                                        <i class="fa fa-refresh"></i><span> Restart</span>
+                                        <i class="fa fa-refresh" aria-hidden="true"></i>
+                                        <span>Restart</span>
                                     </button>
                                     <button class="btn btn-danger" ng-click="handleAction('stop', web)" ng-if="web.status === 'running'">
-                                        <i class="fa fa-stop"></i><span> Stop</span>
+                                        <i class="fa fa-stop" aria-hidden="true"></i>
+                                        <span>Stop</span>
                                     </button>
                                     <button class="btn btn-primary" ng-click="openSettings(web)">
-                                        <i class="fa fa-cog"></i><span> Settings</span>
+                                        <i class="fa fa-cog" aria-hidden="true"></i>
+                                        <span>Settings</span>
                                     </button>
                                     <a class="btn btn-info" href="http://{$ location.hostname $}:{$ web.ports['5678/tcp'][0].HostPort $}" target="_blank" ng-if="web.status === 'running'">
-                                        <i class="fa fa-external-link"></i><span> Open n8n</span>
+                                        <i class="fa fa-external-link" aria-hidden="true"></i>
+                                        <span>Open n8n</span>
                                     </a>
                                 </div>
                             </div>
@@ -997,7 +1071,10 @@
                                 <div class="row">
                                     <div class="col-md-6">
                                         <div class="info-box">
-                                            <h4><i class="fa fa-bar-chart-o"></i> <span>Resource Usage</span></h4>
+                                            <h4>
+                                                <i class="fa fa-bar-chart-o" aria-hidden="true"></i>
+                                                <span>Resource Usage</span>
+                                            </h4>
                                             <div class="metrics-grid">
                                                 <div class="metric-card">
                                                     <h5>Memory Usage</h5>
