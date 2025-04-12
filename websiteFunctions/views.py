@@ -18,6 +18,7 @@ from .dockerviews import startContainer as docker_startContainer
 from .dockerviews import stopContainer as docker_stopContainer
 from .dockerviews import restartContainer as docker_restartContainer
 from .dockerviews import DockerManager
+from .dockerviews import executeCommand as docker_executeCommand
 
 def loadWebsitesHome(request):
     val = request.session['userID']
@@ -1923,3 +1924,12 @@ def fetchN8nVersions(request):
             'status': 0,
             'error_message': str(e)
         }))
+
+@csrf_exempt
+def executeCommand(request):
+    try:
+        if request.method == 'POST':
+            return docker_executeCommand(request)
+        return HttpResponse('Not allowed')
+    except KeyError:
+        return redirect(loadLoginPage)

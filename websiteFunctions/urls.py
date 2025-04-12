@@ -183,6 +183,8 @@ urlpatterns = [
     path('docker/startContainer', views.startContainer, name='startContainer'),
     path('docker/stopContainer', views.stopContainer, name='stopContainer'),
     path('docker/restartContainer', views.restartContainer, name='restartContainer'),
+    path('docker/executeCommand', views.executeCommand, name='executeCommand'),
+    path('docker/fetchN8nVersions', views.fetchN8nVersions, name='fetchN8nVersions'),
 
     # SSH Configs
     path('getSSHConfigs', views.getSSHConfigs, name='getSSHConfigs'),
@@ -201,6 +203,4 @@ urlpatterns = [
     path('<domain>/<childDomain>', views.launchChild, name='launchChild'),
     path('<domain>', views.domain, name='domain'),
     path('fetchN8nVersions', views.fetchN8nVersions, name='fetchN8nVersions'),
-    path('docker/executeCommand', views.executeCommand, name='executeCommand'),
-    path('docker/fetchN8nVersions', views.fetchN8nVersions, name='fetchN8nVersions'),
 ]
