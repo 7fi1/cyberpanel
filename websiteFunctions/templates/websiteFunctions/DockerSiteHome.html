@@ -7,9 +7,6 @@
     {% get_current_language as LANGUAGE_CODE %}
     <!-- Current language: {{ LANGUAGE_CODE }} -->
 
-    <!-- Ensure Font Awesome is loaded -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-
     <style>
         :root {
             --primary-color: #3498db;
@@ -683,6 +680,62 @@
         }
         
         /* Remove redundant icon declarations */
+
+        /* Improved Font Awesome Icon Styling */
+        .fa {
+            display: inline-block;
+            margin-right: 6px;
+            position: relative;
+            top: 1px;
+            line-height: 1;
+        }
+
+        .btn .fa {
+            font-size: 14px;
+            margin-right: 4px;
+            position: relative;
+            top: 0;
+        }
+
+        .title-hero .fa {
+            margin-left: 8px;
+            color: #666;
+            font-size: 16px;
+        }
+
+        .page-title h2 .fa {
+            color: var(--primary-color);
+            margin-right: 8px;
+            font-size: 24px;
+            vertical-align: middle;
+        }
+
+        .create-btn .fa {
+            font-size: 16px;
+            margin-right: 6px;
+            position: relative;
+            top: 1px;
+        }
+
+        /* Action Button Icons */
+        .btn-group .btn .fa {
+            margin: 0;
+            font-size: 14px;
+        }
+
+        /* Container Status Icons */
+        .status-icon .fa {
+            margin-right: 4px;
+            font-size: 12px;
+        }
+
+        .fa-running {
+            color: var(--secondary-color);
+        }
+
+        .fa-stopped {
+            color: var(--danger-color);
+        }
     </style>
 
     <script>
@@ -709,51 +762,11 @@
                 }
             });
             
-            // Fix for icon display
-            function fixFontAwesomeIcons() {
-                // Check if FontAwesome is properly loaded
-                if (typeof FontAwesome === 'undefined' || !$('.fa').length) {
-                    // Try to load FontAwesome if missing
-                    if ($('link[href*="font-awesome"]').length === 0) {
-                        $('head').append('<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">');
-                    }
-                    
-                    // Apply icon classes explicitly where needed
-                    $('.fa').each(function() {
-                        var classList = $(this).attr('class').split(/\s+/);
-                        var iconClass = '';
-                        
-                        $.each(classList, function(index, item) {
-                            if (item.startsWith('fa-')) {
-                                iconClass = item;
-                                return false;
-                            }
-                        });
-                        
-                        if (iconClass) {
-                            // Make sure the element has proper styling
-                            $(this).css({
-                                'display': 'inline-block',
-                                'font': 'normal normal normal 14px/1 FontAwesome',
-                                'font-size': 'inherit',
-                                'text-rendering': 'auto',
-                                '-webkit-font-smoothing': 'antialiased',
-                                '-moz-osx-font-smoothing': 'grayscale'
-                            });
-                        }
-                    });
-                }
-            }
-            
-            // Run icon fix on document ready and after AJAX calls
-            fixFontAwesomeIcons();
-            $(document).ajaxComplete(fixFontAwesomeIcons);
-            
             // Angular extension for container action handling
             angular.module('WebsitesApp').run(['$rootScope', function($rootScope) {
                 // Add custom icon rendering for container actions
                 $rootScope.renderIcon = function(iconName) {
-                    return '<i class="fa fa-' + iconName + '"></i>';
+                    return '<i class="fa fa-' + iconName + '" aria-hidden="true"></i>';
                 };
                 
                 // Inject handle action function if needed
@@ -792,15 +805,15 @@
         <div class="page-title">
             <div>
                 <h2 id="domainNamePage">
-                    <i class="fa fa-cube"></i> {% trans "Containers" %} 
+                    <i class="fa fa-cube" aria-hidden="true"></i> {% trans "Containers" %} 
                     <span class="loading-spinner" ng-hide="cyberpanelLoading">
-                        <img src="{% static 'images/loading.gif' %}">
+                        <img src="{% static 'images/loading.gif' %}" alt="Loading">
                     </span>
                 </h2>
                 <p>{% trans "Manage containers on server" %}</p>
             </div>
-            <a class="create-btn" href="{% url "CreateDockersite" %}">
-                <i class="fa fa-plus-circle"></i> {% trans "Create Container" %}
+            <a class="create-btn btn btn-primary" href="{% url "CreateDockersite" %}">
+                <i class="fa fa-plus-circle" aria-hidden="true"></i> {% trans "Create Container" %}
             </a>
         </div>
 
@@ -846,38 +859,41 @@
 
                 {% if showUnlistedContainer %}
                     <h3 class="title-hero">
-                        {% trans "Unlisted Containers" %} <i class="fa fa-question-circle"
-                                                             title="{% trans "Containers listed below were either not created through panel or were not saved to database properly" %}"></i>
+                        {% trans "Unlisted Containers" %}
+                        <i class="fa fa-question-circle" aria-hidden="true" title="{% trans "Containers listed below were either not created through panel or were not saved to database properly" %}"></i>
                     </h3>
 
-                    <table cellpadding="0" cellspacing="0" border="0" class="table table-striped table-bordered"
-                           id="datatable-example">
+                    <table class="table table-striped table-bordered">
                         <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
+                            <tr>
+                                <th>Name</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
                         </thead>
                         <tbody>
-
-                        {% for container in unlistedContainers %}
-                            <tr>
-                                <td>{{ container.name }}</td>
-                                <td>{{ container.status }}</td>
-                                <td>
-                                    <button class="btn btn-primary"
-                                            ng-click="delContainer('{{ container.name }}', true)"><i
-                                            class="fa fa-trash"></i></button>
-                                    <button class="btn btn-primary" ng-click="showLog('{{ container.name }}')"><i
-                                            class="fa fa-file"></i></button>
-                                    <button class="btn btn-primary"
-                                            ng-click="assignContainer('{{ container.name }}')"><i
-                                            class="fa fa-user"></i></button>
-                                </td>
-                            </tr>
-                        {% endfor %}
-
+                            {% for container in unlistedContainers %}
+                                <tr>
+                                    <td>{{ container.name }}</td>
+                                    <td>
+                                        <span class="status-icon">
+                                            <i class="fa fa-{% if container.status == 'running' %}check-circle fa-running{% else %}times-circle fa-stopped{% endif %}" aria-hidden="true"></i>
+                                            {{ container.status }}
+                                        </span>
+                                    </td>
+                                    <td class="action-buttons">
+                                        <button class="btn btn-danger" ng-click="delContainer('{{ container.name }}', true)" title="Delete">
+                                            <i class="fa fa-trash" aria-hidden="true"></i>
+                                        </button>
+                                        <button class="btn btn-info" ng-click="showLog('{{ container.name }}')" title="View Logs">
+                                            <i class="fa fa-file-text" aria-hidden="true"></i>
+                                        </button>
+                                        <button class="btn btn-primary" ng-click="assignContainer('{{ container.name }}')" title="Assign">
+                                            <i class="fa fa-user" aria-hidden="true"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            {% endfor %}
                         </tbody>
                     </table>
 
