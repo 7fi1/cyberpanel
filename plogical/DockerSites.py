@@ -737,13 +737,28 @@ services:
             # Fetch container stats
             stats = container.stats(stream=False)
 
-            # Calculate CPU percentage properly
-            cpu_count = len(stats["cpu_stats"]["cpu_usage"]["percpu_usage"])
-            cpu_delta = float(stats["cpu_stats"]["cpu_usage"]["total_usage"]) - float(stats["precpu_stats"]["cpu_usage"]["total_usage"])
-            system_delta = float(stats["cpu_stats"]["system_cpu_usage"]) - float(stats["precpu_stats"]["system_cpu_usage"])
-            cpu_usage = 0.0
-            if system_delta > 0.0:
-                cpu_usage = (cpu_delta / system_delta) * 100.0 * cpu_count
+            # Calculate CPU percentage properly with safeguards
+            try:
+                cpu_count = len(stats["cpu_stats"]["cpu_usage"]["percpu_usage"])
+                cpu_delta = float(stats["cpu_stats"]["cpu_usage"]["total_usage"]) - float(stats["precpu_stats"]["cpu_usage"]["total_usage"])
+                system_delta = float(stats["cpu_stats"]["system_cpu_usage"]) - float(stats["precpu_stats"]["system_cpu_usage"])
+                
+                cpu_usage = 0.0
+                if system_delta > 0.0 and cpu_delta >= 0:
+                    # Calculate percentage per core
+                    cpu_percent = (cpu_delta / system_delta) * 100.0
+                    
+                    # Ensure it's not over 100% per core
+                    cpu_percent = min(cpu_percent, 100.0)
+                    
+                    # Multiply by number of cores
+                    cpu_usage = cpu_percent * cpu_count
+                    
+                    # Cap at total available CPU percentage (100% * number of cores)
+                    cpu_usage = min(cpu_usage, 100.0 * cpu_count)
+            except Exception as e:
+                logging.writeToFile(f"CPU calculation error: {str(e)}")
+                cpu_usage = 0.0
 
             dic = {
                 'id': container.short_id,
@@ -753,7 +768,7 @@ services:
                 'logs_50': container.logs(tail=50).decode('utf-8'),
                 'ports': container.attrs['HostConfig']['PortBindings'] if 'HostConfig' in container.attrs else {},
                 'memory_usage': stats['memory_stats'].get('usage', 0),
-                'cpu_usage': cpu_usage  # Now sending the properly calculated percentage
+                'cpu_usage': round(cpu_usage, 2)  # Round to 2 decimal places
             }
 
             return 1, dic
