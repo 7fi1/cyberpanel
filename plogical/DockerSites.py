@@ -740,30 +740,27 @@ services:
 
             # Calculate CPU percentage properly with safeguards
             try:
-                # Get the CPU stats
-                cpu_stats = stats["cpu_stats"]
-                precpu_stats = stats["precpu_stats"]
+                cpu_stats = stats.get("cpu_stats", {})
+                precpu_stats = stats.get("precpu_stats", {})
                 
-                # Calculate CPU delta
-                cpu_delta = float(cpu_stats["cpu_usage"]["total_usage"]) - float(precpu_stats["cpu_usage"]["total_usage"])
+                # Get CPU usage values
+                cpu_total = float(cpu_stats.get("cpu_usage", {}).get("total_usage", 0))
+                precpu_total = float(precpu_stats.get("cpu_usage", {}).get("total_usage", 0))
                 
-                # Calculate system CPU delta
-                system_delta = float(cpu_stats["system_cpu_usage"]) - float(precpu_stats["system_cpu_usage"])
+                # Get system CPU values
+                sys_total = float(cpu_stats.get("system_cpu_usage", 0))
+                presys_total = float(precpu_stats.get("system_cpu_usage", 0))
                 
-                # Get number of CPUs
-                online_cpus = cpu_stats.get("online_cpus", len(cpu_stats["cpu_usage"]["percpu_usage"]))
+                cpu_delta = cpu_total - precpu_total
+                system_delta = sys_total - presys_total
                 
                 cpu_usage = 0.0
-                if system_delta > 0 and cpu_delta >= 0:
-                    # Calculate percentage of total CPU used
-                    cpu_usage = (cpu_delta / system_delta) * online_cpus * 100.0
+                if system_delta > 0:
+                    # Calculate percentage of single CPU
+                    cpu_usage = (cpu_delta / system_delta) * 100.0
                     
-                    # Cap at 100% per core
-                    cpu_usage = min(cpu_usage, online_cpus * 100.0)
-                
-                # Ensure we return a valid number
-                if cpu_usage < 0 or math.isnan(cpu_usage):
-                    cpu_usage = 0.0
+                    # Ensure it's a reasonable value
+                    cpu_usage = max(0.0, min(100.0, cpu_usage))
                 
             except Exception as e:
                 logging.writeToFile(f"CPU calculation error: {str(e)}")
