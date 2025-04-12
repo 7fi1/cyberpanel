@@ -1230,15 +1230,6 @@
                                     <button class="btn btn-danger" ng-click="handleAction('stop', web)" ng-if="web.status === 'running'">
                                         <i class="fa fa-stop"></i><span>Stop</span>
                                     </button>
-                                    <button class="btn btn-primary" ng-click="openSettings(web)">
-                                        <i class="fa fa-cog"></i><span>Settings</span>
-                                    </button>
-                                    <button class="btn btn-info" ng-click="handleAction('update', web)" ng-if="checkN8nUpdates(getN8nVersion(web))">
-                                        <i class="fa fa-download"></i><span>Update</span>
-                                    </button>
-                                    <a class="btn btn-info" href="http://{$ location.hostname $}:{$ web.ports['5678/tcp'][0].HostPort $}" target="_blank" ng-if="web.status === 'running'">
-                                        <i class="fa fa-external-link"></i><span>Open n8n</span>
-                                    </a>
                                 </div>
                             </div>
                             
@@ -1391,9 +1382,6 @@
                                     </button>
                                     <button class="btn btn-danger" ng-click="handleAction('stop', web)" ng-if="web.status === 'running'">
                                         <i class="fa fa-stop"></i><span>Stop</span>
-                                    </button>
-                                    <button class="btn btn-primary" ng-click="openSettings(web)">
-                                        <i class="fa fa-cog"></i><span>Settings</span>
                                     </button>
                                 </div>
                             </div>
