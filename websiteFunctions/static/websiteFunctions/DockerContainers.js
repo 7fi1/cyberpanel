@@ -84,23 +84,23 @@ app.controller('ListDockersitecontainer', function ($scope, $http) {
                         $scope.ContainerList[i].created = new Date(containerInfo.created);
                         $scope.ContainerList[i].uptime = containerInfo.uptime;
                         $scope.ContainerList[i].image = containerInfo.image;
-                        console.log("Updated container image:", $scope.ContainerList[i].image);
+                        console.log("Container environment:", containerInfo.environment);
+                        
+                        // Environment Variables
+                        $scope.ContainerList[i].environment = containerInfo.environment;
+                        console.log("Updated container environment:", $scope.ContainerList[i].environment);
 
                         // Resource Usage
                         var memoryBytes = containerInfo.memory_usage;
                         $scope.ContainerList[i].memoryUsage = formatBytes(memoryBytes);
-                        $scope.ContainerList[i].memoryUsagePercent = (memoryBytes / (1024 * 1024 * 1024)) * 100; // Assuming 1GB limit
-                        $scope.ContainerList[i].cpuUsagePercent = (containerInfo.cpu_usage / 10000000000) * 100; // Normalize to percentage
+                        $scope.ContainerList[i].memoryUsagePercent = (memoryBytes / (1024 * 1024 * 1024)) * 100;
+                        $scope.ContainerList[i].cpuUsagePercent = (containerInfo.cpu_usage / 10000000000) * 100;
 
                         // Network & Ports
                         $scope.ContainerList[i].ports = containerInfo.ports;
 
                         // Volumes
                         $scope.ContainerList[i].volumes = containerInfo.volumes;
-
-                        // Environment Variables
-                        $scope.ContainerList[i].environment = containerInfo.environment;
-                        console.log("Container environment:", $scope.ContainerList[i].environment);
                         break;
                     }
                 }

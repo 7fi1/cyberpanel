@@ -943,12 +943,13 @@
             
             // Function to extract n8n version from environment variables
             $scope.getN8nVersion = function(container) {
-                if (container.environment) {
-                    for (var i = 0; i < container.environment.length; i++) {
-                        var env = container.environment[i];
-                        if (env && typeof env === 'string' && env.startsWith('N8N_VERSION=')) {
-                            return env.split('=')[1];
-                        }
+                if (container && container.environment && Array.isArray(container.environment)) {
+                    var version = container.environment.find(function(env) {
+                        return env.startsWith('N8N_VERSION=');
+                    });
+                    
+                    if (version) {
+                        return version.split('=')[1];
                     }
                 }
                 return 'unknown';
