@@ -943,15 +943,36 @@
             
             // Function to extract n8n version from environment variables
             $scope.getN8nVersion = function(container) {
-                if (container && container.environment && Array.isArray(container.environment)) {
-                    var version = container.environment.find(function(env) {
-                        return env.startsWith('N8N_VERSION=');
-                    });
-                    
-                    if (version) {
-                        return version.split('=')[1];
-                    }
+                console.log('getN8nVersion called with:', container);
+                
+                if (!container) {
+                    console.log('Container is null/undefined');
+                    return 'unknown';
                 }
+                
+                if (!container.environment) {
+                    console.log('No environment in container');
+                    return 'unknown';
+                }
+                
+                if (!Array.isArray(container.environment)) {
+                    console.log('Environment is not an array:', container.environment);
+                    return 'unknown';
+                }
+                
+                console.log('Searching through environment:', container.environment);
+                
+                var version = container.environment.find(function(env) {
+                    return typeof env === 'string' && env.startsWith('N8N_VERSION=');
+                });
+                
+                if (version) {
+                    var versionNumber = version.split('=')[1];
+                    console.log('Found version:', versionNumber);
+                    return versionNumber;
+                }
+                
+                console.log('No N8N_VERSION found in environment');
                 return 'unknown';
             };
 
@@ -1190,6 +1211,8 @@
                                     <i class="fa fa-cube"></i>
                                     n8n Container: {$ web.name $}
                                     <span class="version-badge">
+                                        <!-- Debug output -->
+                                        <pre style="display:none">{$ web | json $}</pre>
                                         <i class="fa fa-tag"></i> v{$ getN8nVersion(web) $}
                                         <span ng-if="checkN8nUpdates(getN8nVersion(web))" class="update-available">
                                             <i class="fa fa-arrow-up"></i> Update Available

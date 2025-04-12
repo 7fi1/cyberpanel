@@ -74,7 +74,7 @@ app.controller('ListDockersitecontainer', function ($scope, $http) {
 
             if (response.data.status === 1) {
                 var containerInfo = response.data.data[1];
-                console.log("Container Info received:", containerInfo);
+                console.log("Full container info:", containerInfo);
                 
                 // Find the container in the list and update its information
                 for (var i = 0; i < $scope.ContainerList.length; i++) {
@@ -84,11 +84,15 @@ app.controller('ListDockersitecontainer', function ($scope, $http) {
                         $scope.ContainerList[i].created = new Date(containerInfo.created);
                         $scope.ContainerList[i].uptime = containerInfo.uptime;
                         $scope.ContainerList[i].image = containerInfo.image;
-                        console.log("Container environment:", containerInfo.environment);
                         
-                        // Environment Variables
-                        $scope.ContainerList[i].environment = containerInfo.environment;
-                        console.log("Updated container environment:", $scope.ContainerList[i].environment);
+                        // Environment Variables - ensure it's properly set
+                        if (containerInfo.environment) {
+                            console.log("Setting environment:", containerInfo.environment);
+                            $scope.ContainerList[i].environment = containerInfo.environment;
+                            console.log("Container after env update:", $scope.ContainerList[i]);
+                        } else {
+                            console.log("No environment in container info");
+                        }
 
                         // Resource Usage
                         var memoryBytes = containerInfo.memory_usage;
