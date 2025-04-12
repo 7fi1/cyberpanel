@@ -1,5 +1,7 @@
 from django.urls import path
 from . import views
+from django.conf.urls import url
+from . import dockerviews
 
 urlpatterns = [
     path('', views.loadWebsitesHome, name='loadWebsitesHome'),
@@ -180,9 +182,11 @@ urlpatterns = [
     path('fetchDockersite', views.fetchDockersite, name='fetchDockersite'),
 
     # Docker Container Actions
-    path('docker/startContainer', views.startContainer, name='startContainer'),
-    path('docker/stopContainer', views.stopContainer, name='stopContainer'),
-    path('docker/restartContainer', views.restartContainer, name='restartContainer'),
+    path('docker/startContainer', dockerviews.startContainer, name='startContainer'),
+    path('docker/stopContainer', dockerviews.stopContainer, name='stopContainer'),
+    path('docker/restartContainer', dockerviews.restartContainer, name='restartContainer'),
+    path('docker/check-n8n-version', dockerviews.check_n8n_version, name='check_n8n_version'),
+    path('docker/update-n8n', dockerviews.update_n8n, name='update_n8n'),
 
     # SSH Configs
     path('getSSHConfigs', views.getSSHConfigs, name='getSSHConfigs'),
@@ -200,4 +204,8 @@ urlpatterns = [
     # Catch all for domains
     path('<domain>/<childDomain>', views.launchChild, name='launchChild'),
     path('<domain>', views.domain, name='domain'),
+
+    # New n8n version endpoints
+    url(r'^check-n8n-version$', dockerviews.check_n8n_version, name='check_n8n_version'),
+    url(r'^update-n8n$', dockerviews.update_n8n, name='update_n8n'),
 ]
