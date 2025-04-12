@@ -941,6 +941,30 @@
             $scope.conatinerview = false;
             $scope.cyberpanelLoading = true;
             
+            // Function to extract n8n version from environment variables
+            $scope.getN8nVersion = function(container) {
+                if (container.environment) {
+                    for (var i = 0; i < container.environment.length; i++) {
+                        var env = container.environment[i];
+                        if (env.startsWith('N8N_VERSION=')) {
+                            return env.split('=')[1];
+                        }
+                    }
+                }
+                // If no version found in environment, try to extract from image tag
+                if (container.image && container.image.includes(':')) {
+                    return container.image.split(':')[1];
+                }
+                return 'unknown';
+            };
+
+            // Function to check if updates are available
+            $scope.checkN8nUpdates = function(currentVersion) {
+                // This is a placeholder. You'll need to implement the actual version check
+                // For now, we'll assume an update is available if version is not 'latest'
+                return currentVersion !== 'latest';
+            };
+            
             // Add custom icon rendering for container actions
             $scope.renderIcon = function(iconName) {
                 return '<i class="fa fa-' + iconName + '" aria-hidden="true"></i>';
@@ -1169,8 +1193,8 @@
                                     <i class="fa fa-cube"></i>
                                     n8n Container: {$ web.name $}
                                     <span class="version-badge">
-                                        <i class="fa fa-tag"></i> v{$ web.version $}
-                                        <span ng-if="web.updateAvailable" class="update-available">
+                                        <i class="fa fa-tag"></i> v{$ getN8nVersion(web) $}
+                                        <span ng-if="checkN8nUpdates(getN8nVersion(web))" class="update-available">
                                             <i class="fa fa-arrow-up"></i> Update Available
                                         </span>
                                     </span>
@@ -1192,7 +1216,7 @@
                                     <button class="btn btn-primary" ng-click="openSettings(web)">
                                         <i class="fa fa-cog"></i><span>Settings</span>
                                     </button>
-                                    <button class="btn btn-info" ng-click="handleAction('update', web)" ng-if="web.updateAvailable">
+                                    <button class="btn btn-info" ng-click="handleAction('update', web)" ng-if="checkN8nUpdates(getN8nVersion(web))">
                                         <i class="fa fa-download"></i><span>Update</span>
                                     </button>
                                     <a class="btn btn-info" href="http://{$ location.hostname $}:{$ web.ports['5678/tcp'][0].HostPort $}" target="_blank" ng-if="web.status === 'running'">
