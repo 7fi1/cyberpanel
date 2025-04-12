@@ -426,9 +426,12 @@ app.controller('ListDockersitecontainer', function ($scope, $http) {
                         });
                     }
                 } else {
+                    var errorMsg = response.data.error_message || 'Failed to create backup. Please try again.';
+                    console.error("Backup error:", errorMsg);
+                    
                     new PNotify({
                         title: 'Operation Failed!',
-                        text: response.data.error_message || 'Failed to create backup. Please try again.',
+                        text: errorMsg,
                         type: 'error'
                     });
                 }
@@ -437,13 +440,18 @@ app.controller('ListDockersitecontainer', function ($scope, $http) {
                 $scope.cyberpanelLoading = true;
                 $('#cyberpanelLoading').hide();
                 
+                console.error("Error creating backup:", error);
+                
+                var errorMsg = 'Connection error while creating backup.';
+                if (error.data && error.data.error_message) {
+                    errorMsg = error.data.error_message;
+                }
+                
                 new PNotify({
                     title: 'Operation Failed!',
-                    text: 'Connection error while creating backup.',
+                    text: errorMsg,
                     type: 'error'
                 });
-                
-                console.error("Error creating backup:", error);
             }
         );
     };
