@@ -1,5 +1,6 @@
 from django.urls import path
 from . import views
+from websiteFunctions.dockerviews import startContainer, stopContainer, restartContainer, n8n_container_operation
 
 urlpatterns = [
     path('', views.loadWebsitesHome, name='loadWebsitesHome'),
@@ -180,9 +181,10 @@ urlpatterns = [
     path('fetchDockersite', views.fetchDockersite, name='fetchDockersite'),
 
     # Docker Container Actions
-    path('docker/startContainer', views.startContainer, name='startContainer'),
-    path('docker/stopContainer', views.stopContainer, name='stopContainer'),
-    path('docker/restartContainer', views.restartContainer, name='restartContainer'),
+    path('docker/startContainer', startContainer, name='startContainer'),
+    path('docker/stopContainer', stopContainer, name='stopContainer'),
+    path('docker/restartContainer', restartContainer, name='restartContainer'),
+    path('docker/n8n_container_operation', n8n_container_operation, name='n8n_container_operation'),
 
     # SSH Configs
     path('getSSHConfigs', views.getSSHConfigs, name='getSSHConfigs'),

@@ -167,4 +167,69 @@ def restartContainer(request):
         return HttpResponse(json.dumps({
             'status': 0,
             'error_message': str(e)
+        }))
+
+@csrf_exempt
+@require_login
+def n8n_container_operation(request):
+    try:
+        if request.method == 'POST':
+            userID = request.session['userID']
+            currentACL = ACLManager.loadedACL(userID)
+            admin = Administrator.objects.get(pk=userID)
+
+            data = json.loads(request.body)
+            container_id = data.get('container_id')
+            operation = data.get('operation')
+            
+            # Get the container
+            docker_manager = DockerManager()
+            container = docker_manager.get_container(container_id)
+            
+            if not container:
+                return HttpResponse(json.dumps({
+                    'status': 0,
+                    'error_message': 'Container not found'
+                }))
+            
+            # Handle different operations
+            if operation == 'create_backup':
+                # For now, just return mock data to test UI functionality
+                backup_options = data.get('options', {})
+                include_credentials = backup_options.get('includeCredentials', True)
+                include_executions = backup_options.get('includeExecutions', False)
+                
+                # In a real implementation, you would call the n8n API to create a backup
+                # For now, simulate a successful backup
+                
+                return HttpResponse(json.dumps({
+                    'status': 1,
+                    'message': 'Backup simulation successful. In a production environment, this would download a backup file.',
+                    # In real implementation, you would provide a download URL
+                    # 'download_url': '/path/to/download/backup.json'
+                }))
+                
+            elif operation == 'restore_backup':
+                # For now, just return mock data to test UI functionality
+                backup_data = data.get('backup_data')
+                
+                # In a real implementation, you would call the n8n API to restore from backup
+                # For now, simulate a successful restore
+                
+                return HttpResponse(json.dumps({
+                    'status': 1,
+                    'message': 'Restore simulation successful.'
+                }))
+                
+            else:
+                return HttpResponse(json.dumps({
+                    'status': 0,
+                    'error_message': f'Unknown operation: {operation}'
+                }))
+
+        return HttpResponse('Not allowed')
+    except Exception as e:
+        return HttpResponse(json.dumps({
+            'status': 0,
+            'error_message': str(e)
         })) 
