@@ -607,9 +607,14 @@
                                         <button class="btn btn-danger btn-sm" ng-click="handleAction('stop', web)" ng-if="web.status === 'running'" title="Stop Container">
                                             <i class="fa fa-stop"></i> Stop
                                         </button>
-                                        <button class="btn btn-primary btn-sm" ng-click="openSettings(web)" title="Container Settings">
-                                            <i class="fa fa-cog"></i> Settings
-                                        </button>
+                                        <div class="nav navbar-right btn-group">
+                                            <a href="javascript:void(0)" class="btn btn-sm btn-primary" ng-click="openSettings(container)">
+                                                <i class="fas fa-cog"></i> Settings
+                                            </a>
+                                            <a href="javascript:void(0)" class="btn btn-sm btn-info" ng-click="diagnoseN8n(container)">
+                                                <i class="fas fa-stethoscope"></i> Run Diagnostics
+                                            </a>
+                                        </div>
                                     </div>
                                 </h2>
                                 <p class="text-muted">
@@ -705,6 +710,14 @@
                                     <button class="quick-action-btn btn-danger" ng-click="handleAction('stop', web)" ng-if="web.status === 'running'">
                                         <i class="fa fa-stop"></i> Stop
                                     </button>
+                                    <div class="nav navbar-right btn-group">
+                                        <a href="javascript:void(0)" class="btn btn-sm btn-primary" ng-click="openSettings(container)">
+                                            <i class="fas fa-cog"></i> Settings
+                                        </a>
+                                        <a href="javascript:void(0)" class="btn btn-sm btn-info" ng-click="diagnoseN8n(container)">
+                                            <i class="fas fa-stethoscope"></i> Run Diagnostics
+                                        </a>
+                                    </div>
                                     <button class="quick-action-btn btn-primary" ng-click="openSettings(web)">
                                         <i class="fa fa-cog"></i> Settings
                                     </button>
@@ -1856,6 +1869,127 @@
                                                 Skip & Save <i class="fa fa-save"></i>
                                             </button>
                                         </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-pane" id="n8nDiagnostics">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title">N8n API Diagnostics</h5>
+                                    <div class="card-tools">
+                                        <button class="btn btn-primary" ng-click="diagnoseN8n(container)">
+                                            <i class="fas fa-stethoscope"></i> Run Diagnostics
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div ng-if="container.showDiagnostics">
+                                        <div class="alert" ng-class="{'alert-success': container.diagnosticResults.api_accessible, 'alert-danger': !container.diagnosticResults.api_accessible}">
+                                            <h5><i class="icon" ng-class="{'fas fa-check': container.diagnosticResults.api_accessible, 'fas fa-ban': !container.diagnosticResults.api_accessible}"></i> 
+                                                N8n API Status: <span ng-if="container.diagnosticResults.api_accessible">Accessible</span><span ng-if="!container.diagnosticResults.api_accessible">Not Accessible</span>
+                                            </h5>
+                                        </div>
+                                        
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="card">
+                                                    <div class="card-header">
+                                                        <h5 class="card-title">Container Status</h5>
+                                                    </div>
+                                                    <div class="card-body">
+                                                        <table class="table table-bordered">
+                                                            <tr>
+                                                                <th>Container Exists</th>
+                                                                <td><i class="fas" ng-class="{'fa-check text-success': container.diagnosticResults.container_exists, 'fa-times text-danger': !container.diagnosticResults.container_exists}"></i></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <th>Container Status</th>
+                                                                <td>{{container.diagnosticResults.container_status}}</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <th>Container Running</th>
+                                                                <td><i class="fas" ng-class="{'fa-check text-success': container.diagnosticResults.container_running, 'fa-times text-danger': !container.diagnosticResults.container_running}"></i></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <th>Container Name</th>
+                                                                <td>{{container.diagnosticResults.container_names}}</td>
+                                                            </tr>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="col-md-6">
+                                                <div class="card">
+                                                    <div class="card-header">
+                                                        <h5 class="card-title">N8n API Connectivity</h5>
+                                                    </div>
+                                                    <div class="card-body">
+                                                        <table class="table table-bordered">
+                                                            <tr>
+                                                                <th>N8n Port Found</th>
+                                                                <td><i class="fas" ng-class="{'fa-check text-success': container.diagnosticResults.n8n_port_found, 'fa-times text-danger': !container.diagnosticResults.n8n_port_found}"></i></td>
+                                                            </tr>
+                                                            <tr ng-if="container.diagnosticResults.n8n_port_found">
+                                                                <th>N8n Port</th>
+                                                                <td>{{container.diagnosticResults.n8n_port}}</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <th>API Accessible</th>
+                                                                <td><i class="fas" ng-class="{'fa-check text-success': container.diagnosticResults.api_accessible, 'fa-times text-danger': !container.diagnosticResults.api_accessible}"></i></td>
+                                                            </tr>
+                                                            <tr ng-if="container.diagnosticResults.api_accessible">
+                                                                <th>Workflows API</th>
+                                                                <td><i class="fas" ng-class="{'fa-check text-success': container.diagnosticResults.workflows_accessible, 'fa-times text-danger': !container.diagnosticResults.workflows_accessible}"></i></td>
+                                                            </tr>
+                                                            <tr ng-if="container.diagnosticResults.api_accessible">
+                                                                <th>Credentials API</th>
+                                                                <td><i class="fas" ng-class="{'fa-check text-success': container.diagnosticResults.credentials_accessible, 'fa-times text-danger': !container.diagnosticResults.credentials_accessible}"></i></td>
+                                                            </tr>
+                                                            <tr ng-if="container.diagnosticResults.api_accessible">
+                                                                <th>Export API</th>
+                                                                <td><i class="fas" ng-class="{'fa-check text-success': container.diagnosticResults.export_accessible, 'fa-times text-danger': !container.diagnosticResults.export_accessible}"></i></td>
+                                                            </tr>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="row" ng-if="container.diagnosticResults.port_mappings">
+                                            <div class="col-md-12">
+                                                <div class="card">
+                                                    <div class="card-header">
+                                                        <h5 class="card-title">Port Mappings</h5>
+                                                    </div>
+                                                    <div class="card-body">
+                                                        <pre>{{container.diagnosticResults.port_mappings | json}}</pre>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="row" ng-if="container.diagnosticResults.api_error">
+                                            <div class="col-md-12">
+                                                <div class="card">
+                                                    <div class="card-header">
+                                                        <h5 class="card-title">API Error</h5>
+                                                    </div>
+                                                    <div class="card-body">
+                                                        <pre class="text-danger">{{container.diagnosticResults.api_error}}</pre>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div ng-if="!container.showDiagnostics">
+                                        <p>Click "Run Diagnostics" to check N8n API connectivity.</p>
                                     </div>
                                 </div>
                             </div>

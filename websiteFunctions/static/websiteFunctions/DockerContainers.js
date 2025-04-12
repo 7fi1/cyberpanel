@@ -440,6 +440,112 @@ app.controller('ListDockersitecontainer', function ($scope, $http) {
             });
     };
     
+    // Diagnostic function to troubleshoot n8n connectivity issues
+    $scope.diagnoseN8n = function(container) {
+        $scope.cyberpanelLoading = false;
+        $('#cyberpanelLoading').show();
+        
+        var url = "/websites/n8n/diagnose";
+        
+        var data = {
+            'container_id': container.id
+        };
+        
+        var config = {
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        };
+        
+        $http.post(url, data, config)
+            .then(function(response) {
+                $scope.cyberpanelLoading = true;
+                $('#cyberpanelLoading').hide();
+                
+                if (response.data.status === 1) {
+                    var diagnostics = response.data.diagnostics;
+                    
+                    // Initialize diagnostic results if not exists
+                    if (!container.diagnosticResults) {
+                        container.diagnosticResults = {};
+                    }
+                    
+                    // Store diagnostic results
+                    container.diagnosticResults = diagnostics;
+                    container.showDiagnostics = true;
+                    
+                    // Show summary notification
+                    var summaryMessage = "";
+                    
+                    if (!diagnostics.container_exists) {
+                        summaryMessage = "Container not found";
+                    } else if (!diagnostics.container_running) {
+                        summaryMessage = "Container exists but is not running. Current status: " + diagnostics.container_status;
+                    } else if (!diagnostics.n8n_port_found) {
+                        summaryMessage = "Container is running but n8n port (5678) is not mapped. Available ports: " + 
+                            JSON.stringify(diagnostics.port_mappings);
+                    } else if (!diagnostics.api_accessible) {
+                        summaryMessage = "n8n port found but API is not accessible. Check if n8n is running inside the container.";
+                        if (diagnostics.api_error) {
+                            summaryMessage += " Error: " + diagnostics.api_error;
+                        }
+                    } else {
+                        summaryMessage = "n8n API is accessible. Endpoints status:";
+                        if (diagnostics.workflows_accessible) {
+                            summaryMessage += " Workflows: OK";
+                        } else {
+                            summaryMessage += " Workflows: Failed";
+                        }
+                        
+                        if (diagnostics.credentials_accessible) {
+                            summaryMessage += " | Credentials: OK";
+                        } else {
+                            summaryMessage += " | Credentials: Failed";
+                        }
+                        
+                        if (diagnostics.export_accessible) {
+                            summaryMessage += " | Export: OK";
+                        } else {
+                            summaryMessage += " | Export: Failed";
+                        }
+                    }
+                    
+                    new PNotify({
+                        title: 'Diagnostic Results',
+                        text: summaryMessage,
+                        type: 'info',
+                        hide: false
+                    });
+                    
+                } else {
+                    new PNotify({
+                        title: 'Diagnostic Failed',
+                        text: response.data.error_message || 'Failed to diagnose n8n container',
+                        type: 'error'
+                    });
+                }
+            })
+            .catch(function(error) {
+                $scope.cyberpanelLoading = true;
+                $('#cyberpanelLoading').hide();
+                
+                var errorMessage = 'Connection disrupted, refresh the page.';
+                if (error.data && error.data.error_message) {
+                    errorMessage = error.data.error_message;
+                } else if (error.statusText) {
+                    errorMessage = 'Server error: ' + error.statusText;
+                }
+                
+                new PNotify({
+                    title: 'Diagnostic Failed',
+                    text: errorMessage,
+                    type: 'error'
+                });
+                
+                console.error('Error during diagnosis:', error);
+            });
+    };
+    
     // Restore from a backup
     $scope.restoreFromBackup = function(container) {
         // Check if a file has been selected
