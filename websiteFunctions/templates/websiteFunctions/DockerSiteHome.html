@@ -941,34 +941,23 @@
             $scope.conatinerview = false;
             $scope.cyberpanelLoading = true;
             
-            // Function to extract n8n version from environment variables
-            $scope.getN8nVersion = function(container) {
-                if (container.environment) {
-                    for (var i = 0; i < container.environment.length; i++) {
-                        var env = container.environment[i];
-                        if (env.startsWith('N8N_VERSION=')) {
-                            return env.split('=')[1];
-                        }
-                    }
+            // Initialize container data
+            $scope.initContainer = function(container) {
+                if (container.environment && container.environment.some(env => env.includes('n8n'))) {
+                    // Get container details including image info
+                    $http.get('/docker/container/' + container.id + '/json').then(function(response) {
+                        container.image = response.data.Config.Image;
+                        $scope.$apply();
+                    });
                 }
-                // If no version found in environment, try to extract from image tag
-                if (container.image && container.image.includes(':')) {
-                    return container.image.split(':')[1];
-                }
-                return 'unknown';
-            };
-
-            // Function to check if updates are available
-            $scope.checkN8nUpdates = function(currentVersion) {
-                // This is a placeholder. You'll need to implement the actual version check
-                // For now, we'll assume an update is available if version is not 'latest'
-                return currentVersion !== 'latest';
             };
             
-            // Add custom icon rendering for container actions
-            $scope.renderIcon = function(iconName) {
-                return '<i class="fa fa-' + iconName + '" aria-hidden="true"></i>';
-            };
+            // Watch for container list changes
+            $scope.$watch('ContainerList', function(newVal) {
+                if (newVal && newVal.length > 0) {
+                    newVal.forEach($scope.initContainer);
+                }
+            });
             
             // Handle container actions
             $scope.handleAction = function(action, container) {
@@ -1191,16 +1180,16 @@
                             <div class="container-header">
                                 <h3>
                                     <i class="fa fa-cube"></i>
-                                    n8n Container: {$ web.name $}
-                                    <span class="version-badge">
-                                        <i class="fa fa-tag"></i> v{$ getN8nVersion(web) $}
-                                        <span ng-if="checkN8nUpdates(getN8nVersion(web))" class="update-available">
+                                    n8n Container: {{ web.name }}
+                                    <span class="version-badge" ng-if="web.image">
+                                        <i class="fa fa-tag"></i> v{{ web.image.split(':')[1] || 'unknown' }}
+                                        <span ng-if="web.image.split(':')[1] !== 'latest'" class="update-available">
                                             <i class="fa fa-arrow-up"></i> Update Available
                                         </span>
                                     </span>
                                     <span class="workflow-status" ng-class="{'active': web.status === 'running', 'error': web.status !== 'running'}">
                                         <i class="fa" ng-class="{'fa-check-circle': web.status === 'running', 'fa-times-circle': web.status !== 'running'}"></i>
-                                        {$ web.status $}
+                                        {{ web.status }}
                                     </span>
                                 </h3>
                                 <div class="btn-group">
@@ -1216,10 +1205,10 @@
                                     <button class="btn btn-primary" ng-click="openSettings(web)">
                                         <i class="fa fa-cog"></i><span>Settings</span>
                                     </button>
-                                    <button class="btn btn-info" ng-click="handleAction('update', web)" ng-if="checkN8nUpdates(getN8nVersion(web))">
+                                    <button class="btn btn-info" ng-click="handleAction('update', web)" ng-if="web.image && web.image.split(':')[1] !== 'latest'">
                                         <i class="fa fa-download"></i><span>Update</span>
                                     </button>
-                                    <a class="btn btn-info" href="http://{$ location.hostname $}:{$ web.ports['5678/tcp'][0].HostPort $}" target="_blank" ng-if="web.status === 'running'">
+                                    <a class="btn btn-info" href="http://{{ location.hostname }}:{{ web.ports['5678/tcp'][0].HostPort }}" target="_blank" ng-if="web.status === 'running'">
                                         <i class="fa fa-external-link"></i><span>Open n8n</span>
                                     </a>
                                 </div>
@@ -1358,11 +1347,11 @@
                         <div ng-if="!web.environment || (web.environment | filter:'n8n').length === 0" class="container-card">
                             <div class="container-header">
                                 <h3>
-                                    <i class="fa fa-cube"></i> <span>{% trans "Container: " %} {$ web.name $}</span>
+                                    <i class="fa fa-cube"></i> <span>{% trans "Container: " %} {{ web.name }}</span>
                                     <span class="workflow-status" ng-class="{'active': web.status === 'running', 'error': web.status !== 'running'}">
                                         <span ng-if="web.status === 'running'" class="status-running"></span>
                                         <span ng-if="web.status !== 'running'" class="status-stopped"></span>
-                                        {$ web.status $}
+                                        {{ web.status }}
                                     </span>
                                 </h3>
                                 <div class="btn-group">
@@ -1390,15 +1379,15 @@
                                                 <tbody>
                                                     <tr>
                                                         <td width="40%"><strong>Container ID:</strong></td>
-                                                        <td><code>{$ web.id $}</code></td>
+                                                        <td><code>{{ web.id }}</code></td>
                                                     </tr>
                                                     <tr>
                                                         <td><strong>Created:</strong></td>
-                                                        <td>{$ web.created | date:'medium' $}</td>
+                                                        <td>{{ web.created | date:'medium' }}</td>
                                                     </tr>
                                                     <tr>
                                                         <td><strong>Uptime:</strong></td>
-                                                        <td>{$ web.uptime $}</td>
+                                                        <td>{{ web.uptime }}</td>
                                                     </tr>
                                                 </tbody>
                                             </table>
@@ -1407,22 +1396,22 @@
                                         <div class="info-box">
                                             <h4><i class="fa fa-bar-chart-o"></i> <span>Resource Usage</span></h4>
                                             <div class="mb-3">
-                                                <label class="mb-2">Memory Usage: {$ web.memoryUsage $}</label>
+                                                <label class="mb-2">Memory Usage: {{ web.memoryUsage }}</label>
                                                 <div class="progress">
                                                     <div class="progress-bar" role="progressbar" 
                                                         ng-style="{'width': web.memoryUsagePercent + '%'}" 
-                                                        aria-valuenow="{$ web.memoryUsagePercent $}" 
+                                                        aria-valuenow="{{ web.memoryUsagePercent }}" 
                                                         aria-valuemin="0" 
                                                         aria-valuemax="100">
                                                     </div>
                                                 </div>
                                             </div>
                                             <div>
-                                                <label class="mb-2">CPU Usage: {$ web.cpuUsagePercent | number:1 $}%</label>
+                                                <label class="mb-2">CPU Usage: {{ web.cpuUsagePercent | number:1 }}%</label>
                                                 <div class="progress">
                                                     <div class="progress-bar" role="progressbar" 
                                                         ng-style="{'width': web.cpuUsagePercent + '%'}" 
-                                                        aria-valuenow="{$ web.cpuUsagePercent $}" 
+                                                        aria-valuenow="{{ web.cpuUsagePercent }}" 
                                                         aria-valuemin="0" 
                                                         aria-valuemax="100">
                                                     </div>
@@ -1444,10 +1433,10 @@
                                                     </thead>
                                                     <tbody>
                                                         <tr ng-repeat="(containerPort, hostBindings) in web.ports">
-                                                            <td><code>{$ containerPort $}</code></td>
+                                                            <td><code>{{ containerPort }}</code></td>
                                                             <td>
                                                                 <span ng-repeat="binding in hostBindings" class="label label-info">
-                                                                    {$ binding.HostIp || '0.0.0.0' $}:{$ binding.HostPort $}
+                                                                    {{ binding.HostIp || '0.0.0.0' }}:{{ binding.HostPort }}
                                                                 </span>
                                                             </td>
                                                         </tr>
@@ -1471,8 +1460,8 @@
                                                     </thead>
                                                     <tbody>
                                                         <tr ng-repeat="volume in web.volumes">
-                                                            <td><code>{$ volume.Source $}</code></td>
-                                                            <td><code>{$ volume.Destination $}</code></td>
+                                                            <td><code>{{ volume.Source }}</code></td>
+                                                            <td><code>{{ volume.Destination }}</code></td>
                                                         </tr>
                                                     </tbody>
                                                 </table>
@@ -1498,10 +1487,10 @@
                                                     </thead>
                                                     <tbody>
                                                         <tr ng-repeat="env in web.environment">
-                                                            <td><code>{$ env.split('=')[0] $}</code></td>
+                                                            <td><code>{{ env.split('=')[0] }}</code></td>
                                                             <td>
-                                                                <code ng-if="env.split('=')[1] === '********'">{$ env.split('=')[1] $}</code>
-                                                                <code ng-if="env.split('=')[1] !== '********'">{$ env.split('=')[1] $}</code>
+                                                                <code ng-if="env.split('=')[1] === '********'">{{ env.split('=')[1] }}</code>
+                                                                <code ng-if="env.split('=')[1] !== '********'">{{ env.split('=')[1] }}</code>
                                                             </td>
                                                         </tr>
                                                     </tbody>
@@ -1518,7 +1507,7 @@
                                             <i class="fa fa-refresh"></i> <span>Refresh</span>
                                         </button>
                                     </h4>
-                                    <textarea class="logs" readonly>{$ web.logs $}</textarea>
+                                    <textarea class="logs" readonly>{{ web.logs }}</textarea>
                                 </div>
                             </div>
                         </div>
