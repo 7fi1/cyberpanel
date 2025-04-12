@@ -1,6 +1,5 @@
 from django.urls import path
 from . import views
-from django.conf.urls import url
 from . import dockerviews
 
 urlpatterns = [
@@ -204,8 +203,4 @@ urlpatterns = [
     # Catch all for domains
     path('<domain>/<childDomain>', views.launchChild, name='launchChild'),
     path('<domain>', views.domain, name='domain'),
-
-    # New n8n version endpoints
-    url(r'^check-n8n-version$', dockerviews.check_n8n_version, name='check_n8n_version'),
-    url(r'^update-n8n$', dockerviews.update_n8n, name='update_n8n'),
 ]
