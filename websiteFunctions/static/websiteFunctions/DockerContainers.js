@@ -82,6 +82,7 @@ app.controller('ListDockersitecontainer', function ($scope, $http) {
                         $scope.ContainerList[i].status = containerInfo.status;
                         $scope.ContainerList[i].created = new Date(containerInfo.created);
                         $scope.ContainerList[i].uptime = containerInfo.uptime;
+                        $scope.ContainerList[i].image = containerInfo.image;
 
                         // Resource Usage
                         var memoryBytes = containerInfo.memory_usage;

@@ -1144,6 +1144,7 @@ class ContainerManager(multi.Thread):
                 'created': container_info.get('Created', ''),
                 'started_at': started_at,
                 'uptime': uptime_str,
+                'image': container_info.get('Config', {}).get('Image', ''),
                 'ports': container_info.get('NetworkSettings', {}).get('Ports', {}),
                 'volumes': container_info.get('Mounts', []),
                 'environment': self._mask_sensitive_env(container_info.get('Config', {}).get('Env', [])),
