@@ -355,4 +355,41 @@ app.controller('ListDockersitecontainer', function ($scope, $http) {
 
     // Add location service to the controller for the n8n URL
     $scope.location = window.location;
+
+    // Function to extract n8n version from environment variables
+    $scope.getN8nVersion = function(container) {
+        console.log('getN8nVersion called with container:', container);
+        
+        if (!container || !container.environment) {
+            console.log('No container or environment data');
+            return 'unknown';
+        }
+        
+        console.log('Container environment:', container.environment);
+        
+        var version = null;
+        
+        // Try to find NODE_VERSION first
+        version = container.environment.find(function(env) {
+            return env && env.startsWith('NODE_VERSION=');
+        });
+        
+        if (version) {
+            console.log('Found NODE_VERSION:', version);
+            return version.split('=')[1];
+        }
+        
+        // Try to find N8N_VERSION
+        version = container.environment.find(function(env) {
+            return env && env.startsWith('N8N_VERSION=');
+        });
+        
+        if (version) {
+            console.log('Found N8N_VERSION:', version);
+            return version.split('=')[1];
+        }
+        
+        console.log('No version found in environment');
+        return 'unknown';
+    };
 });

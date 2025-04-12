@@ -1211,12 +1211,9 @@
                                     <i class="fa fa-cube"></i>
                                     n8n Container: {$ web.name $}
                                     <span class="version-badge">
-                                        <!-- Debug output -->
-                                        <pre style="display:none">{$ web | json $}</pre>
-                                        <i class="fa fa-tag"></i> v{$ getN8nVersion(web) $}
-                                        <span ng-if="checkN8nUpdates(getN8nVersion(web))" class="update-available">
-                                            <i class="fa fa-arrow-up"></i> Update Available
-                                        </span>
+                                        <span style="display: none;">Debug - Environment: {$ web.environment | json $}</span>
+                                        <i class="fa fa-tag"></i> 
+                                        <span ng-bind="'v' + getN8nVersion(web)"></span>
                                     </span>
                                     <span class="workflow-status" ng-class="{'active': web.status === 'running', 'error': web.status !== 'running'}">
                                         <i class="fa" ng-class="{'fa-check-circle': web.status === 'running', 'fa-times-circle': web.status !== 'running'}"></i>
