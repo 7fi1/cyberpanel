@@ -948,6 +948,28 @@
                         }
                     };
                 }
+                
+                // Add n8n version checking function
+                $rootScope.checkN8nVersion = function(container) {
+                    // Simulate version check
+                    container.n8nVersion = {
+                        current: '1.0.0',
+                        latest: '1.1.0',
+                        updateAvailable: true
+                    };
+                };
+                
+                // Add n8n update function
+                $rootScope.updateN8n = function(container) {
+                    container.updatingN8n = true;
+                    
+                    // Simulate update process
+                    setTimeout(function() {
+                        container.n8nVersion.current = container.n8nVersion.latest;
+                        container.n8nVersion.updateAvailable = false;
+                        container.updatingN8n = false;
+                    }, 3000);
+                };
             }]);
         });
     </script>
@@ -1143,10 +1165,57 @@
                                     <a class="btn btn-info" href="http://{$ location.hostname $}:{$ web.ports['5678/tcp'][0].HostPort $}" target="_blank" ng-if="web.status === 'running'">
                                         <i class="fa fa-external-link"></i><span>Open n8n</span>
                                     </a>
+                                    <button class="btn btn-success" ng-click="checkN8nVersion(web)" ng-if="web.status === 'running'">
+                                        <i class="fa fa-refresh"></i><span>Check Version</span>
+                                    </button>
                                 </div>
                             </div>
                             
                             <div class="container-body">
+                                <!-- Version Info Box -->
+                                <div class="info-box" ng-if="web.n8nVersion">
+                                    <h4>
+                                        <i class="fa fa-info-circle"></i> <span>n8n Version Information</span>
+                                        <button class="btn btn-sm btn-success pull-right" ng-click="updateN8n(web)" ng-disabled="web.updatingN8n">
+                                            <i class="fa" ng-class="{'fa-refresh fa-spin': web.updatingN8n, 'fa-arrow-up': !web.updatingN8n}"></i>
+                                            <span ng-if="!web.updatingN8n">Update n8n</span>
+                                            <span ng-if="web.updatingN8n">Updating...</span>
+                                        </button>
+                                    </h4>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <table class="table">
+                                                <tbody>
+                                                    <tr>
+                                                        <td width="40%"><strong>Current Version:</strong></td>
+                                                        <td><code>{$ web.n8nVersion.current $}</code></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td><strong>Latest Version:</strong></td>
+                                                        <td><code>{$ web.n8nVersion.latest $}</code></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td><strong>Update Available:</strong></td>
+                                                        <td>
+                                                            <span class="label" ng-class="{'label-success': !web.n8nVersion.updateAvailable, 'label-warning': web.n8nVersion.updateAvailable}">
+                                                                {$ web.n8nVersion.updateAvailable ? 'Yes' : 'No' $}
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="alert" ng-class="{'alert-info': !web.n8nVersion.updateAvailable, 'alert-warning': web.n8nVersion.updateAvailable}">
+                                                <i class="fa" ng-class="{'fa-info-circle': !web.n8nVersion.updateAvailable, 'fa-exclamation-triangle': web.n8nVersion.updateAvailable}"></i>
+                                                <span ng-if="!web.n8nVersion.updateAvailable">Your n8n installation is up to date.</span>
+                                                <span ng-if="web.n8nVersion.updateAvailable">
+                                                    A new version of n8n is available. Click the update button to upgrade to version {$ web.n8nVersion.latest $}.
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                                 <div class="row">
                                     <div class="col-md-6">
                                         <div class="info-box">
