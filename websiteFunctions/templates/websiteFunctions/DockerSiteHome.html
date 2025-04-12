@@ -853,6 +853,42 @@
         .btn span {
             display: inline-block;
         }
+
+        /* Fix button icon spacing once and for all */
+        .btn {
+            display: inline-flex !important;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+        }
+
+        .btn i.fa {
+            margin-right: 0;  /* Remove margin since we're using gap */
+            font-size: 14px;
+            line-height: 1;
+        }
+
+        /* Ensure consistent button spacing in button groups */
+        .btn-group .btn {
+            margin: 0 2px;
+        }
+
+        /* Fix action button spacing */
+        .action-buttons .btn {
+            margin-right: 5px;
+        }
+
+        /* Override any other styles that might affect button icons */
+        button i.fa,
+        a.btn i.fa {
+            margin: 0 !important;  /* Remove any other margins */
+            position: static !important;  /* Prevent positioning issues */
+        }
+
+        /* Keep the rest of the icon spacing rules */
+        i.fa:not(.btn i.fa) {
+            margin-right: 10px;
+        }
     </style>
 
     <script>
@@ -1093,19 +1129,19 @@
                                 </h3>
                                 <div class="btn-group">
                                     <button class="btn btn-success" ng-click="handleAction('start', web)" ng-if="web.status !== 'running'">
-                                        <i class="fa fa-play"></i>Start
+                                        <i class="fa fa-play"></i><span>Start</span>
                                     </button>
                                     <button class="btn btn-warning" ng-click="handleAction('restart', web)" ng-if="web.status === 'running'">
-                                        <i class="fa fa-refresh"></i>Restart
+                                        <i class="fa fa-refresh"></i><span>Restart</span>
                                     </button>
                                     <button class="btn btn-danger" ng-click="handleAction('stop', web)" ng-if="web.status === 'running'">
-                                        <i class="fa fa-stop"></i>Stop
+                                        <i class="fa fa-stop"></i><span>Stop</span>
                                     </button>
                                     <button class="btn btn-primary" ng-click="openSettings(web)">
-                                        <i class="fa fa-cog"></i>Settings
+                                        <i class="fa fa-cog"></i><span>Settings</span>
                                     </button>
                                     <a class="btn btn-info" href="http://{$ location.hostname $}:{$ web.ports['5678/tcp'][0].HostPort $}" target="_blank" ng-if="web.status === 'running'">
-                                        <i class="fa fa-external-link"></i>Open n8n
+                                        <i class="fa fa-external-link"></i><span>Open n8n</span>
                                     </a>
                                 </div>
                             </div>
@@ -1252,16 +1288,16 @@
                                 </h3>
                                 <div class="btn-group">
                                     <button class="btn btn-success" ng-click="handleAction('start', web)" ng-if="web.status !== 'running'">
-                                        <i class="fa fa-play"></i><span> Start</span>
+                                        <i class="fa fa-play"></i><span>Start</span>
                                     </button>
                                     <button class="btn btn-warning" ng-click="handleAction('restart', web)" ng-if="web.status === 'running'">
-                                        <i class="fa fa-refresh"></i><span> Restart</span>
+                                        <i class="fa fa-refresh"></i><span>Restart</span>
                                     </button>
                                     <button class="btn btn-danger" ng-click="handleAction('stop', web)" ng-if="web.status === 'running'">
-                                        <i class="fa fa-stop"></i><span> Stop</span>
+                                        <i class="fa fa-stop"></i><span>Stop</span>
                                     </button>
                                     <button class="btn btn-primary" ng-click="openSettings(web)">
-                                        <i class="fa fa-cog"></i><span> Settings</span>
+                                        <i class="fa fa-cog"></i><span>Settings</span>
                                     </button>
                                 </div>
                             </div>
