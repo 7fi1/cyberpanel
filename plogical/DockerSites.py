@@ -737,6 +737,14 @@ services:
             # Fetch container stats
             stats = container.stats(stream=False)
 
+            # Calculate CPU percentage properly
+            cpu_count = len(stats["cpu_stats"]["cpu_usage"]["percpu_usage"])
+            cpu_delta = float(stats["cpu_stats"]["cpu_usage"]["total_usage"]) - float(stats["precpu_stats"]["cpu_usage"]["total_usage"])
+            system_delta = float(stats["cpu_stats"]["system_cpu_usage"]) - float(stats["precpu_stats"]["system_cpu_usage"])
+            cpu_usage = 0.0
+            if system_delta > 0.0:
+                cpu_usage = (cpu_delta / system_delta) * 100.0 * cpu_count
+
             dic = {
                 'id': container.short_id,
                 'name': container.name,
@@ -744,8 +752,8 @@ services:
                 'volumes': container.attrs['HostConfig']['Binds'] if 'HostConfig' in container.attrs else [],
                 'logs_50': container.logs(tail=50).decode('utf-8'),
                 'ports': container.attrs['HostConfig']['PortBindings'] if 'HostConfig' in container.attrs else {},
-                'memory': stats['memory_stats']['usage'],
-                'cpu' : stats['cpu_stats']['cpu_usage']['total_usage']
+                'memory_usage': stats['memory_stats'].get('usage', 0),
+                'cpu_usage': cpu_usage  # Now sending the properly calculated percentage
             }
 
             return 1, dic
