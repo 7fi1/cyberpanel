@@ -200,421 +200,7 @@ app.controller('ListDockersitecontainer', function ($scope, $http) {
     // Initialize
     $scope.getcontainer();
 
-    // N8N specific functions
-    
-    // Function to refresh workflows for a specific n8n container
-    $scope.refreshWorkflows = function(container) {
-        $scope.cyberpanelLoading = false;
-        $('#cyberpanelLoading').show();
-        
-        var url = "/websites/n8n/get_workflows";
-        
-        var data = {
-            'container_id': container.id
-        };
-        
-        var config = {
-            headers: {
-                'X-CSRFToken': getCookie('csrftoken')
-            }
-        };
-        
-        $http.post(url, data, config).then(function(response) {
-            $scope.cyberpanelLoading = true;
-            $('#cyberpanelLoading').hide();
-            
-            if (response.data.status === 1) {
-                // Find the container in the list and update its workflows
-                for (var i = 0; i < $scope.ContainerList.length; i++) {
-                    if ($scope.ContainerList[i].id === container.id) {
-                        $scope.ContainerList[i].workflows = response.data.workflows;
-                        
-                        // Calculate success rates
-                        $scope.ContainerList[i].workflows.forEach(function(workflow) {
-                            // Default values
-                            workflow.lastExecution = workflow.lastExecution || new Date();
-                            workflow.successRate = workflow.successRate || 100;
-                        });
-                        
-                        new PNotify({
-                            title: 'Success!',
-                            text: 'Workflows refreshed successfully.',
-                            type: 'success'
-                        });
-                        break;
-                    }
-                }
-            } else {
-                new PNotify({
-                    title: 'Operation Failed!',
-                    text: response.data.error_message,
-                    type: 'error'
-                });
-            }
-        }, function(response) {
-            $scope.cyberpanelLoading = true;
-            $('#cyberpanelLoading').hide();
-            
-            new PNotify({
-                title: 'Operation Failed!',
-                text: 'Connection disrupted, refresh the page.',
-                type: 'error'
-            });
-        });
-    };
-    
-    // Function to toggle workflow status (active/inactive)
-    $scope.toggleWorkflow = function(container, workflowId, active) {
-        $scope.cyberpanelLoading = false;
-        $('#cyberpanelLoading').show();
-        
-        var url = "/websites/n8n/toggle_workflow";
-        
-        var data = {
-            'container_id': container.id,
-            'workflow_id': workflowId,
-            'active': active
-        };
-        
-        var config = {
-            headers: {
-                'X-CSRFToken': getCookie('csrftoken')
-            }
-        };
-        
-        $http.post(url, data, config).then(function(response) {
-            $scope.cyberpanelLoading = true;
-            $('#cyberpanelLoading').hide();
-            
-            if (response.data.status === 1) {
-                // Find the container and update the workflow status
-                for (var i = 0; i < $scope.ContainerList.length; i++) {
-                    if ($scope.ContainerList[i].id === container.id) {
-                        for (var j = 0; j < $scope.ContainerList[i].workflows.length; j++) {
-                            if ($scope.ContainerList[i].workflows[j].id === workflowId) {
-                                $scope.ContainerList[i].workflows[j].active = active;
-                                break;
-                            }
-                        }
-                        break;
-                    }
-                }
-                
-                new PNotify({
-                    title: 'Success!',
-                    text: 'Workflow ' + (active ? 'activated' : 'deactivated') + ' successfully.',
-                    type: 'success'
-                });
-            } else {
-                new PNotify({
-                    title: 'Operation Failed!',
-                    text: response.data.error_message,
-                    type: 'error'
-                });
-            }
-        }, function(response) {
-            $scope.cyberpanelLoading = true;
-            $('#cyberpanelLoading').hide();
-            
-            new PNotify({
-                title: 'Operation Failed!',
-                text: 'Connection disrupted, refresh the page.',
-                type: 'error'
-            });
-        });
-    };
-    
-    // Function to show workflow execution history
-    $scope.showWorkflowExecution = function(container, workflowId) {
-        // Find the container and workflow
-        for (var i = 0; i < $scope.ContainerList.length; i++) {
-            if ($scope.ContainerList[i].id === container.id) {
-                for (var j = 0; j < $scope.ContainerList[i].workflows.length; j++) {
-                    if ($scope.ContainerList[i].workflows[j].id === workflowId) {
-                        $scope.selectedWorkflow = $scope.ContainerList[i].workflows[j];
-                        break;
-                    }
-                }
-                break;
-            }
-        }
-        
-        // Initialize filter
-        $scope.executionFilter = { status: '' };
-        
-        // Open the execution history modal
-        $('#executionHistory').modal('show');
-    };
-
-    // Backup and Restore Functions
-    
-    // Function to initialize backup options for a container
-    $scope.initBackupOptions = function(container) {
-        // Initialize backup options if not present
-        if (!container.backupOptions) {
-            container.backupOptions = {
-                includeCredentials: true,
-                includeExecutions: false
-            };
-        }
-    };
-
-    // Function to create a backup
-    $scope.createBackup = function(container) {
-        // Initialize options if not already done
-        $scope.initBackupOptions(container);
-        
-        $scope.cyberpanelLoading = false;
-        $('#cyberpanelLoading').show();
-        
-        var url = "/websites/docker/n8n_container_operation";
-        
-        var data = {
-            'container_id': container.id,
-            'operation': 'create_backup',
-            'options': container.backupOptions
-        };
-        
-        var config = {
-            headers: {
-                'X-CSRFToken': getCookie('csrftoken')
-            }
-        };
-        
-        $http.post(url, data, config).then(
-            function(response) {
-                $scope.cyberpanelLoading = true;
-                $('#cyberpanelLoading').hide();
-                
-                if (response.data.status === 1) {
-                    // Check if we have backup data
-                    if (response.data.backup) {
-                        // Create a download file from the backup data
-                        var backupData = response.data.backup;
-                        var fileName = response.data.filename || 'n8n-backup.json';
-                        
-                        // Convert the backup data to a JSON string
-                        var backupJson = JSON.stringify(backupData, null, 2);
-                        
-                        // Create a blob with the JSON data
-                        var blob = new Blob([backupJson], { type: 'application/json' });
-                        
-                        // Create a download link
-                        var downloadLink = document.createElement('a');
-                        downloadLink.href = URL.createObjectURL(blob);
-                        downloadLink.download = fileName;
-                        
-                        // Append to the document, trigger click, then remove
-                        document.body.appendChild(downloadLink);
-                        downloadLink.click();
-                        document.body.removeChild(downloadLink);
-                        
-                        // Clean up the URL.createObjectURL
-                        URL.revokeObjectURL(downloadLink.href);
-                        
-                        new PNotify({
-                            title: 'Success!',
-                            text: 'Backup created and downloaded successfully.',
-                            type: 'success'
-                        });
-                    } else {
-                        // No backup data but still a success
-                        new PNotify({
-                            title: 'Success!',
-                            text: response.data.message || 'Backup created successfully.',
-                            type: 'success'
-                        });
-                    }
-                } else {
-                    var errorMsg = response.data.error_message || 'Failed to create backup. Please try again.';
-                    console.error("Backup error:", errorMsg);
-                    
-                    new PNotify({
-                        title: 'Operation Failed!',
-                        text: errorMsg,
-                        type: 'error'
-                    });
-                }
-            },
-            function(error) {
-                $scope.cyberpanelLoading = true;
-                $('#cyberpanelLoading').hide();
-                
-                console.error("Error creating backup:", error);
-                
-                var errorMsg = 'Connection error while creating backup.';
-                if (error.data && error.data.error_message) {
-                    errorMsg = error.data.error_message;
-                }
-                
-                new PNotify({
-                    title: 'Operation Failed!',
-                    text: errorMsg,
-                    type: 'error'
-                });
-            }
-        );
-    };
-    
-    // Function to restore from a backup
-    $scope.restoreFromBackup = function(container) {
-        var fileInput = document.getElementById('backupFile');
-        
-        if (!fileInput.files || fileInput.files.length === 0) {
-            new PNotify({
-                title: 'Warning!',
-                text: 'Please select a backup file first.',
-                type: 'warning'
-            });
-            return;
-        }
-        
-        var file = fileInput.files[0];
-        var reader = new FileReader();
-        
-        $scope.cyberpanelLoading = false;
-        $('#cyberpanelLoading').show();
-        
-        reader.onload = function(e) {
-            try {
-                // Try to parse the file as JSON to verify it's a valid backup
-                var backupData = JSON.parse(e.target.result);
-                
-                var url = "/websites/docker/n8n_container_operation";
-                
-                var data = {
-                    'container_id': container.id,
-                    'operation': 'restore_backup',
-                    'backup_data': backupData
-                };
-                
-                var config = {
-                    headers: {
-                        'X-CSRFToken': getCookie('csrftoken')
-                    }
-                };
-                
-                $http.post(url, data, config).then(
-                    function(response) {
-                        $scope.cyberpanelLoading = true;
-                        $('#cyberpanelLoading').hide();
-                        
-                        if (response.data.status === 1) {
-                            new PNotify({
-                                title: 'Success!',
-                                text: 'Backup restored successfully.',
-                                type: 'success'
-                            });
-                            
-                            // Refresh workflows and credentials after restore
-                            if (typeof $scope.refreshWorkflows === 'function') {
-                                $scope.refreshWorkflows(container);
-                            }
-                            
-                            if (typeof $scope.refreshCredentials === 'function') {
-                                $scope.refreshCredentials(container);
-                            }
-                        } else {
-                            new PNotify({
-                                title: 'Operation Failed!',
-                                text: response.data.error_message || 'Failed to restore backup.',
-                                type: 'error'
-                            });
-                        }
-                    },
-                    function(error) {
-                        $scope.cyberpanelLoading = true;
-                        $('#cyberpanelLoading').hide();
-                        
-                        new PNotify({
-                            title: 'Operation Failed!',
-                            text: 'Connection error while restoring backup.',
-                            type: 'error'
-                        });
-                        
-                        console.error("Error restoring backup:", error);
-                    }
-                );
-            } catch (e) {
-                $scope.cyberpanelLoading = true;
-                $('#cyberpanelLoading').hide();
-                
-                new PNotify({
-                    title: 'Invalid Backup File',
-                    text: 'The selected file is not a valid backup file.',
-                    type: 'error'
-                });
-                
-                console.error("Error parsing backup file:", e);
-            }
-        };
-        
-        reader.onerror = function() {
-            $scope.cyberpanelLoading = true;
-            $('#cyberpanelLoading').hide();
-            
-            new PNotify({
-                title: 'Operation Failed!',
-                text: 'Error reading the backup file.',
-                type: 'error'
-            });
-        };
-        
-        reader.readAsText(file);
-    };
-    
-    // Save backup schedule
-    $scope.saveBackupSchedule = function(container) {
-        $scope.cyberpanelLoading = false;
-        $('#cyberpanelLoading').show();
-        
-        // Initialize backup options if they don't exist
-        $scope.initBackupOptions(container);
-        
-        var url = "/websites/n8n/save_backup_schedule";
-        
-        var data = {
-            'container_id': container.id,
-            'frequency': container.scheduledBackup.frequency,
-            'retention': container.scheduledBackup.retention
-        };
-        
-        var config = {
-            headers: {
-                'X-CSRFToken': getCookie('csrftoken')
-            }
-        };
-        
-        $http.post(url, data, config).then(function(response) {
-            $scope.cyberpanelLoading = true;
-            $('#cyberpanelLoading').hide();
-            
-            if (response.data.status === 1) {
-                new PNotify({
-                    title: 'Success!',
-                    text: 'Backup schedule saved successfully.',
-                    type: 'success'
-                });
-            } else {
-                new PNotify({
-                    title: 'Operation Failed!',
-                    text: response.data.error_message,
-                    type: 'error'
-                });
-            }
-        }, function(response) {
-            $scope.cyberpanelLoading = true;
-            $('#cyberpanelLoading').hide();
-            
-            new PNotify({
-                title: 'Operation Failed!',
-                text: 'Connection disrupted, refresh the page.',
-                type: 'error'
-            });
-        });
-    };
-
-    // Version Management Functions
+    // Version Management Functions for n8n
     
     // Check for updates
     $scope.checkForUpdates = function(container) {
@@ -703,514 +289,62 @@ app.controller('ListDockersitecontainer', function ($scope, $http) {
         // Simulate opening version details - in a real implementation, you would fetch these from n8n's GitHub or website
         window.open('https://github.com/n8n-io/n8n/releases/tag/n8n@' + version.version, '_blank');
     };
-    
-    // Credential Management Functions
-    
-    // Refresh credentials
-    $scope.refreshCredentials = function(container) {
-        $scope.cyberpanelLoading = false;
-        $('#cyberpanelLoading').show();
-        
-        // Simulate fetching credentials
-        setTimeout(function() {
-            $scope.$apply(function() {
-                $scope.cyberpanelLoading = true;
-                $('#cyberpanelLoading').hide();
-                
-                // Simulate credential data
-                container.credentials = [
-                    {
-                        id: 'cred1',
-                        name: 'Google API',
-                        type: 'Google Sheets',
-                        usedIn: ['workflow1', 'workflow3'],
-                        securityIssues: []
-                    },
-                    {
-                        id: 'cred2',
-                        name: 'Twitter API',
-                        type: 'Twitter',
-                        usedIn: ['workflow2'],
-                        securityIssues: ['Using deprecated auth method']
-                    },
-                    {
-                        id: 'cred3',
-                        name: 'Slack Webhook',
-                        type: 'Slack',
-                        usedIn: [],
-                        securityIssues: []
-                    }
-                ];
-                
-                // Calculate unused credentials
-                container.unusedCredentials = container.credentials.filter(function(cred) {
-                    return cred.usedIn.length === 0;
-                });
-                
-                // Calculate insecure credentials
-                container.insecureCredentials = container.credentials.filter(function(cred) {
-                    return cred.securityIssues.length > 0;
-                });
-                
-                new PNotify({
-                    title: 'Success!',
-                    text: 'Credentials refreshed successfully.',
-                    type: 'success'
-                });
-            });
-        }, 1500);
-    };
-    
-    // Show credential usage
-    $scope.showCredentialUsage = function(container, credentialId) {
-        // Find the credential
-        var credential = null;
-        for (var i = 0; i < container.credentials.length; i++) {
-            if (container.credentials[i].id === credentialId) {
-                credential = container.credentials[i];
-                break;
-            }
-        }
-        
-        if (credential) {
-            var usageInfo = credential.usedIn.length > 0 ? 
-                'Used in workflows: ' + credential.usedIn.join(', ') : 
-                'Not used in any workflows';
-            
-            new PNotify({
-                title: credential.name + ' Usage',
-                text: usageInfo,
-                type: 'info'
-            });
-        }
-    };
-    
-    // Delete credential
-    $scope.deleteCredential = function(container, credentialId) {
-        if (confirm('Are you sure you want to delete this credential? This action cannot be undone.')) {
-            $scope.cyberpanelLoading = false;
-            $('#cyberpanelLoading').show();
-            
-            // Simulate deleting the credential
-            setTimeout(function() {
-                $scope.$apply(function() {
-                    $scope.cyberpanelLoading = true;
-                    $('#cyberpanelLoading').hide();
-                    
-                    // Remove the credential from the list
-                    container.credentials = container.credentials.filter(function(cred) {
-                        return cred.id !== credentialId;
-                    });
-                    
-                    // Update unused and insecure counts
-                    container.unusedCredentials = container.credentials.filter(function(cred) {
-                        return cred.usedIn.length === 0;
-                    });
-                    
-                    container.insecureCredentials = container.credentials.filter(function(cred) {
-                        return cred.securityIssues.length > 0;
-                    });
-                    
-                    new PNotify({
-                        title: 'Success!',
-                        text: 'Credential deleted successfully.',
-                        type: 'success'
-                    });
-                });
-            }, 1500);
-        }
-    };
-    
-    // Cleanup unused credentials
-    $scope.cleanupUnusedCredentials = function(container) {
-        if (container.unusedCredentials.length === 0) {
-            new PNotify({
-                title: 'Info',
-                text: 'No unused credentials to clean up.',
-                type: 'info'
-            });
-            return;
-        }
-        
-        if (confirm('Are you sure you want to delete all unused credentials? This action cannot be undone.')) {
-            $scope.cyberpanelLoading = false;
-            $('#cyberpanelLoading').show();
-            
-            // Simulate deleting unused credentials
-            setTimeout(function() {
-                $scope.$apply(function() {
-                    $scope.cyberpanelLoading = true;
-                    $('#cyberpanelLoading').hide();
-                    
-                    // Get unused credential IDs
-                    var unusedIds = container.unusedCredentials.map(function(cred) {
-                        return cred.id;
-                    });
-                    
-                    // Remove unused credentials
-                    container.credentials = container.credentials.filter(function(cred) {
-                        return cred.usedIn.length > 0;
-                    });
-                    
-                    // Update unused and insecure counts
-                    container.unusedCredentials = [];
-                    
-                    container.insecureCredentials = container.credentials.filter(function(cred) {
-                        return cred.securityIssues.length > 0;
-                    });
-                    
-                    new PNotify({
-                        title: 'Success!',
-                        text: 'Unused credentials deleted successfully.',
-                        type: 'success'
-                    });
-                });
-            }, 1500);
-        }
-    };
 
-    // Health Monitoring Functions
-    
-    // Initialize health monitoring data
-    $scope.initHealthMonitoring = function(container) {
-        if (!container.healthMonitoring) {
-            container.healthMonitoring = {
-                enabled: false,
-                memoryThreshold: 80,
-                cpuThreshold: 80,
-                workflowFailureAlert: true,
-                containerRestartAlert: true,
-                emailNotification: ''
-            };
-        }
-    };
-    
-    // Enable health monitoring
-    $scope.enableHealthMonitoring = function(container) {
-        $scope.initHealthMonitoring(container);
-        
-        container.healthMonitoring.enabled = true;
-        
-        // Initialize charts
-        setTimeout(function() {
-            // This would normally use a charting library like Chart.js
-            // Here we'll just simulate it
-            new PNotify({
-                title: 'Success!',
-                text: 'Health monitoring enabled.',
-                type: 'success'
-            });
-        }, 500);
-    };
-    
-    // Refresh health data
-    $scope.refreshHealthData = function(container) {
+    // Function to display top processes for a container
+    $scope.showTop = function(containerId) {
         $scope.cyberpanelLoading = false;
         $('#cyberpanelLoading').show();
         
-        $scope.initHealthMonitoring(container);
+        var url = "/docker/containerTop";
         
-        // Simulate fetching health data
-        setTimeout(function() {
-            $scope.$apply(function() {
-                $scope.cyberpanelLoading = true;
-                $('#cyberpanelLoading').hide();
-                
-                new PNotify({
-                    title: 'Success!',
-                    text: 'Health data refreshed.',
-                    type: 'success'
-                });
-            });
-        }, 1500);
-    };
-    
-    // Save health monitoring settings
-    $scope.saveHealthMonitoringSettings = function(container) {
-        $scope.cyberpanelLoading = false;
-        $('#cyberpanelLoading').show();
+        var data = {
+            'name': $('#sitename').html(),
+            'id': containerId
+        };
         
-        // Simulate saving settings
-        setTimeout(function() {
-            $scope.$apply(function() {
-                $scope.cyberpanelLoading = true;
-                $('#cyberpanelLoading').hide();
-                
-                new PNotify({
-                    title: 'Success!',
-                    text: 'Health monitoring settings saved.',
-                    type: 'success'
-                });
-            });
-        }, 1500);
-    };
-    
-    // Webhook Testing Functions
-    
-    // Initialize webhook tools
-    $scope.initWebhookTools = function(container) {
-        if (!container.webhookTools) {
-            container.webhookTools = {
-                selectedWorkflow: '',
-                generatedUrl: '',
-                testUrl: '',
-                httpMethod: 'POST',
-                requestBody: '{\n  "data": "example"\n}',
-                headers: [
-                    { key: 'Content-Type', value: 'application/json' }
-                ],
-                testResult: null
-            };
-        }
-    };
-    
-    // Generate webhook URL
-    $scope.generateWebhookUrl = function(container) {
-        $scope.cyberpanelLoading = false;
-        $('#cyberpanelLoading').show();
+        var config = {
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        };
         
-        $scope.initWebhookTools(container);
-        
-        // Simulate generating webhook URL
-        setTimeout(function() {
-            $scope.$apply(function() {
-                $scope.cyberpanelLoading = true;
-                $('#cyberpanelLoading').hide();
-                
-                // Get the selected workflow
-                var selectedWorkflow = null;
-                if (container.workflows) {
-                    for (var i = 0; i < container.workflows.length; i++) {
-                        if (container.workflows[i].id === container.webhookTools.selectedWorkflow) {
-                            selectedWorkflow = container.workflows[i];
-                            break;
-                        }
+        $http.post(url, data, config).then(function(response) {
+            $scope.cyberpanelLoading = true;
+            $('#cyberpanelLoading').hide();
+            
+            if (response.data.status === 1) {
+                // Find the container and update its process info
+                for (var i = 0; i < $scope.ContainerList.length; i++) {
+                    if ($scope.ContainerList[i].id === containerId) {
+                        $scope.ContainerList[i].topHead = response.data.data[1].Titles;
+                        $scope.ContainerList[i].topProcesses = response.data.data[1].Processes;
+                        break;
                     }
                 }
                 
-                // Generate URL (in a real implementation, this would come from the n8n API)
-                if (selectedWorkflow) {
-                    container.webhookTools.generatedUrl = 'http://' + window.location.hostname + ':' + 
-                        container.ports['5678/tcp'][0].HostPort + '/webhook/' + 
-                        selectedWorkflow.id + '/' + Math.random().toString(36).substring(2, 15);
-                    
-                    new PNotify({
-                        title: 'Success!',
-                        text: 'Webhook URL generated.',
-                        type: 'success'
-                    });
-                } else {
-                    new PNotify({
-                        title: 'Error!',
-                        text: 'Please select a workflow.',
-                        type: 'error'
-                    });
-                }
-            });
-        }, 1500);
-    };
-    
-    // Add webhook header
-    $scope.addWebhookHeader = function() {
-        $scope.webhookTools.headers.push({ key: '', value: '' });
-    };
-    
-    // Remove webhook header
-    $scope.removeWebhookHeader = function(index) {
-        $scope.webhookTools.headers.splice(index, 1);
-    };
-    
-    // Test webhook
-    $scope.testWebhook = function(container) {
-        $scope.cyberpanelLoading = false;
-        $('#cyberpanelLoading').show();
-        
-        $scope.initWebhookTools(container);
-        
-        if (!container.webhookTools.testUrl) {
+                // Open the processes modal
+                $('#processes').modal('show');
+                
+                // Also update the processes in the global scope for the modal
+                $scope.topHead = response.data.data[1].Titles;
+                $scope.topProcesses = response.data.data[1].Processes;
+            } else {
+                new PNotify({
+                    title: 'Operation Failed!',
+                    text: response.data.error_message,
+                    type: 'error'
+                });
+            }
+        }, function(error) {
             $scope.cyberpanelLoading = true;
             $('#cyberpanelLoading').hide();
             
             new PNotify({
-                title: 'Error!',
-                text: 'Please enter a URL to test.',
+                title: 'Operation Failed!',
+                text: 'Connection disrupted, refresh the page.',
                 type: 'error'
             });
-            return;
-        }
-        
-        // Simulate testing webhook
-        setTimeout(function() {
-            $scope.$apply(function() {
-                $scope.cyberpanelLoading = true;
-                $('#cyberpanelLoading').hide();
-                
-                // Simulate response
-                container.webhookTools.testResult = {
-                    status: 200,
-                    statusText: 'OK',
-                    headers: {
-                        'content-type': 'application/json',
-                        'server': 'n8n'
-                    },
-                    body: {
-                        success: true,
-                        executionId: '123456789'
-                    }
-                };
-                
-                new PNotify({
-                    title: 'Success!',
-                    text: 'Webhook tested successfully.',
-                    type: 'success'
-                });
-            });
-        }, 2000);
-    };
-    
-    // Copy to clipboard
-    $scope.copyToClipboard = function(text) {
-        // Create a temporary input element
-        var input = document.createElement('input');
-        input.value = text;
-        document.body.appendChild(input);
-        input.select();
-        document.execCommand('copy');
-        document.body.removeChild(input);
-        
-        new PNotify({
-            title: 'Copied!',
-            text: 'Text copied to clipboard.',
-            type: 'success'
         });
-    };
-    
-    // Custom Domain Functions
-    
-    // Configure custom domain
-    $scope.configureCustomDomain = function(container) {
-        $scope.cyberpanelLoading = false;
-        $('#cyberpanelLoading').show();
-        
-        if (!container.newDomain) {
-            $scope.cyberpanelLoading = true;
-            $('#cyberpanelLoading').hide();
-            
-            new PNotify({
-                title: 'Error!',
-                text: 'Please enter a domain name.',
-                type: 'error'
-            });
-            return;
-        }
-        
-        // Simulate configuring domain
-        setTimeout(function() {
-            $scope.$apply(function() {
-                $scope.cyberpanelLoading = true;
-                $('#cyberpanelLoading').hide();
-                
-                container.customDomain = container.newDomain;
-                container.sslEnabled = container.enableSSL || false;
-                
-                if (container.sslEnabled) {
-                    // Simulate SSL expiry date (3 months from now)
-                    var expiryDate = new Date();
-                    expiryDate.setMonth(expiryDate.getMonth() + 3);
-                    container.sslExpiry = expiryDate;
-                }
-                
-                container.newDomain = '';
-                container.enableSSL = false;
-                
-                new PNotify({
-                    title: 'Success!',
-                    text: 'Domain configured successfully.' + 
-                        (container.sslEnabled ? ' SSL has been enabled.' : ''),
-                    type: 'success'
-                });
-            });
-        }, 3000);
-    };
-    
-    // Remove custom domain
-    $scope.removeCustomDomain = function(container) {
-        if (confirm('Are you sure you want to remove this custom domain?')) {
-            $scope.cyberpanelLoading = false;
-            $('#cyberpanelLoading').show();
-            
-            // Simulate removing domain
-            setTimeout(function() {
-                $scope.$apply(function() {
-                    $scope.cyberpanelLoading = true;
-                    $('#cyberpanelLoading').hide();
-                    
-                    container.customDomain = null;
-                    container.sslEnabled = false;
-                    container.sslExpiry = null;
-                    
-                    new PNotify({
-                        title: 'Success!',
-                        text: 'Custom domain removed successfully.',
-                        type: 'success'
-                    });
-                });
-            }, 1500);
-        }
-    };
-    
-    // Enable SSL
-    $scope.enableSSL = function(container) {
-        $scope.cyberpanelLoading = false;
-        $('#cyberpanelLoading').show();
-        
-        // Simulate enabling SSL
-        setTimeout(function() {
-            $scope.$apply(function() {
-                $scope.cyberpanelLoading = true;
-                $('#cyberpanelLoading').hide();
-                
-                container.sslEnabled = true;
-                
-                // Simulate SSL expiry date (3 months from now)
-                var expiryDate = new Date();
-                expiryDate.setMonth(expiryDate.getMonth() + 3);
-                container.sslExpiry = expiryDate;
-                
-                new PNotify({
-                    title: 'Success!',
-                    text: 'SSL enabled successfully. Certificate will expire on ' + 
-                        expiryDate.toLocaleDateString() + '.',
-                    type: 'success'
-                });
-            });
-        }, 3000);
-    };
-    
-    // Renew SSL
-    $scope.renewSSL = function(container) {
-        $scope.cyberpanelLoading = false;
-        $('#cyberpanelLoading').show();
-        
-        // Simulate renewing SSL
-        setTimeout(function() {
-            $scope.$apply(function() {
-                $scope.cyberpanelLoading = true;
-                $('#cyberpanelLoading').hide();
-                
-                // Simulate new SSL expiry date (3 months from now)
-                var expiryDate = new Date();
-                expiryDate.setMonth(expiryDate.getMonth() + 3);
-                container.sslExpiry = expiryDate;
-                
-                new PNotify({
-                    title: 'Success!',
-                    text: 'SSL certificate renewed successfully. New expiry date: ' + 
-                        expiryDate.toLocaleDateString() + '.',
-                    type: 'success'
-                });
-            });
-        }, 3000);
     };
     
     // Helper function to handle container actions
@@ -1289,7 +423,6 @@ app.controller('ListDockersitecontainer', function ($scope, $http) {
     };
 
     // Keep your existing functions
-    $scope.recreateappcontainer = function() { /* ... */ };
     $scope.refreshStatus = function() { /* ... */ };
     $scope.restarthStatus = function() { /* ... */ };
     $scope.StopContainerAPP = function() { /* ... */ };
@@ -1431,6 +564,31 @@ app.controller('ListDockersitecontainer', function ($scope, $http) {
                 type: 'error'
             });
         }
+    };
+
+    // Add volume and environment field functions
+    $scope.addVolField = function() {
+        if (!$scope.volList) {
+            $scope.volList = {};
+        }
+        
+        $scope.volList[$scope.volListNumber] = {'dest': '', 'src': ''};
+        $scope.volListNumber++;
+    };
+    
+    $scope.removeVolField = function() {
+        if ($scope.volListNumber > 0) {
+            $scope.volListNumber--;
+            delete $scope.volList[$scope.volListNumber];
+        }
+    };
+    
+    $scope.addEnvField = function() {
+        if (!$scope.envList) {
+            $scope.envList = {};
+        }
+        
+        $scope.envList[Object.keys($scope.envList).length] = {'name': '', 'value': ''};
     };
 
     // Add location service to the controller for the n8n URL
