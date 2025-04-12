@@ -185,6 +185,7 @@ urlpatterns = [
     path('docker/stopContainer', stopContainer, name='stopContainer'),
     path('docker/restartContainer', restartContainer, name='restartContainer'),
     path('docker/n8n_container_operation', n8n_container_operation, name='n8n_container_operation'),
+    path('websites/docker/n8n_container_operation', n8n_container_operation, name='n8n_container_operation_websites'),
 
     # SSH Configs
     path('getSSHConfigs', views.getSSHConfigs, name='getSSHConfigs'),

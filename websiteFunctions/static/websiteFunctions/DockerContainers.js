@@ -367,7 +367,7 @@ app.controller('ListDockersitecontainer', function ($scope, $http) {
         $scope.cyberpanelLoading = false;
         $('#cyberpanelLoading').show();
         
-        var url = "/docker/n8n_container_operation";
+        var url = "/websites/docker/n8n_container_operation";
         
         var data = {
             'container_id': container.id,
@@ -444,7 +444,7 @@ app.controller('ListDockersitecontainer', function ($scope, $http) {
                 // Try to parse the file as JSON to verify it's a valid backup
                 var backupData = JSON.parse(e.target.result);
                 
-                var url = "/docker/n8n_container_operation";
+                var url = "/websites/docker/n8n_container_operation";
                 
                 var data = {
                     'container_id': container.id,
