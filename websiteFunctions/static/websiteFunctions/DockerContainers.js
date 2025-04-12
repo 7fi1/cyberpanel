@@ -491,7 +491,8 @@ app.controller('ListDockersitecontainer', function ($scope, $http) {
                             summaryMessage += "<li>n8n port found (" + diagnostics.n8n_port + "): <span style='color:green'>✓</span></li>";
                         } else {
                             summaryMessage += "<li>n8n port (5678) not mapped: <span style='color:red'>✗</span></li>";
-                            summaryMessage += "<li>Available ports: <pre>" + JSON.stringify(diagnostics.port_mappings, null, 2) + "</pre></li>";
+                            var portMappingsString = JSON.stringify(diagnostics.port_mappings, null, 2);
+                            summaryMessage += "<li>Available ports: <pre>" + portMappingsString + "</pre></li>";
                         }
                         
                         if (diagnostics.container_running && diagnostics.n8n_port_found) {
@@ -1156,18 +1157,23 @@ app.controller('ListDockersitecontainer', function ($scope, $http) {
                 $scope.cyberpanelLoading = true;
                 $('#cyberpanelLoading').hide();
                 
-                // Simulate response
+                // Sample response data
+                var headers = {
+                    'content-type': 'application/json',
+                    'server': 'n8n'
+                };
+                
+                var body = {
+                    success: true,
+                    executionId: '123456789'
+                };
+                
+                // Simulate response with pre-stringified JSON
                 container.webhookTools.testResult = {
                     status: 200,
                     statusText: 'OK',
-                    headers: {
-                        'content-type': 'application/json',
-                        'server': 'n8n'
-                    },
-                    body: {
-                        success: true,
-                        executionId: '123456789'
-                    }
+                    headers: JSON.stringify(headers, null, 2),
+                    body: JSON.stringify(body, null, 2)
                 };
                 
                 new PNotify({
@@ -1546,4 +1552,23 @@ app.controller('ListDockersitecontainer', function ($scope, $http) {
 
     // Add location service to the controller for the n8n URL
     $scope.location = window.location;
+
+    // Function to view execution data details
+    $scope.viewExecutionData = function(execution) {
+        // Pre-stringify JSON data for template
+        $scope.selectedExecution = {
+            id: execution.id,
+            status: execution.status,
+            startedAt: execution.startedAt,
+            duration: execution.duration,
+            mode: execution.mode,
+            inputData: JSON.stringify(execution.inputData || {}, null, 2),
+            outputData: JSON.stringify(execution.outputData || {}, null, 2),
+            error: execution.error
+        };
+        
+        if ($scope.selectedExecution.error && $scope.selectedExecution.error.stack) {
+            $scope.selectedExecution.error.stack = $scope.selectedExecution.error.stack.replace(/\\n/g, '\n');
+        }
+    };
 });

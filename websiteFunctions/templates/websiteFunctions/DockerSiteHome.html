@@ -1300,11 +1300,11 @@
                                                                     <div class="card-body">
                                                                         <div class="mb-3">
                                                                             <label>Response Headers</label>
-                                                                            <pre class="bg-light p-3">{{JSON.stringify(web.webhookTools.testResult.headers, null, 2)}}</pre>
+                                                                            <pre class="bg-light p-3">{$ web.webhookTools.testResult.headers $}</pre>
                                                                         </div>
                                                                         <div>
                                                                             <label>Response Body</label>
-                                                                            <pre class="bg-light p-3">{{JSON.stringify(web.webhookTools.testResult.body, null, 2)}}</pre>
+                                                                            <pre class="bg-light p-3">{$ web.webhookTools.testResult.body $}</pre>
                                                                         </div>
                                                                     </div>
                                                                 </div>
@@ -1717,10 +1717,10 @@
                                                 
                                                 <div class="tab-content mt-3">
                                                     <div id="input" class="tab-pane fade in active">
-                                                        <pre class="bg-light p-3">{{JSON.stringify(selectedExecution.inputData, null, 2)}}</pre>
+                                                        <pre class="bg-light p-3">{$ selectedExecution.inputData $}</pre>
                                                     </div>
                                                     <div id="output" class="tab-pane fade">
-                                                        <pre class="bg-light p-3">{{JSON.stringify(selectedExecution.outputData, null, 2)}}</pre>
+                                                        <pre class="bg-light p-3">{$ selectedExecution.outputData $}</pre>
                                                     </div>
                                                     <div id="error" class="tab-pane fade" ng-if="selectedExecution.error">
                                                         <div class="alert alert-danger">
@@ -1972,7 +1972,7 @@
                                                         <h5 class="card-title">Port Mappings</h5>
                                                     </div>
                                                     <div class="card-body">
-                                                        <pre>{{JSON.stringify(container.diagnosticResults.port_mappings, null, 2)}}</pre>
+                                                        <pre>{$ JSON.stringify(container.diagnosticResults.port_mappings) $}</pre>
                                                     </div>
                                                 </div>
                                             </div>
