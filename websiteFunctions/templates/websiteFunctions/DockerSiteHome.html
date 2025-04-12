@@ -951,10 +951,29 @@
                         }
                     }
                 }
+                
                 // If no version found in environment, try to extract from image tag
-                if (container.image && container.image.includes(':')) {
-                    return container.image.split(':')[1];
+                if (container.image) {
+                    console.log("Image format:", container.image);
+                    
+                    // Try to extract version using regex patterns
+                    // This handles various formats like:
+                    // - name:0.1.2
+                    // - name:v0.1.2
+                    // - name:version-0.1.2
+                    // - registry/name:0.1.2
+                    var versionMatch = container.image.match(/:([vV]?[0-9]+(\.[0-9]+)*(-[a-zA-Z0-9]+)?)/);
+                    if (versionMatch && versionMatch[1]) {
+                        return versionMatch[1];
+                    }
+                    
+                    // Simple fallback: just split by colon and use the last part
+                    if (container.image.includes(':')) {
+                        var parts = container.image.split(':');
+                        return parts[parts.length - 1];
+                    }
                 }
+                
                 return 'unknown';
             };
 
