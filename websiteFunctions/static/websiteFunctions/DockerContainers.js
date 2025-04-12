@@ -387,15 +387,43 @@ app.controller('ListDockersitecontainer', function ($scope, $http) {
                 $('#cyberpanelLoading').hide();
                 
                 if (response.data.status === 1) {
-                    new PNotify({
-                        title: 'Success!',
-                        text: 'Backup created successfully. ' + (response.data.message || ''),
-                        type: 'success'
-                    });
-                    
-                    // Add download link if provided
-                    if (response.data.download_url) {
-                        window.location.href = response.data.download_url;
+                    // Check if we have backup data
+                    if (response.data.backup) {
+                        // Create a download file from the backup data
+                        var backupData = response.data.backup;
+                        var fileName = response.data.filename || 'n8n-backup.json';
+                        
+                        // Convert the backup data to a JSON string
+                        var backupJson = JSON.stringify(backupData, null, 2);
+                        
+                        // Create a blob with the JSON data
+                        var blob = new Blob([backupJson], { type: 'application/json' });
+                        
+                        // Create a download link
+                        var downloadLink = document.createElement('a');
+                        downloadLink.href = URL.createObjectURL(blob);
+                        downloadLink.download = fileName;
+                        
+                        // Append to the document, trigger click, then remove
+                        document.body.appendChild(downloadLink);
+                        downloadLink.click();
+                        document.body.removeChild(downloadLink);
+                        
+                        // Clean up the URL.createObjectURL
+                        URL.revokeObjectURL(downloadLink.href);
+                        
+                        new PNotify({
+                            title: 'Success!',
+                            text: 'Backup created and downloaded successfully.',
+                            type: 'success'
+                        });
+                    } else {
+                        // No backup data but still a success
+                        new PNotify({
+                            title: 'Success!',
+                            text: response.data.message || 'Backup created successfully.',
+                            type: 'success'
+                        });
                     }
                 } else {
                     new PNotify({
