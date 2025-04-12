@@ -1,17 +1,6 @@
-// Add the json filter to the application
-app.filter('json', function() {
-    return function(input) {
-        if (input === undefined || input === null) {
-            return '';
-        }
-        return JSON.stringify(input, null, 2);
-    };
-});
-
 app.controller('ListDockersitecontainer', function ($scope, $http) {
     $scope.cyberPanelLoading = true;
     $scope.conatinerview = true;
-    $scope.JSON = window.JSON; // Make JSON available to templates
     $('#cyberpanelLoading').hide();
 
     // Format bytes to human readable
@@ -378,17 +367,18 @@ app.controller('ListDockersitecontainer', function ($scope, $http) {
     
     // Create a backup
     $scope.createBackup = function(container) {
-        // Initialize backup options if they don't exist
-        $scope.initBackupOptions(container);
-        
         $scope.cyberpanelLoading = false;
         $('#cyberpanelLoading').show();
+        
+        // Initialize backup options if they don't exist
+        $scope.initBackupOptions(container);
         
         var url = "/websites/n8n/create_backup";
         
         var data = {
             'container_id': container.id,
-            'include_credentials': container.backupOptions.includeCredentials
+            'include_credentials': container.backupOptions.includeCredentials,
+            'include_executions': container.backupOptions.includeExecutions
         };
         
         var config = {
@@ -397,181 +387,53 @@ app.controller('ListDockersitecontainer', function ($scope, $http) {
             }
         };
         
-        $http.post(url, data, config)
-            .then(function(response) {
-                $scope.cyberpanelLoading = true;
-                $('#cyberpanelLoading').hide();
+        $http.post(url, data, config).then(function(response) {
+            $scope.cyberpanelLoading = true;
+            $('#cyberpanelLoading').hide();
+            
+            if (response.data.status === 1) {
+                // Download the backup file
+                var backupData = response.data.backup;
+                var fileName = 'n8n-backup-' + new Date().toISOString().slice(0, 10) + '.json';
                 
-                if (response.data.status === 1) {
-                    // Download the backup file
-                    var backupData = response.data.backup;
-                    var fileName = 'n8n-backup-' + new Date().toISOString().slice(0, 10) + '.json';
-                    
-                    // Create a download link
-                    var a = document.createElement('a');
-                    var blob = new Blob([JSON.stringify(backupData)], {type: 'application/json'});
-                    var url = window.URL.createObjectURL(blob);
-                    a.href = url;
-                    a.download = fileName;
-                    a.click();
-                    window.URL.revokeObjectURL(url);
-                    
-                    new PNotify({
-                        title: 'Success!',
-                        text: 'Backup created and downloaded successfully.',
-                        type: 'success'
-                    });
-                } else {
-                    new PNotify({
-                        title: 'Operation Failed!',
-                        text: response.data.error_message || 'Unknown error occurred during backup creation',
-                        type: 'error'
-                    });
-                    console.error('Backup creation failed:', response.data);
-                }
-            })
-            .catch(function(error) {
-                $scope.cyberpanelLoading = true;
-                $('#cyberpanelLoading').hide();
+                // Create a download link
+                var a = document.createElement('a');
+                var blob = new Blob([JSON.stringify(backupData)], {type: 'application/json'});
+                var url = window.URL.createObjectURL(blob);
+                a.href = url;
+                a.download = fileName;
+                a.click();
+                window.URL.revokeObjectURL(url);
                 
-                var errorMessage = 'Connection disrupted, refresh the page.';
-                if (error.data && error.data.error_message) {
-                    errorMessage = error.data.error_message;
-                } else if (error.statusText) {
-                    errorMessage = 'Server error: ' + error.statusText;
-                }
-                
+                new PNotify({
+                    title: 'Success!',
+                    text: 'Backup created and downloaded successfully.',
+                    type: 'success'
+                });
+            } else {
                 new PNotify({
                     title: 'Operation Failed!',
-                    text: errorMessage,
+                    text: response.data.error_message,
                     type: 'error'
                 });
-                
-                console.error('Error creating backup:', error);
-            });
-    };
-    
-    // Diagnostic function to troubleshoot n8n connectivity issues
-    $scope.diagnoseN8n = function(container) {
-        $scope.cyberpanelLoading = false;
-        $('#cyberpanelLoading').show();
-        
-        var url = "/websites/n8n/diagnose";
-        
-        var data = {
-            'container_id': container.id
-        };
-        
-        var config = {
-            headers: {
-                'X-CSRFToken': getCookie('csrftoken')
             }
-        };
-        
-        $http.post(url, data, config)
-            .then(function(response) {
-                $scope.cyberpanelLoading = true;
-                $('#cyberpanelLoading').hide();
-                
-                if (response.data.status === 1) {
-                    var diagnostics = response.data.diagnostics;
-                    
-                    // Create a formatted diagnostic message
-                    var summaryMessage = "<h4>Diagnostic Results</h4>";
-                    summaryMessage += "<ul>";
-                    
-                    if (!diagnostics.container_exists) {
-                        summaryMessage += "<li>Container not found</li>";
-                    } else {
-                        summaryMessage += "<li>Container exists: <span style='color:green'>✓</span></li>";
-                        summaryMessage += "<li>Container status: " + diagnostics.container_status + "</li>";
-                        summaryMessage += "<li>Container running: " + (diagnostics.container_running ? "<span style='color:green'>✓</span>" : "<span style='color:red'>✗</span>") + "</li>";
-                        
-                        if (diagnostics.n8n_port_found) {
-                            summaryMessage += "<li>n8n port found (" + diagnostics.n8n_port + "): <span style='color:green'>✓</span></li>";
-                        } else {
-                            summaryMessage += "<li>n8n port (5678) not mapped: <span style='color:red'>✗</span></li>";
-                            var portMappingsString = JSON.stringify(diagnostics.port_mappings, null, 2);
-                            summaryMessage += "<li>Available ports: <pre>" + portMappingsString + "</pre></li>";
-                        }
-                        
-                        if (diagnostics.container_running && diagnostics.n8n_port_found) {
-                            if (diagnostics.api_accessible) {
-                                summaryMessage += "<li>n8n API accessible: <span style='color:green'>✓</span></li>";
-                                summaryMessage += "<li>Workflows endpoint: " + (diagnostics.workflows_accessible ? "<span style='color:green'>✓</span>" : "<span style='color:red'>✗</span>") + "</li>";
-                                summaryMessage += "<li>Credentials endpoint: " + (diagnostics.credentials_accessible ? "<span style='color:green'>✓</span>" : "<span style='color:red'>✗</span>") + "</li>";
-                                summaryMessage += "<li>Export endpoint: " + (diagnostics.export_accessible ? "<span style='color:green'>✓</span>" : "<span style='color:red'>✗</span>") + "</li>";
-                            } else {
-                                summaryMessage += "<li>n8n API accessible: <span style='color:red'>✗</span></li>";
-                                if (diagnostics.api_error) {
-                                    summaryMessage += "<li>Error: " + diagnostics.api_error + "</li>";
-                                }
-                            }
-                        }
-                    }
-                    
-                    summaryMessage += "</ul>";
-                    
-                    // Display diagnostic results in a modal
-                    var modal = "<div class='modal fade' id='diagnosticModal' tabindex='-1' role='dialog' aria-labelledby='diagnosticModalLabel'>" +
-                        "<div class='modal-dialog' role='document'>" +
-                        "<div class='modal-content'>" +
-                        "<div class='modal-header'>" +
-                        "<button type='button' class='close' data-dismiss='modal' aria-label='Close'><span aria-hidden='true'>&times;</span></button>" +
-                        "<h4 class='modal-title' id='diagnosticModalLabel'>n8n Diagnostics</h4>" +
-                        "</div>" +
-                        "<div class='modal-body'>" + summaryMessage + "</div>" +
-                        "<div class='modal-footer'>" +
-                        "<button type='button' class='btn btn-default' data-dismiss='modal'>Close</button>" +
-                        "</div>" +
-                        "</div>" +
-                        "</div>" +
-                        "</div>";
-                    
-                    // Add modal to document if it doesn't exist
-                    if ($('#diagnosticModal').length === 0) {
-                        $('body').append(modal);
-                    } else {
-                        $('#diagnosticModal .modal-body').html(summaryMessage);
-                    }
-                    
-                    // Show modal
-                    $('#diagnosticModal').modal('show');
-                    
-                } else {
-                    new PNotify({
-                        title: 'Diagnostic Failed',
-                        text: response.data.error_message || 'Failed to diagnose n8n container',
-                        type: 'error'
-                    });
-                }
-            })
-            .catch(function(error) {
-                $scope.cyberpanelLoading = true;
-                $('#cyberpanelLoading').hide();
-                
-                var errorMessage = 'Connection disrupted, refresh the page.';
-                if (error.data && error.data.error_message) {
-                    errorMessage = error.data.error_message;
-                } else if (error.statusText) {
-                    errorMessage = 'Server error: ' + error.statusText;
-                }
-                
-                new PNotify({
-                    title: 'Diagnostic Failed',
-                    text: errorMessage,
-                    type: 'error'
-                });
-                
-                console.error('Error during diagnosis:', error);
+        }, function(response) {
+            $scope.cyberpanelLoading = true;
+            $('#cyberpanelLoading').hide();
+            
+            new PNotify({
+                title: 'Operation Failed!',
+                text: 'Connection disrupted, refresh the page.',
+                type: 'error'
             });
+        });
     };
     
     // Restore from a backup
     $scope.restoreFromBackup = function(container) {
         // Check if a file has been selected
         var fileInput = document.getElementById('backupFile');
-        if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
+        if (!fileInput.files || fileInput.files.length === 0) {
             new PNotify({
                 title: 'Error!',
                 text: 'Please select a backup file to restore.',
@@ -585,7 +447,6 @@ app.controller('ListDockersitecontainer', function ($scope, $http) {
         
         // Read the backup file
         var reader = new FileReader();
-        
         reader.onload = function(e) {
             try {
                 var backupData = JSON.parse(e.target.result);
@@ -603,50 +464,36 @@ app.controller('ListDockersitecontainer', function ($scope, $http) {
                     }
                 };
                 
-                $http.post(url, data, config)
-                    .then(function(response) {
-                        $scope.cyberpanelLoading = true;
-                        $('#cyberpanelLoading').hide();
-                        
-                        if (response.data.status === 1) {
-                            new PNotify({
-                                title: 'Success!',
-                                text: 'Backup restored successfully.',
-                                type: 'success'
-                            });
-                            
-                            // Reset file input
-                            fileInput.value = '';
-                            
-                            // Refresh workflows after restore
-                            setTimeout(function() {
-                                $scope.refreshWorkflows(container);
-                            }, 1000);
-                        } else {
-                            new PNotify({
-                                title: 'Operation Failed!',
-                                text: response.data.error_message || 'Unknown error occurred',
-                                type: 'error'
-                            });
-                        }
-                    })
-                    .catch(function(error) {
-                        $scope.cyberpanelLoading = true;
-                        $('#cyberpanelLoading').hide();
-                        
-                        var errorMessage = 'Connection disrupted, refresh the page.';
-                        if (error.data && error.data.error_message) {
-                            errorMessage = error.data.error_message;
-                        }
-                        
+                $http.post(url, data, config).then(function(response) {
+                    $scope.cyberpanelLoading = true;
+                    $('#cyberpanelLoading').hide();
+                    
+                    if (response.data.status === 1) {
                         new PNotify({
-                            title: 'Operation Failed!',
-                            text: errorMessage,
-                            type: 'error'
+                            title: 'Success!',
+                            text: 'Backup restored successfully.',
+                            type: 'success'
                         });
                         
-                        console.error('Error restoring backup:', error);
+                        // Refresh workflows after restore
+                        $scope.refreshWorkflows(container);
+                    } else {
+                        new PNotify({
+                            title: 'Operation Failed!',
+                            text: response.data.error_message,
+                            type: 'error'
+                        });
+                    }
+                }, function(response) {
+                    $scope.cyberpanelLoading = true;
+                    $('#cyberpanelLoading').hide();
+                    
+                    new PNotify({
+                        title: 'Operation Failed!',
+                        text: 'Connection disrupted, refresh the page.',
+                        type: 'error'
                     });
+                });
             } catch (error) {
                 $scope.cyberpanelLoading = true;
                 $('#cyberpanelLoading').hide();
@@ -656,20 +503,7 @@ app.controller('ListDockersitecontainer', function ($scope, $http) {
                     text: 'Invalid backup file format: ' + error.message,
                     type: 'error'
                 });
-                
-                console.error('Error parsing backup file:', error);
             }
-        };
-        
-        reader.onerror = function() {
-            $scope.cyberpanelLoading = true;
-            $('#cyberpanelLoading').hide();
-            
-            new PNotify({
-                title: 'Error!',
-                text: 'Failed to read the backup file.',
-                type: 'error'
-            });
         };
         
         reader.readAsText(fileInput.files[0]);
@@ -1157,23 +991,18 @@ app.controller('ListDockersitecontainer', function ($scope, $http) {
                 $scope.cyberpanelLoading = true;
                 $('#cyberpanelLoading').hide();
                 
-                // Sample response data
-                var headers = {
-                    'content-type': 'application/json',
-                    'server': 'n8n'
-                };
-                
-                var body = {
-                    success: true,
-                    executionId: '123456789'
-                };
-                
-                // Simulate response with pre-stringified JSON
+                // Simulate response
                 container.webhookTools.testResult = {
                     status: 200,
                     statusText: 'OK',
-                    headers: JSON.stringify(headers, null, 2),
-                    body: JSON.stringify(body, null, 2)
+                    headers: {
+                        'content-type': 'application/json',
+                        'server': 'n8n'
+                    },
+                    body: {
+                        success: true,
+                        executionId: '123456789'
+                    }
                 };
                 
                 new PNotify({
@@ -1552,23 +1381,4 @@ app.controller('ListDockersitecontainer', function ($scope, $http) {
 
     // Add location service to the controller for the n8n URL
     $scope.location = window.location;
-
-    // Function to view execution data details
-    $scope.viewExecutionData = function(execution) {
-        // Pre-stringify JSON data for template
-        $scope.selectedExecution = {
-            id: execution.id,
-            status: execution.status,
-            startedAt: execution.startedAt,
-            duration: execution.duration,
-            mode: execution.mode,
-            inputData: JSON.stringify(execution.inputData || {}, null, 2),
-            outputData: JSON.stringify(execution.outputData || {}, null, 2),
-            error: execution.error
-        };
-        
-        if ($scope.selectedExecution.error && $scope.selectedExecution.error.stack) {
-            $scope.selectedExecution.error.stack = $scope.selectedExecution.error.stack.replace(/\\n/g, '\n');
-        }
-    };
 });

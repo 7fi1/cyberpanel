@@ -202,9 +202,7 @@ urlpatterns = [
     path('<domain>', views.domain, name='domain'),
 
     # N8N API endpoints
-    path('websites/n8n/get_workflows', views.n8n_api.get_n8n_workflows, name='get_n8n_workflows'),
-    path('websites/n8n/toggle_workflow', views.n8n_api.toggle_workflow, name='toggle_workflow'),
-    path('websites/n8n/create_backup', views.n8n_api.create_n8n_backup, name='create_n8n_backup'),
-    path('websites/n8n/restore_backup', views.n8n_api.restore_n8n_backup, name='restore_n8n_backup'),
-    path('websites/n8n/diagnose', views.n8n_api.diagnose_n8n_api, name='diagnose_n8n_api'),
+    path('n8n/get_workflows', views.n8n_api.get_n8n_workflows, name='get_n8n_workflows'),
+    path('n8n/toggle_workflow', views.n8n_api.toggle_workflow, name='toggle_workflow'),
+    path('n8n/create_backup', views.n8n_api.create_n8n_backup, name='create_n8n_backup'),
 ]
