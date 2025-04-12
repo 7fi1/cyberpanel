@@ -935,6 +935,44 @@
     </style>
 
     <script>
+        // Define controller in the CyberCP module
+        angular.module('CyberCP').controller('ListDockersitecontainer', function($scope, $http, $window, $location) {
+            $scope.ContainerList = [];
+            $scope.conatinerview = false;
+            $scope.cyberpanelLoading = true;
+            
+            // Add custom icon rendering for container actions
+            $scope.renderIcon = function(iconName) {
+                return '<i class="fa fa-' + iconName + '" aria-hidden="true"></i>';
+            };
+            
+            // Handle container actions
+            $scope.handleAction = function(action, container) {
+                switch(action) {
+                    case 'start':
+                        if (typeof $scope.startContainer === 'function') {
+                            $scope.startContainer(container.id, container.name);
+                        }
+                        break;
+                    case 'stop':
+                        if (typeof $scope.stopContainer === 'function') {
+                            $scope.stopContainer(container.id, container.name);
+                        }
+                        break;
+                    case 'restart':
+                        if (typeof $scope.restartContainer === 'function') {
+                            $scope.restartContainer(container.id, container.name);
+                        }
+                        break;
+                    case 'update':
+                        if (typeof $scope.updateContainer === 'function') {
+                            $scope.updateContainer(container.id, container.name);
+                        }
+                        break;
+                }
+            };
+        });
+
         $(document).ready(function () {
             $('[data-toggle="tooltip"]').tooltip();
             
@@ -957,41 +995,6 @@
                     }, 1000);
                 }
             });
-            
-            // Angular extension for container action handling
-            angular.module('WebsitesApp').run(['$rootScope', function($rootScope) {
-                // Add custom icon rendering for container actions
-                $rootScope.renderIcon = function(iconName) {
-                    return '<i class="fa fa-' + iconName + '" aria-hidden="true"></i>';
-                };
-                
-                // Inject handle action function if needed
-                if (typeof $rootScope.handleAction === 'undefined') {
-                    $rootScope.handleAction = function(action, container) {
-                        var controller = angular.element(document.querySelector('[ng-controller="ListDockersitecontainer"]')).scope();
-                        
-                        if (controller) {
-                            switch(action) {
-                                case 'start':
-                                    if (typeof controller.startContainer === 'function') {
-                                        controller.startContainer(container.id, container.name);
-                                    }
-                                    break;
-                                case 'stop':
-                                    if (typeof controller.stopContainer === 'function') {
-                                        controller.stopContainer(container.id, container.name);
-                                    }
-                                    break;
-                                case 'restart':
-                                    if (typeof controller.restartContainer === 'function') {
-                                        controller.restartContainer(container.id, container.name);
-                                    }
-                                    break;
-                            }
-                        }
-                    };
-                }
-            }]);
         });
     </script>
 
