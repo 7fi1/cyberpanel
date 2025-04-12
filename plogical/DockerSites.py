@@ -7,6 +7,7 @@ from random import randint
 import socket
 import shutil
 import docker
+import math
 
 sys.path.append('/usr/local/CyberCP')
 
@@ -740,22 +741,31 @@ services:
             # Calculate CPU percentage properly with safeguards
             try:
                 cpu_count = len(stats["cpu_stats"]["cpu_usage"]["percpu_usage"])
-                cpu_delta = float(stats["cpu_stats"]["cpu_usage"]["total_usage"]) - float(stats["precpu_stats"]["cpu_usage"]["total_usage"])
-                system_delta = float(stats["cpu_stats"]["system_cpu_usage"]) - float(stats["precpu_stats"]["system_cpu_usage"])
+                
+                # Get the total CPU usage
+                cpu_total = float(stats["cpu_stats"]["cpu_usage"]["total_usage"])
+                precpu_total = float(stats["precpu_stats"]["cpu_usage"]["total_usage"])
+                
+                # Get the system CPU usage
+                sys_total = float(stats["cpu_stats"]["system_cpu_usage"])
+                presys_total = float(stats["precpu_stats"]["system_cpu_usage"])
+                
+                # Calculate the change in CPU usage
+                cpu_delta = cpu_total - precpu_total
+                system_delta = sys_total - presys_total
                 
                 cpu_usage = 0.0
-                if system_delta > 0.0 and cpu_delta >= 0:
-                    # Calculate percentage per core
-                    cpu_percent = (cpu_delta / system_delta) * 100.0
+                if system_delta > 0 and cpu_delta >= 0:
+                    # Calculate the percentage of CPU time used
+                    cpu_percent = (cpu_delta / system_delta) * 100.0 * cpu_count
                     
-                    # Ensure it's not over 100% per core
-                    cpu_percent = min(cpu_percent, 100.0)
-                    
-                    # Multiply by number of cores
-                    cpu_usage = cpu_percent * cpu_count
-                    
-                    # Cap at total available CPU percentage (100% * number of cores)
-                    cpu_usage = min(cpu_usage, 100.0 * cpu_count)
+                    # Ensure it's a reasonable value (max 100% per core)
+                    cpu_usage = min(cpu_percent, 100.0 * cpu_count)
+                
+                # Ensure we return a valid number
+                if cpu_usage < 0 or math.isnan(cpu_usage):
+                    cpu_usage = 0.0
+                
             except Exception as e:
                 logging.writeToFile(f"CPU calculation error: {str(e)}")
                 cpu_usage = 0.0
