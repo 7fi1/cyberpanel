@@ -805,6 +805,54 @@
             display: flex;
             align-items: center;
         }
+
+        /* Simple, direct icon spacing fix */
+        i.fa {
+            margin-right: 10px;
+        }
+
+        /* Remove all the complex icon positioning that might be causing conflicts */
+        .fa {
+            position: static;
+            top: auto;
+            vertical-align: baseline;
+            display: inline-block;
+        }
+
+        /* Simple button styling */
+        .btn i.fa {
+            margin-right: 8px;
+        }
+
+        /* Container status fix */
+        .workflow-status {
+            display: inline-flex;
+            align-items: center;
+            margin-left: 10px;
+        }
+
+        .workflow-status i.fa {
+            margin-right: 5px;
+        }
+
+        /* Container header fix */
+        .container-header h3 {
+            display: flex;
+            align-items: center;
+        }
+
+        .container-header h3 > i.fa {
+            margin-right: 10px;
+        }
+
+        /* Remove any complex flexbox or positioning that might interfere */
+        .btn {
+            display: inline-block;
+        }
+
+        .btn span {
+            display: inline-block;
+        }
     </style>
 
     <script>
@@ -1036,33 +1084,28 @@
                         <div ng-if="web.environment && (web.environment | filter:'n8n').length > 0" class="container-card">
                             <div class="container-header">
                                 <h3>
-                                    <i class="fa fa-cube" aria-hidden="true"></i>
-                                    <span>n8n Container: {$ web.name $}</span>
+                                    <i class="fa fa-cube"></i>
+                                    n8n Container: {$ web.name $}
                                     <span class="workflow-status" ng-class="{'active': web.status === 'running', 'error': web.status !== 'running'}">
-                                        <i class="fa" ng-class="{'fa-check-circle fa-running': web.status === 'running', 'fa-times-circle fa-stopped': web.status !== 'running'}" aria-hidden="true"></i>
-                                        <span>{$ web.status $}</span>
+                                        <i class="fa" ng-class="{'fa-check-circle': web.status === 'running', 'fa-times-circle': web.status !== 'running'}"></i>
+                                        {$ web.status $}
                                     </span>
                                 </h3>
                                 <div class="btn-group">
                                     <button class="btn btn-success" ng-click="handleAction('start', web)" ng-if="web.status !== 'running'">
-                                        <i class="fa fa-play" aria-hidden="true"></i>
-                                        <span>Start</span>
+                                        <i class="fa fa-play"></i>Start
                                     </button>
                                     <button class="btn btn-warning" ng-click="handleAction('restart', web)" ng-if="web.status === 'running'">
-                                        <i class="fa fa-refresh" aria-hidden="true"></i>
-                                        <span>Restart</span>
+                                        <i class="fa fa-refresh"></i>Restart
                                     </button>
                                     <button class="btn btn-danger" ng-click="handleAction('stop', web)" ng-if="web.status === 'running'">
-                                        <i class="fa fa-stop" aria-hidden="true"></i>
-                                        <span>Stop</span>
+                                        <i class="fa fa-stop"></i>Stop
                                     </button>
                                     <button class="btn btn-primary" ng-click="openSettings(web)">
-                                        <i class="fa fa-cog" aria-hidden="true"></i>
-                                        <span>Settings</span>
+                                        <i class="fa fa-cog"></i>Settings
                                     </button>
                                     <a class="btn btn-info" href="http://{$ location.hostname $}:{$ web.ports['5678/tcp'][0].HostPort $}" target="_blank" ng-if="web.status === 'running'">
-                                        <i class="fa fa-external-link" aria-hidden="true"></i>
-                                        <span>Open n8n</span>
+                                        <i class="fa fa-external-link"></i>Open n8n
                                     </a>
                                 </div>
                             </div>
