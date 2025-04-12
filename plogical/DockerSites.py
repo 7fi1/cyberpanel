@@ -672,32 +672,25 @@ services:
 
             FilerValue = self.DockerAppName
 
-            # First try to find the containers by name pattern
-            containers = []
-            
-            # List all containers
-            all_containers = client.containers.list(all=True)
-            
-            # Filter containers that match our app name pattern (both exact and related containers like DB)
-            for container in all_containers:
-                if FilerValue in container.name:
-                    containers.append(container)
-            
+            # Define the label to filter containers
+            label_filter = {'name': FilerValue}
+
+
+            # List containers matching the label filter
+            containers = client.containers.list(filters=label_filter)
+
             json_data = "["
             checker = 0
 
             for container in containers:
-                # Get environment variables
-                environment = container.attrs.get('Config', {}).get('Env', [])
-                
+
                 dic = {
                     'id': container.short_id,
                     'name': container.name,
                     'status': container.status,
-                    'volumes': container.attrs['HostConfig']['Binds'] if 'HostConfig' in container.attrs and 'Binds' in container.attrs['HostConfig'] else [],
+                    'volumes': container.attrs['HostConfig']['Binds'] if 'HostConfig' in container.attrs else [],
                     'logs_50': container.logs(tail=50).decode('utf-8'),
-                    'ports': container.attrs['HostConfig']['PortBindings'] if 'HostConfig' in container.attrs and 'PortBindings' in container.attrs['HostConfig'] else {},
-                    'environment': environment
+                    'ports': container.attrs['HostConfig']['PortBindings'] if 'HostConfig' in container.attrs else {}
                 }
 
                 if checker == 0:

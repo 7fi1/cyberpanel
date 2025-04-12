@@ -6,13 +6,6 @@ from django.http import HttpResponse
 from loginSystem.models import Administrator
 from loginSystem.views import loadLoginPage
 import json
-import os
-import random
-import re
-import hashlib
-import time
-import datetime
-from . import n8n_api
 import plogical.CyberCPLogFileWriter as logging
 
 
@@ -24,7 +17,6 @@ from django.views.decorators.csrf import csrf_exempt
 from .dockerviews import startContainer as docker_startContainer
 from .dockerviews import stopContainer as docker_stopContainer
 from .dockerviews import restartContainer as docker_restartContainer
-from plogical.acl import ACLManager
 
 def loadWebsitesHome(request):
     val = request.session['userID']

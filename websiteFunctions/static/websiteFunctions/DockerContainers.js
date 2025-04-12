@@ -13,12 +13,6 @@ app.controller('ListDockersitecontainer', function ($scope, $http) {
         return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
     }
 
-    // Helper function to truncate container IDs
-    $scope.truncateId = function(id) {
-        if (!id) return '';
-        return id.substring(0, 12);
-    };
-
     $scope.getcontainer = function () {
         $('#cyberpanelLoading').show();
         url = "/docker/getDockersiteList";
@@ -206,229 +200,8 @@ app.controller('ListDockersitecontainer', function ($scope, $http) {
     // Initialize
     $scope.getcontainer();
 
-    // Version Management Functions for n8n
-    
-    // Check for updates
-    $scope.checkForUpdates = function(container) {
-        $scope.cyberpanelLoading = false;
-        $('#cyberpanelLoading').show();
-        
-        // Initialize version management if it doesn't exist
-        if (!container.n8nVersion) {
-            // Set a default version
-            container.n8nVersion = '0.214.3';
-            container.versionHistory = [
-                {
-                    version: '0.214.3',
-                    date: new Date('2023-06-15')
-                }
-            ];
-        }
-        
-        // Simulate checking for updates
-        setTimeout(function() {
-            $scope.$apply(function() {
-                $scope.cyberpanelLoading = true;
-                $('#cyberpanelLoading').hide();
-                
-                // Set the latest version (in a real implementation, this would come from an API)
-                container.latestVersion = '0.215.0';
-                
-                // Check if an update is available
-                container.updateAvailable = (container.latestVersion !== container.n8nVersion);
-                
-                new PNotify({
-                    title: 'Success!',
-                    text: container.updateAvailable ? 
-                        'Update available: ' + container.latestVersion : 
-                        'Your n8n is up to date.',
-                    type: 'success'
-                });
-            });
-        }, 1500);
-    };
-    
-    // Update n8n
-    $scope.updateN8N = function(container) {
-        $scope.cyberpanelLoading = false;
-        $('#cyberpanelLoading').show();
-        
-        // Simulate updating n8n
-        setTimeout(function() {
-            $scope.$apply(function() {
-                $scope.cyberpanelLoading = true;
-                $('#cyberpanelLoading').hide();
-                
-                // Update the version history
-                if (!container.versionHistory) {
-                    container.versionHistory = [];
-                }
-                
-                container.versionHistory.unshift({
-                    version: container.latestVersion,
-                    date: new Date()
-                });
-                
-                // Update the current version
-                container.n8nVersion = container.latestVersion;
-                
-                // Reset update available flag
-                container.updateAvailable = false;
-                
-                new PNotify({
-                    title: 'Success!',
-                    text: 'n8n updated to version ' + container.n8nVersion,
-                    type: 'success'
-                });
-            });
-        }, 3000);
-    };
-    
-    // Show release notes
-    $scope.showReleaseNotes = function(container) {
-        // Simulate opening release notes - in a real implementation, you would fetch these from n8n's GitHub or website
-        window.open('https://github.com/n8n-io/n8n/releases/tag/n8n@' + container.latestVersion, '_blank');
-    };
-    
-    // Show version change details
-    $scope.showVersionChanges = function(container, version) {
-        // Simulate opening version details - in a real implementation, you would fetch these from n8n's GitHub or website
-        window.open('https://github.com/n8n-io/n8n/releases/tag/n8n@' + version.version, '_blank');
-    };
-
-    // Function to display top processes for a container
-    $scope.showTop = function(containerId) {
-        $scope.cyberpanelLoading = false;
-        $('#cyberpanelLoading').show();
-        
-        var url = "/docker/containerTop";
-        
-        var data = {
-            'name': $('#sitename').html(),
-            'id': containerId
-        };
-        
-        var config = {
-            headers: {
-                'X-CSRFToken': getCookie('csrftoken')
-            }
-        };
-        
-        $http.post(url, data, config).then(function(response) {
-            $scope.cyberpanelLoading = true;
-            $('#cyberpanelLoading').hide();
-            
-            if (response.data.status === 1) {
-                // Find the container and update its process info
-                for (var i = 0; i < $scope.ContainerList.length; i++) {
-                    if ($scope.ContainerList[i].id === containerId) {
-                        $scope.ContainerList[i].topHead = response.data.data[1].Titles;
-                        $scope.ContainerList[i].topProcesses = response.data.data[1].Processes;
-                        break;
-                    }
-                }
-                
-                // Open the processes modal
-                $('#processes').modal('show');
-                
-                // Also update the processes in the global scope for the modal
-                $scope.topHead = response.data.data[1].Titles;
-                $scope.topProcesses = response.data.data[1].Processes;
-            } else {
-                new PNotify({
-                    title: 'Operation Failed!',
-                    text: response.data.error_message,
-                    type: 'error'
-                });
-            }
-        }, function(error) {
-            $scope.cyberpanelLoading = true;
-            $('#cyberpanelLoading').hide();
-            
-            new PNotify({
-                title: 'Operation Failed!',
-                text: 'Connection disrupted, refresh the page.',
-                type: 'error'
-            });
-        });
-    };
-    
-    // Helper function to handle container actions
-    $scope.handleAction = function(action, container) {
-        $scope.cyberpanelLoading = false;
-        $('#cyberpanelLoading').show();
-        
-        var url = "/docker/";
-        switch(action) {
-            case 'start':
-                url += "startContainer";
-                break;
-            case 'stop':
-                url += "stopContainer";
-                break;
-            case 'restart':
-                url += "restartContainer";
-                break;
-            default:
-                console.error("Unknown action:", action);
-                $('#cyberpanelLoading').hide();
-                return;
-        }
-
-        var data = {
-            'name': $('#sitename').html(),
-            'container_id': container.id
-        };
-
-        var config = {
-            headers: {
-                'X-CSRFToken': getCookie('csrftoken')
-            }
-        };
-
-        $http.post(url, data, config).then(
-            function(response) {
-                $scope.cyberpanelLoading = true;
-                $('#cyberpanelLoading').hide();
-
-                if (response.data.status === 1) {
-                    new PNotify({
-                        title: 'Success!',
-                        text: 'Container ' + action + ' successful.',
-                        type: 'success'
-                    });
-                    
-                    // Update container status after action
-                    container.status = action === 'stop' ? 'stopped' : 'running';
-                    
-                    // Refresh container info after short delay to allow Docker to update
-                    setTimeout(function() {
-                        $scope.getcontainer();
-                    }, 1000);
-                } else {
-                    new PNotify({
-                        title: 'Operation Failed!',
-                        text: response.data.error_message || 'An unknown error occurred.',
-                        type: 'error'
-                    });
-                }
-            },
-            function(error) {
-                $scope.cyberpanelLoading = true;
-                $('#cyberpanelLoading').hide();
-                
-                new PNotify({
-                    title: 'Operation Failed!',
-                    text: 'Connection disrupted or server error occurred.',
-                    type: 'error'
-                });
-                
-                console.error("Error during container action:", error);
-            }
-        );
-    };
-
     // Keep your existing functions
+    $scope.recreateappcontainer = function() { /* ... */ };
     $scope.refreshStatus = function() { /* ... */ };
     $scope.restarthStatus = function() { /* ... */ };
     $scope.StopContainerAPP = function() { /* ... */ };
@@ -551,7 +324,7 @@ app.controller('ListDockersitecontainer', function ($scope, $http) {
                 });
                 $('#settings').modal('hide');
                 // Refresh container info after update
-                $scope.getcontainer();
+                $scope.Lunchcontainer($scope.selectedContainer.id);
             } else {
                 new PNotify({
                     title: 'Operation Failed!',
@@ -570,32 +343,6 @@ app.controller('ListDockersitecontainer', function ($scope, $http) {
                 type: 'error'
             });
         }
-    };
-
-    // Add volume and environment field functions
-    $scope.addVolField = function() {
-        if (!$scope.volList) {
-            $scope.volList = {};
-            $scope.volListNumber = 0;
-        }
-        
-        $scope.volList[$scope.volListNumber] = {'dest': '', 'src': ''};
-        $scope.volListNumber++;
-    };
-    
-    $scope.removeVolField = function() {
-        if ($scope.volListNumber > 0) {
-            $scope.volListNumber--;
-            delete $scope.volList[$scope.volListNumber];
-        }
-    };
-    
-    $scope.addEnvField = function() {
-        if (!$scope.envList) {
-            $scope.envList = {};
-        }
-        
-        $scope.envList[Object.keys($scope.envList).length] = {'name': '', 'value': ''};
     };
 
     // Add location service to the controller for the n8n URL
