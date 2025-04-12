@@ -178,7 +178,9 @@
         }
 
         .btn i {
-            margin-right: 6px;
+            position: relative;
+            top: 0;
+            margin-right: 5px;
         }
 
         .btn:hover {
@@ -246,12 +248,13 @@
         }
 
         /* Status indicators */
-        .status-indicator {
+        .status-running,
+        .status-stopped {
             display: inline-block;
-            width: 10px;
-            height: 10px;
+            width: 8px;
+            height: 8px;
             border-radius: 50%;
-            margin-right: 6px;
+            margin-right: 5px;
         }
 
         .status-running {
@@ -369,6 +372,102 @@
             border-top: 1px solid #f5f5f5;
             padding: 15px 20px;
         }
+
+        /* Icon fixes */
+        .fa {
+            display: inline-block;
+            margin-right: 5px;
+            font-size: 14px;
+            width: 16px;
+            text-align: center;
+        }
+
+        /* Container header icon styling */
+        .container-header h3 .fa-cube {
+            color: var(--dark-color);
+            margin-right: 8px;
+        }
+
+        /* Add additional icon paths for backward compatibility */
+        .fa-network-wired:before {
+            content: "\f0ec"; /* use sync/exchange icon instead */
+        }
+
+        .fa-file-text:before {
+            content: "\f15c"; /* use file-text-o icon instead */
+        }
+
+        .fa-database:before {
+            content: "\f1c0"; /* use database icon */
+        }
+
+        .fa-area-chart:before {
+            content: "\f1fe"; /* use area-chart icon */
+        }
+
+        .page-title {
+            margin-bottom: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .page-title h2 {
+            font-size: 24px;
+            margin: 0;
+            color: var(--dark-color);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+        }
+
+        .page-title h2 i {
+            margin-right: 10px;
+            color: var(--primary-color);
+        }
+
+        .page-title p {
+            color: #777;
+            margin: 5px 0 0 0;
+            font-size: 14px;
+        }
+
+        .create-btn {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 4px;
+            box-shadow: var(--box-shadow);
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            text-decoration: none;
+        }
+
+        .create-btn:hover {
+            background-color: #2980b9;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: var(--box-shadow-hover);
+            text-decoration: none;
+        }
+
+        .create-btn i {
+            margin-right: 6px;
+        }
+
+        /* Fix disabled state for buttons */
+        .btn[disabled], 
+        .btn.disabled {
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        /* Fix for loading spinner */
+        .loading-spinner {
+            margin-right: 6px;
+            display: inline-block;
+        }
     </style>
 
     <script>
@@ -400,12 +499,19 @@
 
     <div class="container" ng-controller="ListDockersitecontainer">
 
-        <div id="page-title">
-            <h2 id="domainNamePage">{% trans "Containers" %} <img id="cyberpanelLoading" ng-hide="cyberpanelLoading"
-                                             src="{% static 'images/loading.gif' %}">
-                <a class="pull-right btn btn-primary" href="{% url "CreateDockersite" %}">Create</a>
-            </h2>
-            <p>{% trans "Manage containers on server" %}</p>
+        <div class="page-title">
+            <div>
+                <h2 id="domainNamePage">
+                    <i class="fa fa-cubes"></i> {% trans "Containers" %} 
+                    <span class="loading-spinner" ng-hide="cyberpanelLoading">
+                        <img src="{% static 'images/loading.gif' %}">
+                    </span>
+                </h2>
+                <p>{% trans "Manage containers on server" %}</p>
+            </div>
+            <a class="create-btn" href="{% url "CreateDockersite" %}">
+                <i class="fa fa-plus"></i> {% trans "Create Container" %}
+            </a>
         </div>
 
         <div class="panel" ng-hide="true">
@@ -557,8 +663,8 @@
                                 <h3 class="m-0">
                                     <i class="fa fa-cube"></i> n8n Container: {$ web.name $}
                                     <span class="workflow-status" ng-class="{'active': web.status === 'running', 'error': web.status !== 'running'}">
-                                        <i ng-if="web.status === 'running'" class="fa fa-circle status-running"></i>
-                                        <i ng-if="web.status !== 'running'" class="fa fa-circle status-stopped"></i>
+                                        <span ng-if="web.status === 'running'" class="status-running"></span>
+                                        <span ng-if="web.status !== 'running'" class="status-stopped"></span>
                                         {$ web.status $}
                                     </span>
                                 </h3>
@@ -585,7 +691,7 @@
                                 <div class="row">
                                     <div class="col-md-6">
                                         <div class="info-box">
-                                            <h4><i class="fa fa-area-chart"></i> Resource Usage</h4>
+                                            <h4><i class="fa fa-bar-chart"></i> Resource Usage</h4>
                                             <div class="metrics-grid">
                                                 <div class="metric-card">
                                                     <h5>Memory Usage</h5>
@@ -619,7 +725,7 @@
                                         </div>
 
                                         <div class="info-box">
-                                            <h4><i class="fa fa-network-wired"></i> Network & Ports</h4>
+                                            <h4><i class="fa fa-exchange"></i> Network & Ports</h4>
                                             <div ng-if="web.ports" class="table-responsive">
                                                 <table class="table table-hover">
                                                     <thead>
@@ -648,7 +754,7 @@
 
                                     <div class="col-md-6">
                                         <div class="info-box">
-                                            <h4><i class="fa fa-database"></i> Volumes</h4>
+                                            <h4><i class="fa fa-hdd-o"></i> Volumes</h4>
                                             <div ng-if="web.volumes && web.volumes.length > 0" class="table-responsive">
                                                 <table class="table table-hover">
                                                     <thead>
@@ -671,7 +777,7 @@
                                         </div>
 
                                         <div class="info-box">
-                                            <h4><i class="fa fa-key"></i> Environment Variables</h4>
+                                            <h4><i class="fa fa-code"></i> Environment Variables</h4>
                                             <div ng-if="web.environment && web.environment.length > 0" class="table-responsive">
                                                 <table class="table table-hover">
                                                     <thead>
@@ -697,7 +803,7 @@
 
                                 <div class="info-box">
                                     <h4>
-                                        <i class="fa fa-file-text"></i> {% trans "Logs" %}
+                                        <i class="fa fa-file-text-o"></i> {% trans "Logs" %}
                                         <button class="btn btn-sm btn-primary pull-right" ng-click="getcontainerlog(web.id)">
                                             <i class="fa fa-refresh"></i> Refresh
                                         </button>
@@ -713,8 +819,8 @@
                                 <h3>
                                     <i class="fa fa-cube"></i> {% trans "Container: " %} {$ web.name $}
                                     <span class="workflow-status" ng-class="{'active': web.status === 'running', 'error': web.status !== 'running'}">
-                                        <i ng-if="web.status === 'running'" class="fa fa-circle status-running"></i>
-                                        <i ng-if="web.status !== 'running'" class="fa fa-circle status-stopped"></i>
+                                        <span ng-if="web.status === 'running'" class="status-running"></span>
+                                        <span ng-if="web.status !== 'running'" class="status-stopped"></span>
                                         {$ web.status $}
                                     </span>
                                 </h3>
@@ -758,7 +864,7 @@
                                         </div>
 
                                         <div class="info-box">
-                                            <h4><i class="fa fa-area-chart"></i> Resource Usage</h4>
+                                            <h4><i class="fa fa-bar-chart"></i> Resource Usage</h4>
                                             <div class="mb-3">
                                                 <label class="mb-2">Memory Usage: {$ web.memoryUsage $}</label>
                                                 <div class="progress">
@@ -786,7 +892,7 @@
 
                                     <div class="col-md-6">
                                         <div class="info-box">
-                                            <h4><i class="fa fa-network-wired"></i> Network & Ports</h4>
+                                            <h4><i class="fa fa-exchange"></i> Network & Ports</h4>
                                             <div ng-if="web.ports" class="table-responsive">
                                                 <table class="table table-hover">
                                                     <thead>
@@ -813,7 +919,7 @@
                                         </div>
 
                                         <div class="info-box">
-                                            <h4><i class="fa fa-database"></i> Volumes</h4>
+                                            <h4><i class="fa fa-hdd-o"></i> Volumes</h4>
                                             <div ng-if="web.volumes && web.volumes.length > 0" class="table-responsive">
                                                 <table class="table table-hover">
                                                     <thead>
@@ -840,7 +946,7 @@
                                 <div class="row">
                                     <div class="col-md-12">
                                         <div class="info-box">
-                                            <h4><i class="fa fa-key"></i> Environment Variables</h4>
+                                            <h4><i class="fa fa-code"></i> Environment Variables</h4>
                                             <div ng-if="web.environment && web.environment.length > 0" class="table-responsive">
                                                 <table class="table table-hover">
                                                     <thead>
@@ -866,7 +972,7 @@
 
                                 <div class="info-box">
                                     <h4>
-                                        <i class="fa fa-file-text"></i> {% trans "Logs" %}
+                                        <i class="fa fa-file-text-o"></i> {% trans "Logs" %}
                                         <button class="btn btn-sm btn-primary pull-right" ng-click="getcontainerlog(web.id)">
                                             <i class="fa fa-refresh"></i> Refresh
                                         </button>
@@ -936,7 +1042,7 @@
                                     </div>
 
                                     <div class="info-box" ng-class="{'disabled': !envConfirmation}">
-                                        <h4><i class="fa fa-key"></i> Environment Variables</h4>
+                                        <h4><i class="fa fa-code"></i> Environment Variables</h4>
                                         
                                         <div ng-repeat="env in envList track by $index" class="form-group">
                                             <div class="col-sm-5">
@@ -968,7 +1074,7 @@
                                     </div>
 
                                     <div class="info-box" ng-class="{'disabled': !envConfirmation}">
-                                        <h4><i class="fa fa-database"></i> Volume Mappings</h4>
+                                        <h4><i class="fa fa-hdd-o"></i> Volume Mappings</h4>
                                         
                                         <div ng-repeat="volume in volList track by $index" class="form-group">
                                             <div class="col-sm-5">
