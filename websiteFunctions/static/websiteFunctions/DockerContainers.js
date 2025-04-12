@@ -74,6 +74,7 @@ app.controller('ListDockersitecontainer', function ($scope, $http) {
 
             if (response.data.status === 1) {
                 var containerInfo = response.data.data[1];
+                console.log("Container Info received:", containerInfo);
                 
                 // Find the container in the list and update its information
                 for (var i = 0; i < $scope.ContainerList.length; i++) {
@@ -83,6 +84,7 @@ app.controller('ListDockersitecontainer', function ($scope, $http) {
                         $scope.ContainerList[i].created = new Date(containerInfo.created);
                         $scope.ContainerList[i].uptime = containerInfo.uptime;
                         $scope.ContainerList[i].image = containerInfo.image;
+                        console.log("Updated container image:", $scope.ContainerList[i].image);
 
                         // Resource Usage
                         var memoryBytes = containerInfo.memory_usage;
@@ -98,6 +100,7 @@ app.controller('ListDockersitecontainer', function ($scope, $http) {
 
                         // Environment Variables
                         $scope.ContainerList[i].environment = containerInfo.environment;
+                        console.log("Container environment:", $scope.ContainerList[i].environment);
                         break;
                     }
                 }

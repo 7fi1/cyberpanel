@@ -943,10 +943,14 @@
             
             // Function to extract n8n version from environment variables
             $scope.getN8nVersion = function(container) {
+                console.log("Getting version for container:", container);
+                
                 if (container.environment) {
+                    console.log("Checking environment variables:", container.environment);
                     for (var i = 0; i < container.environment.length; i++) {
                         var env = container.environment[i];
                         if (env.startsWith('N8N_VERSION=')) {
+                            console.log("Found N8N_VERSION:", env);
                             return env.split('=')[1];
                         }
                     }
@@ -954,26 +958,25 @@
                 
                 // If no version found in environment, try to extract from image tag
                 if (container.image) {
-                    console.log("Image format:", container.image);
+                    console.log("Checking image tag:", container.image);
                     
                     // Try to extract version using regex patterns
-                    // This handles various formats like:
-                    // - name:0.1.2
-                    // - name:v0.1.2
-                    // - name:version-0.1.2
-                    // - registry/name:0.1.2
                     var versionMatch = container.image.match(/:([vV]?[0-9]+(\.[0-9]+)*(-[a-zA-Z0-9]+)?)/);
                     if (versionMatch && versionMatch[1]) {
+                        console.log("Found version via regex:", versionMatch[1]);
                         return versionMatch[1];
                     }
                     
                     // Simple fallback: just split by colon and use the last part
                     if (container.image.includes(':')) {
                         var parts = container.image.split(':');
-                        return parts[parts.length - 1];
+                        var version = parts[parts.length - 1];
+                        console.log("Found version via split:", version);
+                        return version;
                     }
                 }
                 
+                console.log("No version found, returning unknown");
                 return 'unknown';
             };
 
