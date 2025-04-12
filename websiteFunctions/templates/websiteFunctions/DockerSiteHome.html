@@ -611,9 +611,9 @@
                                             <a href="javascript:void(0)" class="btn btn-sm btn-primary" ng-click="openSettings(container)">
                                                 <i class="fas fa-cog"></i> Settings
                                             </a>
-                                            <a href="javascript:void(0)" class="btn btn-sm btn-info" ng-click="diagnoseN8n(container)">
+                                            <button class="btn btn-primary" ng-click="diagnoseN8n(web)">
                                                 <i class="fas fa-stethoscope"></i> Run Diagnostics
-                                            </a>
+                                            </button>
                                         </div>
                                     </div>
                                 </h2>
@@ -714,9 +714,9 @@
                                         <a href="javascript:void(0)" class="btn btn-sm btn-primary" ng-click="openSettings(container)">
                                             <i class="fas fa-cog"></i> Settings
                                         </a>
-                                        <a href="javascript:void(0)" class="btn btn-sm btn-info" ng-click="diagnoseN8n(container)">
+                                        <button class="btn btn-primary" ng-click="diagnoseN8n(web)">
                                             <i class="fas fa-stethoscope"></i> Run Diagnostics
-                                        </a>
+                                        </button>
                                     </div>
                                     <button class="quick-action-btn btn-primary" ng-click="openSettings(web)">
                                         <i class="fa fa-cog"></i> Settings
@@ -724,6 +724,9 @@
                                     <a class="quick-action-btn btn-info" href="http://{$ location.hostname $}:{$ web.ports['5678/tcp'][0].HostPort $}" target="_blank" ng-if="web.status === 'running'">
                                         <i class="fa fa-external-link"></i> Open n8n
                                     </a>
+                                    <button class="quick-action-btn btn-warning" ng-click="diagnoseN8n(web)" title="Run diagnostics">
+                                        <i class="fa fa-stethoscope"></i> Diagnose
+                                    </button>
                                 </div>
                             </div>
                             
@@ -844,7 +847,7 @@
                                                 <div class="form-group">
                                                     <label class="control-label">Select backup file</label>
                                                     <div class="input-group">
-                                                        <input type="file" id="backupFile" class="form-control" ng-model="web.restoreFile">
+                                                        <input type="file" id="backupFile" class="form-control">
                                                         <span class="input-group-btn">
                                                             <button class="btn btn-primary" ng-click="restoreFromBackup(web)">
                                                                 <i class="fa fa-upload"></i> Restore
@@ -1297,11 +1300,11 @@
                                                                     <div class="card-body">
                                                                         <div class="mb-3">
                                                                             <label>Response Headers</label>
-                                                                            <pre class="bg-light p-3">{$ web.webhookTools.testResult.headers | json $}</pre>
+                                                                            <pre class="bg-light p-3">{{JSON.stringify(web.webhookTools.testResult.headers, null, 2)}}</pre>
                                                                         </div>
                                                                         <div>
                                                                             <label>Response Body</label>
-                                                                            <pre class="bg-light p-3">{$ web.webhookTools.testResult.body | json $}</pre>
+                                                                            <pre class="bg-light p-3">{{JSON.stringify(web.webhookTools.testResult.body, null, 2)}}</pre>
                                                                         </div>
                                                                     </div>
                                                                 </div>
@@ -1714,10 +1717,10 @@
                                                 
                                                 <div class="tab-content mt-3">
                                                     <div id="input" class="tab-pane fade in active">
-                                                        <pre class="bg-light p-3">{$ selectedExecution.inputData | json $}</pre>
+                                                        <pre class="bg-light p-3">{{JSON.stringify(selectedExecution.inputData, null, 2)}}</pre>
                                                     </div>
                                                     <div id="output" class="tab-pane fade">
-                                                        <pre class="bg-light p-3">{$ selectedExecution.outputData | json $}</pre>
+                                                        <pre class="bg-light p-3">{{JSON.stringify(selectedExecution.outputData, null, 2)}}</pre>
                                                     </div>
                                                     <div id="error" class="tab-pane fade" ng-if="selectedExecution.error">
                                                         <div class="alert alert-danger">
@@ -1883,7 +1886,7 @@
                                 <div class="card-header">
                                     <h5 class="card-title">N8n API Diagnostics</h5>
                                     <div class="card-tools">
-                                        <button class="btn btn-primary" ng-click="diagnoseN8n(container)">
+                                        <button class="btn btn-primary" ng-click="diagnoseN8n(web)">
                                             <i class="fas fa-stethoscope"></i> Run Diagnostics
                                         </button>
                                     </div>
@@ -1969,7 +1972,7 @@
                                                         <h5 class="card-title">Port Mappings</h5>
                                                     </div>
                                                     <div class="card-body">
-                                                        <pre>{{container.diagnosticResults.port_mappings | json}}</pre>
+                                                        <pre>{{JSON.stringify(container.diagnosticResults.port_mappings, null, 2)}}</pre>
                                                     </div>
                                                 </div>
                                             </div>
@@ -1982,7 +1985,7 @@
                                                         <h5 class="card-title">API Error</h5>
                                                     </div>
                                                     <div class="card-body">
-                                                        <pre class="text-danger">{{container.diagnosticResults.api_error}}</pre>
+                                                        <pre class="text-danger">{{JSON.stringify(container.diagnosticResults.api_error, null, 2)}}</pre>
                                                     </div>
                                                 </div>
                                             </div>

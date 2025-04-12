@@ -1,6 +1,17 @@
+// Add the json filter to the application
+app.filter('json', function() {
+    return function(input) {
+        if (input === undefined || input === null) {
+            return '';
+        }
+        return JSON.stringify(input, null, 2);
+    };
+});
+
 app.controller('ListDockersitecontainer', function ($scope, $http) {
     $scope.cyberPanelLoading = true;
     $scope.conatinerview = true;
+    $scope.JSON = window.JSON; // Make JSON available to templates
     $('#cyberpanelLoading').hide();
 
     // Format bytes to human readable
@@ -465,57 +476,66 @@ app.controller('ListDockersitecontainer', function ($scope, $http) {
                 if (response.data.status === 1) {
                     var diagnostics = response.data.diagnostics;
                     
-                    // Initialize diagnostic results if not exists
-                    if (!container.diagnosticResults) {
-                        container.diagnosticResults = {};
-                    }
-                    
-                    // Store diagnostic results
-                    container.diagnosticResults = diagnostics;
-                    container.showDiagnostics = true;
-                    
-                    // Show summary notification
-                    var summaryMessage = "";
+                    // Create a formatted diagnostic message
+                    var summaryMessage = "<h4>Diagnostic Results</h4>";
+                    summaryMessage += "<ul>";
                     
                     if (!diagnostics.container_exists) {
-                        summaryMessage = "Container not found";
-                    } else if (!diagnostics.container_running) {
-                        summaryMessage = "Container exists but is not running. Current status: " + diagnostics.container_status;
-                    } else if (!diagnostics.n8n_port_found) {
-                        summaryMessage = "Container is running but n8n port (5678) is not mapped. Available ports: " + 
-                            JSON.stringify(diagnostics.port_mappings);
-                    } else if (!diagnostics.api_accessible) {
-                        summaryMessage = "n8n port found but API is not accessible. Check if n8n is running inside the container.";
-                        if (diagnostics.api_error) {
-                            summaryMessage += " Error: " + diagnostics.api_error;
-                        }
+                        summaryMessage += "<li>Container not found</li>";
                     } else {
-                        summaryMessage = "n8n API is accessible. Endpoints status:";
-                        if (diagnostics.workflows_accessible) {
-                            summaryMessage += " Workflows: OK";
+                        summaryMessage += "<li>Container exists: <span style='color:green'>✓</span></li>";
+                        summaryMessage += "<li>Container status: " + diagnostics.container_status + "</li>";
+                        summaryMessage += "<li>Container running: " + (diagnostics.container_running ? "<span style='color:green'>✓</span>" : "<span style='color:red'>✗</span>") + "</li>";
+                        
+                        if (diagnostics.n8n_port_found) {
+                            summaryMessage += "<li>n8n port found (" + diagnostics.n8n_port + "): <span style='color:green'>✓</span></li>";
                         } else {
-                            summaryMessage += " Workflows: Failed";
+                            summaryMessage += "<li>n8n port (5678) not mapped: <span style='color:red'>✗</span></li>";
+                            summaryMessage += "<li>Available ports: <pre>" + JSON.stringify(diagnostics.port_mappings, null, 2) + "</pre></li>";
                         }
                         
-                        if (diagnostics.credentials_accessible) {
-                            summaryMessage += " | Credentials: OK";
-                        } else {
-                            summaryMessage += " | Credentials: Failed";
-                        }
-                        
-                        if (diagnostics.export_accessible) {
-                            summaryMessage += " | Export: OK";
-                        } else {
-                            summaryMessage += " | Export: Failed";
+                        if (diagnostics.container_running && diagnostics.n8n_port_found) {
+                            if (diagnostics.api_accessible) {
+                                summaryMessage += "<li>n8n API accessible: <span style='color:green'>✓</span></li>";
+                                summaryMessage += "<li>Workflows endpoint: " + (diagnostics.workflows_accessible ? "<span style='color:green'>✓</span>" : "<span style='color:red'>✗</span>") + "</li>";
+                                summaryMessage += "<li>Credentials endpoint: " + (diagnostics.credentials_accessible ? "<span style='color:green'>✓</span>" : "<span style='color:red'>✗</span>") + "</li>";
+                                summaryMessage += "<li>Export endpoint: " + (diagnostics.export_accessible ? "<span style='color:green'>✓</span>" : "<span style='color:red'>✗</span>") + "</li>";
+                            } else {
+                                summaryMessage += "<li>n8n API accessible: <span style='color:red'>✗</span></li>";
+                                if (diagnostics.api_error) {
+                                    summaryMessage += "<li>Error: " + diagnostics.api_error + "</li>";
+                                }
+                            }
                         }
                     }
                     
-                    new PNotify({
-                        title: 'Diagnostic Results',
-                        text: summaryMessage,
-                        type: 'info',
-                        hide: false
-                    });
+                    summaryMessage += "</ul>";
+                    
+                    // Display diagnostic results in a modal
+                    var modal = "<div class='modal fade' id='diagnosticModal' tabindex='-1' role='dialog' aria-labelledby='diagnosticModalLabel'>" +
+                        "<div class='modal-dialog' role='document'>" +
+                        "<div class='modal-content'>" +
+                        "<div class='modal-header'>" +
+                        "<button type='button' class='close' data-dismiss='modal' aria-label='Close'><span aria-hidden='true'>&times;</span></button>" +
+                        "<h4 class='modal-title' id='diagnosticModalLabel'>n8n Diagnostics</h4>" +
+                        "</div>" +
+                        "<div class='modal-body'>" + summaryMessage + "</div>" +
+                        "<div class='modal-footer'>" +
+                        "<button type='button' class='btn btn-default' data-dismiss='modal'>Close</button>" +
+                        "</div>" +
+                        "</div>" +
+                        "</div>" +
+                        "</div>";
+                    
+                    // Add modal to document if it doesn't exist
+                    if ($('#diagnosticModal').length === 0) {
+                        $('body').append(modal);
+                    } else {
+                        $('#diagnosticModal .modal-body').html(summaryMessage);
+                    }
+                    
+                    // Show modal
+                    $('#diagnosticModal').modal('show');
                     
                 } else {
                     new PNotify({
@@ -550,7 +570,7 @@ app.controller('ListDockersitecontainer', function ($scope, $http) {
     $scope.restoreFromBackup = function(container) {
         // Check if a file has been selected
         var fileInput = document.getElementById('backupFile');
-        if (!fileInput.files || fileInput.files.length === 0) {
+        if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
             new PNotify({
                 title: 'Error!',
                 text: 'Please select a backup file to restore.',
@@ -594,8 +614,13 @@ app.controller('ListDockersitecontainer', function ($scope, $http) {
                                 type: 'success'
                             });
                             
+                            // Reset file input
+                            fileInput.value = '';
+                            
                             // Refresh workflows after restore
-                            $scope.refreshWorkflows(container);
+                            setTimeout(function() {
+                                $scope.refreshWorkflows(container);
+                            }, 1000);
                         } else {
                             new PNotify({
                                 title: 'Operation Failed!',
