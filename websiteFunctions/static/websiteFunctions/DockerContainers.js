@@ -13,6 +13,12 @@ app.controller('ListDockersitecontainer', function ($scope, $http) {
         return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
     }
 
+    // Helper function to truncate container IDs
+    $scope.truncateId = function(id) {
+        if (!id) return '';
+        return id.substring(0, 12);
+    };
+
     $scope.getcontainer = function () {
         $('#cyberpanelLoading').show();
         url = "/docker/getDockersiteList";
@@ -397,7 +403,7 @@ app.controller('ListDockersitecontainer', function ($scope, $http) {
                     
                     // Refresh container info after short delay to allow Docker to update
                     setTimeout(function() {
-                        $scope.Lunchcontainer(container.id);
+                        $scope.getcontainer();
                     }, 1000);
                 } else {
                     new PNotify({
@@ -545,7 +551,7 @@ app.controller('ListDockersitecontainer', function ($scope, $http) {
                 });
                 $('#settings').modal('hide');
                 // Refresh container info after update
-                $scope.Lunchcontainer($scope.selectedContainer.id);
+                $scope.getcontainer();
             } else {
                 new PNotify({
                     title: 'Operation Failed!',
@@ -570,6 +576,7 @@ app.controller('ListDockersitecontainer', function ($scope, $http) {
     $scope.addVolField = function() {
         if (!$scope.volList) {
             $scope.volList = {};
+            $scope.volListNumber = 0;
         }
         
         $scope.volList[$scope.volListNumber] = {'dest': '', 'src': ''};

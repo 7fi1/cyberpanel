@@ -28,7 +28,7 @@
                             <h5>Container Info</h5>
                             <div class="row">
                                 <div class="col-md-6">
-                                    <p><strong>ID:</strong> {{ '{% verbatim %}' }}{{ container.id.substring(0, 12) }}{{ '{% endverbatim %}' }}</p>
+                                    <p><strong>ID:</strong> {{ '{% verbatim %}' }}{{ truncateId(container.id) }}{{ '{% endverbatim %}' }}</p>
                                     <p><strong>Image:</strong> {{ '{% verbatim %}' }}{{ container.Image }}{{ '{% endverbatim %}' }}</p>
                                     <p><strong>Status:</strong> <span ng-class="{'text-success': container.Status == 'running', 'text-danger': container.Status != 'running'}">{{ '{% verbatim %}' }}{{ container.Status }}{{ '{% endverbatim %}' }}</span></p>
                                 </div>
