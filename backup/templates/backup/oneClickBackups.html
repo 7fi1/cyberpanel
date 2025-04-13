@@ -9,175 +9,248 @@
     <!-- Current language: {{ LANGUAGE_CODE }} -->
 
     <style>
-        .card {
-            background: #fff;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
-            transition: all 0.3s ease;
+        /* Use CyberPanel color scheme */
+        :root {
+            --primary-color: #0078ff;
+            --secondary-color: #2096f3;
+            --bg-light: #f5f7f9;
+            --border-color: #e0e6ed;
+            --text-dark: #3e4b5b;
         }
         
-        .card:hover {
-            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-        }
-        
-        .card-header {
-            padding: 20px;
-            border-bottom: 1px solid #eee;
-            background: #f8f9fa;
-            border-radius: 8px 8px 0 0;
-        }
-        
-        .btn-primary {
-            background: #007bff;
-            border: none;
+        .info-box {
+            background-color: #e8f4fd;
+            border: 1px solid #bfdff1;
             border-radius: 4px;
-            padding: 8px 16px;
-            transition: all 0.3s ease;
+            padding: 15px;
+            margin-bottom: 20px;
         }
         
-        .btn-primary:hover {
-            background: #0056b3;
-            transform: translateY(-1px);
+        .cp-card {
+            background: #fff;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            border: 1px solid var(--border-color);
         }
         
-        .table {
-            margin-bottom: 0;
-        }
-        
-        .table thead th {
-            border-bottom: 2px solid #dee2e6;
-            background: #f8f9fa;
-            padding: 12px;
-        }
-        
-        .table td {
-            padding: 12px;
-            vertical-align: middle;
-        }
-        
-        .badge {
-            padding: 6px 12px;
-            border-radius: 20px;
+        .cp-card-header {
+            padding: 15px;
+            border-bottom: 1px solid var(--border-color);
+            background: var(--bg-light);
             font-weight: 500;
         }
         
-        .badge-success {
-            background: #28a745;
+        .cp-card-body {
+            padding: 15px;
+        }
+        
+        .cp-btn {
+            display: inline-block;
+            font-weight: 400;
+            text-align: center;
+            white-space: nowrap;
+            vertical-align: middle;
+            user-select: none;
+            border: 1px solid transparent;
+            padding: 7px 12px;
+            font-size: 14px;
+            border-radius: 4px;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        
+        .cp-btn-primary {
+            background-color: var(--primary-color);
             color: white;
         }
         
-        .badge-warning {
-            background: #ffc107;
-            color: #000;
+        .cp-btn-primary:hover {
+            background-color: #0056b3;
         }
         
-        .verification-section {
-            background: #f8f9fa;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 20px;
+        .cp-btn-outline {
+            background-color: white;
+            border: 1px solid var(--border-color);
+            color: var(--text-dark);
         }
         
-        .form-control {
-            border-radius: 4px;
-            border: 1px solid #ced4da;
-            padding: 8px 12px;
-            transition: border-color 0.15s ease-in-out;
+        .cp-btn-outline:hover {
+            background-color: var(--bg-light);
         }
         
-        .form-control:focus {
-            border-color: #80bdff;
-            box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+        .cp-btn-block {
+            display: block;
+            width: 100%;
         }
         
-        .alert {
-            border-radius: 4px;
-            margin-bottom: 20px;
+        .cp-table {
+            width: 100%;
+            margin-bottom: 0;
+            border-collapse: collapse;
         }
         
-        .loading-spinner {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            margin-left: 8px;
+        .cp-table th {
+            background-color: var(--bg-light);
+            border-bottom: 1px solid var(--border-color);
+            padding: 12px;
+            text-align: left;
+            font-weight: 500;
+        }
+        
+        .cp-table td {
+            padding: 12px;
+            border-bottom: 1px solid var(--border-color);
             vertical-align: middle;
         }
         
-        .action-buttons {
+        .cp-table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .cp-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 30px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .cp-badge-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .cp-badge-info {
+            background-color: #17a2b8;
+            color: white;
+        }
+        
+        .cp-form-control {
+            display: block;
+            width: 100%;
+            padding: 6px 12px;
+            background-color: #fff;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+        }
+        
+        .price-box {
+            background-color: var(--bg-light);
+            border-radius: 4px;
+            padding: 12px;
+            margin-bottom: 15px;
+        }
+        
+        .price-amount {
+            font-size: 22px;
+            font-weight: 500;
+            color: var(--primary-color);
+        }
+        
+        .price-period {
+            font-size: 14px;
+            color: #6c757d;
+        }
+        
+        .plan-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .billing-cycle {
+            display: inline-block;
+            padding: 6px 12px;
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 20px;
+            font-size: 13px;
+        }
+        
+        .action-btns {
             display: flex;
-            flex-direction: column;
             gap: 8px;
         }
         
-        .action-buttons .btn {
-            margin: 0;
+        .action-btns a {
+            text-decoration: none;
         }
         
-        .plan-card {
-            border: 1px solid #eee;
-            border-radius: 8px;
-            padding: 20px;
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 20px;
-            transition: all 0.3s ease;
         }
         
-        .plan-card:hover {
-            border-color: #007bff;
+        .page-title {
+            font-size: 24px;
+            margin-bottom: 0;
+        }
+        
+        .section-title {
+            font-size: 18px;
+            margin-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
         }
         
         @media (max-width: 768px) {
-            .table-responsive {
-                border: 0;
+            .plan-grid {
+                grid-template-columns: 1fr;
             }
             
-            .action-buttons {
-                width: 100%;
+            .action-btns {
+                flex-direction: column;
             }
         }
     </style>
 
     <div class="container">
-        <div class="card">
-            <div class="card-header">
-                <h2 class="mb-0">{% trans "One-click Backups" %}
-                    <a target="_blank" 
-                       href="https://youtu.be/mLjMg8Anq70"
-                       class="btn btn-outline-primary btn-sm float-right">
-                        {% trans "Watch Tutorial" %}
-                    </a>
-                </h2>
-                <p class="text-muted mb-0">{% trans "On this page you purchase and manage one-click backups." %}</p>
-            </div>
-            
-            <div class="card-body" ng-controller="backupPlanNowOneClick">
-                <!-- Email Verification Button -->
-                <div class="text-center mb-4" ng-hide="showVerification || showSubscriptionsTable">
-                    <button type="button" 
-                            ng-click="showEmailVerification()" 
-                            class="btn btn-lg btn-primary">
-                        {% trans "Verify Email to Access Your Backup Plans" %}
-                        <i class="fas fa-arrow-right ml-2"></i>
-                    </button>
-                </div>
+        <!-- Warning message from screenshot -->
+        <div class="info-box">
+            <p class="mb-0">Looks like something is wrong with your initial setup, please double check on Setup Wizard.</p>
+        </div>
 
-                <!-- Email Verification Section -->
-                <div class="verification-section" ng-show="showVerification">
-                    <h4 class="mb-4">{% trans "Verify Your Email" %}</h4>
+        <!-- Page header -->
+        <div class="page-header">
+            <h1 class="page-title">One-click Backups</h1>
+            <a href="https://youtu.be/mLjMg8Anq70" target="_blank" class="cp-btn cp-btn-outline">
+                Watch Tutorial
+            </a>
+        </div>
+        
+        <p class="text-muted mb-4">On this page you purchase and manage one-click backups.</p>
+
+        <div ng-controller="backupPlanNowOneClick">
+            <!-- Email Verification Button -->
+            <div class="text-center mb-4" ng-hide="showVerification || showSubscriptionsTable">
+                <a href="javascript:void(0)" class="cp-btn cp-btn-primary" ng-click="showEmailVerification()">
+                    {% trans "Verify Email to Access Your Backup Plans" %}
+                </a>
+            </div>
+
+            <!-- Email Verification Section -->
+            <div class="cp-card" ng-show="showVerification">
+                <div class="cp-card-header">
+                    {% trans "Verify Your Email" %}
+                </div>
+                <div class="cp-card-body">
                     <div class="row">
                         <div class="col-md-8 offset-md-2">
-                            <div class="form-group">
-                                <label>{% trans "Email Address" %}</label>
+                            <div class="form-group mb-3">
+                                <label class="mb-2">{% trans "Email Address" %}</label>
                                 <input type="email" 
-                                       class="form-control" 
+                                       class="cp-form-control" 
                                        ng-model="verificationEmail" 
                                        placeholder="Enter your email address">
                             </div>
 
-                            <div class="form-group" ng-show="verificationCodeSent">
-                                <label>{% trans "Verification Code" %}</label>
+                            <div class="form-group mb-3" ng-show="verificationCodeSent">
+                                <label class="mb-2">{% trans "Verification Code" %}</label>
                                 <input type="text" 
-                                       class="form-control" 
+                                       class="cp-form-control" 
                                        ng-model="verificationCode" 
                                        placeholder="Enter verification code">
                             </div>
@@ -186,200 +259,311 @@
                                 <button type="button" 
                                         ng-click="sendVerificationCode()" 
                                         ng-hide="verificationCodeSent" 
-                                        class="btn btn-primary">
+                                        class="cp-btn cp-btn-primary">
                                     {% trans "Send Verification Code" %}
                                 </button>
                                 <button type="button" 
                                         ng-click="verifyCode()" 
                                         ng-show="verificationCodeSent" 
-                                        class="btn btn-success">
+                                        class="cp-btn cp-btn-primary">
                                     {% trans "Verify Code" %}
                                 </button>
                                 <button type="button" 
                                         ng-click="cancelVerification()" 
-                                        class="btn btn-light ml-2">
+                                        class="cp-btn cp-btn-outline ml-2">
                                     {% trans "Cancel" %}
                                 </button>
                             </div>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <!-- Active Subscriptions -->
-                <div class="card mb-4" ng-show="showSubscriptionsTable">
-                    <div class="card-header">
-                        <h5 class="mb-0">Your Active Subscriptions</h5>
-                    </div>
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
+            <!-- Active Subscriptions -->
+            <div class="cp-card" ng-show="showSubscriptionsTable">
+                <div class="cp-card-header">
+                    Your Active Subscriptions
+                </div>
+                <div class="cp-card-body p-0">
+                    <table class="cp-table">
+                        <thead>
+                            <tr>
+                                <th>Subscription ID</th>
+                                <th>Status</th>
+                                <th>Amount</th>
+                                <th>Billing Interval</th>
+                                <th>Next Billing Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr ng-repeat="sub in subscriptions">
+                                <td><code>{$ sub.subscription_id $}</code></td>
+                                <td>
+                                    <span class="cp-badge" 
+                                          ng-class="{'cp-badge-primary': sub.status === 'active', 'cp-badge-info': sub.status !== 'active'}">
+                                        {$ sub.status $}
+                                    </span>
+                                </td>
+                                <td>${$ sub.amount $}</td>
+                                <td>{$ sub.interval $}</td>
+                                <td>{$ sub.current_period_end | date:'medium' $}</td>
+                                <td>
+                                    <button class="cp-btn cp-btn-primary" 
+                                            ng-click="ReconfigureSubscription(sub)">
+                                        Configure Server
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Status Messages -->
+            {% if status == 1 %}
+                <div class="info-box">
+                    <p class="mb-0">You have successfully purchased a backup plan.</p>
+                </div>
+            {% elif status == 0 %}
+                <div class="info-box" style="background-color: #f8d7da; border-color: #f5c6cb;">
+                    <p class="mb-0">Your purchase was not successful. {{ message }}</p>
+                </div>
+            {% elif status == 4 %}
+                <div class="info-box" style="background-color: #f8d7da; border-color: #f5c6cb;">
+                    <p class="mb-0">{{ message }}</p>
+                </div>
+            {% endif %}
+
+            <!-- Your Backup Plans Section -->
+            <div class="cp-card mb-4">
+                <div class="cp-card-header">Your Backup Plans</div>
+                <div class="cp-card-body p-0">
+                    <table class="cp-table">
+                        <thead>
+                            <tr>
+                                <th>{% trans "Account" %}</th>
+                                <th>{% trans "Plan Name" %}</th>
+                                <th>{% trans "Subscription" %}</th>
+                                <th>{% trans "Billing Cycle" %}</th>
+                                <th>{% trans "Purchase Date" %}</th>
+                                <th>{% trans "Actions" %}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for plan in bPlans %}
                                 <tr>
-                                    <th>Subscription ID</th>
-                                    <th>Status</th>
-                                    <th>Amount</th>
-                                    <th>Billing Interval</th>
-                                    <th>Next Billing Date</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr ng-repeat="sub in subscriptions">
-                                    <td><code>{$ sub.subscription_id $}</code></td>
+                                    <td>{{ plan.sftpUser }}</td>
+                                    <td>{{ plan.planName }}</td>
+                                    <td>{{ plan.subscription }}</td>
                                     <td>
-                                        <span class="badge" 
-                                              ng-class="{'badge-success': sub.status === 'active', 'badge-warning': sub.status !== 'active'}">
-                                            {$ sub.status $}
+                                        <span class="billing-cycle">
+                                            {% if plan.months == '1' %}
+                                                ${{ plan.price }}/month
+                                            {% else %}
+                                                ${{ plan.price }}/year
+                                            {% endif %}
                                         </span>
                                     </td>
-                                    <td>${$ sub.amount $}</td>
-                                    <td>{$ sub.interval $}</td>
-                                    <td>{$ sub.current_period_end | date:'medium' $}</td>
+                                    <td>{{ plan.date }}</td>
                                     <td>
-                                        <button class="btn btn-sm btn-primary" 
-                                                ng-click="ReconfigureSubscription(sub)">
-                                            Configure Server
-                                        </button>
+                                        <div class="action-btns">
+                                            {% if plan.state == 1 %}
+                                                <a href="{% url 'ManageOCBackups' %}?id={{ plan.id }}" 
+                                                   class="cp-btn cp-btn-primary">
+                                                    {% trans "Schedule Backups" %}
+                                                </a>
+                                                <a href="{% url 'RestoreOCBackups' %}?id={{ plan.id }}" 
+                                                   class="cp-btn cp-btn-outline">
+                                                    {% trans "Restore Backups" %}
+                                                </a>
+                                            {% else %}
+                                                <button type="button"
+                                                        ng-click="DeployAccount('{{ plan.id }}')"
+                                                        class="cp-btn cp-btn-primary">
+                                                    {% trans "Deploy Account" %}
+                                                </button>
+                                            {% endif %}
+                                        </div>
                                     </td>
                                 </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- Status Messages -->
-                {% if status == 1 %}
-                    <div class="alert alert-success">
-                        <i class="fas fa-check-circle mr-2"></i>
-                        <p class="mb-0">You have successfully purchased a backup plan.</p>
-                    </div>
-                {% elif status == 0 %}
-                    <div class="alert alert-danger">
-                        <i class="fas fa-exclamation-circle mr-2"></i>
-                        <p class="mb-0">Your purchase was not successful. {{ message }}</p>
-                    </div>
-                {% elif status == 4 %}
-                    <div class="alert alert-danger">
-                        <i class="fas fa-exclamation-circle mr-2"></i>
-                        <p class="mb-0">{{ message }}</p>
-                    </div>
-                {% endif %}
-
-                <!-- Purchased Backup Plans -->
-                <div class="card mb-4">
-                    <div class="card-header">
-                        <h5 class="mb-0">Your Backup Plans</h5>
-                    </div>
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th>{% trans "Account" %}</th>
-                                    <th>{% trans "Plan Name" %}</th>
-                                    <th>{% trans "Subscription" %}</th>
-                                    <th>{% trans "Billing Cycle" %}</th>
-                                    <th>{% trans "Purchase Date" %}</th>
-                                    <th>{% trans "Actions" %}</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for plan in bPlans %}
-                                    <tr>
-                                        <td><code>{{ plan.sftpUser }}</code></td>
-                                        <td>{{ plan.planName }}</td>
-                                        <td>{{ plan.subscription }}</td>
-                                        <td>
-                                            {% if plan.months == '1' %}
-                                                <span class="badge badge-info">${{ plan.price }}/month</span>
-                                            {% else %}
-                                                <span class="badge badge-info">${{ plan.price }}/year</span>
-                                            {% endif %}
-                                        </td>
-                                        <td>{{ plan.date }}</td>
-                                        <td>
-                                            <div class="action-buttons">
-                                                {% if plan.state == 1 %}
-                                                    <a href="{% url 'ManageOCBackups' %}?id={{ plan.id }}" 
-                                                       class="btn btn-sm btn-primary">
-                                                        <i class="fas fa-calendar mr-1"></i>
-                                                        {% trans "Schedule Backups" %}
-                                                    </a>
-                                                    <a href="{% url 'RestoreOCBackups' %}?id={{ plan.id }}" 
-                                                       class="btn btn-sm btn-secondary">
-                                                        <i class="fas fa-undo mr-1"></i>
-                                                        {% trans "Restore Backups" %}
-                                                    </a>
-                                                {% else %}
-                                                    <button type="button"
-                                                            ng-click="DeployAccount('{{ plan.id }}')"
-                                                            class="btn btn-sm btn-success">
-                                                        <i class="fas fa-rocket mr-1"></i>
-                                                        {% trans "Deploy Account" %}
-                                                    </button>
-                                                {% endif %}
-                                            </div>
-                                        </td>
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- Available Plans -->
-                <div class="card">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0">{% trans "Available Backup Plans" %}</h5>
-                        <img ng-hide="cyberpanelLoading" 
-                             src="{% static 'images/loading.gif' %}" 
-                             class="loading-spinner">
-                    </div>
-                    <div class="card-body">
-                        <div class="row">
-                            {% for plan in plans %}
-                                <div class="col-md-6 col-lg-4 mb-4">
-                                    <div class="plan-card">
-                                        <h5 class="mb-3">{{ plan.name }}</h5>
-                                        <div class="pricing mb-4">
-                                            <div class="mb-2">
-                                                <span class="h4">${{ plan.monthlyPrice }}</span> /month
-                                            </div>
-                                            <div>
-                                                <span class="h4">${{ plan.yearlyPrice }}</span> /year
-                                            </div>
-                                        </div>
-                                        <div class="action-buttons">
-                                            {% if plan.name != '100GB' %}
-                                                <button type="button"
-                                                        ng-click="PaypalBuyNowBackup('{{ plan.name }}', '{{ plan.monthlyPrice }}', '{{ plan.yearlyPrice }}', 1)"
-                                                        class="btn btn-primary btn-block mb-2">
-                                                    <i class="fab fa-paypal mr-1"></i>
-                                                    {% trans "Monthly via PayPal" %}
-                                                </button>
-                                            {% endif %}
-                                            <button type="button"
-                                                    ng-click="PaypalBuyNowBackup('{{ plan.name }}', '{{ plan.monthlyPrice }}', '{{ plan.yearlyPrice }}', 12)"
-                                                    class="btn btn-primary btn-block mb-2">
-                                                <i class="fab fa-paypal mr-1"></i>
-                                                {% trans "Yearly via PayPal" %}
-                                            </button>
-                                            {% if plan.name != '100GB' %}
-                                                <button type="button"
-                                                        ng-click="BuyNowBackupP('{{ plan.name }}', '{{ plan.monthlyPrice }}', '{{ plan.yearlyPrice }}', 1)"
-                                                        class="btn btn-outline-primary btn-block mb-2">
-                                                    <i class="fas fa-credit-card mr-1"></i>
-                                                    {% trans "Monthly via Card" %}
-                                                </button>
-                                            {% endif %}
-                                            <button type="button"
-                                                    ng-click="BuyNowBackupP('{{ plan.name }}', '{{ plan.monthlyPrice }}', '{{ plan.yearlyPrice }}', 12)"
-                                                    class="btn btn-outline-primary btn-block">
-                                                <i class="fas fa-credit-card mr-1"></i>
-                                                {% trans "Yearly via Card" %}
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
                             {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Available Backup Plans Section -->
+            <h2 class="section-title">Available Backup Plans</h2>
+            <div class="mb-4">
+                <div class="plan-grid">
+                    <!-- 100GB Plan -->
+                    <div class="cp-card">
+                        <div class="cp-card-header">100GB</div>
+                        <div class="cp-card-body">
+                            <div class="price-box mb-3">
+                                <div class="price-amount">${{ plans.0.monthlyPrice }}</div>
+                                <div class="price-period">/month</div>
+                            </div>
+                            <div class="price-box mb-4">
+                                <div class="price-amount">${{ plans.0.yearlyPrice }}</div>
+                                <div class="price-period">/year</div>
+                            </div>
+                            
+                            <a href="javascript:void(0)" 
+                               ng-click="PaypalBuyNowBackup('{{ plans.0.name }}', '{{ plans.0.monthlyPrice }}', '{{ plans.0.yearlyPrice }}', 12)" 
+                               class="cp-btn cp-btn-primary cp-btn-block mb-2">
+                                Yearly via PayPal
+                            </a>
+                            <a href="javascript:void(0)" 
+                               ng-click="BuyNowBackupP('{{ plans.0.name }}', '{{ plans.0.monthlyPrice }}', '{{ plans.0.yearlyPrice }}', 12)" 
+                               class="cp-btn cp-btn-outline cp-btn-block">
+                                Yearly via Card
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- 500GB Plan -->
+                    <div class="cp-card">
+                        <div class="cp-card-header">500GB</div>
+                        <div class="cp-card-body">
+                            <div class="price-box mb-3">
+                                <div class="price-amount">${{ plans.1.monthlyPrice }}</div>
+                                <div class="price-period">/month</div>
+                            </div>
+                            <div class="price-box mb-4">
+                                <div class="price-amount">${{ plans.1.yearlyPrice }}</div>
+                                <div class="price-period">/year</div>
+                            </div>
+                            
+                            <a href="javascript:void(0)" 
+                               ng-click="PaypalBuyNowBackup('{{ plans.1.name }}', '{{ plans.1.monthlyPrice }}', '{{ plans.1.yearlyPrice }}', 1)" 
+                               class="cp-btn cp-btn-primary cp-btn-block mb-2">
+                                Monthly via PayPal
+                            </a>
+                            <a href="javascript:void(0)" 
+                               ng-click="PaypalBuyNowBackup('{{ plans.1.name }}', '{{ plans.1.monthlyPrice }}', '{{ plans.1.yearlyPrice }}', 12)" 
+                               class="cp-btn cp-btn-primary cp-btn-block mb-2">
+                                Yearly via PayPal
+                            </a>
+                            <a href="javascript:void(0)" 
+                               ng-click="BuyNowBackupP('{{ plans.1.name }}', '{{ plans.1.monthlyPrice }}', '{{ plans.1.yearlyPrice }}', 1)" 
+                               class="cp-btn cp-btn-outline cp-btn-block mb-2">
+                                Monthly via Card
+                            </a>
+                            <a href="javascript:void(0)" 
+                               ng-click="BuyNowBackupP('{{ plans.1.name }}', '{{ plans.1.monthlyPrice }}', '{{ plans.1.yearlyPrice }}', 12)" 
+                               class="cp-btn cp-btn-outline cp-btn-block">
+                                Yearly via Card
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- 1TB Plan -->
+                    <div class="cp-card">
+                        <div class="cp-card-header">1TB</div>
+                        <div class="cp-card-body">
+                            <div class="price-box mb-3">
+                                <div class="price-amount">${{ plans.2.monthlyPrice }}</div>
+                                <div class="price-period">/month</div>
+                            </div>
+                            <div class="price-box mb-4">
+                                <div class="price-amount">${{ plans.2.yearlyPrice }}</div>
+                                <div class="price-period">/year</div>
+                            </div>
+                            
+                            <a href="javascript:void(0)" 
+                               ng-click="PaypalBuyNowBackup('{{ plans.2.name }}', '{{ plans.2.monthlyPrice }}', '{{ plans.2.yearlyPrice }}', 1)" 
+                               class="cp-btn cp-btn-primary cp-btn-block mb-2">
+                                Monthly via PayPal
+                            </a>
+                            <a href="javascript:void(0)" 
+                               ng-click="PaypalBuyNowBackup('{{ plans.2.name }}', '{{ plans.2.monthlyPrice }}', '{{ plans.2.yearlyPrice }}', 12)" 
+                               class="cp-btn cp-btn-primary cp-btn-block mb-2">
+                                Yearly via PayPal
+                            </a>
+                            <a href="javascript:void(0)" 
+                               ng-click="BuyNowBackupP('{{ plans.2.name }}', '{{ plans.2.monthlyPrice }}', '{{ plans.2.yearlyPrice }}', 1)" 
+                               class="cp-btn cp-btn-outline cp-btn-block mb-2">
+                                Monthly via Card
+                            </a>
+                            <a href="javascript:void(0)" 
+                               ng-click="BuyNowBackupP('{{ plans.2.name }}', '{{ plans.2.monthlyPrice }}', '{{ plans.2.yearlyPrice }}', 12)" 
+                               class="cp-btn cp-btn-outline cp-btn-block">
+                                Yearly via Card
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- 2TB Plan -->
+                    <div class="cp-card">
+                        <div class="cp-card-header">2TB</div>
+                        <div class="cp-card-body">
+                            <div class="price-box mb-3">
+                                <div class="price-amount">${{ plans.3.monthlyPrice }}</div>
+                                <div class="price-period">/month</div>
+                            </div>
+                            <div class="price-box mb-4">
+                                <div class="price-amount">${{ plans.3.yearlyPrice }}</div>
+                                <div class="price-period">/year</div>
+                            </div>
+                            
+                            <a href="javascript:void(0)" 
+                               ng-click="PaypalBuyNowBackup('{{ plans.3.name }}', '{{ plans.3.monthlyPrice }}', '{{ plans.3.yearlyPrice }}', 1)" 
+                               class="cp-btn cp-btn-primary cp-btn-block mb-2">
+                                Monthly via PayPal
+                            </a>
+                            <a href="javascript:void(0)" 
+                               ng-click="PaypalBuyNowBackup('{{ plans.3.name }}', '{{ plans.3.monthlyPrice }}', '{{ plans.3.yearlyPrice }}', 12)" 
+                               class="cp-btn cp-btn-primary cp-btn-block mb-2">
+                                Yearly via PayPal
+                            </a>
+                            <a href="javascript:void(0)" 
+                               ng-click="BuyNowBackupP('{{ plans.3.name }}', '{{ plans.3.monthlyPrice }}', '{{ plans.3.yearlyPrice }}', 1)" 
+                               class="cp-btn cp-btn-outline cp-btn-block mb-2">
+                                Monthly via Card
+                            </a>
+                            <a href="javascript:void(0)" 
+                               ng-click="BuyNowBackupP('{{ plans.3.name }}', '{{ plans.3.monthlyPrice }}', '{{ plans.3.yearlyPrice }}', 12)" 
+                               class="cp-btn cp-btn-outline cp-btn-block">
+                                Yearly via Card
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- 3TB Plan -->
+                    <div class="cp-card">
+                        <div class="cp-card-header">3TB</div>
+                        <div class="cp-card-body">
+                            <div class="price-box mb-3">
+                                <div class="price-amount">${{ plans.4.monthlyPrice }}</div>
+                                <div class="price-period">/month</div>
+                            </div>
+                            <div class="price-box mb-4">
+                                <div class="price-amount">${{ plans.4.yearlyPrice }}</div>
+                                <div class="price-period">/year</div>
+                            </div>
+                            
+                            <a href="javascript:void(0)" 
+                               ng-click="PaypalBuyNowBackup('{{ plans.4.name }}', '{{ plans.4.monthlyPrice }}', '{{ plans.4.yearlyPrice }}', 1)" 
+                               class="cp-btn cp-btn-primary cp-btn-block mb-2">
+                                Monthly via PayPal
+                            </a>
+                            <a href="javascript:void(0)" 
+                               ng-click="PaypalBuyNowBackup('{{ plans.4.name }}', '{{ plans.4.monthlyPrice }}', '{{ plans.4.yearlyPrice }}', 12)" 
+                               class="cp-btn cp-btn-primary cp-btn-block mb-2">
+                                Yearly via PayPal
+                            </a>
+                            <a href="javascript:void(0)" 
+                               ng-click="BuyNowBackupP('{{ plans.4.name }}', '{{ plans.4.monthlyPrice }}', '{{ plans.4.yearlyPrice }}', 1)" 
+                               class="cp-btn cp-btn-outline cp-btn-block mb-2">
+                                Monthly via Card
+                            </a>
+                            <a href="javascript:void(0)" 
+                               ng-click="BuyNowBackupP('{{ plans.4.name }}', '{{ plans.4.monthlyPrice }}', '{{ plans.4.yearlyPrice }}', 12)" 
+                               class="cp-btn cp-btn-outline cp-btn-block">
+                                Yearly via Card
+                            </a>
                         </div>
                     </div>
                 </div>
