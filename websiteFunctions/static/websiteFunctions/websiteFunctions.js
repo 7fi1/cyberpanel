@@ -2411,6 +2411,7 @@ app.controller('createWebsite', function ($scope, $http, $timeout, $window) {
             mailDomain = 0
         }
 
+
         url = "/websites/submitWebsiteCreation";
 
         var package = $scope.packageForWebsite;
@@ -2420,9 +2421,12 @@ app.controller('createWebsite', function ($scope, $http, $timeout, $window) {
         //     var domainName = document.getElementById('TestDomainNameCreate').value + Part2_domainNameCreate;
         // }
         // if (website_create_domain_check == 1) {
+        //
         //     var domainName = $scope.domainNameCreate;
         // }
         var domainName = $scope.domainNameCreate;
+
+        // var domainName = $scope.domainNameCreate;
 
         var adminEmail = $scope.adminEmail;
         var phpSelection = $scope.phpSelection;
@@ -2579,6 +2583,7 @@ app.controller('createWebsite', function ($scope, $http, $timeout, $window) {
     }
 
 });
+
 /* Java script code to create account ends here */
 
 /* Java script code to list accounts */
