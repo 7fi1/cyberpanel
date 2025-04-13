@@ -8,74 +8,196 @@
     {% get_current_language as LANGUAGE_CODE %}
     <!-- Current language: {{ LANGUAGE_CODE }} -->
 
+    <style>
+        .card {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .card:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        
+        .card-header {
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+            background: #f8f9fa;
+            border-radius: 8px 8px 0 0;
+        }
+        
+        .btn-primary {
+            background: #007bff;
+            border: none;
+            border-radius: 4px;
+            padding: 8px 16px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            background: #0056b3;
+            transform: translateY(-1px);
+        }
+        
+        .table {
+            margin-bottom: 0;
+        }
+        
+        .table thead th {
+            border-bottom: 2px solid #dee2e6;
+            background: #f8f9fa;
+            padding: 12px;
+        }
+        
+        .table td {
+            padding: 12px;
+            vertical-align: middle;
+        }
+        
+        .badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+        
+        .badge-success {
+            background: #28a745;
+            color: white;
+        }
+        
+        .badge-warning {
+            background: #ffc107;
+            color: #000;
+        }
+        
+        .verification-section {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .form-control {
+            border-radius: 4px;
+            border: 1px solid #ced4da;
+            padding: 8px 12px;
+            transition: border-color 0.15s ease-in-out;
+        }
+        
+        .form-control:focus {
+            border-color: #80bdff;
+            box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+        }
+        
+        .alert {
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            margin-left: 8px;
+            vertical-align: middle;
+        }
+        
+        .action-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .action-buttons .btn {
+            margin: 0;
+        }
+        
+        .plan-card {
+            border: 1px solid #eee;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .plan-card:hover {
+            border-color: #007bff;
+        }
+        
+        @media (max-width: 768px) {
+            .table-responsive {
+                border: 0;
+            }
+            
+            .action-buttons {
+                width: 100%;
+            }
+        }
+    </style>
+
     <div class="container">
-        <div id="page-title">
-            <h2>{% trans "One-click Backups" %} - <a target="_blank"
-                                                     href="https://youtu.be/mLjMg8Anq70"
-                                                     style="height: 23px;line-height: 21px;"
-                                                     class="btn btn-border btn-alt border-red btn-link font-red"
-                                                     title=""><span>{% trans "One-Click Backup Docs" %}</span></a>
-            </h2>
-            <p>{% trans "On this page you purchase and manage one-click backups." %}</p>
-        </div>
-
-        <div ng-controller="backupPlanNowOneClick" class="panel">
-            <div class="panel-body">
-                <h3 class="title-hero">
-                    {% trans "Set up Backup Destinations." %} <img ng-hide="cyberpanelLoading"
-                                                                   src="{% static 'images/loading.gif' %}">
-                </h3>
-
-                <!-- Debug info -->
-                <div style="display: none;">
-                    <p>Angular loaded: {$ true $}</p>
-                    <p>Show verification: {$ showVerification $}</p>
-                </div>
-
-                <!-- Verify Email Button -->
-                <div class="form-group">
-                    <div class="col-sm-12">
-                        <button type="button" ng-click="showEmailVerification()" 
-                                class="btn btn-primary" style="margin-bottom: 20px; position: relative; z-index: 9999; cursor: pointer; pointer-events: auto;">
-                            {% trans "Verify Email to Access Your Backup Plans" %}
-                        </button>
-                    </div>
+        <div class="card">
+            <div class="card-header">
+                <h2 class="mb-0">{% trans "One-click Backups" %}
+                    <a target="_blank" 
+                       href="https://youtu.be/mLjMg8Anq70"
+                       class="btn btn-outline-primary btn-sm float-right">
+                        {% trans "Watch Tutorial" %}
+                    </a>
+                </h2>
+                <p class="text-muted mb-0">{% trans "On this page you purchase and manage one-click backups." %}</p>
+            </div>
+            
+            <div class="card-body" ng-controller="backupPlanNowOneClick">
+                <!-- Email Verification Button -->
+                <div class="text-center mb-4" ng-hide="showVerification || showSubscriptionsTable">
+                    <button type="button" 
+                            ng-click="showEmailVerification()" 
+                            class="btn btn-lg btn-primary">
+                        {% trans "Verify Email to Access Your Backup Plans" %}
+                        <i class="fas fa-arrow-right ml-2"></i>
+                    </button>
                 </div>
 
                 <!-- Email Verification Section -->
-                <div class="form-group" ng-show="showVerification" style="margin-bottom: 20px;">
-                    <div class="col-sm-12">
-                        <div class="alert alert-info">
-                            <h4>{% trans "Verify Your Email" %}</h4>
-                            <p>{% trans "Please enter the email address used for your backup subscription to access your backup plans." %}</p>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label class="col-sm-3 control-label">{% trans "Email Address" %}</label>
-                            <div class="col-sm-6">
-                                <input type="email" class="form-control" ng-model="verificationEmail" required style="position: relative; z-index: 9999; pointer-events: auto;">
+                <div class="verification-section" ng-show="showVerification">
+                    <h4 class="mb-4">{% trans "Verify Your Email" %}</h4>
+                    <div class="row">
+                        <div class="col-md-8 offset-md-2">
+                            <div class="form-group">
+                                <label>{% trans "Email Address" %}</label>
+                                <input type="email" 
+                                       class="form-control" 
+                                       ng-model="verificationEmail" 
+                                       placeholder="Enter your email address">
                             </div>
-                        </div>
 
-                        <div class="form-group" ng-show="verificationCodeSent">
-                            <label class="col-sm-3 control-label">{% trans "Verification Code" %}</label>
-                            <div class="col-sm-6">
-                                <input type="text" class="form-control" ng-model="verificationCode" required style="position: relative; z-index: 9999; pointer-events: auto;">
+                            <div class="form-group" ng-show="verificationCodeSent">
+                                <label>{% trans "Verification Code" %}</label>
+                                <input type="text" 
+                                       class="form-control" 
+                                       ng-model="verificationCode" 
+                                       placeholder="Enter verification code">
                             </div>
-                        </div>
 
-                        <div class="form-group">
-                            <div class="col-sm-12">
-                                <button type="button" ng-click="sendVerificationCode()" 
-                                        class="btn btn-primary" ng-hide="verificationCodeSent" style="margin-bottom: 20px; position: relative; z-index: 9999; cursor: pointer; pointer-events: auto;">
+                            <div class="text-center mt-4">
+                                <button type="button" 
+                                        ng-click="sendVerificationCode()" 
+                                        ng-hide="verificationCodeSent" 
+                                        class="btn btn-primary">
                                     {% trans "Send Verification Code" %}
                                 </button>
-                                <button type="button" ng-click="verifyCode()" 
-                                        class="btn btn-primary" ng-show="verificationCodeSent" style="margin-bottom: 20px; position: relative; z-index: 9999; cursor: pointer; pointer-events: auto;">
+                                <button type="button" 
+                                        ng-click="verifyCode()" 
+                                        ng-show="verificationCodeSent" 
+                                        class="btn btn-success">
                                     {% trans "Verify Code" %}
                                 </button>
-                                <button type="button" ng-click="cancelVerification()" 
-                                        class="btn btn-default" style="margin-bottom: 20px; position: relative; z-index: 9999; cursor: pointer; pointer-events: auto;">
+                                <button type="button" 
+                                        ng-click="cancelVerification()" 
+                                        class="btn btn-light ml-2">
                                     {% trans "Cancel" %}
                                 </button>
                             </div>
@@ -83,45 +205,13 @@
                     </div>
                 </div>
 
-                <!-- Email Verification Form -->
-                <div class="modal" ng-show="showVerification">
-                    <div class="modal-dialog">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h4 class="modal-title">Email Verification</h4>
-                            </div>
-                            <div class="modal-body">
-                                <div class="form-group">
-                                    <label>Email Address</label>
-                                    <input type="email" class="form-control" ng-model="verificationEmail" placeholder="Enter your email">
-                                </div>
-                                <button class="btn btn-primary" ng-click="sendVerificationCode()" ng-disabled="!verificationEmail">
-                                    Send Verification Code
-                                </button>
-                                <div ng-show="verificationCodeSent">
-                                    <div class="form-group mt-3">
-                                        <label>Verification Code</label>
-                                        <input type="text" class="form-control" ng-model="verificationCode" placeholder="Enter verification code">
-                                    </div>
-                                    <button class="btn btn-success" ng-click="verifyCode()" ng-disabled="!verificationCode">
-                                        Verify Code
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="modal-footer">
-                                <button class="btn btn-default" ng-click="cancelVerification()">Cancel</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Subscriptions Table -->
-                <div class="card" ng-show="showSubscriptionsTable">
+                <!-- Active Subscriptions -->
+                <div class="card mb-4" ng-show="showSubscriptionsTable">
                     <div class="card-header">
-                        <h3 class="card-title">Your Active Subscriptions</h3>
+                        <h5 class="mb-0">Your Active Subscriptions</h5>
                     </div>
-                    <div class="card-body table-responsive">
-                        <table class="table table-hover table-bordered">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
                             <thead>
                                 <tr>
                                     <th>Subscription ID</th>
@@ -134,9 +224,10 @@
                             </thead>
                             <tbody>
                                 <tr ng-repeat="sub in subscriptions">
-                                    <td>{$ sub.subscription_id $}</td>
+                                    <td><code>{$ sub.subscription_id $}</code></td>
                                     <td>
-                                        <span class="badge" ng-class="{'badge-success': sub.status === 'active', 'badge-warning': sub.status !== 'active'}">
+                                        <span class="badge" 
+                                              ng-class="{'badge-success': sub.status === 'active', 'badge-warning': sub.status !== 'active'}">
                                             {$ sub.status $}
                                         </span>
                                     </td>
@@ -144,8 +235,9 @@
                                     <td>{$ sub.interval $}</td>
                                     <td>{$ sub.current_period_end | date:'medium' $}</td>
                                     <td>
-                                        <button class="btn btn-sm btn-primary" ng-click="ReconfigureSubscription(sub)">
-                                            Configure for This Server
+                                        <button class="btn btn-sm btn-primary" 
+                                                ng-click="ReconfigureSubscription(sub)">
+                                            Configure Server
                                         </button>
                                     </td>
                                 </tr>
@@ -154,128 +246,142 @@
                     </div>
                 </div>
 
-                <div class="example-box-wrapper">
+                <!-- Status Messages -->
+                {% if status == 1 %}
+                    <div class="alert alert-success">
+                        <i class="fas fa-check-circle mr-2"></i>
+                        <p class="mb-0">You have successfully purchased a backup plan.</p>
+                    </div>
+                {% elif status == 0 %}
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-circle mr-2"></i>
+                        <p class="mb-0">Your purchase was not successful. {{ message }}</p>
+                    </div>
+                {% elif status == 4 %}
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-circle mr-2"></i>
+                        <p class="mb-0">{{ message }}</p>
+                    </div>
+                {% endif %}
 
-                    {% if status == 1 %}
-                        <div class="alert alert-info">
-                            <p>You have successfully purchased a backup plan.</p>
-                        </div>
-                    {% elif status == 0 %}
-                        <div class="alert alert-danger">
-                            <p>Your purchase was not successful.</p> {{ message }}
-                        </div>
-                    {% elif status == 4 %}
-                        <div class="alert alert-danger">
-                            {{ message }}
-                        </div>
-                    {% endif %}
-
-                    <form action="/" class="form-horizontal bordered-row">
-
-                        <p style="font-size: 15px;margin: 1%;">With CyberPanel's one-click backups, you can easily back
-                            up your website to our secure
-                            servers in just 60 seconds. It's simple, fast, and reliable.</p>
-
-                        <!------ List of Purchased backup plans --------------->
-
-                        <div class="form-group">
-                            <div class="col-sm-12">
-                                <table class="table">
-                                    <thead>
+                <!-- Purchased Backup Plans -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Your Backup Plans</h5>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>{% trans "Account" %}</th>
+                                    <th>{% trans "Plan Name" %}</th>
+                                    <th>{% trans "Subscription" %}</th>
+                                    <th>{% trans "Billing Cycle" %}</th>
+                                    <th>{% trans "Purchase Date" %}</th>
+                                    <th>{% trans "Actions" %}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for plan in bPlans %}
                                     <tr>
-                                        <th>{% trans "Account" %}</th>
-                                        <th>{% trans "Plan Name" %}</th>
-                                        <th>{% trans "Subscription" %}</th>
-                                        <th>{% trans "Billing Cycle" %}</th>
-                                        <th>{% trans "Purchase Date" %}</th>
-                                        <th>{% trans "Actions" %}</th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-                                    {% for plan in bPlans %}
-                                        <tr>
-                                            <td>{{ plan.sftpUser }}</td>
-                                            <td>{{ plan.planName }}</td>
-                                            <td>{{ plan.subscription }}</td>
+                                        <td><code>{{ plan.sftpUser }}</code></td>
+                                        <td>{{ plan.planName }}</td>
+                                        <td>{{ plan.subscription }}</td>
+                                        <td>
                                             {% if plan.months == '1' %}
-                                                <td>${{ plan.price }}/month</td>
+                                                <span class="badge badge-info">${{ plan.price }}/month</span>
                                             {% else %}
-                                                <td>${{ plan.price }}/year</td>
+                                                <span class="badge badge-info">${{ plan.price }}/year</span>
                                             {% endif %}
-                                            <td>{{ plan.date }}</td>
-                                            <td>
+                                        </td>
+                                        <td>{{ plan.date }}</td>
+                                        <td>
+                                            <div class="action-buttons">
                                                 {% if plan.state == 1 %}
-                                                    <a href="{% url 'ManageOCBackups' %}?id={{ plan.id }}">
-                                                        <button style="margin-bottom: 1%" type="button"
-                                                                class="btn btn-primary btn-lg btn-block">{% trans "Schedule Backups" %}</button>
+                                                    <a href="{% url 'ManageOCBackups' %}?id={{ plan.id }}" 
+                                                       class="btn btn-sm btn-primary">
+                                                        <i class="fas fa-calendar mr-1"></i>
+                                                        {% trans "Schedule Backups" %}
                                                     </a>
-                                                    <a href="{% url 'RestoreOCBackups' %}?id={{ plan.id }}">
-                                                        <button type="button"
-                                                                class="btn btn-primary btn-lg btn-block">{% trans "Restore Backups" %}</button>
+                                                    <a href="{% url 'RestoreOCBackups' %}?id={{ plan.id }}" 
+                                                       class="btn btn-sm btn-secondary">
+                                                        <i class="fas fa-undo mr-1"></i>
+                                                        {% trans "Restore Backups" %}
                                                     </a>
                                                 {% else %}
                                                     <button type="button"
                                                             ng-click="DeployAccount('{{ plan.id }}')"
-                                                            class="btn btn-primary btn-lg btn-block">{% trans "Deploy Account" %}</button>
+                                                            class="btn btn-sm btn-success">
+                                                        <i class="fas fa-rocket mr-1"></i>
+                                                        {% trans "Deploy Account" %}
+                                                    </button>
                                                 {% endif %}
-                                            </td>
-                                        </tr>
-                                    {% endfor %}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-
-                        <!------ List of Backup plans --------------->
-
-                        <h3 class="title-hero">
-                            {% trans "Subscribe to one-click backup plans." %} <img ng-hide="cyberpanelLoading"
-                                                                                    src="{% static 'images/loading.gif' %}">
-                        </h3>
-
-                        <div class="form-group">
-                            <div class="col-sm-12">
-                                <table class="table">
-                                    <thead>
-                                    <tr>
-                                        <th>{% trans "Plan Name" %}</th>
-                                        <th>{% trans "Monthly Price" %}</th>
-                                        <th>{% trans "Yearly Price" %}</th>
-                                        <th>{% trans "Actions" %}</th>
+                                            </div>
+                                        </td>
                                     </tr>
-                                    </thead>
-                                    <tbody>
-                                    {% for plan in plans %}
-                                        <tr>
-                                            <td>{{ plan.name }}</td>
-                                            <td>${{ plan.monthlyPrice }}</td>
-                                            <td>${{ plan.yearlyPrice }}</td>
-                                            <td>
-                                                {% if plan.name != '100GB' %}
-                                                    <button type="button"
-                                                            ng-click="PaypalBuyNowBackup('{{ plan.name }}', '{{ plan.monthlyPrice }}', '{{ plan.yearlyPrice }}', 1)"
-                                                            class="btn btn-primary btn-lg btn-block">{% trans "Buy Monthly (Paypal)" %}</button>
-                                                {% endif %}
-                                                <button type="button"
-                                                        ng-click="PaypalBuyNowBackup('{{ plan.name }}', '{{ plan.monthlyPrice }}', '{{ plan.yearlyPrice }}', 12)"
-                                                        class="btn btn-primary btn-lg btn-block">{% trans "Buy Yearly (Paypal)" %}</button>
-                                                {% if plan.name != '100GB' %}
-                                                    <button type="button"
-                                                            ng-click="BuyNowBackupP('{{ plan.name }}', '{{ plan.monthlyPrice }}', '{{ plan.yearlyPrice }}', 1)"
-                                                            class="btn btn-primary btn-lg btn-block">{% trans "Buy Monthly via Card" %}</button>
-                                                {% endif %}
-                                                <button type="button"
-                                                        ng-click="BuyNowBackupP('{{ plan.name }}', '{{ plan.monthlyPrice }}', '{{ plan.yearlyPrice }}', 12)"
-                                                        class="btn btn-primary btn-lg btn-block">{% trans "Buy Yearly via Card" %}</button>
-                                            </td>
-                                        </tr>
-                                    {% endfor %}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
 
-                    </form>
+                <!-- Available Plans -->
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">{% trans "Available Backup Plans" %}</h5>
+                        <img ng-hide="cyberpanelLoading" 
+                             src="{% static 'images/loading.gif' %}" 
+                             class="loading-spinner">
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            {% for plan in plans %}
+                                <div class="col-md-6 col-lg-4 mb-4">
+                                    <div class="plan-card">
+                                        <h5 class="mb-3">{{ plan.name }}</h5>
+                                        <div class="pricing mb-4">
+                                            <div class="mb-2">
+                                                <span class="h4">${{ plan.monthlyPrice }}</span> /month
+                                            </div>
+                                            <div>
+                                                <span class="h4">${{ plan.yearlyPrice }}</span> /year
+                                            </div>
+                                        </div>
+                                        <div class="action-buttons">
+                                            {% if plan.name != '100GB' %}
+                                                <button type="button"
+                                                        ng-click="PaypalBuyNowBackup('{{ plan.name }}', '{{ plan.monthlyPrice }}', '{{ plan.yearlyPrice }}', 1)"
+                                                        class="btn btn-primary btn-block mb-2">
+                                                    <i class="fab fa-paypal mr-1"></i>
+                                                    {% trans "Monthly via PayPal" %}
+                                                </button>
+                                            {% endif %}
+                                            <button type="button"
+                                                    ng-click="PaypalBuyNowBackup('{{ plan.name }}', '{{ plan.monthlyPrice }}', '{{ plan.yearlyPrice }}', 12)"
+                                                    class="btn btn-primary btn-block mb-2">
+                                                <i class="fab fa-paypal mr-1"></i>
+                                                {% trans "Yearly via PayPal" %}
+                                            </button>
+                                            {% if plan.name != '100GB' %}
+                                                <button type="button"
+                                                        ng-click="BuyNowBackupP('{{ plan.name }}', '{{ plan.monthlyPrice }}', '{{ plan.yearlyPrice }}', 1)"
+                                                        class="btn btn-outline-primary btn-block mb-2">
+                                                    <i class="fas fa-credit-card mr-1"></i>
+                                                    {% trans "Monthly via Card" %}
+                                                </button>
+                                            {% endif %}
+                                            <button type="button"
+                                                    ng-click="BuyNowBackupP('{{ plan.name }}', '{{ plan.monthlyPrice }}', '{{ plan.yearlyPrice }}', 12)"
+                                                    class="btn btn-outline-primary btn-block">
+                                                <i class="fas fa-credit-card mr-1"></i>
+                                                {% trans "Yearly via Card" %}
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
