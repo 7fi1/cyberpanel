@@ -2359,7 +2359,9 @@ class BackupManager:
             payload = {
                 'subscription_id': subscription_id,
                 'key': ProcessUtilities.outputExecutioner(f'cat /root/.ssh/cyberpanel.pub'),
-                'serverIP': ACLManager.fetchIP()
+                'serverIP': ACLManager.fetchIP(),
+                'email': data['email'],
+                'code': data['code']
             }
 
             headers = {'Content-Type': 'application/json'}

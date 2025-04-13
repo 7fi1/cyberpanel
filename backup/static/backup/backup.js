@@ -73,7 +73,8 @@ app.controller('backupPlanNowOneClick', function($scope, $http) {
             if (response.data.status == 1) {
                 // After successful verification, fetch Stripe subscriptions
                 $http.post('https://platform.cyberpersons.com/Billing/FetchStripeSubscriptionsByEmail', {
-                    email: $scope.verificationEmail
+                    email: $scope.verificationEmail,
+                    code: $scope.verificationCode
                 }, config).then(function(subResponse) {
                     $scope.cyberpanelLoading = true;
                     if (subResponse.data.status == 1) {
@@ -271,7 +272,9 @@ app.controller('backupPlanNowOneClick', function($scope, $http) {
             customer_id: subscription.customer,
             plan_name: subscription.plan_name,
             amount: subscription.amount,
-            interval: subscription.interval
+            interval: subscription.interval,
+            email: $scope.verificationEmail,
+            code: $scope.verificationCode
         };
 
         $http.post('/backup/ReconfigureSubscription', data, config).then(function(response) {
