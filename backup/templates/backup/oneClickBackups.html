@@ -67,15 +67,15 @@
                         <div class="form-group">
                             <div class="col-sm-12">
                                 <button type="button" ng-click="sendVerificationCode()" 
-                                        class="btn btn-primary" ng-hide="verificationCodeSent">
+                                        class="btn btn-primary" ng-hide="verificationCodeSent" style="margin-bottom: 20px; position: relative; z-index: 9999; cursor: pointer; pointer-events: auto;">
                                     {% trans "Send Verification Code" %}
                                 </button>
                                 <button type="button" ng-click="verifyCode()" 
-                                        class="btn btn-primary" ng-show="verificationCodeSent">
+                                        class="btn btn-primary" ng-show="verificationCodeSent" style="margin-bottom: 20px; position: relative; z-index: 9999; cursor: pointer; pointer-events: auto;">
                                     {% trans "Verify Code" %}
                                 </button>
                                 <button type="button" ng-click="cancelVerification()" 
-                                        class="btn btn-default">
+                                        class="btn btn-default" style="margin-bottom: 20px; position: relative; z-index: 9999; cursor: pointer; pointer-events: auto;">
                                     {% trans "Cancel" %}
                                 </button>
                             </div>

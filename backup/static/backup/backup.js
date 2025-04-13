@@ -2,8 +2,7 @@
  * Created by usman on 9/17/17.
  */
 
-app = angular.module('CyberCP');
-
+// Using existing CyberCP module
 app.controller('backupPlanNowOneClick', function($scope, $http) {
     $scope.cyberpanelLoading = true;
     $scope.showVerification = false;
@@ -12,9 +11,7 @@ app.controller('backupPlanNowOneClick', function($scope, $http) {
     $scope.showEmailVerification = function() {
         console.log('showEmailVerification called');
         $scope.showVerification = true;
-        if(!$scope.$$phase) {
-            $scope.$apply();
-        }
+        $scope.$apply();
     };
     
     $scope.cancelVerification = function() {
