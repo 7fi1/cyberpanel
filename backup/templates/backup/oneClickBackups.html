@@ -124,7 +124,7 @@
                         <table class="table table-hover table-bordered">
                             <thead>
                                 <tr>
-                                    <th>Plan Name</th>
+                                    <th>Subscription ID</th>
                                     <th>Status</th>
                                     <th>Amount</th>
                                     <th>Billing Interval</th>
@@ -134,7 +134,7 @@
                             </thead>
                             <tbody>
                                 <tr ng-repeat="sub in subscriptions">
-                                    <td>{$ sub.plan_name $}</td>
+                                    <td>{$ sub.subscription_id $}</td>
                                     <td>
                                         <span class="badge" ng-class="{'badge-success': sub.status === 'active', 'badge-warning': sub.status !== 'active'}">
                                             {$ sub.status $}
@@ -144,8 +144,8 @@
                                     <td>{$ sub.interval $}</td>
                                     <td>{$ sub.current_period_end | date:'medium' $}</td>
                                     <td>
-                                        <button class="btn btn-sm btn-primary" ng-click="BuyNowBackupP(sub.plan_name, sub.amount, sub.amount * 12, sub.interval === 'month' ? 1 : 12)">
-                                            Manage Subscription
+                                        <button class="btn btn-sm btn-primary" ng-click="ReconfigureSubscription(sub)">
+                                            Configure for This Server
                                         </button>
                                     </td>
                                 </tr>

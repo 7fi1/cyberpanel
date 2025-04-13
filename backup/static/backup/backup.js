@@ -256,6 +256,50 @@ app.controller('backupPlanNowOneClick', function($scope, $http) {
             });
         }
     };
+
+    $scope.ReconfigureSubscription = function(subscription) {
+        $scope.cyberpanelLoading = false;
+
+        var config = {
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        };
+
+        var data = {
+            subscription_id: subscription.subscription_id,
+            customer_id: subscription.customer,
+            plan_name: subscription.plan_name,
+            amount: subscription.amount,
+            interval: subscription.interval
+        };
+
+        $http.post('/backup/ReconfigureSubscription', data, config).then(function(response) {
+            $scope.cyberpanelLoading = true;
+            if (response.data.status === 1) {
+                new PNotify({
+                    title: 'Success',
+                    text: 'Subscription configured successfully for this server.',
+                    type: 'success'
+                });
+                // Refresh the page to show new backup plan in the list
+                window.location.reload();
+            } else {
+                new PNotify({
+                    title: 'Error',
+                    text: response.data.error_message,
+                    type: 'error'
+                });
+            }
+        }, function(error) {
+            $scope.cyberpanelLoading = true;
+            new PNotify({
+                title: 'Error',
+                text: 'Could not configure subscription. Please try again.',
+                type: 'error'
+            });
+        });
+    };
 });
 
 //*** Backup site ****//

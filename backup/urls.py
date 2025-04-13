@@ -10,6 +10,7 @@ urlpatterns = [
     re_path(r'^fetchOCSites$', views.fetchOCSites, name='fetchOCSites'),
     re_path(r'^StartOCRestore$', views.StartOCRestore, name='StartOCRestore'),
     re_path(r'^DeployAccount$', views.DeployAccount, name='DeployAccount'),
+    re_path(r'^ReconfigureSubscription$', views.ReconfigureSubscription, name='ReconfigureSubscription'),
 
     re_path(r'^backupSite$', views.backupSite, name='backupSite'),
     re_path(r'^restoreSite$', views.restoreSite, name='restoreSite'),
