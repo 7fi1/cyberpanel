@@ -2049,6 +2049,56 @@ app.controller('backupPlanNowOneClick', function ($scope, $http, $window) {
     $scope.cyberpanelLoading = true;
     $scope.sftpHide = true;
     $scope.localHide = true;
+    $scope.verificationCodeSent = false;
+    $scope.emailVerified = false;
+    
+    $scope.sendVerificationCode = function() {
+        $scope.cyberpanelLoading = true;
+        
+        $http.post('https://platform.cyberpersons.com/Billing/SendBackupVerificationCode', {
+            email: $scope.verificationEmail
+        }).then(function(response) {
+            if (response.data.status == 1) {
+                $scope.verificationCodeSent = true;
+            } else {
+                alert(response.data.error_message);
+            }
+            $scope.cyberpanelLoading = false;
+        });
+    };
+    
+    $scope.verifyCode = function() {
+        $scope.cyberpanelLoading = true;
+        
+        $http.post('https://platform.cyberpersons.com/Billing/VerifyBackupCode', {
+            email: $scope.verificationEmail,
+            code: $scope.verificationCode
+        }).then(function(response) {
+            if (response.data.status == 1) {
+                $scope.emailVerified = true;
+                // Fetch backup plans after successful verification
+                $scope.fetchBackupPlans();
+            } else {
+                alert(response.data.error_message);
+            }
+            $scope.cyberpanelLoading = false;
+        });
+    };
+    
+    $scope.fetchBackupPlans = function() {
+        $scope.cyberpanelLoading = true;
+        
+        $http.post('https://platform.cyberpersons.com/Billing/FetchBackupPlans', {
+            email: $scope.verificationEmail
+        }).then(function(response) {
+            if (response.data.status == 1) {
+                $scope.plans = response.data.plans;
+            } else {
+                alert(response.data.error_message);
+            }
+            $scope.cyberpanelLoading = false;
+        });
+    };
 
     $scope.BuyNowBackupP = function (planName, monthlyPrice, yearlyPrice, months) {
 
