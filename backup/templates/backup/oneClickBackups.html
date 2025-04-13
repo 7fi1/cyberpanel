@@ -53,14 +53,14 @@
                         <div class="form-group">
                             <label class="col-sm-3 control-label">{% trans "Email Address" %}</label>
                             <div class="col-sm-6">
-                                <input type="email" class="form-control" ng-model="verificationEmail" required>
+                                <input type="email" class="form-control" ng-model="verificationEmail" required style="position: relative; z-index: 9999; pointer-events: auto;">
                             </div>
                         </div>
 
                         <div class="form-group" ng-show="verificationCodeSent">
                             <label class="col-sm-3 control-label">{% trans "Verification Code" %}</label>
                             <div class="col-sm-6">
-                                <input type="text" class="form-control" ng-model="verificationCode" required>
+                                <input type="text" class="form-control" ng-model="verificationCode" required style="position: relative; z-index: 9999; pointer-events: auto;">
                             </div>
                         </div>
 

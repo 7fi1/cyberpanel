@@ -11,7 +11,6 @@ app.controller('backupPlanNowOneClick', function($scope, $http) {
     $scope.showEmailVerification = function() {
         console.log('showEmailVerification called');
         $scope.showVerification = true;
-        $scope.$apply();
     };
     
     $scope.cancelVerification = function() {
