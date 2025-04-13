@@ -30,14 +30,14 @@
                 <div class="form-group">
                     <div class="col-sm-12">
                         <button type="button" ng-click="showEmailVerification()" 
-                                class="btn btn-primary" ng-hide="showVerification">
+                                class="btn btn-primary" style="margin-bottom: 20px;">
                             {% trans "Verify Email to Access Your Backup Plans" %}
                         </button>
                     </div>
                 </div>
 
                 <!-- Email Verification Section -->
-                <div class="form-group" ng-show="showVerification">
+                <div class="form-group" ng-show="showVerification" style="margin-bottom: 20px;">
                     <div class="col-sm-12">
                         <div class="alert alert-info">
                             <h4>{% trans "Verify Your Email" %}</h4>

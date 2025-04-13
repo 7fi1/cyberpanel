@@ -2051,7 +2051,6 @@ app.controller('backupPlanNowOneClick', function ($scope, $http, $window) {
     $scope.localHide = true;
     $scope.showVerification = false;
     $scope.verificationCodeSent = false;
-    $scope.emailVerified = false;
     
     $scope.showEmailVerification = function() {
         $scope.showVerification = true;
@@ -2116,7 +2115,6 @@ app.controller('backupPlanNowOneClick', function ($scope, $http, $window) {
         }, config).then(function(response) {
             $scope.cyberpanelLoading = true;
             if (response.data.status == 1) {
-                $scope.emailVerified = true;
                 $scope.showVerification = false;
                 // Fetch backup plans after successful verification
                 $scope.fetchBackupPlans();
