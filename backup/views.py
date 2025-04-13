@@ -14,6 +14,7 @@ import os
 from plogical.CyberCPLogFileWriter import CyberCPLogFileWriter as logging
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import User
+from loginSystem.models import Administrator
 
 def loadBackupHome(request):
     try:
@@ -545,7 +546,7 @@ def DeployAccount(request):
 def ReconfigureSubscription(request):
     try:
         userID = request.session['userID']
-        admin = User.objects.get(pk=userID)
+        admin = Administrator.objects.get(pk=userID)
         bm = BackupManager()
         return bm.ReconfigureSubscription(request, userID)
     except BaseException as msg:
