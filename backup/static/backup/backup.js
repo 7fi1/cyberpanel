@@ -79,14 +79,9 @@ app.controller('backupPlanNowOneClick', function($scope, $http) {
                     if (subResponse.data.status == 1) {
                         $scope.showVerification = false;
                         $scope.subscriptions = subResponse.data.subscriptions;
+                        $scope.showSubscriptionsTable = true;
                         
-                        if ($scope.subscriptions.length > 0) {
-                            new PNotify({
-                                title: 'Success',
-                                text: 'Found ' + $scope.subscriptions.length + ' active subscriptions.',
-                                type: 'success'
-                            });
-                        } else {
+                        if ($scope.subscriptions.length == 0) {
                             new PNotify({
                                 title: 'Info',
                                 text: 'No active subscriptions found for this email.',

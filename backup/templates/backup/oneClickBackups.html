@@ -83,6 +83,77 @@
                     </div>
                 </div>
 
+                <!-- Email Verification Form -->
+                <div class="modal" ng-show="showVerification">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h4 class="modal-title">Email Verification</h4>
+                            </div>
+                            <div class="modal-body">
+                                <div class="form-group">
+                                    <label>Email Address</label>
+                                    <input type="email" class="form-control" ng-model="verificationEmail" placeholder="Enter your email">
+                                </div>
+                                <button class="btn btn-primary" ng-click="sendVerificationCode()" ng-disabled="!verificationEmail">
+                                    Send Verification Code
+                                </button>
+                                <div ng-show="verificationCodeSent">
+                                    <div class="form-group mt-3">
+                                        <label>Verification Code</label>
+                                        <input type="text" class="form-control" ng-model="verificationCode" placeholder="Enter verification code">
+                                    </div>
+                                    <button class="btn btn-success" ng-click="verifyCode()" ng-disabled="!verificationCode">
+                                        Verify Code
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button class="btn btn-default" ng-click="cancelVerification()">Cancel</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Subscriptions Table -->
+                <div class="card" ng-show="showSubscriptionsTable">
+                    <div class="card-header">
+                        <h3 class="card-title">Your Active Subscriptions</h3>
+                    </div>
+                    <div class="card-body table-responsive">
+                        <table class="table table-hover table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Plan Name</th>
+                                    <th>Status</th>
+                                    <th>Amount</th>
+                                    <th>Billing Interval</th>
+                                    <th>Next Billing Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr ng-repeat="sub in subscriptions">
+                                    <td>{$ sub.plan_name $}</td>
+                                    <td>
+                                        <span class="badge" ng-class="{'badge-success': sub.status === 'active', 'badge-warning': sub.status !== 'active'}">
+                                            {$ sub.status $}
+                                        </span>
+                                    </td>
+                                    <td>${$ sub.amount $}</td>
+                                    <td>{$ sub.interval $}</td>
+                                    <td>{$ sub.current_period_end | date:'medium' $}</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-primary" ng-click="BuyNowBackupP(sub.plan_name, sub.amount, sub.amount * 12, sub.interval === 'month' ? 1 : 12)">
+                                            Manage Subscription
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
                 <div class="example-box-wrapper">
 
                     {% if status == 1 %}
