@@ -26,11 +26,17 @@
                                                                    src="{% static 'images/loading.gif' %}">
                 </h3>
 
+                <!-- Debug info -->
+                <div style="display: none;">
+                    <p>Angular loaded: {$ true $}</p>
+                    <p>Show verification: {$ showVerification $}</p>
+                </div>
+
                 <!-- Verify Email Button -->
                 <div class="form-group">
                     <div class="col-sm-12">
                         <button type="button" ng-click="showEmailVerification()" 
-                                class="btn btn-primary" style="margin-bottom: 20px;">
+                                class="btn btn-primary" style="margin-bottom: 20px; position: relative; z-index: 9999; cursor: pointer; pointer-events: auto;">
                             {% trans "Verify Email to Access Your Backup Plans" %}
                         </button>
                     </div>

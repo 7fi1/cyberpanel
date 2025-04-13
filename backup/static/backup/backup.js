@@ -2,13 +2,19 @@
  * Created by usman on 9/17/17.
  */
 
+app = angular.module('CyberCP');
+
 app.controller('backupPlanNowOneClick', function($scope, $http) {
     $scope.cyberpanelLoading = true;
     $scope.showVerification = false;
     $scope.verificationCodeSent = false;
     
     $scope.showEmailVerification = function() {
+        console.log('showEmailVerification called');
         $scope.showVerification = true;
+        if(!$scope.$$phase) {
+            $scope.$apply();
+        }
     };
     
     $scope.cancelVerification = function() {
