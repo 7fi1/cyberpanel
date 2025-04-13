@@ -70,17 +70,46 @@ app.controller('backupPlanNowOneClick', function($scope, $http) {
             email: $scope.verificationEmail,
             code: $scope.verificationCode
         }, config).then(function(response) {
-            $scope.cyberpanelLoading = true;
             if (response.data.status == 1) {
-                $scope.showVerification = false;
-                // Fetch backup plans after successful verification
-                $scope.fetchBackupPlans();
-                new PNotify({
-                    title: 'Success',
-                    text: 'Email verified successfully.',
-                    type: 'success'
+                // After successful verification, fetch Stripe subscriptions
+                $http.post('https://platform.cyberpersons.com/Billing/FetchStripeSubscriptionsByEmail', {
+                    email: $scope.verificationEmail
+                }, config).then(function(subResponse) {
+                    $scope.cyberpanelLoading = true;
+                    if (subResponse.data.status == 1) {
+                        $scope.showVerification = false;
+                        $scope.subscriptions = subResponse.data.subscriptions;
+                        
+                        if ($scope.subscriptions.length > 0) {
+                            new PNotify({
+                                title: 'Success',
+                                text: 'Found ' + $scope.subscriptions.length + ' active subscriptions.',
+                                type: 'success'
+                            });
+                        } else {
+                            new PNotify({
+                                title: 'Info',
+                                text: 'No active subscriptions found for this email.',
+                                type: 'info'
+                            });
+                        }
+                    } else {
+                        new PNotify({
+                            title: 'Error',
+                            text: subResponse.data.error_message,
+                            type: 'error'
+                        });
+                    }
+                }, function(error) {
+                    $scope.cyberpanelLoading = true;
+                    new PNotify({
+                        title: 'Error',
+                        text: 'Could not fetch subscriptions. Please try again.',
+                        type: 'error'
+                    });
                 });
             } else {
+                $scope.cyberpanelLoading = true;
                 new PNotify({
                     title: 'Error',
                     text: response.data.error_message,
