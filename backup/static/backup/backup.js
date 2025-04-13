@@ -2049,54 +2049,133 @@ app.controller('backupPlanNowOneClick', function ($scope, $http, $window) {
     $scope.cyberpanelLoading = true;
     $scope.sftpHide = true;
     $scope.localHide = true;
+    $scope.showVerification = false;
     $scope.verificationCodeSent = false;
     $scope.emailVerified = false;
     
+    $scope.showEmailVerification = function() {
+        $scope.showVerification = true;
+    };
+    
+    $scope.cancelVerification = function() {
+        $scope.showVerification = false;
+        $scope.verificationCodeSent = false;
+        $scope.verificationEmail = '';
+        $scope.verificationCode = '';
+    };
+    
     $scope.sendVerificationCode = function() {
-        $scope.cyberpanelLoading = true;
+        $scope.cyberpanelLoading = false;
+        
+        var config = {
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        };
         
         $http.post('https://platform.cyberpersons.com/Billing/SendBackupVerificationCode', {
             email: $scope.verificationEmail
-        }).then(function(response) {
+        }, config).then(function(response) {
+            $scope.cyberpanelLoading = true;
             if (response.data.status == 1) {
                 $scope.verificationCodeSent = true;
+                new PNotify({
+                    title: 'Success',
+                    text: 'Verification code sent to your email.',
+                    type: 'success'
+                });
             } else {
-                alert(response.data.error_message);
+                new PNotify({
+                    title: 'Error',
+                    text: response.data.error_message,
+                    type: 'error'
+                });
             }
-            $scope.cyberpanelLoading = false;
+        }, function(error) {
+            $scope.cyberpanelLoading = true;
+            new PNotify({
+                title: 'Error',
+                text: 'Could not send verification code. Please try again.',
+                type: 'error'
+            });
         });
     };
     
     $scope.verifyCode = function() {
-        $scope.cyberpanelLoading = true;
+        $scope.cyberpanelLoading = false;
+        
+        var config = {
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        };
         
         $http.post('https://platform.cyberpersons.com/Billing/VerifyBackupCode', {
             email: $scope.verificationEmail,
             code: $scope.verificationCode
-        }).then(function(response) {
+        }, config).then(function(response) {
+            $scope.cyberpanelLoading = true;
             if (response.data.status == 1) {
                 $scope.emailVerified = true;
+                $scope.showVerification = false;
                 // Fetch backup plans after successful verification
                 $scope.fetchBackupPlans();
+                new PNotify({
+                    title: 'Success',
+                    text: 'Email verified successfully.',
+                    type: 'success'
+                });
             } else {
-                alert(response.data.error_message);
+                new PNotify({
+                    title: 'Error',
+                    text: response.data.error_message,
+                    type: 'error'
+                });
             }
-            $scope.cyberpanelLoading = false;
+        }, function(error) {
+            $scope.cyberpanelLoading = true;
+            new PNotify({
+                title: 'Error',
+                text: 'Could not verify code. Please try again.',
+                type: 'error'
+            });
         });
     };
     
     $scope.fetchBackupPlans = function() {
-        $scope.cyberpanelLoading = true;
+        $scope.cyberpanelLoading = false;
+        
+        var config = {
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        };
         
         $http.post('https://platform.cyberpersons.com/Billing/FetchBackupPlans', {
             email: $scope.verificationEmail
-        }).then(function(response) {
+        }, config).then(function(response) {
+            $scope.cyberpanelLoading = true;
             if (response.data.status == 1) {
                 $scope.plans = response.data.plans;
+                new PNotify({
+                    title: 'Success',
+                    text: 'Backup plans fetched successfully.',
+                    type: 'success'
+                });
             } else {
-                alert(response.data.error_message);
+                new PNotify({
+                    title: 'Error',
+                    text: response.data.error_message,
+                    type: 'error'
+                });
             }
-            $scope.cyberpanelLoading = false;
+        }, function(error) {
+            $scope.cyberpanelLoading = true;
+            new PNotify({
+                title: 'Error',
+                text: 'Could not fetch backup plans. Please try again.',
+                type: 'error'
+            });
         });
     };
 

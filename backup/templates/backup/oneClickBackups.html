@@ -21,8 +21,23 @@
 
         <div ng-controller="backupPlanNowOneClick" class="panel">
             <div class="panel-body">
+                <h3 class="title-hero">
+                    {% trans "Set up Backup Destinations." %} <img ng-hide="cyberpanelLoading"
+                                                                   src="{% static 'images/loading.gif' %}">
+                </h3>
+
+                <!-- Verify Email Button -->
+                <div class="form-group">
+                    <div class="col-sm-12">
+                        <button type="button" ng-click="showEmailVerification()" 
+                                class="btn btn-primary" ng-hide="showVerification">
+                            {% trans "Verify Email to Access Your Backup Plans" %}
+                        </button>
+                    </div>
+                </div>
+
                 <!-- Email Verification Section -->
-                <div class="form-group" ng-show="!emailVerified">
+                <div class="form-group" ng-show="showVerification">
                     <div class="col-sm-12">
                         <div class="alert alert-info">
                             <h4>{% trans "Verify Your Email" %}</h4>
@@ -53,147 +68,153 @@
                                         class="btn btn-primary" ng-show="verificationCodeSent">
                                     {% trans "Verify Code" %}
                                 </button>
+                                <button type="button" ng-click="cancelVerification()" 
+                                        class="btn btn-default">
+                                    {% trans "Cancel" %}
+                                </button>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Main Content (only shown after email verification) -->
-                <div ng-show="emailVerified">
-                    <h3 class="title-hero">
-                        {% trans "Set up Backup Destinations." %} <img ng-hide="cyberpanelLoading"
-                                                                   src="{% static 'images/loading.gif' %}">
-                    </h3>
-                    <div class="example-box-wrapper">
+                <div class="example-box-wrapper">
+                    <!-- Main Content (only shown after email verification) -->
+                    <div ng-show="emailVerified">
+                        <h3 class="title-hero">
+                            {% trans "Set up Backup Destinations." %} <img ng-hide="cyberpanelLoading"
+                                                                       src="{% static 'images/loading.gif' %}">
+                        </h3>
+                        <div class="example-box-wrapper">
 
-                        {% if status == 1 %}
-                            <div class="alert alert-info">
-                                <p>You have successfully purchased a backup plan.</p>
-                            </div>
-                        {% elif status == 0 %}
-                            <div class="alert alert-danger">
-                                <p>Your purchase was not successful.</p> {{ message }}
-                            </div>
-                        {% elif status == 4 %}
-                            <div class="alert alert-danger">
-                                {{ message }}
-                            </div>
-                        {% endif %}
+                            {% if status == 1 %}
+                                <div class="alert alert-info">
+                                    <p>You have successfully purchased a backup plan.</p>
+                                </div>
+                            {% elif status == 0 %}
+                                <div class="alert alert-danger">
+                                    <p>Your purchase was not successful.</p> {{ message }}
+                                </div>
+                            {% elif status == 4 %}
+                                <div class="alert alert-danger">
+                                    {{ message }}
+                                </div>
+                            {% endif %}
 
-                        <form action="/" class="form-horizontal bordered-row">
-                            <p style="font-size: 15px;margin: 1%;">With CyberPanel's one-click backups, you can easily back
-                                up your website to our secure
-                                servers in just 60 seconds. It's simple, fast, and reliable.</p>
+                            <form action="/" class="form-horizontal bordered-row">
+                                <p style="font-size: 15px;margin: 1%;">With CyberPanel's one-click backups, you can easily back
+                                    up your website to our secure
+                                    servers in just 60 seconds. It's simple, fast, and reliable.</p>
 
-                            <!------ List of Purchased backup plans --------------->
+                                <!------ List of Purchased backup plans --------------->
 
-                            <div class="form-group">
-                                <div class="col-sm-12">
-                                    <table class="table">
-                                        <thead>
-                                        <tr>
-                                            <th>{% trans "Account" %}</th>
-                                            <th>{% trans "Plan Name" %}</th>
-                                            <th>{% trans "Subscription" %}</th>
-                                            <th>{% trans "Billing Cycle" %}</th>
-                                            <th>{% trans "Purchase Date" %}</th>
-                                            <th>{% trans "Actions" %}</th>
-                                        </tr>
-                                        </thead>
-                                        <tbody>
-                                        {% for plan in bPlans %}
+                                <div class="form-group">
+                                    <div class="col-sm-12">
+                                        <table class="table">
+                                            <thead>
                                             <tr>
-                                                <td>{{ plan.sftpUser }}</td>
-                                                <td>{{ plan.planName }}</td>
-                                                <td>{{ plan.subscription }}</td>
-                                                {% if plan.months == '1' %}
-                                                    <td>${{ plan.price }}/month</td>
-                                                {% else %}
-                                                    <td>${{ plan.price }}/year</td>
-                                                {% endif %}
-                                                <td>{{ plan.date }}</td>
-                                                <td>
-                                                    {% if plan.state == 1 %}
-                                                        <a
-                                                                href="{% url 'ManageOCBackups' %}?id={{ plan.id }}">
-                                                            <button style="margin-bottom: 1%" type="button"
-                                                                    class="btn btn-primary btn-lg btn-block">{% trans "Schedule Backups" %}</button>
-                                                        </a>
-                                                        <a href="{% url 'RestoreOCBackups' %}?id={{ plan.id }}">
-                                                            <button type="button"
-                                                                    class="btn btn-primary btn-lg btn-block">{% trans "Restore Backups" %}</button>
-                                                        </a>
+                                                <th>{% trans "Account" %}</th>
+                                                <th>{% trans "Plan Name" %}</th>
+                                                <th>{% trans "Subscription" %}</th>
+                                                <th>{% trans "Billing Cycle" %}</th>
+                                                <th>{% trans "Purchase Date" %}</th>
+                                                <th>{% trans "Actions" %}</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                            {% for plan in bPlans %}
+                                                <tr>
+                                                    <td>{{ plan.sftpUser }}</td>
+                                                    <td>{{ plan.planName }}</td>
+                                                    <td>{{ plan.subscription }}</td>
+                                                    {% if plan.months == '1' %}
+                                                        <td>${{ plan.price }}/month</td>
                                                     {% else %}
-                                                        <button type="button"
-                                                                ng-click="DeployAccount('{{ plan.id }}')"
-                                                                class="btn btn-primary btn-lg btn-block">{% trans "Deploy Account" %}</button>
+                                                        <td>${{ plan.price }}/year</td>
                                                     {% endif %}
-                                                </td>
-                                            </tr>
-                                        {% endfor %}
-                                        </tbody>
-                                    </table>
+                                                    <td>{{ plan.date }}</td>
+                                                    <td>
+                                                        {% if plan.state == 1 %}
+                                                            <a
+                                                                    href="{% url 'ManageOCBackups' %}?id={{ plan.id }}">
+                                                                <button style="margin-bottom: 1%" type="button"
+                                                                        class="btn btn-primary btn-lg btn-block">{% trans "Schedule Backups" %}</button>
+                                                            </a>
+                                                            <a href="{% url 'RestoreOCBackups' %}?id={{ plan.id }}">
+                                                                <button type="button"
+                                                                        class="btn btn-primary btn-lg btn-block">{% trans "Restore Backups" %}</button>
+                                                            </a>
+                                                        {% else %}
+                                                            <button type="button"
+                                                                    ng-click="DeployAccount('{{ plan.id }}')"
+                                                                    class="btn btn-primary btn-lg btn-block">{% trans "Deploy Account" %}</button>
+                                                        {% endif %}
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 </div>
-                            </div>
 
-                            <!------ List of Purchased backup plans --------------->
+                                <!------ List of Purchased backup plans --------------->
 
 
-                            <!------ List of Backup plans --------------->
+                                <!------ List of Backup plans --------------->
 
-                            <h3 class="title-hero">
-                                {% trans "Subscribe to one-click backup plans." %} <img ng-hide="cyberpanelLoading"
-                                                                                        src="{% static 'images/loading.gif' %}">
-                            </h3>
+                                <h3 class="title-hero">
+                                    {% trans "Subscribe to one-click backup plans." %} <img ng-hide="cyberpanelLoading"
+                                                                                            src="{% static 'images/loading.gif' %}">
+                                </h3>
 
-                            <div class="form-group">
-                                <div class="col-sm-12">
-                                    <table class="table">
-                                        <thead>
-                                        <tr>
-                                            <th>{% trans "Plan Name" %}</th>
-                                            <th>{% trans "Monthly Price" %}</th>
-                                            <th>{% trans "Yearly Price" %}</th>
-                                            <th>{% trans "Actions" %}</th>
-                                        </tr>
-                                        </thead>
-                                        <tbody>
-                                        {% for plan in plans %}
+                                <div class="form-group">
+                                    <div class="col-sm-12">
+                                        <table class="table">
+                                            <thead>
                                             <tr>
-                                                <td>{{ plan.name }}</td>
-                                                <td>${{ plan.monthlyPrice }}</td>
-                                                <td>${{ plan.yearlyPrice }}</td>
-                                                <td>
-                                                    {% if plan.name != '100GB' %}
-                                                        <button type="button"
-                                                                ng-click="PaypalBuyNowBackup('{{ plan.name }}', '{{ plan.monthlyPrice }}', '{{ plan.yearlyPrice }}', 1)"
-                                                                class="btn btn-primary btn-lg btn-block">{% trans "Buy Monthly (Paypal)" %}</button>
-                                                    {% endif %}
-                                                    <button type="button"
-                                                            ng-click="PaypalBuyNowBackup('{{ plan.name }}', '{{ plan.monthlyPrice }}', '{{ plan.yearlyPrice }}', 12)"
-                                                            class="btn btn-primary btn-lg btn-block">{% trans "Buy Yearly (Paypal)" %}</button>
-                                                    {% if plan.name != '100GB' %}
-                                                        <button type="button"
-                                                                ng-click="BuyNowBackupP('{{ plan.name }}', '{{ plan.monthlyPrice }}', '{{ plan.yearlyPrice }}', 1)"
-                                                                class="btn btn-primary btn-lg btn-block">{% trans "Buy Monthly via Card" %}</button>
-                                                    {% endif %}
-                                                    <button type="button"
-                                                            ng-click="BuyNowBackupP('{{ plan.name }}', '{{ plan.monthlyPrice }}', '{{ plan.yearlyPrice }}', 12)"
-                                                            class="btn btn-primary btn-lg btn-block">{% trans "Buy Yearly via Card" %}</button>
-                                                </td>
+                                                <th>{% trans "Plan Name" %}</th>
+                                                <th>{% trans "Monthly Price" %}</th>
+                                                <th>{% trans "Yearly Price" %}</th>
+                                                <th>{% trans "Actions" %}</th>
                                             </tr>
-                                        {% endfor %}
-                                        </tbody>
-                                    </table>
+                                            </thead>
+                                            <tbody>
+                                            {% for plan in plans %}
+                                                <tr>
+                                                    <td>{{ plan.name }}</td>
+                                                    <td>${{ plan.monthlyPrice }}</td>
+                                                    <td>${{ plan.yearlyPrice }}</td>
+                                                    <td>
+                                                        {% if plan.name != '100GB' %}
+                                                            <button type="button"
+                                                                    ng-click="PaypalBuyNowBackup('{{ plan.name }}', '{{ plan.monthlyPrice }}', '{{ plan.yearlyPrice }}', 1)"
+                                                                    class="btn btn-primary btn-lg btn-block">{% trans "Buy Monthly (Paypal)" %}</button>
+                                                        {% endif %}
+                                                        <button type="button"
+                                                                ng-click="PaypalBuyNowBackup('{{ plan.name }}', '{{ plan.monthlyPrice }}', '{{ plan.yearlyPrice }}', 12)"
+                                                                class="btn btn-primary btn-lg btn-block">{% trans "Buy Yearly (Paypal)" %}</button>
+                                                        {% if plan.name != '100GB' %}
+                                                            <button type="button"
+                                                                    ng-click="BuyNowBackupP('{{ plan.name }}', '{{ plan.monthlyPrice }}', '{{ plan.yearlyPrice }}', 1)"
+                                                                    class="btn btn-primary btn-lg btn-block">{% trans "Buy Monthly via Card" %}</button>
+                                                        {% endif %}
+                                                        <button type="button"
+                                                                ng-click="BuyNowBackupP('{{ plan.name }}', '{{ plan.monthlyPrice }}', '{{ plan.yearlyPrice }}', 12)"
+                                                                class="btn btn-primary btn-lg btn-block">{% trans "Buy Yearly via Card" %}</button>
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 </div>
-                            </div>
 
-                            <!------ List of backup plans --------------->
+                                <!------ List of backup plans --------------->
 
 
-                            <!--- AWS  End --->
+                                <!--- AWS  End --->
 
-                        </form>
+                            </form>
+                        </div>
                     </div>
                 </div>
             </div>
