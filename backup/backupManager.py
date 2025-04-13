@@ -2341,10 +2341,9 @@ class BackupManager:
 
     def ReconfigureSubscription(self, request=None, userID=None, data=None):
         try:
-            userID = request.session['userID']
-            admin = Administrator.objects.get(pk=userID)
-            
-            data = json.loads(request.body)
+            if not data:
+                return JsonResponse({'status': 0, 'error_message': 'No data provided'})
+
             subscription_id = data['subscription_id']
             customer_id = data['customer_id']
             plan_name = data['plan_name']
@@ -2372,13 +2371,13 @@ class BackupManager:
                     # Create OneClickBackups record
                     from IncBackups.models import OneClickBackups
                     backup_plan = OneClickBackups(
-                        owner=admin,
+                        owner=Administrator.objects.get(pk=userID),
                         planName=plan_name,
                         months='1' if interval == 'month' else '12',
                         price=amount,
                         customer=customer_id,
                         subscription=subscription_id,
-                        sftpUser=response_data.get('sftpUser'),  # Get username from platform response
+                        sftpUser=response_data.get('sftpUser'),
                         state=1  # Set as active since SFTP is already configured
                     )
                     backup_plan.save()
@@ -2388,10 +2387,10 @@ class BackupManager:
                         'IPAddress': response_data.get('ipAddress'),
                         'password': 'NOT-NEEDED',
                         'backupSSHPort': '22',
-                        'userName': response_data.get('sftpUser'),  # Use username from platform
+                        'userName': response_data.get('sftpUser'),
                         'type': 'SFTP',
                         'path': 'cpbackups',
-                        'name': response_data.get('sftpUser')  # Use username from platform
+                        'name': response_data.get('sftpUser')
                     }
 
                     wm = BackupManager()
@@ -2407,7 +2406,7 @@ class BackupManager:
             else:
                 return JsonResponse({'status': 0, 'error_message': f'Platform API error: {response.text}'})
 
-        except BaseException as msg:
-            return JsonResponse({'status': 0, 'error_message': str(msg)})
+        except Exception as e:
+            return JsonResponse({'status': 0, 'error_message': str(e)})
 
 

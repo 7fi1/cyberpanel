@@ -548,7 +548,8 @@ def ReconfigureSubscription(request):
         userID = request.session['userID']
         admin = Administrator.objects.get(pk=userID)
         bm = BackupManager()
-        return bm.ReconfigureSubscription(request, userID)
+        data = json.loads(request.body)
+        return bm.ReconfigureSubscription(request, userID, data)
     except BaseException as msg:
         data_ret = {'status': 0, 'error_message': str(msg)}
         json_data = json.dumps(data_ret)
