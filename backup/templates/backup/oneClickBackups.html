@@ -239,6 +239,35 @@
             margin-top: 30px;
         }
         
+        .page-description {
+            color: #6c757d;
+            margin-bottom: 25px;
+        }
+
+        .verify-email-section {
+            margin: 30px 0;
+            text-align: center;
+        }
+
+        .verify-email-btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.2s;
+            border: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .verify-email-btn:hover {
+            background-color: #0056b3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
         @media (max-width: 768px) {
             .plan-grid {
                 grid-template-columns: 1fr;
@@ -264,12 +293,12 @@
             </a>
         </div>
         
-        <p class="text-muted mb-4">On this page you purchase and manage one-click backups.</p>
+        <p class="page-description">On this page you purchase and manage one-click backups.</p>
 
         <div ng-controller="backupPlanNowOneClick">
             <!-- Email Verification Button -->
-            <div class="text-center mb-4" ng-hide="showVerification || showSubscriptionsTable">
-                <a href="javascript:void(0)" class="cp-btn cp-btn-primary" ng-click="showEmailVerification()">
+            <div class="verify-email-section" ng-hide="showVerification || showSubscriptionsTable">
+                <a href="javascript:void(0)" class="verify-email-btn" ng-click="showEmailVerification()">
                     {% trans "Verify Email to Access Your Backup Plans" %}
                 </a>
             </div>
