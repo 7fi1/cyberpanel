@@ -720,12 +720,23 @@ services:
                 for container in all_containers:
                     logging.writeToFile(f'Container name: {container.name}')
 
-            # Now filter containers
+            # Now filter containers - handle both CentOS and Ubuntu naming
             containers = []
+            
+            # Get both possible name formats
+            if ProcessUtilities.decideDistro() == ProcessUtilities.centos or ProcessUtilities.decideDistro() == ProcessUtilities.cent8:
+                search_name = self.DockerAppName  # Already in hyphen format for CentOS
+            else:
+                # For Ubuntu, convert underscore to hyphen as containers use hyphens
+                search_name = self.DockerAppName.replace('_', '-')
+            
+            if os.path.exists(ProcessUtilities.debugPath):
+                logging.writeToFile(f'Searching for containers with name containing: {search_name}')
+
             for container in all_containers:
                 if os.path.exists(ProcessUtilities.debugPath):
-                    logging.writeToFile(f'Checking container: {container.name} against filter: {self.DockerAppName}')
-                if self.DockerAppName.lower() in container.name.lower():
+                    logging.writeToFile(f'Checking container: {container.name} against filter: {search_name}')
+                if search_name.lower() in container.name.lower():
                     containers.append(container)
 
             if os.path.exists(ProcessUtilities.debugPath):
