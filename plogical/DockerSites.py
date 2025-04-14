@@ -705,38 +705,39 @@ services:
     ## This function need site name which was passed while creating the app
     def ListContainers(self):
         try:
-
             # Create a Docker client
             client = docker.from_env()
 
             FilerValue = self.DockerAppName
 
-            # Define the label to filter containers
-            label_filter = {'name': FilerValue}
-
-
-            # List containers matching the label filter
-            containers = client.containers.list(filters=label_filter)
+            # List all containers and filter by name
+            all_containers = client.containers.list(all=True)  # all=True to show both running and stopped containers
+            containers = [c for c in all_containers if FilerValue in c.name]
 
             json_data = "["
             checker = 0
 
             for container in containers:
+                try:
+                    dic = {
+                        'id': container.short_id,
+                        'name': container.name,
+                        'status': container.status,
+                        'state': container.attrs.get('State', {}),
+                        'health': container.attrs.get('State', {}).get('Health', {}).get('Status', 'unknown'),
+                        'volumes': container.attrs['HostConfig']['Binds'] if 'HostConfig' in container.attrs else [],
+                        'logs_50': container.logs(tail=50).decode('utf-8'),
+                        'ports': container.attrs['HostConfig']['PortBindings'] if 'HostConfig' in container.attrs else {}
+                    }
 
-                dic = {
-                    'id': container.short_id,
-                    'name': container.name,
-                    'status': container.status,
-                    'volumes': container.attrs['HostConfig']['Binds'] if 'HostConfig' in container.attrs else [],
-                    'logs_50': container.logs(tail=50).decode('utf-8'),
-                    'ports': container.attrs['HostConfig']['PortBindings'] if 'HostConfig' in container.attrs else {}
-                }
-
-                if checker == 0:
-                    json_data = json_data + json.dumps(dic)
-                    checker = 1
-                else:
-                    json_data = json_data + ',' + json.dumps(dic)
+                    if checker == 0:
+                        json_data = json_data + json.dumps(dic)
+                        checker = 1
+                    else:
+                        json_data = json_data + ',' + json.dumps(dic)
+                except Exception as e:
+                    logging.writeToFile(f"Error processing container {container.name}: {str(e)}")
+                    continue
 
             json_data = json_data + ']'
 
