@@ -182,14 +182,53 @@ class Docker_Sites(multi.Thread):
                 return 0, ReturnCode
 
         else:
-            command = 'apt install docker-compose -y'
-
-            ReturnCode = ProcessUtilities.executioner(command)
-
-            if ReturnCode:
-                return 1, None
-            else:
+            # Add Docker's official GPG key
+            command = 'curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg'
+            ReturnCode = ProcessUtilities.executioner(command, 'root', True)
+            if not ReturnCode:
                 return 0, ReturnCode
+
+            # Add Docker repository
+            command = 'echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null'
+            ReturnCode = ProcessUtilities.executioner(command, 'root', True)
+            if not ReturnCode:
+                return 0, ReturnCode
+
+            # Update package index
+            command = 'apt-get update'
+            ReturnCode = ProcessUtilities.executioner(command)
+            if not ReturnCode:
+                return 0, ReturnCode
+
+            # Install Docker packages
+            command = 'apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin'
+            ReturnCode = ProcessUtilities.executioner(command)
+            if not ReturnCode:
+                return 0, ReturnCode
+
+            # Enable and start Docker service
+            command = 'systemctl enable docker'
+            ReturnCode = ProcessUtilities.executioner(command)
+            if not ReturnCode:
+                return 0, ReturnCode
+
+            command = 'systemctl start docker'
+            ReturnCode = ProcessUtilities.executioner(command)
+            if not ReturnCode:
+                return 0, ReturnCode
+
+            # Install Docker Compose
+            command = 'curl -L "https://github.com/docker/compose/releases/download/v2.23.2/docker-compose-linux-$(uname -m)" -o /usr/local/bin/docker-compose'
+            ReturnCode = ProcessUtilities.executioner(command, 'root', True)
+            if not ReturnCode:
+                return 0, ReturnCode
+
+            command = 'chmod +x /usr/local/bin/docker-compose'
+            ReturnCode = ProcessUtilities.executioner(command, 'root', True)
+            if not ReturnCode:
+                return 0, ReturnCode
+
+            return 1, None
 
     @staticmethod
     def SetupProxy(port):
@@ -1106,19 +1145,24 @@ services:
             try:
                 logging.statusWriter(self.JobID, 'Starting deployment verification...,0')
                 
-                # Verify system resources
-                self.verify_system_resources()
-                logging.statusWriter(self.JobID, 'System resources verified...,10')
-                
                 # Check Docker installation
                 command = 'docker --help'
                 result = ProcessUtilities.outputExecutioner(command)
                 if result.find("not found") > -1:
-                    raise DockerDeploymentError(
-                        "Docker not installed",
-                        self.ERROR_DOCKER_NOT_INSTALLED
-                    )
+                    if os.path.exists(ProcessUtilities.debugPath):
+                        logging.writeToFile(f'About to run docker install function...')
+                    
+                    # Call InstallDocker to install Docker
+                    install_result, error = self.InstallDocker()
+                    if not install_result:
+                        logging.statusWriter(self.JobID, f'Failed to install Docker: {error} [404]')
+                        return 0
+
                 logging.statusWriter(self.JobID, 'Docker installation verified...,20')
+
+                # Verify system resources
+                self.verify_system_resources()
+                logging.statusWriter(self.JobID, 'System resources verified...,10')
 
                 # Create directories
                 command = f"mkdir -p /home/docker/{self.data['finalURL']}"
