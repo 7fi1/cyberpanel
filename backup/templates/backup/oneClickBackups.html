@@ -280,10 +280,6 @@
     </style>
 
     <div class="container">
-        <!-- Warning message from screenshot -->
-        <div class="info-box">
-            <p class="mb-0">Looks like something is wrong with your initial setup, please double check on Setup Wizard.</p>
-        </div>
 
         <!-- Page header -->
         <div class="page-header">
@@ -299,7 +295,7 @@
             <!-- Email Verification Button -->
             <div class="verify-email-section" ng-hide="showVerification || showSubscriptionsTable">
                 <a href="javascript:void(0)" class="verify-email-btn" ng-click="showEmailVerification()">
-                    {% trans "Verify Email to Access Your Backup Plans" %}
+                    {% trans "Fetch existing backup plans if any." %}
                 </a>
             </div>
 
