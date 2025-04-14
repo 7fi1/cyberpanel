@@ -708,11 +708,28 @@ services:
             # Create a Docker client
             client = docker.from_env()
 
-            FilerValue = self.DockerAppName
+            # Debug logging
+            if os.path.exists(ProcessUtilities.debugPath):
+                logging.writeToFile(f'DockerAppName: {self.DockerAppName}')
 
-            # List all containers and filter by name
-            all_containers = client.containers.list(all=True)  # all=True to show both running and stopped containers
-            containers = [c for c in all_containers if FilerValue in c.name]
+            # List all containers without filtering first
+            all_containers = client.containers.list(all=True)
+            
+            if os.path.exists(ProcessUtilities.debugPath):
+                logging.writeToFile(f'Total containers found: {len(all_containers)}')
+                for container in all_containers:
+                    logging.writeToFile(f'Container name: {container.name}')
+
+            # Now filter containers
+            containers = []
+            for container in all_containers:
+                if os.path.exists(ProcessUtilities.debugPath):
+                    logging.writeToFile(f'Checking container: {container.name} against filter: {self.DockerAppName}')
+                if self.DockerAppName.lower() in container.name.lower():
+                    containers.append(container)
+
+            if os.path.exists(ProcessUtilities.debugPath):
+                logging.writeToFile(f'Filtered containers count: {len(containers)}')
 
             json_data = "["
             checker = 0
@@ -740,6 +757,9 @@ services:
                     continue
 
             json_data = json_data + ']'
+
+            if os.path.exists(ProcessUtilities.debugPath):
+                logging.writeToFile(f'Final JSON data: {json_data}')
 
             return 1, json_data
 
