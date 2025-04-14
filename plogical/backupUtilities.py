@@ -53,8 +53,8 @@ try:
 except:
     pass
 
-VERSION = '2.3'
-BUILD = 9
+VERSION = '2.4'
+BUILD = 0
 
 
 ## I am not the monster that you think I am..
@@ -739,7 +739,7 @@ class backupUtilities:
 
                 dbName = database.find('dbName').text
 
-                if (VERSION == '2.1' or VERSION == '2.3') and int(BUILD) >= 1:
+                if ((VERSION == '2.1' or VERSION == '2.3') and int(BUILD) >= 1) or (VERSION == '2.4' and int(BUILD) >= 0):
 
                     logging.CyberCPLogFileWriter.writeToFile('Backup version 2.1.1+ detected..')
                     databaseUsers = database.findall('databaseUsers')
@@ -1073,7 +1073,7 @@ class backupUtilities:
 
                 dbName = database.find('dbName').text
 
-                if (VERSION == '2.1' or VERSION == '2.3') and int(BUILD) >= 1:
+                if ((VERSION == '2.1' or VERSION == '2.3') and int(BUILD) >= 1) or (VERSION == '2.4' and int(BUILD) >= 0):
 
                     logging.CyberCPLogFileWriter.writeToFile('Backup version 2.1.1+ detected..')
 

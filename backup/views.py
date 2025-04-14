@@ -546,7 +546,6 @@ def DeployAccount(request):
 def ReconfigureSubscription(request):
     try:
         userID = request.session['userID']
-        admin = Administrator.objects.get(pk=userID)
         bm = BackupManager()
         data = json.loads(request.body)
         return bm.ReconfigureSubscription(request, userID, data)
