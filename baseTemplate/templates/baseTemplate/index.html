@@ -248,10 +248,7 @@
                                title="{% trans 'Server IP Address' %}">
                                 <i class="glyph-icon tooltip-button icon-laptop" title="{% trans 'Server IP Address' %}"
                                    data-original-title=".icon-laptop"></i>
-                                <span id="ipAddressText" style="color: #488a3f;font-weight: bold;">{{ ipAddress }}</span>
-                            </a>
-                            <a href="#" onclick="copyIPAddress(); return false;" title="{% trans 'Copy IP Address' %}" style="padding: 10px 20px; margin-left: -10px;">
-                                <i class="fa fa-copy" style="color: #488a3f;"></i>
+                                <span onclick="copyIPAddress(); return false;" style="color: #488a3f; font-weight: bold; cursor: pointer;" title="{% trans 'Click to copy IP' %}">{{ ipAddress }}</span>
                             </a>
                             <a id="sidebar-menu-item-dashboard" href="{% url 'index' %}"
                                title="{% trans 'Dashboard' %}">
