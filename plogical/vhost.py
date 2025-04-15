@@ -448,6 +448,11 @@ class vhost:
                 if os.path.exists('/root/.acme.sh/%s' % (virtualHostName)):
                     shutil.rmtree('/root/.acme.sh/%s' % (virtualHostName))
 
+                ### Delete Docker Sites
+
+                if os.path.exists('/home/docker/%s' % (virtualHostName)):
+                    shutil.rmtree('/home/docker/%s' % (virtualHostName))
+
             except BaseException as msg:
                 logging.CyberCPLogFileWriter.writeToFile(str(msg) + " [Not able to remove virtual host configuration from main configuration file.]")
                 return 0
