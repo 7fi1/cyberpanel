@@ -245,10 +245,11 @@
                         <li class="header"><span>{% trans "Overview" %}</span></li>
                         <li>
                             <a id="sidebar-menu-item-server-ip-address" href="#"
-                               title="{% trans 'Server IP Address' %}">
+                               title="{% trans 'Server IP Address' %}" style="display: flex; align-items: center;">
                                 <i class="glyph-icon tooltip-button icon-laptop" title="{% trans 'Server IP Address' %}"
                                    data-original-title=".icon-laptop"></i>
-                                <span style="color: #488a3f;font-weight: bold;">{{ ipAddress }}</span>
+                                <span style="color: #488a3f;font-weight: bold; margin-right: 5px;">{{ ipAddress }}</span>
+                                <i class="fa fa-copy" style="cursor: pointer; font-size: 14px;" onclick="copyIPAddress()" title="{% trans 'Copy IP Address' %}"></i>
                             </a>
                             <a id="sidebar-menu-item-dashboard" href="{% url 'index' %}"
                                title="{% trans 'Dashboard' %}">
@@ -1228,5 +1229,27 @@
     </div>
     {% block footer_scripts %}
     {% endblock %}
+    <script type="text/javascript">
+    function copyIPAddress() {
+        const ipAddress = '{{ ipAddress }}';
+        navigator.clipboard.writeText(ipAddress).then(function() {
+            // Show success notification using PNotify
+            new PNotify({
+                title: 'Success',
+                text: 'IP Address copied to clipboard!',
+                type: 'success',
+                delay: 2000
+            });
+        }).catch(function(err) {
+            // Show error notification using PNotify
+            new PNotify({
+                title: 'Error',
+                text: 'Failed to copy IP address',
+                type: 'error',
+                delay: 2000
+            });
+        });
+    }
+    </script>
     </body>
 </html>
