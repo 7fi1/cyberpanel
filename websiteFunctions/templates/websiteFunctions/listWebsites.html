@@ -146,8 +146,8 @@
                                 <a href="javascript:void(0);" ng-click="showWPSites(web.domain)" class="wp-sites-link">
                                     <i class="fa-brands fa-wordpress btn-icon text-muted" data-toggle="tooltip" 
                                        data-placement="right" title="Show WordPress Sites"></i>
-                                    <span ng-if="!web.loadingWPSites && web.wp_sites && web.wp_sites.length > 0" class="wp-sites-count">
-                                        {$ web.wp_sites.length $} WordPress Sites
+                                    <span ng-if="!web.loadingWPSites" class="wp-sites-count">
+                                        {$ (web.wp_sites && web.wp_sites.length) || 0 $} WordPress Sites
                                     </span>
                                     <span ng-if="web.loadingWPSites" class="loading-indicator">
                                         Loading <i class="fa fa-spinner fa-spin"></i>
