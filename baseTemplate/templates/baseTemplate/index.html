@@ -245,11 +245,11 @@
                         <li class="header"><span>{% trans "Overview" %}</span></li>
                         <li>
                             <a id="sidebar-menu-item-server-ip-address" href="#"
-                               title="{% trans 'Server IP Address' %}" style="display: flex; align-items: center;">
+                               title="{% trans 'Server IP Address' %}" style="display: flex; align-items: center; gap: 5px;">
                                 <i class="glyph-icon tooltip-button icon-laptop" title="{% trans 'Server IP Address' %}"
                                    data-original-title=".icon-laptop"></i>
-                                <span style="color: #488a3f;font-weight: bold; margin-right: 5px;">{{ ipAddress }}</span>
-                                <i class="fa fa-copy" style="cursor: pointer; font-size: 14px;" onclick="copyIPAddress()" title="{% trans 'Copy IP Address' %}"></i>
+                                <span style="color: #488a3f;font-weight: bold;">{{ ipAddress }}</span>
+                                <i class="fa fa-copy" style="color: #488a3f; cursor: pointer; font-size: 13px; margin-left: 3px;" onclick="copyIPAddress()" title="{% trans 'Copy IP Address' %}"></i>
                             </a>
                             <a id="sidebar-menu-item-dashboard" href="{% url 'index' %}"
                                title="{% trans 'Dashboard' %}">
