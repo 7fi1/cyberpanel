@@ -929,7 +929,8 @@ class WebsiteManager:
                 'passwordprotection': passwd,
                 'wpcron': wpcron,
                 'theme': currentTheme,
-                'activePlugins': pluginCount
+                'activePlugins': pluginCount,
+                'phpVersion': wpsite.owner.phpSelection
 
             }
 
