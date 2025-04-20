@@ -1953,6 +1953,8 @@ class BackupManager:
                     for items in not_allowed_characters:
                         userName = userName.replace(items, '')
 
+                    import plogical.randomPassword as randomPassword
+
                     backup_plan = OneClickBackups(
                         owner=user,
                         planName=plan_name,
@@ -1960,7 +1962,7 @@ class BackupManager:
                         price=price,
                         customer=customer,
                         subscription=subscription,
-                        sftpUser=f'{userName}{str(randint(1000, 9999))}',
+                        sftpUser=f'{userName}_{randomPassword.generate_pass(8)}'.lower(),
                     )
                     backup_plan.save()
 
