@@ -2726,7 +2726,13 @@ class WebsiteManager:
             port = ProcessUtilities.fetchCurrentPort()
 
             webhookURL = 'https://' + ipAddress + ':%s/websites/' % (port) + self.domain + '/gitNotify'
+            webhookURL = webhookURL.replace(' ', '%20')
 
+            if website.externalApp == 'github':
+                command = "ssh-keygen -f /home/%s/.ssh/%s -t rsa -N ''" % (self.domain, website.externalApp)
+                ProcessUtilities.executioner(command, website.externalApp)
+
+                configContent = """Host github.com
             proc = httpProc(request, 'websiteFunctions/setupGit.html',
                             {'domainName': self.domain, 'installed': 1, 'webhookURL': webhookURL})
             return proc.render()
