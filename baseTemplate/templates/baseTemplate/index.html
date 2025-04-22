@@ -77,7 +77,7 @@
 
     <!-- HELPERS -->
 
-    {% with version="2.3.8.1.1" %}
+    {% with version="2.4.0" %}
 
         <link rel="stylesheet" type="text/css" href="{% static 'baseTemplate/assets/finalBase/finalBase.css' %}">
 
@@ -87,7 +87,7 @@
         <link rel="stylesheet" type="text/css"
               href="/static/baseTemplate/assets/themes/admin/color-schemes/default.css">
         <link rel="stylesheet" type="text/css"
-              href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css">
+              href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
         <link rel="stylesheet" type="text/css" href="{% static 'baseTemplate/custom-js/pnotify.custom.min.css' %}">
         <link rel="stylesheet" type="text/css" href="{% static 'websiteFunctions/websiteFunctions.css' %}">
         <link rel="icon" type="image/x-icon" href="{% static 'baseTemplate/assets/finalBase/favicon.png' %}">
@@ -248,7 +248,7 @@
                                title="{% trans 'Server IP Address' %}">
                                 <i class="glyph-icon tooltip-button icon-laptop" title="{% trans 'Server IP Address' %}"
                                    data-original-title=".icon-laptop"></i>
-                                <span style="color: #488a3f;font-weight: bold;">{{ ipAddress }}</span>
+                                <span onclick="copyIPAddress(); return false;" style="color: #488a3f; font-weight: bold; cursor: pointer;" title="{% trans 'Click to copy IP' %}">{{ ipAddress }}</span>
                             </a>
                             <a id="sidebar-menu-item-dashboard" href="{% url 'index' %}"
                                title="{% trans 'Dashboard' %}">
@@ -376,7 +376,6 @@
                                 <a href="#" title="{% trans 'Dockersite' %}">
                                     <div class="glyph-icon icon-globe" title="{% trans 'Docker Apps' %}"></div>
                                     <span>{% trans "Docker Apps" %}</span>
-                                    <span class="bs-label badge-yellow">{% trans "Beta" %}</span>
                                 </a>
                                 <div class="sidebar-submenu">
 
@@ -1198,6 +1197,7 @@
         <script src="{% static 'baseTemplate/custom-js/pnotify.custom.min.js' %}"></script>
         <script src="{% static 'packages/packages.js' %}?ver={{ version }}"></script>
         <script src="{% static 'websiteFunctions/websiteFunctions.js' %}?ver={{ version }}"></script>
+        <script type="text/javascript" src="{% static 'websiteFunctions/DockerContainers.js' %}?ver={{ version }}"></script>
         <script src="{% static 'tuning/tuning.js' %}?ver={{ version }}"></script>
         <script src="{% static 'serverStatus/serverStatus.js' %}?ver={{ version }}"></script>
         <script src="{% static 'dns/dns.js' %}?ver={{ version }}"></script>
@@ -1228,5 +1228,27 @@
     </div>
     {% block footer_scripts %}
     {% endblock %}
+    <script type="text/javascript">
+    function copyIPAddress() {
+        const ipAddress = '{{ ipAddress }}';
+        navigator.clipboard.writeText(ipAddress).then(function() {
+            // Show success notification using PNotify
+            new PNotify({
+                title: 'Success',
+                text: 'IP Address copied to clipboard!',
+                type: 'success',
+                delay: 2000
+            });
+        }).catch(function(err) {
+            // Show error notification using PNotify
+            new PNotify({
+                title: 'Error',
+                text: 'Failed to copy IP address',
+                type: 'error',
+                delay: 2000
+            });
+        });
+    }
+    </script>
     </body>
 </html>

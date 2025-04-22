@@ -14,6 +14,9 @@ from websiteFunctions.models import wpplugins
 from websiteFunctions.website import WebsiteManager
 from websiteFunctions.pluginManager import pluginManager
 from django.views.decorators.csrf import csrf_exempt
+from .dockerviews import startContainer as docker_startContainer
+from .dockerviews import stopContainer as docker_stopContainer
+from .dockerviews import restartContainer as docker_restartContainer
 
 def loadWebsitesHome(request):
     val = request.session['userID']
@@ -1843,19 +1846,40 @@ def Dockersitehome(request, dockerapp):
     except KeyError:
         return redirect(loadLoginPage)
 
-def GetWPSitesByDomain(request):
+def fetchWPDetails(request):
     try:
         userID = request.session['userID']
-        data = json.loads(request.body)
-        domain = data['domain']
-
+        data = {
+            'domain': request.POST.get('domain')
+        }
         wm = WebsiteManager()
-        response = wm.GetWPSitesByDomain(userID, data)
-        
-        return response
+        return wm.fetchWPSitesForDomain(userID, data)
     except KeyError:
-        return redirect(reverse('login'))
-    except BaseException as msg:
-        data_ret = {'status': 0, 'error_message': str(msg)}
-        json_data = json.dumps(data_ret)
-        return HttpResponse(json_data)
+        return redirect(loadLoginPage)
+
+@csrf_exempt
+def startContainer(request):
+    try:
+        if request.method == 'POST':
+            return docker_startContainer(request)
+        return HttpResponse('Not allowed')
+    except KeyError:
+        return redirect(loadLoginPage)
+
+@csrf_exempt
+def stopContainer(request):
+    try:
+        if request.method == 'POST':
+            return docker_stopContainer(request)
+        return HttpResponse('Not allowed')
+    except KeyError:
+        return redirect(loadLoginPage)
+
+@csrf_exempt
+def restartContainer(request):
+    try:
+        if request.method == 'POST':
+            return docker_restartContainer(request)
+        return HttpResponse('Not allowed')
+    except KeyError:
+        return redirect(loadLoginPage)

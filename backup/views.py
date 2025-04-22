@@ -5,6 +5,7 @@
 import json
 
 from django.shortcuts import redirect
+from django.http import HttpResponse
 
 from backup.backupManager import BackupManager
 from backup.pluginManager import pluginManager
@@ -12,6 +13,8 @@ from loginSystem.views import loadLoginPage
 import os
 from plogical.CyberCPLogFileWriter import CyberCPLogFileWriter as logging
 from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.models import User
+from loginSystem.models import Administrator
 
 def loadBackupHome(request):
     try:
@@ -539,3 +542,14 @@ def DeployAccount(request):
         return bm.DeployAccount(request, userID)
     except KeyError:
         return redirect(loadLoginPage)
+
+def ReconfigureSubscription(request):
+    try:
+        userID = request.session['userID']
+        bm = BackupManager()
+        data = json.loads(request.body)
+        return bm.ReconfigureSubscription(request, userID, data)
+    except BaseException as msg:
+        data_ret = {'status': 0, 'error_message': str(msg)}
+        json_data = json.dumps(data_ret)
+        return HttpResponse(json_data)

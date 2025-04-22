@@ -1,7 +1,7 @@
 from django.urls import path, re_path
 
 from . import views
-from websiteFunctions.views import Dockersitehome
+from websiteFunctions.views import Dockersitehome, startContainer, stopContainer, restartContainer
 
 urlpatterns = [
     re_path(r'^$', views.loadDockerHome, name='dockerHome'),
@@ -27,7 +27,7 @@ urlpatterns = [
     re_path(r'^recreateContainer$', views.recreateContainer, name='recreateContainer'),
     re_path(r'^installDocker$', views.installDocker, name='installDocker'),
     re_path(r'^images$', views.images, name='containerImage'),
-    re_path(r'^view/(?P<name>.+)$', views.viewContainer, name='viewContainer'),
+    re_path(r'^view/(?P<n>.+)$', views.viewContainer, name='viewContainer'),
 
     path('manage/<int:dockerapp>/app', Dockersitehome, name='Dockersitehome'),
     path('getDockersiteList', views.getDockersiteList, name='getDockersiteList'),
@@ -36,4 +36,9 @@ urlpatterns = [
     path('recreateappcontainer', views.recreateappcontainer, name='recreateappcontainer'),
     path('RestartContainerAPP', views.RestartContainerAPP, name='RestartContainerAPP'),
     path('StopContainerAPP', views.StopContainerAPP, name='StopContainerAPP'),
+
+    # Docker Container Actions
+    path('startContainer', startContainer, name='startContainer'),
+    path('stopContainer', stopContainer, name='stopContainer'),
+    path('restartContainer', restartContainer, name='restartContainer'),
 ]

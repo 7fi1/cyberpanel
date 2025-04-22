@@ -34,6 +34,7 @@ import googleapiclient.discovery
 from googleapiclient.discovery import build
 from websiteFunctions.models import NormalBackupDests, NormalBackupJobs, NormalBackupSites
 from plogical.IncScheduler import IncScheduler
+from django.http import JsonResponse
 
 class BackupManager:
     localBackupPath = '/home/cyberpanel/localBackupPath'
@@ -2337,5 +2338,77 @@ class BackupManager:
             data_ret = {'status': 0, 'error_message': response.text}
             json_data = json.dumps(data_ret)
             return HttpResponse(json_data)
+
+    def ReconfigureSubscription(self, request=None, userID=None, data=None):
+        try:
+            if not data:
+                return JsonResponse({'status': 0, 'error_message': 'No data provided'})
+
+            subscription_id = data['subscription_id']
+            customer_id = data['customer_id']
+            plan_name = data['plan_name']
+            amount = data['amount']
+            interval = data['interval']
+
+            # Call platform API to update SFTP key
+            import requests
+            import json
+
+            url = 'http://platform.cyberpersons.com/Billing/ReconfigureSubscription'
+            
+            payload = {
+                'subscription_id': subscription_id,
+                'key': ProcessUtilities.outputExecutioner(f'cat /root/.ssh/cyberpanel.pub'),
+                'serverIP': ACLManager.fetchIP(),
+                'email': data['email'],
+                'code': data['code']
+            }
+
+            headers = {'Content-Type': 'application/json'}
+            response = requests.post(url, headers=headers, data=json.dumps(payload))
+
+            if response.status_code == 200:
+                response_data = response.json()
+                if response_data.get('status') == 1:
+                    # Create OneClickBackups record
+                    from IncBackups.models import OneClickBackups
+                    backup_plan = OneClickBackups(
+                        owner=Administrator.objects.get(pk=userID),
+                        planName=plan_name,
+                        months='1' if interval == 'month' else '12',
+                        price=amount,
+                        customer=customer_id,
+                        subscription=subscription_id,
+                        sftpUser=response_data.get('sftpUser'),
+                        state=1  # Set as active since SFTP is already configured
+                    )
+                    backup_plan.save()
+
+                    # Create SFTP destination in CyberPanel
+                    finalDic = {
+                        'IPAddress': response_data.get('ipAddress'),
+                        'password': 'NOT-NEEDED',
+                        'backupSSHPort': '22',
+                        'userName': response_data.get('sftpUser'),
+                        'type': 'SFTP',
+                        'path': 'cpbackups',
+                        'name': response_data.get('sftpUser')
+                    }
+
+                    wm = BackupManager()
+                    response_inner = wm.submitDestinationCreation(userID, finalDic)
+                    response_data_inner = json.loads(response_inner.content.decode('utf-8'))
+
+                    if response_data_inner.get('status') == 0:
+                        return JsonResponse({'status': 0, 'error_message': response_data_inner.get('error_message')})
+
+                    return JsonResponse({'status': 1})
+                else:
+                    return JsonResponse({'status': 0, 'error_message': response_data.get('error_message')})
+            else:
+                return JsonResponse({'status': 0, 'error_message': f'Platform API error: {response.text}'})
+
+        except Exception as e:
+            return JsonResponse({'status': 0, 'error_message': str(e)})
 
 

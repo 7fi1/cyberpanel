@@ -51,6 +51,7 @@ urlpatterns = [
     path('AddWPsiteforRemoteBackup', views.AddWPsiteforRemoteBackup, name='AddWPsiteforRemoteBackup'),
     path('UpdateRemoteschedules', views.UpdateRemoteschedules, name='UpdateRemoteschedules'),
     path('ScanWordpressSite', views.ScanWordpressSite, name='ScanWordpressSite'),
+    path('fetchWPDetails', views.fetchWPDetails, name='fetchWPDetails'),
 
     # AddPlugin
     path('ConfigurePlugins', views.ConfigurePlugins, name='ConfigurePlugins'),
@@ -178,6 +179,11 @@ urlpatterns = [
     path('ListDockerSites', views.ListDockerSites, name='ListDockerSites'),
     path('fetchDockersite', views.fetchDockersite, name='fetchDockersite'),
 
+    # Docker Container Actions
+    path('docker/startContainer', views.startContainer, name='startContainer'),
+    path('docker/stopContainer', views.stopContainer, name='stopContainer'),
+    path('docker/restartContainer', views.restartContainer, name='restartContainer'),
+
     # SSH Configs
     path('getSSHConfigs', views.getSSHConfigs, name='getSSHConfigs'),
     path('deleteSSHKey', views.deleteSSHKey, name='deleteSSHKey'),
@@ -194,6 +200,4 @@ urlpatterns = [
     # Catch all for domains
     path('<domain>/<childDomain>', views.launchChild, name='launchChild'),
     path('<domain>', views.domain, name='domain'),
-
-    path(r'GetWPSitesByDomain', views.GetWPSitesByDomain, name='GetWPSitesByDomain'),
 ]

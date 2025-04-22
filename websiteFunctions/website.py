@@ -859,6 +859,19 @@ class WebsiteManager:
                 Vhuser, FinalPHPPath, path)
             lscachee = ProcessUtilities.outputExecutioner(command)
 
+            # Get current theme
+            command = 'sudo -u %s %s -d error_reporting=0 /usr/bin/wp theme list --status=active --field=name --skip-plugins --skip-themes --path=%s 2>/dev/null' % (
+                Vhuser, FinalPHPPath, path)
+            currentTheme = ProcessUtilities.outputExecutioner(command, None, True)
+            currentTheme = currentTheme.strip()
+
+            # Get number of plugins
+            command = 'sudo -u %s %s -d error_reporting=0 /usr/bin/wp plugin list --field=name --skip-plugins --skip-themes --path=%s 2>/dev/null' % (
+                Vhuser, FinalPHPPath, path)
+            plugins = ProcessUtilities.outputExecutioner(command, None, True)
+            pluginCount = len([p for p in plugins.split('\n') if p.strip()])
+
+
             if lscachee.find('Status: Active') > -1:
                 lscache = 1
             else:
@@ -881,6 +894,8 @@ class WebsiteManager:
             command = 'sudo -u %s %s -d error_reporting=0 /usr/bin/wp maintenance-mode status --skip-plugins --skip-themes --path=%s' % (
                 Vhuser, FinalPHPPath, path)
             maintenanceMod = ProcessUtilities.outputExecutioner(command)
+
+            
 
             result = maintenanceMod.splitlines()[-1]
             if result.find('not active') > -1:
@@ -912,7 +927,10 @@ class WebsiteManager:
                 'searchIndex': searchindex,
                 'maintenanceMode': maintenanceMode,
                 'passwordprotection': passwd,
-                'wpcron': wpcron
+                'wpcron': wpcron,
+                'theme': currentTheme,
+                'activePlugins': pluginCount,
+                'phpVersion': wpsite.owner.phpSelection
 
             }
 
@@ -1935,12 +1953,12 @@ class WebsiteManager:
             data_ret = {'status': 0, 'installStatus': 0, 'error_message': str(msg)}
             json_data = json.dumps(data_ret)
             return HttpResponse(json_data)
-
+        
     def UpdateWPSettings(self, userID=None, data=None):
         try:
             currentACL = ACLManager.loadedACL(userID)
             admin = Administrator.objects.get(pk=userID)
-
+            
             siteId = data['siteId']
             setting = data['setting']
             value = data['value']
@@ -1949,150 +1967,1561 @@ class WebsiteManager:
             
             if ACLManager.checkOwnership(wpsite.owner.domain, admin, currentACL) != 1:
                 return ACLManager.loadError()
+                
+            # Get PHP version and path
+            Webobj = Websites.objects.get(pk=wpsite.owner_id)
+            Vhuser = Webobj.externalApp
+            PHPVersion = Webobj.phpSelection
+            php = ACLManager.getPHPString(PHPVersion)
+            FinalPHPPath = '/usr/local/lsws/lsphp%s/bin/php' % (php)
+
+            # Update the appropriate setting based on the setting type
+            if setting == 'search-indexing':
+                # Update search engine indexing
+                command = f'sudo -u {Vhuser} {FinalPHPPath} -d error_reporting=0 /usr/bin/wp option update blog_public {value} --skip-plugins --skip-themes --path={wpsite.path}'
+            elif setting == 'debugging':
+                # Update debugging in wp-config.php
+                if value:
+                    command = f'sudo -u {Vhuser} {FinalPHPPath} -d error_reporting=0 /usr/bin/wp config set WP_DEBUG true --raw --skip-plugins --skip-themes --path={wpsite.path}'
+                else:
+                    command = f'sudo -u {Vhuser} {FinalPHPPath} -d error_reporting=0 /usr/bin/wp config set WP_DEBUG false --raw --skip-plugins --skip-themes --path={wpsite.path}'
+            elif setting == 'password-protection':
+                vhostName = wpsite.owner.domain
+                vhostPassDir = f'/home/{vhostName}'
+                path = f'{vhostPassDir}/{siteId}'
+                if value:
+                    # Enable password protection
+                    tempPath = f'/home/cyberpanel/{str(randint(1000, 9999))}'
+                    os.makedirs(tempPath)
+
+                    # Create temporary .htpasswd file
+                    htpasswd = f'{tempPath}/.htpasswd'
+                    htaccess = f'{tempPath}/.htaccess'
+                    password = randomPassword.generate_pass(12)
+        
+                    # Create .htpasswd file
+                    command = f"htpasswd -cb {htpasswd} admin {password}"
+                    ProcessUtilities.executioner(command)
+                    
+                    # Create .htaccess file content
+                    htaccess_content = f"""
+AuthType Basic
+AuthName "Restricted Access"
+AuthUserFile {path}/.htpasswd
+Require valid-user
+"""
+
+                    with open(htaccess, 'w') as f:
+                        f.write(htaccess_content)
+
+                    # Create final directory and move files
+                    command = f"mkdir -p {path}"
+                    ProcessUtilities.executioner(command, wpsite.owner.externalApp)
+
+                    # Move files to final location
+                    command = f"mv {htpasswd} {path}/.htpasswd"
+                    ProcessUtilities.executioner(command, wpsite.owner.externalApp)
+
+                    command = f"mv {htaccess} {wpsite.path}/.htaccess" 
+                    ProcessUtilities.executioner(command, wpsite.owner.externalApp)
+
+                    # Cleanup temp directory
+                    command = f"rm -rf {tempPath}"
+                    ProcessUtilities.executioner(command)
+
+                else:
+                    # Disable password protection
+                    if os.path.exists(path):
+                        command = f"rm -rf {path}"
+                        ProcessUtilities.executioner(command, wpsite.owner.externalApp)
+
+                    htaccess = f'{wpsite.path}/.htaccess'
+                    if os.path.exists(htaccess):
+                        command = f"rm -f {htaccess}"
+                        ProcessUtilities.executioner(command, wpsite.owner.externalApp)
+
+                    return JsonResponse({'status': 1, 'error_message': 'None'})
+            elif setting == 'maintenance-mode':
+                if value:
+                    command = f'sudo -u {Vhuser} {FinalPHPPath} -d error_reporting=0 /usr/bin/wp maintenance-mode activate --skip-plugins --skip-themes --path={wpsite.path}'
+                else:
+                    command = f'sudo -u {Vhuser} {FinalPHPPath} -d error_reporting=0 /usr/bin/wp maintenance-mode deactivate --skip-plugins --skip-themes --path={wpsite.path}'
+            else:
+                return JsonResponse({'status': 0, 'error_message': 'Invalid setting type'})
+            
+            result = ProcessUtilities.outputExecutioner(command)
+            if result.find('Error:') > -1:
+                return JsonResponse({'status': 0, 'error_message': result})
+                
+            return JsonResponse({'status': 1, 'error_message': 'None'})
+
+        except BaseException as msg:
+            return JsonResponse({'status': 0, 'error_message': str(msg)})
+
+
+
+
+    def submitWorpressCreation(self, userID=None, data=None):
+        try:
+            currentACL = ACLManager.loadedACL(userID)
+            admin = Administrator.objects.get(pk=userID)
 
             extraArgs = {}
+            extraArgs['currentACL'] = currentACL
             extraArgs['adminID'] = admin.pk
-            extraArgs['siteId'] = siteId
-            extraArgs['setting'] = setting
-            extraArgs['value'] = value
+            extraArgs['domainName'] = data['domain']
+            extraArgs['WPVersion'] = data['WPVersion']
+            extraArgs['blogTitle'] = data['title']
+            try:
+                extraArgs['pluginbucket'] = data['pluginbucket']
+            except:
+                extraArgs['pluginbucket'] = '-1'
+            extraArgs['adminUser'] = data['adminUser']
+            extraArgs['PasswordByPass'] = data['PasswordByPass']
+            extraArgs['adminPassword'] = data['PasswordByPass']
+            extraArgs['adminEmail'] = data['Email']
+            extraArgs['updates'] = data['AutomaticUpdates']
+            extraArgs['Plugins'] = data['Plugins']
+            extraArgs['Themes'] = data['Themes']
+            extraArgs['websiteOwner'] = data['websiteOwner']
+            extraArgs['package'] = data['package']
+            extraArgs['home'] = data['home']
+            extraArgs['apacheBackend'] = data['apacheBackend']
+            try:
+                extraArgs['path'] = data['path']
+                if extraArgs['path'] == '':
+                    extraArgs['home'] = '1'
+            except:
+                pass
+            extraArgs['tempStatusPath'] = "/home/cyberpanel/" + str(randint(1000, 9999))
 
-            background = ApplicationInstaller('UpdateWPSettings', extraArgs)
+            background = ApplicationInstaller('wordpressInstallNew', extraArgs)
             background.start()
 
-            data_ret = {'status': 1, 'error_message': 'None'}
+            time.sleep(2)
+
+            data_ret = {'status': 1, 'installStatus': 1, 'error_message': 'None',
+                        'tempStatusPath': extraArgs['tempStatusPath']}
             json_data = json.dumps(data_ret)
             return HttpResponse(json_data)
+
 
         except BaseException as msg:
             data_ret = {'status': 0, 'installStatus': 0, 'error_message': str(msg)}
             json_data = json.dumps(data_ret)
             return HttpResponse(json_data)
 
-    def GetWPSitesByDomain(self, userID=None, data=None):
+    def submitWebsiteCreation(self, userID=None, data=None):
         try:
             currentACL = ACLManager.loadedACL(userID)
+
+            domain = data['domainName']
+            adminEmail = data['adminEmail']
+            phpSelection = data['phpSelection']
+            packageName = data['package']
+            websiteOwner = data['websiteOwner'].lower()
+
+            if data['domainName'].find("cyberpanel.website") > -1:
+                url = "https://platform.cyberpersons.com/CyberpanelAdOns/CreateDomain"
+
+                domain_data = {
+                    "name": "test-domain",
+                    "IP": ACLManager.GetServerIP(),
+                    "domain": data['domainName']
+                }
+
+                import requests
+                response = requests.post(url, data=json.dumps(domain_data))
+                domain_status = response.json()['status']
+
+                if domain_status == 0:
+                    data_ret = {'status': 0, 'installStatus': 0, 'error_message': response.json()['error_message']}
+                    json_data = json.dumps(data_ret)
+                    return HttpResponse(json_data)
+
+            loggedUser = Administrator.objects.get(pk=userID)
+            newOwner = Administrator.objects.get(userName=websiteOwner)
+
+            if ACLManager.currentContextPermission(currentACL, 'createWebsite') == 0:
+                return ACLManager.loadErrorJson('createWebSiteStatus', 0)
+
+            if ACLManager.checkOwnerProtection(currentACL, loggedUser, newOwner) == 0:
+                return ACLManager.loadErrorJson('createWebSiteStatus', 0)
+
+            if currentACL['admin'] == 0:
+                if ACLManager.CheckDomainBlackList(domain) == 0:
+                    data_ret = {'status': 0, 'createWebSiteStatus': 0, 'error_message': "Blacklisted domain."}
+                    json_data = json.dumps(data_ret)
+                    return HttpResponse(json_data)
+
+            if not validators.domain(domain):
+                data_ret = {'status': 0, 'createWebSiteStatus': 0, 'error_message': "Invalid domain."}
+                json_data = json.dumps(data_ret)
+                return HttpResponse(json_data)
+
+            if not validators.email(adminEmail) or adminEmail.find('--') > -1:
+                data_ret = {'status': 0, 'createWebSiteStatus': 0, 'error_message': "Invalid email."}
+                json_data = json.dumps(data_ret)
+                return HttpResponse(json_data)
+
+            try:
+                HA = data['HA']
+                externalApp = 'nobody'
+            except:
+                externalApp = "".join(re.findall("[a-zA-Z]+", domain))[:5] + str(randint(1000, 9999))
+
+            try:
+                counter = 0
+                while 1:
+                    tWeb = Websites.objects.get(externalApp=externalApp)
+                    externalApp = '%s%s' % (tWeb.externalApp, str(counter))
+                    counter = counter + 1
+            except:
+                pass
+
+            tempStatusPath = "/home/cyberpanel/" + str(randint(1000, 9999))
+
+            try:
+                apacheBackend = str(data['apacheBackend'])
+            except:
+                apacheBackend = "0"
+
+            try:
+                mailDomain = str(data['mailDomain'])
+            except:
+                mailDomain = "1"
+
+            import pwd
+            counter = 0
+
+            ## Create Configurations
+
+            execPath = "/usr/local/CyberCP/bin/python " + virtualHostUtilities.cyberPanel + "/plogical/virtualHostUtilities.py"
+            execPath = execPath + " createVirtualHost --virtualHostName " + domain + \
+                       " --administratorEmail " + adminEmail + " --phpVersion '" + phpSelection + \
+                       "' --virtualHostUser " + externalApp + " --ssl " + str(1) + " --dkimCheck " \
+                       + str(1) + " --openBasedir " + str(data['openBasedir']) + \
+                       ' --websiteOwner "' + websiteOwner + '" --package "' + packageName + '" --tempStatusPath ' + tempStatusPath + " --apache " + apacheBackend + " --mailDomain %s" % (
+                           mailDomain)
+
+            ProcessUtilities.popenExecutioner(execPath)
+            time.sleep(2)
+
+            data_ret = {'status': 1, 'createWebSiteStatus': 1, 'error_message': "None",
+                        'tempStatusPath': tempStatusPath, 'LinuxUser': externalApp}
+            json_data = json.dumps(data_ret)
+            return HttpResponse(json_data)
+
+
+        except BaseException as msg:
+            data_ret = {'status': 0, 'createWebSiteStatus': 0, 'error_message': str(msg)}
+            json_data = json.dumps(data_ret)
+            return HttpResponse(json_data)
+
+    def submitDomainCreation(self, userID=None, data=None):
+        try:
+
+            currentACL = ACLManager.loadedACL(userID)
             admin = Administrator.objects.get(pk=userID)
+
+            try:
+                alias = data['alias']
+            except:
+                alias = 0
+
+            masterDomain = data['masterDomain']
+            domain = data['domainName']
+
+
+            if alias == 0:
+                phpSelection = data['phpSelection']
+                path = data['path']
+            else:
+
+                ### if master website have apache then create this sub-domain also as ols + apache
+
+                apachePath = ApacheVhost.configBasePath + masterDomain + '.conf'
+
+                if os.path.exists(apachePath):
+                    data['apacheBackend'] = 1
+
+                phpSelection = Websites.objects.get(domain=masterDomain).phpSelection
+
+            tempStatusPath = "/home/cyberpanel/" + str(randint(1000, 9999))
+
+            if not validators.domain(domain):
+                data_ret = {'status': 0, 'createWebSiteStatus': 0, 'error_message': "Invalid domain."}
+                json_data = json.dumps(data_ret)
+                return HttpResponse(json_data)
+
+            if data['domainName'].find("cyberpanel.website") > -1:
+                url = "https://platform.cyberpersons.com/CyberpanelAdOns/CreateDomain"
+
+                domain_data = {
+                    "name": "test-domain",
+                    "IP": ACLManager.GetServerIP(),
+                    "domain": data['domainName']
+                }
+
+                import requests
+                response = requests.post(url, data=json.dumps(domain_data))
+                domain_status = response.json()['status']
+
+                if domain_status == 0:
+                    data_ret = {'status': 0, 'installStatus': 0, 'error_message': response.json()['error_message']}
+                    json_data = json.dumps(data_ret)
+                    return HttpResponse(json_data)
+
+            if ACLManager.checkOwnership(masterDomain, admin, currentACL) == 1:
+                pass
+            else:
+                return ACLManager.loadErrorJson('createWebSiteStatus', 0)
+
+            if data['path'].find('..') > -1:
+                return ACLManager.loadErrorJson('createWebSiteStatus', 0)
+
+            if currentACL['admin'] != 1:
+                data['openBasedir'] = 1
+
+            if alias == 0:
+
+                if len(path) > 0:
+                    path = path.lstrip("/")
+                    path = "/home/" + masterDomain + "/" + path
+                else:
+                    path = "/home/" + masterDomain + "/" + domain
+            else:
+                path = f'/home/{masterDomain}/public_html'
+
+            try:
+                apacheBackend = str(data['apacheBackend'])
+            except:
+                apacheBackend = "0"
+
+            execPath = "/usr/local/CyberCP/bin/python " + virtualHostUtilities.cyberPanel + "/plogical/virtualHostUtilities.py"
+
+            execPath = execPath + " createDomain --masterDomain " + masterDomain + " --virtualHostName " + domain + \
+                       " --phpVersion '" + phpSelection + "' --ssl " + str(1) + " --dkimCheck " + str(1) \
+                       + " --openBasedir " + str(data['openBasedir']) + ' --path ' + path + ' --websiteOwner ' \
+                       + admin.userName + ' --tempStatusPath ' + tempStatusPath + " --apache " + apacheBackend + f' --aliasDomain {str(alias)}'
+
+            ProcessUtilities.popenExecutioner(execPath)
+            time.sleep(2)
+
+            data_ret = {'status': 1, 'createWebSiteStatus': 1, 'error_message': "None",
+                        'tempStatusPath': tempStatusPath}
+            json_data = json.dumps(data_ret)
+            return HttpResponse(json_data)
+
+        except BaseException as msg:
+            data_ret = {'status': 0, 'createWebSiteStatus': 0, 'error_message': str(msg)}
+            json_data = json.dumps(data_ret)
+            return HttpResponse(json_data)
+
+    def fetchDomains(self, userID=None, data=None):
+        try:
+
+            currentACL = ACLManager.loadedACL(userID)
+            admin = Administrator.objects.get(pk=userID)
+            masterDomain = data['masterDomain']
+
+            try:
+                alias = data['alias']
+            except:
+                alias = 0
+
+            if ACLManager.checkOwnership(masterDomain, admin, currentACL) == 1:
+                pass
+            else:
+                return ACLManager.loadErrorJson('fetchStatus', 0)
+
+            cdManager = ChildDomainManager(masterDomain)
+            json_data = cdManager.findChildDomainsJson(alias)
+
+            final_json = json.dumps({'status': 1, 'fetchStatus': 1, 'error_message': "None", "data": json_data})
+            return HttpResponse(final_json)
+
+        except BaseException as msg:
+            final_dic = {'status': 0, 'fetchStatus': 0, 'error_message': str(msg)}
+            final_json = json.dumps(final_dic)
+            return HttpResponse(final_json)
+
+    def searchWebsites(self, userID=None, data=None):
+        try:
+            currentACL = ACLManager.loadedACL(userID)
+            try:
+                json_data = self.searchWebsitesJson(currentACL, userID, data['patternAdded'])
+            except BaseException as msg:
+                tempData = {}
+                tempData['page'] = 1
+                return self.getFurtherAccounts(userID, tempData)
+
+            pagination = self.websitePagination(currentACL, userID)
+            final_dic = {'status': 1, 'listWebSiteStatus': 1, 'error_message': "None", "data": json_data,
+                         'pagination': pagination}
+            final_json = json.dumps(final_dic)
+            return HttpResponse(final_json)
+        except BaseException as msg:
+            dic = {'status': 1, 'listWebSiteStatus': 0, 'error_message': str(msg)}
+            json_data = json.dumps(dic)
+            return HttpResponse(json_data)
+
+    def searchChilds(self, userID=None, data=None):
+        try:
+            currentACL = ACLManager.loadedACL(userID)
+
+            websites = ACLManager.findWebsiteObjects(currentACL, userID)
+            childDomains = []
+
+            for web in websites:
+                for child in web.childdomains_set.filter(domain__istartswith=data['patternAdded']):
+                    childDomains.append(child)
+
+            json_data = self.findChildsListJson(childDomains)
+
+            final_dic = {'status': 1, 'listWebSiteStatus': 1, 'error_message': "None", "data": json_data}
+            final_json = json.dumps(final_dic)
+            return HttpResponse(final_json)
+        except BaseException as msg:
+            dic = {'status': 1, 'listWebSiteStatus': 0, 'error_message': str(msg)}
+            json_data = json.dumps(dic)
+            return HttpResponse(json_data)
+
+    def getFurtherAccounts(self, userID=None, data=None):
+        try:
+            currentACL = ACLManager.loadedACL(userID)
+            pageNumber = int(data['page'])
+            json_data = self.findWebsitesJson(currentACL, userID, pageNumber)
+            pagination = self.websitePagination(currentACL, userID)
+            final_dic = {'status': 1, 'listWebSiteStatus': 1, 'error_message': "None", "data": json_data,
+                         'pagination': pagination}
+            final_json = json.dumps(final_dic)
+            return HttpResponse(final_json)
+        except BaseException as msg:
+            dic = {'status': 1, 'listWebSiteStatus': 0, 'error_message': str(msg)}
+            json_data = json.dumps(dic)
+            return HttpResponse(json_data)
+
+    def fetchWebsitesList(self, userID=None, data=None):
+        try:
+            currentACL = ACLManager.loadedACL(userID)
+            pageNumber = int(data['page'])
+            recordsToShow = int(data['recordsToShow'])
+
+            if os.path.exists(ProcessUtilities.debugPath):
+                logging.CyberCPLogFileWriter.writeToFile(f'Fetch sites step 1..')
+
+            endPageNumber, finalPageNumber = self.recordsPointer(pageNumber, recordsToShow)
+
+            if os.path.exists(ProcessUtilities.debugPath):
+                logging.CyberCPLogFileWriter.writeToFile(f'Fetch sites step 2..')
+
+            websites = ACLManager.findWebsiteObjects(currentACL, userID)
+
+            if os.path.exists(ProcessUtilities.debugPath):
+                logging.CyberCPLogFileWriter.writeToFile(f'Fetch sites step 3..')
+
+            pagination = self.getPagination(len(websites), recordsToShow)
+
+            if os.path.exists(ProcessUtilities.debugPath):
+                logging.CyberCPLogFileWriter.writeToFile(f'Fetch sites step 4..')
+
+            json_data = self.findWebsitesListJson(websites[finalPageNumber:endPageNumber])
+
+            if os.path.exists(ProcessUtilities.debugPath):
+                logging.CyberCPLogFileWriter.writeToFile(f'Fetch sites step 5..')
+
+            final_dic = {'status': 1, 'listWebSiteStatus': 1, 'error_message': "None", "data": json_data,
+                         'pagination': pagination}
+            final_json = json.dumps(final_dic)
+            return HttpResponse(final_json)
+        except BaseException as msg:
+            dic = {'status': 1, 'listWebSiteStatus': 0, 'error_message': str(msg)}
+            json_data = json.dumps(dic)
+            return HttpResponse(json_data)
+
+    def fetchChildDomainsMain(self, userID=None, data=None):
+        try:
+            currentACL = ACLManager.loadedACL(userID)
+            pageNumber = int(data['page'])
+            recordsToShow = int(data['recordsToShow'])
+
+            endPageNumber, finalPageNumber = self.recordsPointer(pageNumber, recordsToShow)
+            websites = ACLManager.findWebsiteObjects(currentACL, userID)
+            childDomains = []
+
+            for web in websites:
+                for child in web.childdomains_set.filter(alais=0):
+                    if child.domain == f'mail.{web.domain}':
+                        pass
+                    else:
+                        childDomains.append(child)
+
+            pagination = self.getPagination(len(childDomains), recordsToShow)
+            json_data = self.findChildsListJson(childDomains[finalPageNumber:endPageNumber])
+
+            final_dic = {'status': 1, 'listWebSiteStatus': 1, 'error_message': "None", "data": json_data,
+                         'pagination': pagination}
+            final_json = json.dumps(final_dic)
+            return HttpResponse(final_json)
+        except BaseException as msg:
+            dic = {'status': 1, 'listWebSiteStatus': 0, 'error_message': str(msg)}
+            json_data = json.dumps(dic)
+            return HttpResponse(json_data)
+
+    def findWebsitesListJson(self, websites):
+        try:
+            ipFile = "/etc/cyberpanel/machineIP"
+            f = open(ipFile)
+            ipData = f.read()
+            ipAddress = ipData.split('\n', 1)[0]
+        except BaseException as msg:
+            logging.CyberCPLogFileWriter.writeToFile("Failed to read machine IP, error:" + str(msg))
+            ipAddress = "192.168.100.1"
+
+        json_data = []
+
+        for website in websites:
+            wp_sites = []
+            try:
+                wp_sites = WPSites.objects.filter(owner=website)
+                wp_sites = [{
+                    'id': wp.id,
+                    'title': wp.title,
+                    'url': wp.FinalURL,
+                    'version': wp.version if hasattr(wp, 'version') else 'Unknown',
+                    'phpVersion': wp.phpVersion if hasattr(wp, 'phpVersion') else 'Unknown'
+                } for wp in wp_sites]
+            except:
+                pass
+
+            # Calculate disk usage
+            DiskUsage, DiskUsagePercentage, bwInMB, bwUsage = virtualHostUtilities.FindStats(website)
+            diskUsed = "%sMB" % str(DiskUsage)
+
+            # Convert numeric state to text
+            state = "Active" if website.state == 1 else "Suspended"
+
+            json_data.append({
+                'domain': website.domain,
+                'adminEmail': website.adminEmail,
+                'phpVersion': website.phpSelection,
+                'state': state,
+                'ipAddress': ipAddress,
+                'package': website.package.packageName,
+                'admin': website.admin.userName,
+                'wp_sites': wp_sites,
+                'diskUsed': diskUsed
+            })
+        return json.dumps(json_data)
+
+
+
+    def findDockersitesListJson(self, Dockersite):
+
+        json_data = "["
+        checker = 0
+
+        try:
+            ipFile = "/etc/cyberpanel/machineIP"
+            f = open(ipFile)
+            ipData = f.read()
+            ipAddress = ipData.split('\n', 1)[0]
+        except BaseException as msg:
+            logging.CyberCPLogFileWriter.writeToFile("Failed to read machine IP, error:" + str(msg))
+            ipAddress = "192.168.100.1"
+
+        from plogical.phpUtilities import phpUtilities
+        for items in Dockersite:
+            website = Websites.objects.get(pk=items.admin.pk)
+            vhFile = f'/usr/local/lsws/conf/vhosts/{website.domain}/vhost.conf'
+
+            try:
+                PHPVersionActual = phpUtilities.WrapGetPHPVersionFromFileToGetVersionWithPHP(website)
+            except:
+                PHPVersionActual = 'PHP 8.1'
+
+
+            if items.state == 0:
+                state = "Suspended"
+            else:
+                state = "Active"
+
+            dpkg = PackageAssignment.objects.get(user=website.admin)
+
+
+            dic = {'id':items.pk, 'domain': website.domain,  'adminEmail': website.adminEmail, 'ipAddress': ipAddress,
+                   'admin': website.admin.userName, 'package': dpkg.package.Name, 'state': state,
+                   'CPU': int(items.CPUsMySQL)+int(items.CPUsSite), 'Ram': int(items.MemorySite)+int(items.MemoryMySQL),  'phpVersion': PHPVersionActual }
+
+            if checker == 0:
+                json_data = json_data + json.dumps(dic)
+                checker = 1
+            else:
+                json_data = json_data + ',' + json.dumps(dic)
+
+        json_data = json_data + ']'
+
+        return json_data
+
+    def findChildsListJson(self, childs):
+
+        json_data = "["
+        checker = 0
+
+        try:
+            ipFile = "/etc/cyberpanel/machineIP"
+            f = open(ipFile)
+            ipData = f.read()
+            ipAddress = ipData.split('\n', 1)[0]
+        except BaseException as msg:
+            logging.CyberCPLogFileWriter.writeToFile("Failed to read machine IP, error:" + str(msg))
+            ipAddress = "192.168.100.1"
+
+        for items in childs:
+
+            dic = {'domain': items.domain, 'masterDomain': items.master.domain, 'adminEmail': items.master.adminEmail,
+                   'ipAddress': ipAddress,
+                   'admin': items.master.admin.userName, 'package': items.master.package.packageName,
+                   'path': items.path}
+
+            if checker == 0:
+                json_data = json_data + json.dumps(dic)
+                checker = 1
+            else:
+                json_data = json_data + ',' + json.dumps(dic)
+
+        json_data = json_data + ']'
+
+        return json_data
+
+    def recordsPointer(self, page, toShow):
+        finalPageNumber = ((page * toShow)) - toShow
+        endPageNumber = finalPageNumber + toShow
+        return endPageNumber, finalPageNumber
+
+    def getPagination(self, records, toShow):
+        pages = float(records) / float(toShow)
+
+        pagination = []
+        counter = 1
+
+        if pages <= 1.0:
+            pages = 1
+            pagination.append(counter)
+        else:
+            pages = ceil(pages)
+            finalPages = int(pages) + 1
+
+            for i in range(1, finalPages):
+                pagination.append(counter)
+                counter = counter + 1
+
+        return pagination
+
+    def submitWebsiteDeletion(self, userID=None, data=None):
+        try:
+            if data['websiteName'].find("cyberpanel.website") > -1:
+                url = "https://platform.cyberpersons.com/CyberpanelAdOns/DeleteDomain"
+
+                domain_data = {
+                    "name": "test-domain",
+                    "IP": ACLManager.GetServerIP(),
+                    "domain": data['websiteName']
+                }
+
+                import requests
+                response = requests.post(url, data=json.dumps(domain_data))
+
+            currentACL = ACLManager.loadedACL(userID)
+            if ACLManager.currentContextPermission(currentACL, 'deleteWebsite') == 0:
+                return ACLManager.loadErrorJson('websiteDeleteStatus', 0)
+
+            websiteName = data['websiteName']
+
+            admin = Administrator.objects.get(pk=userID)
+            if ACLManager.checkOwnership(websiteName, admin, currentACL) == 1:
+                pass
+            else:
+                return ACLManager.loadErrorJson('websiteDeleteStatus', 0)
+
+            ## Deleting master domain
+
+            execPath = "/usr/local/CyberCP/bin/python " + virtualHostUtilities.cyberPanel + "/plogical/virtualHostUtilities.py"
+            execPath = execPath + " deleteVirtualHostConfigurations --virtualHostName " + websiteName
+            ProcessUtilities.popenExecutioner(execPath)
+
+            ### delete site from dgdrive backups
+
+            try:
+
+                from websiteFunctions.models import GDriveSites
+                GDriveSites.objects.filter(domain=websiteName).delete()
+            except:
+                pass
+
+            data_ret = {'status': 1, 'websiteDeleteStatus': 1, 'error_message': "None"}
+            json_data = json.dumps(data_ret)
+            return HttpResponse(json_data)
+
+        except BaseException as msg:
+            data_ret = {'status': 0, 'websiteDeleteStatus': 0, 'error_message': str(msg)}
+            json_data = json.dumps(data_ret)
+            return HttpResponse(json_data)
+
+    def submitDomainDeletion(self, userID=None, data=None):
+        try:
+
+            if data['websiteName'].find("cyberpanel.website") > -1:
+                url = "https://platform.cyberpersons.com/CyberpanelAdOns/DeleteDomain"
+
+                domain_data = {
+                    "name": "test-domain",
+                    "IP": ACLManager.GetServerIP(),
+                    "domain": data['websiteName']
+                }
+
+                import requests
+                response = requests.post(url, data=json.dumps(domain_data))
+
+            currentACL = ACLManager.loadedACL(userID)
+            admin = Administrator.objects.get(pk=userID)
+            websiteName = data['websiteName']
+
+            try:
+                DeleteDocRoot = int(data['DeleteDocRoot'])
+            except:
+                DeleteDocRoot = 0
+
+            if ACLManager.checkOwnership(websiteName, admin, currentACL) == 1:
+                pass
+            else:
+                return ACLManager.loadErrorJson('websiteDeleteStatus', 0)
+
+            execPath = "/usr/local/CyberCP/bin/python " + virtualHostUtilities.cyberPanel + "/plogical/virtualHostUtilities.py"
+            execPath = execPath + " deleteDomain --virtualHostName " + websiteName + ' --DeleteDocRoot %s' % (
+                str(DeleteDocRoot))
+            ProcessUtilities.outputExecutioner(execPath)
+
+            data_ret = {'status': 1, 'websiteDeleteStatus': 1, 'error_message': "None"}
+            json_data = json.dumps(data_ret)
+            return HttpResponse(json_data)
+
+        except BaseException as msg:
+            data_ret = {'status': 0, 'websiteDeleteStatus': 0, 'error_message': str(msg)}
+            json_data = json.dumps(data_ret)
+            return HttpResponse(json_data)
+
+    def submitWebsiteStatus(self, userID=None, data=None):
+        try:
+            currentACL = ACLManager.loadedACL(userID)
+            if ACLManager.currentContextPermission(currentACL, 'suspendWebsite') == 0:
+                return ACLManager.loadErrorJson('websiteStatus', 0)
+
+            websiteName = data['websiteName']
+            state = data['state']
+
+            website = Websites.objects.get(domain=websiteName)
+
+            admin = Administrator.objects.get(pk=userID)
+            if ACLManager.checkOwnership(websiteName, admin, currentACL) == 1:
+                pass
+            else:
+                return ACLManager.loadErrorJson('websiteStatus', 0)
+
+            if state == "Suspend":
+                confPath = virtualHostUtilities.Server_root + "/conf/vhosts/" + websiteName
+                command = "mv " + confPath + " " + confPath + "-suspended"
+                ProcessUtilities.popenExecutioner(command)
+
+                childDomains = website.childdomains_set.all()
+
+                for items in childDomains:
+                    confPath = virtualHostUtilities.Server_root + "/conf/vhosts/" + items.domain
+                    command = "mv " + confPath + " " + confPath + "-suspended"
+                    ProcessUtilities.executioner(command)
+
+                installUtilities.reStartLiteSpeedSocket()
+                website.state = 0
+            else:
+                confPath = virtualHostUtilities.Server_root + "/conf/vhosts/" + websiteName
+
+                command = "mv " + confPath + "-suspended" + " " + confPath
+                ProcessUtilities.executioner(command)
+
+                command = "chown -R " + "lsadm" + ":" + "lsadm" + " " + confPath
+                ProcessUtilities.popenExecutioner(command)
+
+                childDomains = website.childdomains_set.all()
+
+                for items in childDomains:
+                    confPath = virtualHostUtilities.Server_root + "/conf/vhosts/" + items.domain
+
+                    command = "mv " + confPath + "-suspended" + " " + confPath
+                    ProcessUtilities.executioner(command)
+
+                    command = "chown -R " + "lsadm" + ":" + "lsadm" + " " + confPath
+                    ProcessUtilities.popenExecutioner(command)
+
+                installUtilities.reStartLiteSpeedSocket()
+                website.state = 1
+
+            website.save()
+
+            data_ret = {'websiteStatus': 1, 'error_message': "None"}
+            json_data = json.dumps(data_ret)
+            return HttpResponse(json_data)
+
+        except BaseException as msg:
+
+            data_ret = {'websiteStatus': 0, 'error_message': str(msg)}
+            json_data = json.dumps(data_ret)
+            return HttpResponse(json_data)
+
+    def submitWebsiteModify(self, userID=None, data=None):
+        try:
+
+            currentACL = ACLManager.loadedACL(userID)
+            if ACLManager.currentContextPermission(currentACL, 'modifyWebsite') == 0:
+                return ACLManager.loadErrorJson('modifyStatus', 0)
+
+            admin = Administrator.objects.get(pk=userID)
+            if ACLManager.checkOwnership(data['websiteToBeModified'], admin, currentACL) == 1:
+                pass
+            else:
+                return ACLManager.loadErrorJson('websiteDeleteStatus', 0)
+
+            packs = ACLManager.loadPackages(userID, currentACL)
+            admins = ACLManager.loadAllUsers(userID)
+
+            ## Get packs name
+
+            json_data = "["
+            checker = 0
+
+            for items in packs:
+                dic = {"pack": items}
+
+                if checker == 0:
+                    json_data = json_data + json.dumps(dic)
+                    checker = 1
+                else:
+                    json_data = json_data + ',' + json.dumps(dic)
+
+            json_data = json_data + ']'
+
+            ### Get admin names
+
+            admin_data = "["
+            checker = 0
+
+            for items in admins:
+                dic = {"adminNames": items}
+
+                if checker == 0:
+                    admin_data = admin_data + json.dumps(dic)
+                    checker = 1
+                else:
+                    admin_data = admin_data + ',' + json.dumps(dic)
+
+            admin_data = admin_data + ']'
+
+            websiteToBeModified = data['websiteToBeModified']
+
+            modifyWeb = Websites.objects.get(domain=websiteToBeModified)
+
+            email = modifyWeb.adminEmail
+            currentPack = modifyWeb.package.packageName
+            owner = modifyWeb.admin.userName
+
+            data_ret = {'status': 1, 'modifyStatus': 1, 'error_message': "None", "adminEmail": email,
+                        "packages": json_data, "current_pack": currentPack, "adminNames": admin_data,
+                        'currentAdmin': owner}
+            final_json = json.dumps(data_ret)
+            return HttpResponse(final_json)
+
+        except BaseException as msg:
+            dic = {'status': 0, 'modifyStatus': 0, 'error_message': str(msg)}
+            json_data = json.dumps(dic)
+            return HttpResponse(json_data)
+
+    def fetchWebsiteDataJSON(self, userID=None, data=None):
+        try:
+
+            currentACL = ACLManager.loadedACL(userID)
+            if ACLManager.currentContextPermission(currentACL, 'createWebsite') == 0:
+                return ACLManager.loadErrorJson('createWebSiteStatus', 0)
+
+            packs = ACLManager.loadPackages(userID, currentACL)
+            admins = ACLManager.loadAllUsers(userID)
+
+            ## Get packs name
+
+            json_data = "["
+            checker = 0
+
+            for items in packs:
+                dic = {"pack": items}
+
+                if checker == 0:
+                    json_data = json_data + json.dumps(dic)
+                    checker = 1
+                else:
+                    json_data = json_data + ',' + json.dumps(dic)
+
+            json_data = json_data + ']'
+
+            ### Get admin names
+
+            admin_data = "["
+            checker = 0
+
+            for items in admins:
+                dic = {"adminNames": items}
+
+                if checker == 0:
+                    admin_data = admin_data + json.dumps(dic)
+                    checker = 1
+                else:
+                    admin_data = admin_data + ',' + json.dumps(dic)
+
+            admin_data = admin_data + ']'
+
+            data_ret = {'status': 1, 'error_message': "None",
+                        "packages": json_data, "adminNames": admin_data}
+            final_json = json.dumps(data_ret)
+            return HttpResponse(final_json)
+
+        except BaseException as msg:
+            dic = {'status': 0, 'error_message': str(msg)}
+            json_data = json.dumps(dic)
+            return HttpResponse(json_data)
+
+    def saveWebsiteChanges(self, userID=None, data=None):
+        try:
             domain = data['domain']
+            package = data['packForWeb']
+            email = data['email']
+            phpVersion = data['phpVersion']
+            newUser = data['admin']
 
-            # Get the website object for the domain
-            website = Websites.objects.get(domain=domain)
+            currentACL = ACLManager.loadedACL(userID)
+            if ACLManager.currentContextPermission(currentACL, 'modifyWebsite') == 0:
+                return ACLManager.loadErrorJson('saveStatus', 0)
 
+            admin = Administrator.objects.get(pk=userID)
             if ACLManager.checkOwnership(domain, admin, currentACL) == 1:
+                pass
+            else:
+                return ACLManager.loadErrorJson('websiteDeleteStatus', 0)
+
+            newOwner = Administrator.objects.get(userName=newUser)
+            if ACLManager.checkUserOwnerShip(currentACL, admin, newOwner) == 1:
+                pass
+            else:
+                return ACLManager.loadErrorJson('websiteDeleteStatus', 0)
+
+            confPath = virtualHostUtilities.Server_root + "/conf/vhosts/" + domain
+            completePathToConfigFile = confPath + "/vhost.conf"
+
+            execPath = "/usr/local/CyberCP/bin/python " + virtualHostUtilities.cyberPanel + "/plogical/virtualHostUtilities.py"
+            execPath = execPath + " changePHP --phpVersion '" + phpVersion + "' --path " + completePathToConfigFile
+            ProcessUtilities.popenExecutioner(execPath)
+
+            ####
+
+            newOwner = Administrator.objects.get(userName=newUser)
+
+            modifyWeb = Websites.objects.get(domain=domain)
+            webpack = Package.objects.get(packageName=package)
+
+            modifyWeb.package = webpack
+            modifyWeb.adminEmail = email
+            modifyWeb.phpSelection = phpVersion
+            modifyWeb.admin = newOwner
+
+            modifyWeb.save()
+
+            ## Fix https://github.com/usmannasir/cyberpanel/issues/998
+
+            # from plogical.IncScheduler import IncScheduler
+            # isPU = IncScheduler('CalculateAndUpdateDiskUsage', {})
+            # isPU.start()
+
+            command = '/usr/local/CyberCP/bin/python /usr/local/CyberCP/plogical/IncScheduler.py UpdateDiskUsageForce'
+            ProcessUtilities.outputExecutioner(command)
+
+            ##
+
+            data_ret = {'status': 1, 'saveStatus': 1, 'error_message': "None"}
+            json_data = json.dumps(data_ret)
+            return HttpResponse(json_data)
+
+        except BaseException as msg:
+            data_ret = {'status': 0, 'saveStatus': 0, 'error_message': str(msg)}
+            json_data = json.dumps(data_ret)
+            return HttpResponse(json_data)
+
+    def loadDomainHome(self, request=None, userID=None, data=None):
+
+        if Websites.objects.filter(domain=self.domain).exists():
+
+            currentACL = ACLManager.loadedACL(userID)
+            website = Websites.objects.get(domain=self.domain)
+            admin = Administrator.objects.get(pk=userID)
+
+            if ACLManager.checkOwnership(self.domain, admin, currentACL) == 1:
                 pass
             else:
                 return ACLManager.loadError()
 
-            # Get all WP sites for this website
-            wp_sites = WPSites.objects.filter(owner=website)
-            
-            sites_data = []
-            
-            for wp in wp_sites:
-                # Get PHP version
-                php = ACLManager.getPHPString(website.phpSelection)
-                FinalPHPPath = f'/usr/local/lsws/lsphp{php}/bin/php'
-                
-                # Get WP version
-                command = f'sudo -u {website.externalApp} {FinalPHPPath} -d error_reporting=0 /usr/bin/wp core version --skip-plugins --skip-themes --path={wp.path} 2>/dev/null'
-                version = ProcessUtilities.outputExecutioner(command, None, True)
-                version = version.rstrip("\n") if version else 'Unknown'
-                
-                # Get active plugins count
-                command = f'sudo -u {website.externalApp} {FinalPHPPath} -d error_reporting=0 /usr/bin/wp plugin list --skip-plugins --skip-themes --format=json --path={wp.path}'
-                plugins_output = ProcessUtilities.outputExecutioner(command)
-                try:
-                    plugins = json.loads(plugins_output.splitlines()[-1])
-                    active_plugins = len([p for p in plugins if p['status'] == 'active'])
-                except:
-                    active_plugins = 0
-                
-                # Get active theme
-                command = f'sudo -u {website.externalApp} {FinalPHPPath} -d error_reporting=0 /usr/bin/wp theme list --skip-plugins --skip-themes --format=json --path={wp.path}'
-                theme_output = ProcessUtilities.outputExecutioner(command)
-                try:
-                    themes = json.loads(theme_output.splitlines()[-1])
-                    active_theme = next((t['name'] for t in themes if t['status'] == 'active'), 'Unknown')
-                except:
-                    active_theme = 'Unknown'
-                
-                # Get debugging status
-                command = f'sudo -u {website.externalApp} {FinalPHPPath} -d error_reporting=0 /usr/bin/wp config get WP_DEBUG --skip-plugins --skip-themes --path={wp.path}'
-                debugging = ProcessUtilities.outputExecutioner(command).strip() == 'true'
-                
-                # Get search indexing status
-                command = f'sudo -u {website.externalApp} {FinalPHPPath} -d error_reporting=0 /usr/bin/wp option get blog_public --skip-plugins --skip-themes --path={wp.path}'
-                search_index = ProcessUtilities.outputExecutioner(command).strip() == '1'
-                
-                # Get maintenance mode status
-                command = f'sudo -u {website.externalApp} {FinalPHPPath} -d error_reporting=0 /usr/bin/wp maintenance-mode status --skip-plugins --skip-themes --path={wp.path}'
-                maintenance_mode = 'Active' in ProcessUtilities.outputExecutioner(command)
-                
-                # Get password protection status
-                command = f'sudo -u {website.externalApp} {FinalPHPPath} -d error_reporting=0 /usr/bin/wp option get wp_page_for_privacy_policy --skip-plugins --skip-themes --path={wp.path}'
-                password_protection = ProcessUtilities.outputExecutioner(command).strip() != '0'
-                
-                sites_data.append({
-                    'id': wp.id,
-                    'title': wp.title,
-                    'url': wp.FinalURL,
-                    'version': version,
-                    'phpVersion': website.phpSelection,
-                    'theme': active_theme,
-                    'activePlugins': active_plugins,
-                    'debugging': debugging,
-                    'searchIndex': search_index,
-                    'maintenanceMode': maintenance_mode,
-                    'passwordProtection': password_protection
-                })
-            
-            return HttpResponse(json.dumps({
-                'status': 1,
-                'error_message': None,
-                'data': sites_data
-            }))
-            
-        except Websites.DoesNotExist:
-            return HttpResponse(json.dumps({
-                'status': 0,
-                'error_message': f'Website with domain {domain} does not exist'
-            }))
-        except Exception as e:
-            return HttpResponse(json.dumps({
-                'status': 0,
-                'error_message': str(e)
-            }))
+            Data = {}
 
-    def submitWebsiteModify(self, userID=None, data=None):
-        try:
+            marketingStatus = emACL.checkIfEMEnabled(admin.userName)
+
+            Data['marketingStatus'] = marketingStatus
+            Data['ftpTotal'] = website.package.ftpAccounts
+            Data['ftpUsed'] = website.users_set.all().count()
+
+            Data['databasesUsed'] = website.databases_set.all().count()
+            Data['databasesTotal'] = website.package.dataBases
+
+            Data['domain'] = self.domain
+
+            DiskUsage, DiskUsagePercentage, bwInMB, bwUsage = virtualHostUtilities.FindStats(website)
+
+            ## bw usage calculations
+
+            Data['bwInMBTotal'] = website.package.bandwidth
+            Data['bwInMB'] = bwInMB
+            Data['bwUsage'] = bwUsage
+
+            if DiskUsagePercentage > 100:
+                DiskUsagePercentage = 100
+
+            Data['diskUsage'] = DiskUsagePercentage
+            Data['diskInMB'] = DiskUsage
+            Data['diskInMBTotal'] = website.package.diskSpace
+
+            Data['phps'] = PHPManager.findPHPVersions()
+
+            servicePath = '/home/cyberpanel/postfix'
+            if os.path.exists(servicePath):
+                Data['email'] = 1
+            else:
+                Data['email'] = 0
+
+            ## Getting SSL Information
+            try:
+                import OpenSSL
+                from datetime import datetime
+                filePath = '/etc/letsencrypt/live/%s/fullchain.pem' % (self.domain)
+                x509 = OpenSSL.crypto.load_certificate(OpenSSL.crypto.FILETYPE_PEM,
+                                                       open(filePath, 'r').read())
+                expireData = x509.get_notAfter().decode('ascii')
+                finalDate = datetime.strptime(expireData, '%Y%m%d%H%M%SZ')
+
+                now = datetime.now()
+                diff = finalDate - now
+                Data['viewSSL'] = 1
+                Data['days'] = str(diff.days)
+                Data['authority'] = x509.get_issuer().get_components()[1][1].decode('utf-8')
+
+                if Data['authority'] == 'Denial':
+                    Data['authority'] = '%s has SELF-SIGNED SSL.' % (self.domain)
+                else:
+                    Data['authority'] = '%s has SSL from %s.' % (self.domain, Data['authority'])
+
+            except BaseException as msg:
+                Data['viewSSL'] = 0
+                logging.CyberCPLogFileWriter.writeToFile(str(msg))
+
+            servicePath = '/home/cyberpanel/pureftpd'
+            if os.path.exists(servicePath):
+                Data['ftp'] = 1
+            else:
+                Data['ftp'] = 0
+
+            proc = httpProc(request, 'websiteFunctions/website.html', Data)
+            return proc.render()
+        else:
+            proc = httpProc(request, 'websiteFunctions/website.html',
+                            {"error": 1, "domain": "This domain does not exists."})
+            return proc.render()
+
+    def launchChild(self, request=None, userID=None, data=None):
+
+        if ChildDomains.objects.filter(domain=self.childDomain).exists():
             currentACL = ACLManager.loadedACL(userID)
             admin = Administrator.objects.get(pk=userID)
-            
-            if ACLManager.currentContextPermission(currentACL, 'modifyWebsite') == 0:
-                return ACLManager.loadErrorJson('modifyWebSiteStatus', 0)
 
-            website = Websites.objects.get(domain=data['websiteName'])
-            
-            if ACLManager.checkOwnership(website.domain, admin, currentACL) == 0:
-                return ACLManager.loadErrorJson()
-            
-            if website.package.packageName != data['package']:
-                package = Package.objects.get(packageName=data['package'])
-                website.package = package
-            
-            website.adminEmail = data['email']
+            if ACLManager.checkOwnership(self.domain, admin, currentACL) == 1:
+                pass
+            else:
+                return ACLManager.loadError()
+
+            website = Websites.objects.get(domain=self.domain)
+
+            Data = {}
+
+            Data['ftpTotal'] = website.package.ftpAccounts
+            Data['ftpUsed'] = website.users_set.all().count()
+
+            Data['databasesUsed'] = website.databases_set.all().count()
+            Data['databasesTotal'] = website.package.dataBases
+
+            Data['domain'] = self.domain
+            Data['childDomain'] = self.childDomain
+
+            DiskUsage, DiskUsagePercentage, bwInMB, bwUsage = virtualHostUtilities.FindStats(website)
+
+            ## bw usage calculations
+
+            Data['bwInMBTotal'] = website.package.bandwidth
+            Data['bwInMB'] = bwInMB
+            Data['bwUsage'] = bwUsage
+
+            if DiskUsagePercentage > 100:
+                DiskUsagePercentage = 100
+
+            Data['diskUsage'] = DiskUsagePercentage
+            Data['diskInMB'] = DiskUsage
+            Data['diskInMBTotal'] = website.package.diskSpace
+
+            Data['phps'] = PHPManager.findPHPVersions()
+
+            servicePath = '/home/cyberpanel/postfix'
+            if os.path.exists(servicePath):
+                Data['email'] = 1
+            else:
+                Data['email'] = 0
+
+            servicePath = '/home/cyberpanel/pureftpd'
+            if os.path.exists(servicePath):
+                Data['ftp'] = 1
+            else:
+                Data['ftp'] = 0
+
+            ## Getting SSL Information
+            try:
+                import OpenSSL
+                from datetime import datetime
+                filePath = '/etc/letsencrypt/live/%s/fullchain.pem' % (self.childDomain)
+                x509 = OpenSSL.crypto.load_certificate(OpenSSL.crypto.FILETYPE_PEM,
+                                                       open(filePath, 'r').read())
+                expireData = x509.get_notAfter().decode('ascii')
+                finalDate = datetime.strptime(expireData, '%Y%m%d%H%M%SZ')
+
+                now = datetime.now()
+                diff = finalDate - now
+                Data['viewSSL'] = 1
+                Data['days'] = str(diff.days)
+                Data['authority'] = x509.get_issuer().get_components()[1][1].decode('utf-8')
+
+                if Data['authority'] == 'Denial':
+                    Data['authority'] = '%s has SELF-SIGNED SSL.' % (self.childDomain)
+                else:
+                    Data['authority'] = '%s has SSL from %s.' % (self.childDomain, Data['authority'])
+
+            except BaseException as msg:
+                Data['viewSSL'] = 0
+                logging.CyberCPLogFileWriter.writeToFile(str(msg))
+
+            proc = httpProc(request, 'websiteFunctions/launchChild.html', Data)
+            return proc.render()
+        else:
+            proc = httpProc(request, 'websiteFunctions/launchChild.html',
+                            {"error": 1, "domain": "This child domain does not exists"})
+            return proc.render()
+
+    def getDataFromLogFile(self, userID=None, data=None):
+
+        currentACL = ACLManager.loadedACL(userID)
+        admin = Administrator.objects.get(pk=userID)
+
+        logType = data['logType']
+        self.domain = data['virtualHost']
+        page = data['page']
+
+        if ACLManager.checkOwnership(self.domain, admin, currentACL) == 1:
+            pass
+        else:
+            return ACLManager.loadErrorJson('logstatus', 0)
+
+        if logType == 1:
+            fileName = "/home/" + self.domain + "/logs/" + self.domain + ".access_log"
+        else:
+            fileName = "/home/" + self.domain + "/logs/" + self.domain + ".error_log"
+
+        command = 'ls -la %s' % fileName
+        result = ProcessUtilities.outputExecutioner(command)
+
+        if result.find('->') > -1:
+            final_json = json.dumps(
+                {'status': 0, 'logstatus': 0,
+                 'error_message': "Symlink attack."})
+            return HttpResponse(final_json)
+
+        ## get Logs
+        website = Websites.objects.get(domain=self.domain)
+
+        output = virtualHostUtilities.getAccessLogs(fileName, page, website.externalApp)
+
+        if output.find("1,None") > -1:
+            final_json = json.dumps(
+                {'status': 0, 'logstatus': 0,
+                 'error_message': "Not able to fetch logs, see CyberPanel main log file, Error: %s" % (output)})
+            return HttpResponse(final_json)
+
+        ## get log ends here.
+
+        data = output.split("\n")
+
+        json_data = "["
+        checker = 0
+
+        for items in reversed(data):
+            if len(items) > 10:
+                logData = items.split(" ")
+                domain = logData[5].strip('"')
+                ipAddress = logData[0].strip('"')
+                time = (logData[3]).strip("[").strip("]")
+                resource = logData[6].strip('"')
+                size = logData[9].replace('"', '')
+
+                dic = {'domain': domain,
+                       'ipAddress': ipAddress,
+                       'time': time,
+                       'resource': resource,
+                       'size': size,
+                       }
+
+                if checker == 0:
+                    json_data = json_data + json.dumps(dic)
+                    checker = 1
+                else:
+                    json_data = json_data + ',' + json.dumps(dic)
+
+        json_data = json_data + ']'
+        final_json = json.dumps({'status': 1, 'logstatus': 1, 'error_message': "None", "data": json_data})
+        return HttpResponse(final_json)
+
+    def fetchErrorLogs(self, userID=None, data=None):
+
+        currentACL = ACLManager.loadedACL(userID)
+        admin = Administrator.objects.get(pk=userID)
+
+        self.domain = data['virtualHost']
+        page = data['page']
+
+        if ACLManager.checkOwnership(self.domain, admin, currentACL) == 1:
+            pass
+        else:
+            return ACLManager.loadErrorJson('logstatus', 0)
+
+        fileName = "/home/" + self.domain + "/logs/" + self.domain + ".error_log"
+
+        command = 'ls -la %s' % fileName
+        result = ProcessUtilities.outputExecutioner(command)
+
+        if result.find('->') > -1:
+            final_json = json.dumps(
+                {'status': 0, 'logstatus': 0,
+                 'error_message': "Symlink attack."})
+            return HttpResponse(final_json)
+
+        ## get Logs
+        website = Websites.objects.get(domain=self.domain)
+
+        output = virtualHostUtilities.getErrorLogs(fileName, page, website.externalApp)
+
+        if output.find("1,None") > -1:
+            final_json = json.dumps(
+                {'status': 0, 'logstatus': 0, 'error_message': "Not able to fetch logs, see CyberPanel main log file!"})
+            return HttpResponse(final_json)
+
+        ## get log ends here.
+
+        final_json = json.dumps({'status': 1, 'logstatus': 1, 'error_message': "None", "data": output})
+        return HttpResponse(final_json)
+
+    def getDataFromConfigFile(self, userID=None, data=None):
+
+        currentACL = ACLManager.loadedACL(userID)
+        admin = Administrator.objects.get(pk=userID)
+        self.domain = data['virtualHost']
+
+        if ACLManager.checkOwnership(self.domain, admin, currentACL) == 1:
+            pass
+        else:
+            return ACLManager.loadErrorJson('configstatus', 0)
+
+        command = 'cat %s' % ('/usr/local/lsws/conf/dvhost_redis.conf')
+
+        if ProcessUtilities.outputExecutioner(command).find('127.0.0.1') == -1:
+            filePath = installUtilities.Server_root_path + "/conf/vhosts/" + self.domain + "/vhost.conf"
+
+            command = 'cat ' + filePath
+            configData = ProcessUtilities.outputExecutioner(command, 'lsadm')
+
+            if len(configData) == 0:
+                status = {'status': 0, "configstatus": 0, "error_message": "Configuration file is currently empty!"}
+
+                final_json = json.dumps(status)
+                return HttpResponse(final_json)
+
+        else:
+            command = 'redis-cli get "vhost:%s"' % (self.domain)
+            configData = ProcessUtilities.outputExecutioner(command)
+            configData = '#### This configuration is fetched from redis as Redis-Mass Hosting is being used.\n%s' % (
+                configData)
+
+        status = {'status': 1, "configstatus": 1, "configData": configData}
+        final_json = json.dumps(status)
+        return HttpResponse(final_json)
+
+    def saveConfigsToFile(self, userID=None, data=None):
+
+        currentACL = ACLManager.loadedACL(userID)
+
+        if currentACL['admin'] != 1:
+            return ACLManager.loadErrorJson('configstatus', 0)
+
+        configData = data['configData']
+        self.domain = data['virtualHost']
+
+        if len(configData) == 0:
+            status = {"configstatus": 0, 'error_message': 'Error: you are trying to save empty vhost file, your website will stop working.'}
+
+            final_json = json.dumps(status)
+            return HttpResponse(final_json)
+
+
+        command = 'cat %s' % ('/usr/local/lsws/conf/dvhost_redis.conf')
+
+        if ProcessUtilities.outputExecutioner(command).find('127.0.0.1') == -1:
+
+            mailUtilities.checkHome()
+
+            tempPath = "/home/cyberpanel/" + str(randint(1000, 9999))
+
+            vhost = open(tempPath, "w")
+
+            vhost.write(configData)
+
+            vhost.close()
+
+            ## writing data temporary to file
+
+            filePath = installUtilities.Server_root_path + "/conf/vhosts/" + self.domain + "/vhost.conf"
+
+            ## save configuration data
+
+            execPath = "/usr/local/CyberCP/bin/python " + virtualHostUtilities.cyberPanel + "/plogical/virtualHostUtilities.py"
+            execPath = execPath + " saveVHostConfigs --path " + filePath + " --tempPath " + tempPath
+
+            output = ProcessUtilities.outputExecutioner(execPath)
+
+            if output.find("1,None") > -1:
+                status = {"configstatus": 1}
+
+                final_json = json.dumps(status)
+                return HttpResponse(final_json)
+            else:
+                data_ret = {'configstatus': 0, 'error_message': output}
+                json_data = json.dumps(data_ret)
+                return HttpResponse(json_data)
+
+                ## save configuration data ends
+        else:
+            command = "redis-cli set vhost:%s '%s'" % (self.domain, configData.replace(
+                '#### This configuration is fetched from redis as Redis-Mass Hosting is being used.\n', ''))
+            ProcessUtilities.executioner(command)
+
+            status = {"configstatus": 1}
+
+            final_json = json.dumps(status)
+            return HttpResponse(final_json)
+
+    def getRewriteRules(self, userID=None, data=None):
+
+        currentACL = ACLManager.loadedACL(userID)
+        admin = Administrator.objects.get(pk=userID)
+        self.domain = data['virtualHost']
+
+        if ACLManager.checkOwnership(self.domain, admin, currentACL) == 1:
+            pass
+        else:
+            return ACLManager.loadErrorJson('rewriteStatus', 0)
+
+        try:
+            childDom = ChildDomains.objects.get(domain=self.domain)
+            filePath = childDom.path + '/.htaccess'
+            externalApp = childDom.master.externalApp
+        except:
+            website = Websites.objects.get(domain=self.domain)
+            externalApp = website.externalApp
+            filePath = "/home/" + self.domain + "/public_html/.htaccess"
+
+        try:
+            command = 'cat %s' % (filePath)
+            rewriteRules = ProcessUtilities.outputExecutioner(command, externalApp)
+
+            if len(rewriteRules) == 0:
+                status = {"rewriteStatus": 1, "error_message": "Rules file is currently empty"}
+                final_json = json.dumps(status)
+                return HttpResponse(final_json)
+
+            status = {"rewriteStatus": 1, "rewriteRules": rewriteRules}
+
+            final_json = json.dumps(status)
+            return HttpResponse(final_json)
+
+        except BaseException as msg:
+            status = {"rewriteStatus": 1, "error_message": str(msg), "rewriteRules": ""}
+            final_json = json.dumps(status)
+            return HttpResponse(final_json)
+
+    def saveRewriteRules(self, userID=None, data=None):
+        try:
+
+            currentACL = ACLManager.loadedACL(userID)
+            admin = Administrator.objects.get(pk=userID)
+            self.domain = data['virtualHost']
+            rewriteRules = data['rewriteRules'].encode('utf-8')
+
+            if ACLManager.checkOwnership(self.domain, admin, currentACL) == 1:
+                pass
+            else:
+                return ACLManager.loadErrorJson('rewriteStatus', 0)
+
+            ## writing data temporary to file
+
+            mailUtilities.checkHome()
+            tempPath = "/tmp/" + str(randint(1000, 9999))
+            vhost = open(tempPath, "wb")
+            vhost.write(rewriteRules)
+            vhost.close()
+
+            ## writing data temporary to file
+
+            try:
+                childDomain = ChildDomains.objects.get(domain=self.domain)
+                filePath = childDomain.path + '/.htaccess'
+                externalApp = childDomain.master.externalApp
+            except:
+                filePath = "/home/" + self.domain + "/public_html/.htaccess"
+                website = Websites.objects.get(domain=self.domain)
+                externalApp = website.externalApp
+
+            ## save configuration data
+
+            command = 'cp %s %s' % (tempPath, filePath)
+            ProcessUtilities.executioner(command, externalApp)
+
+            command = 'rm -f %s' % (tempPath)
+            ProcessUtilities.executioner(command, 'cyberpanel')
+
+            installUtilities.reStartLiteSpeedSocket()
+            status = {"rewriteStatus": 1, 'error_message': 'None'}
+            final_json = json.dumps(status)
+            return HttpResponse(final_json)
+        except BaseException as msg:
+            status = {"rewriteStatus": 0, 'error_message': str(msg)}
+            final_json = json.dumps(status)
+            return HttpResponse(final_json)
+
+    def saveSSL(self, userID=None, data=None):
+
+        currentACL = ACLManager.loadedACL(userID)
+        admin = Administrator.objects.get(pk=userID)
+        self.domain = data['virtualHost']
+        key = data['key']
+        cert = data['cert']
+
+        if ACLManager.checkOwnership(self.domain, admin, currentACL) == 1:
+            pass
+        else:
+            return ACLManager.loadErrorJson('sslStatus', 0)
+
+        mailUtilities.checkHome()
+
+        ## writing data temporary to file
+
+        tempKeyPath = "/home/cyberpanel/" + str(randint(1000, 9999))
+        vhost = open(tempKeyPath, "w")
+        vhost.write(key)
+        vhost.close()
+
+        tempCertPath = "/home/cyberpanel/" + str(randint(1000, 9999))
+        vhost = open(tempCertPath, "w")
+        vhost.write(cert)
+        vhost.close()
+
+        ## writing data temporary to file
+
+        execPath = "/usr/local/CyberCP/bin/python " + virtualHostUtilities.cyberPanel + "/plogical/virtualHostUtilities.py"
+        execPath = execPath + " saveSSL --virtualHostName " + self.domain + " --tempKeyPath " + tempKeyPath + " --tempCertPath " + tempCertPath
+        output = ProcessUtilities.outputExecutioner(execPath)
+
+        if output.find("1,None") > -1:
+            data_ret = {'sslStatus': 1, 'error_message': "None"}
+            json_data = json.dumps(data_ret)
+            return HttpResponse(json_data)
+        else:
+            logging.CyberCPLogFileWriter.writeToFile(
+                output)
+            data_ret = {'sslStatus': 0, 'error_message': output}
+            json_data = json.dumps(data_ret)
+            return HttpResponse(json_data)
+
+    def changePHP(self, userID=None, data=None):
+
+        currentACL = ACLManager.loadedACL(userID)
+        admin = Administrator.objects.get(pk=userID)
+        self.domain = data['childDomain']
+        phpVersion = data['phpSelection']
+
+        if ACLManager.checkOwnership(self.domain, admin, currentACL) == 1:
+            pass
+        else:
+            return ACLManager.loadErrorJson('changePHP', 0)
+
+        confPath = virtualHostUtilities.Server_root + "/conf/vhosts/" + self.domain
+        completePathToConfigFile = confPath + "/vhost.conf"
+
+        execPath = "/usr/local/CyberCP/bin/python " + virtualHostUtilities.cyberPanel + "/plogical/virtualHostUtilities.py"
+        execPath = execPath + " changePHP --phpVersion '" + phpVersion + "' --path " + completePathToConfigFile
+        ProcessUtilities.popenExecutioner(execPath)
+
+        try:
+            website = Websites.objects.get(domain=self.domain)
             website.phpSelection = data['phpSelection']
             website.save()
 
-            return HttpResponse(json.dumps({
-                'status': 1,
-                'error_message': "None"
-            }))
-            
-        except BaseException as msg:
-            return HttpResponse(json.dumps({
-                'status': 0,
-                'error_message': str(msg)
-            }))
+            ### check if there are any alias domains under the main website and then change php for them too
+
+            for alias in website.childdomains_set.filter(alais=1):
+
+                try:
+
+                    confPath = virtualHostUtilities.Server_root + "/conf/vhosts/" + alias.domain
+                    completePathToConfigFile = confPath + "/vhost.conf"
+                    execPath = "/usr/local/CyberCP/bin/python " + virtualHostUtilities.cyberPanel + "/plogical/virtualHostUtilities.py"
+                    execPath = execPath + " changePHP --phpVersion '" + phpVersion + "' --path " + completePathToConfigFile
+                    ProcessUtilities.popenExecutioner(execPath)
+                except BaseException as msg:
+                    logging.CyberCPLogFileWriter.writeToFile(f'Error changing PHP for alias: {str(msg)}')
+
+
+        except:
+            website = ChildDomains.objects.get(domain=self.domain)
+            website.phpSelection = data['phpSelection']
+            website.save()
+
+        data_ret = {'status': 1, 'changePHP': 1, 'error_message': "None"}
+        json_data = json.dumps(data_ret)
+        return HttpResponse(json_data)
 
     def getWebsiteCron(self, userID=None, data=None):
         try:
@@ -5333,29 +6762,41 @@ StrictHostKeyChecking no
         return proc.render()
 
     def CreateDockersite(self, request=None, userID=None, data=None):
-        adminNames = ACLManager.loadAllUsers(userID)
-        Data = {'adminNames': adminNames}
+        url = "https://platform.cyberpersons.com/CyberpanelAdOns/Adonpermission"
+        data = {
+            "name": "docker-manager",
+            "IP": ACLManager.GetServerIP()
+        }
 
+        import requests
+        response = requests.post(url, data=json.dumps(data))
+        Status = response.json()['status']
 
-        if PackageAssignment.objects.all().count() == 0:
+        if (Status == 1) or ProcessUtilities.decideServer() == ProcessUtilities.ent:
+            adminNames = ACLManager.loadAllUsers(userID)
+            Data = {'adminNames': adminNames}
 
-            name = 'Default'
-            cpu = 2
-            Memory = 1024
-            Bandwidth = '100'
-            disk = '100'
+            if PackageAssignment.objects.all().count() == 0:
+                name = 'Default'
+                cpu = 2
+                Memory = 1024
+                Bandwidth = '100'
+                disk = '100'
 
-            saveobj = DockerPackages(Name=name, CPUs=cpu, Ram=Memory, Bandwidth=Bandwidth, DiskSpace=disk, config='')
-            saveobj.save()
+                saveobj = DockerPackages(Name=name, CPUs=cpu, Ram=Memory, Bandwidth=Bandwidth, DiskSpace=disk, config='')
+                saveobj.save()
 
-            userobj = Administrator.objects.get(pk=1)
+                userobj = Administrator.objects.get(pk=1)
 
-            sv = PackageAssignment(user=userobj, package=saveobj)
-            sv.save()
+                sv = PackageAssignment(user=userobj, package=saveobj)
+                sv.save()
 
-        proc = httpProc(request, 'websiteFunctions/CreateDockerSite.html',
-                        Data, 'createWebsite')
-        return proc.render()
+            proc = httpProc(request, 'websiteFunctions/CreateDockerSite.html',
+                            Data, 'createWebsite')
+            return proc.render()
+        else:
+            from django.shortcuts import reverse
+            return redirect(reverse('pricing'))
 
     def AddDockerpackage(self, userID=None, data=None):
         try:
@@ -5661,17 +7102,124 @@ StrictHostKeyChecking no
             return HttpResponse(final_json)
 
     def Dockersitehome(self, request=None, userID=None, data=None, DeleteID=None):
+        url = "https://platform.cyberpersons.com/CyberpanelAdOns/Adonpermission"
+        data = {
+            "name": "docker-manager",
+            "IP": ACLManager.GetServerIP()
+        }
 
-        currentACL = ACLManager.loadedACL(userID)
-        admin = Administrator.objects.get(pk=userID)
+        import requests
+        response = requests.post(url, data=json.dumps(data))
+        Status = response.json()['status']
 
-        ds = DockerSites.objects.get(pk=self.domain)
+        if (Status == 1) or ProcessUtilities.decideServer() == ProcessUtilities.ent:
+            currentACL = ACLManager.loadedACL(userID)
+            admin = Administrator.objects.get(pk=userID)
 
-        if ACLManager.checkOwnership(ds.admin.domain, admin, currentACL) == 1:
-            pass
+            ds = DockerSites.objects.get(pk=self.domain)
+
+            if ACLManager.checkOwnership(ds.admin.domain, admin, currentACL) == 1:
+                pass
+            else:
+                return ACLManager.loadError()
+
+            proc = httpProc(request, 'websiteFunctions/DockerSiteHome.html',
+                            {'dockerSite': ds})
+            return proc.render()
         else:
-            return ACLManager.loadError()
+            from django.shortcuts import reverse
+            return redirect(reverse('pricing'))
+        
+    def fetchWPSitesForDomain(self, userID=None, data=None):
+        try:
+            currentACL = ACLManager.loadedACL(userID)
+            admin = Administrator.objects.get(pk=userID)
+            
+            domain = data['domain']
+            website = Websites.objects.get(domain=domain)
+            
+            if ACLManager.checkOwnership(domain, admin, currentACL) != 1:
+                return ACLManager.loadErrorJson('fetchStatus', 0)
 
-        proc = httpProc(request, 'websiteFunctions/DockerSiteHome.html',
-                        {'dockerSite': ds})
-        return proc.render()
+            wp_sites = WPSites.objects.filter(owner=website)
+            sites = []
+            
+            Vhuser = website.externalApp
+            PHPVersion = website.phpSelection
+
+            php = ACLManager.getPHPString(PHPVersion)
+            FinalPHPPath = '/usr/local/lsws/lsphp%s/bin/php' % (php)
+            
+            for site in wp_sites:
+                command = 'sudo -u %s %s -d error_reporting=0 /usr/bin/wp core version --skip-plugins --skip-themes --path=%s 2>/dev/null' % (
+                    Vhuser, FinalPHPPath, site.path)
+                version = ProcessUtilities.outputExecutioner(command, None, True)
+                version = html.escape(version)
+
+                # Get current theme
+                command = 'sudo -u %s %s -d error_reporting=0 /usr/bin/wp theme list --status=active --field=name --skip-plugins --skip-themes --path=%s 2>/dev/null' % (
+                    Vhuser, FinalPHPPath, site.path)
+                currentTheme = ProcessUtilities.outputExecutioner(command, None, True)
+                currentTheme = currentTheme.strip()
+
+                # Get number of plugins
+                command = 'sudo -u %s %s -d error_reporting=0 /usr/bin/wp plugin list --field=name --skip-plugins --skip-themes --path=%s 2>/dev/null' % (
+                    Vhuser, FinalPHPPath, site.path)
+                plugins = ProcessUtilities.outputExecutioner(command, None, True)
+                pluginCount = len([p for p in plugins.split('\n') if p.strip()])
+
+                # Generate screenshot URL
+                site_url = site.FinalURL
+                if not site_url.startswith(('http://', 'https://')):
+                    site_url = f'https://{site_url}'
+
+
+                command = 'sudo -u %s %s -d error_reporting=0 /usr/bin/wp config list --skip-plugins --skip-themes --path=%s' % (
+                Vhuser, FinalPHPPath, site.path)
+                stdout = ProcessUtilities.outputExecutioner(command)
+                debugging = 0
+                for items in stdout.split('\n'):
+                    if items.find('WP_DEBUG	true	constant') > -1:
+                        debugging = 1
+                        break
+
+                command = 'sudo -u %s %s -d error_reporting=0 /usr/bin/wp option get blog_public --skip-plugins --skip-themes --path=%s' % (
+                    Vhuser, FinalPHPPath, site.path)
+                stdoutput = ProcessUtilities.outputExecutioner(command)
+                searchindex = int(stdoutput.splitlines()[-1])
+                
+
+                command = 'sudo -u %s %s -d error_reporting=0 /usr/bin/wp maintenance-mode status --skip-plugins --skip-themes --path=%s' % (
+                    Vhuser, FinalPHPPath, site.path)
+                maintenanceMod = ProcessUtilities.outputExecutioner(command)
+
+                result = maintenanceMod.splitlines()[-1]
+                if result.find('not active') > -1:
+                    maintenanceMode = 0
+                else:
+                    maintenanceMode = 1
+
+                sites.append({
+                    'id': site.id,
+                    'title': site.title,
+                    'url': site.FinalURL,
+                    'path': site.path,
+                    'version': version,
+                    'phpVersion': site.owner.phpSelection,
+                    'theme': currentTheme,
+                    'activePlugins': pluginCount,
+                    'debugging': debugging,
+                    'searchIndex': searchindex,
+                    'maintenanceMode': maintenanceMode,
+                    'screenshot': f'https://api.microlink.io/?url={site_url}&screenshot=true&meta=false&embed=screenshot.url'
+                })
+                
+            data_ret = {'status': 1, 'fetchStatus': 1, 'error_message': "None", "sites": sites}
+            json_data = json.dumps(data_ret)
+            return HttpResponse(json_data)
+
+        except BaseException as msg:
+            data_ret = {'status': 0, 'fetchStatus': 0, 'error_message': str(msg)}
+            json_data = json.dumps(data_ret)
+            return HttpResponse(json_data)
+

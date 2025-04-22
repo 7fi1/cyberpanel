@@ -2,6 +2,309 @@
  * Created by usman on 9/17/17.
  */
 
+// Using existing CyberCP module
+app.controller('backupPlanNowOneClick', function($scope, $http) {
+    $scope.cyberpanelLoading = true;
+    $scope.showVerification = false;
+    $scope.verificationCodeSent = false;
+    
+    $scope.showEmailVerification = function() {
+        console.log('showEmailVerification called');
+        $scope.showVerification = true;
+    };
+    
+    $scope.cancelVerification = function() {
+        $scope.showVerification = false;
+        $scope.verificationCodeSent = false;
+        $scope.verificationEmail = '';
+        $scope.verificationCode = '';
+    };
+    
+    $scope.sendVerificationCode = function() {
+        $scope.cyberpanelLoading = false;
+        
+        var config = {
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        };
+        
+        $http.post('https://platform.cyberpersons.com/Billing/SendBackupVerificationCode', {
+            email: $scope.verificationEmail
+        }, config).then(function(response) {
+            $scope.cyberpanelLoading = true;
+            if (response.data.status == 1) {
+                $scope.verificationCodeSent = true;
+                new PNotify({
+                    title: 'Success',
+                    text: 'Verification code sent to your email.',
+                    type: 'success'
+                });
+            } else {
+                new PNotify({
+                    title: 'Error',
+                    text: response.data.error_message,
+                    type: 'error'
+                });
+            }
+        }, function(error) {
+            $scope.cyberpanelLoading = true;
+            new PNotify({
+                title: 'Error',
+                text: 'Could not send verification code. Please try again.',
+                type: 'error'
+            });
+        });
+    };
+    
+    $scope.verifyCode = function() {
+        $scope.cyberpanelLoading = false;
+        
+        var config = {
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        };
+        
+        $http.post('https://platform.cyberpersons.com/Billing/VerifyBackupCode', {
+            email: $scope.verificationEmail,
+            code: $scope.verificationCode
+        }, config).then(function(response) {
+            if (response.data.status == 1) {
+                // After successful verification, fetch Stripe subscriptions
+                $http.post('https://platform.cyberpersons.com/Billing/FetchStripeSubscriptionsByEmail', {
+                    email: $scope.verificationEmail,
+                    code: $scope.verificationCode
+                }, config).then(function(subResponse) {
+                    $scope.cyberpanelLoading = true;
+                    if (subResponse.data.status == 1) {
+                        $scope.showVerification = false;
+                        $scope.subscriptions = subResponse.data.subscriptions;
+                        $scope.showSubscriptionsTable = true;
+                        
+                        if ($scope.subscriptions.length == 0) {
+                            new PNotify({
+                                title: 'Info',
+                                text: 'No active subscriptions found for this email.',
+                                type: 'info'
+                            });
+                        }
+                    } else {
+                        new PNotify({
+                            title: 'Error',
+                            text: subResponse.data.error_message,
+                            type: 'error'
+                        });
+                    }
+                }, function(error) {
+                    $scope.cyberpanelLoading = true;
+                    new PNotify({
+                        title: 'Error',
+                        text: 'Could not fetch subscriptions. Please try again.',
+                        type: 'error'
+                    });
+                });
+            } else {
+                $scope.cyberpanelLoading = true;
+                new PNotify({
+                    title: 'Error',
+                    text: response.data.error_message,
+                    type: 'error'
+                });
+            }
+        }, function(error) {
+            $scope.cyberpanelLoading = true;
+            new PNotify({
+                title: 'Error',
+                text: 'Could not verify code. Please try again.',
+                type: 'error'
+            });
+        });
+    };
+    
+    $scope.fetchBackupPlans = function() {
+        $scope.cyberpanelLoading = false;
+        
+        var config = {
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        };
+        
+        $http.post('https://platform.cyberpersons.com/Billing/FetchBackupPlans', {
+            email: $scope.verificationEmail
+        }, config).then(function(response) {
+            $scope.cyberpanelLoading = true;
+            if (response.data.status == 1) {
+                $scope.plans = response.data.plans;
+                new PNotify({
+                    title: 'Success',
+                    text: 'Backup plans fetched successfully.',
+                    type: 'success'
+                });
+            } else {
+                new PNotify({
+                    title: 'Error',
+                    text: response.data.error_message,
+                    type: 'error'
+                });
+            }
+        }, function(error) {
+            $scope.cyberpanelLoading = true;
+            new PNotify({
+                title: 'Error',
+                text: 'Could not fetch backup plans. Please try again.',
+                type: 'error'
+            });
+        });
+    };
+
+    $scope.BuyNowBackupP = function (planName, monthlyPrice, yearlyPrice, months) {
+        const baseURL = 'https://platform.cyberpersons.com/Billing/CreateOrderforBackupPlans';
+        // Get the current URL
+        var currentURL = window.location.href;
+
+        // Find the position of the question mark
+        const queryStringIndex = currentURL.indexOf('?');
+
+        // Check if there is a query string
+        currentURL = queryStringIndex !== -1 ? currentURL.substring(0, queryStringIndex) : currentURL;
+
+        // Encode parameters to make them URL-safe
+        const params = new URLSearchParams({
+            planName: planName,
+            monthlyPrice: monthlyPrice,
+            yearlyPrice: yearlyPrice,
+            returnURL: currentURL,  // Add the current URL as a query parameter
+            months: months
+        });
+
+        // Build the complete URL with query string
+        const fullURL = `${baseURL}?${params.toString()}`;
+
+        // Redirect to the constructed URL
+        window.location.href = fullURL;
+    };
+
+    $scope.PaypalBuyNowBackup = function (planName, monthlyPrice, yearlyPrice, months) {
+        const baseURL = 'https://platform.cyberpersons.com/Billing/PaypalCreateOrderforBackupPlans';
+        // Get the current URL
+        var currentURL = window.location.href;
+
+        // Find the position of the question mark
+        const queryStringIndex = currentURL.indexOf('?');
+
+        // Check if there is a query string
+        currentURL = queryStringIndex !== -1 ? currentURL.substring(0, queryStringIndex) : currentURL;
+
+        // Encode parameters to make them URL-safe
+        const params = new URLSearchParams({
+            planName: planName,
+            monthlyPrice: monthlyPrice,
+            yearlyPrice: yearlyPrice,
+            returnURL: currentURL,  // Add the current URL as a query parameter
+            months: months
+        });
+
+        // Build the complete URL with query string
+        const fullURL = `${baseURL}?${params.toString()}`;
+
+        // Redirect to the constructed URL
+        window.location.href = fullURL;
+    };
+
+    $scope.DeployAccount = function (id) {
+        $scope.cyberpanelLoading = false;
+
+        url = "/backup/DeployAccount";
+
+        var data = {
+            id: id
+        };
+
+        var config = {
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        };
+
+        $http.post(url, data, config).then(ListInitialDatas, cantLoadInitialDatas);
+
+        function ListInitialDatas(response) {
+            $scope.cyberpanelLoading = true;
+            if (response.data.status === 1) {
+                new PNotify({
+                    title: 'Success',
+                    text: 'Successfully deployed.',
+                    type: 'success'
+                });
+                window.location.reload();
+            } else {
+                new PNotify({
+                    title: 'Operation Failed!',
+                    text: response.data.error_message,
+                    type: 'error'
+                });
+            }
+        }
+
+        function cantLoadInitialDatas(response) {
+            $scope.cyberpanelLoading = true;
+            new PNotify({
+                title: 'Operation Failed!',
+                text: 'Could not connect to server, please refresh this page',
+                type: 'error'
+            });
+        }
+    };
+
+    $scope.ReconfigureSubscription = function(subscription) {
+        $scope.cyberpanelLoading = false;
+
+        var config = {
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        };
+
+        var data = {
+            subscription_id: subscription.subscription_id,
+            customer_id: subscription.customer,
+            plan_name: subscription.plan_name,
+            amount: subscription.amount,
+            interval: subscription.interval,
+            email: $scope.verificationEmail,
+            code: $scope.verificationCode
+        };
+
+        $http.post('/backup/ReconfigureSubscription', data, config).then(function(response) {
+            $scope.cyberpanelLoading = true;
+            if (response.data.status === 1) {
+                new PNotify({
+                    title: 'Success',
+                    text: 'Subscription configured successfully for this server.',
+                    type: 'success'
+                });
+                // Refresh the page to show new backup plan in the list
+                window.location.reload();
+            } else {
+                new PNotify({
+                    title: 'Error',
+                    text: response.data.error_message,
+                    type: 'error'
+                });
+            }
+        }, function(error) {
+            $scope.cyberpanelLoading = true;
+            new PNotify({
+                title: 'Error',
+                text: 'Could not configure subscription. Please try again.',
+                type: 'error'
+            });
+        });
+    };
+});
+
 //*** Backup site ****//
 
 app.controller('backupWebsiteControl', function ($scope, $http, $timeout) {
@@ -2044,307 +2347,6 @@ app.controller('scheduleBackup', function ($scope, $http, $window) {
     };
 
 });
-
-app.controller('backupPlanNowOneClick', function ($scope, $http, $window) {
-    $scope.cyberpanelLoading = true;
-    $scope.sftpHide = true;
-    $scope.localHide = true;
-
-    $scope.BuyNowBackupP = function (planName, monthlyPrice, yearlyPrice, months) {
-
-        const baseURL = 'https://platform.cyberpersons.com/Billing/CreateOrderforBackupPlans';
-        // Get the current URL
-        var currentURL = window.location.href;
-
-// Find the position of the question mark
-        const queryStringIndex = currentURL.indexOf('?');
-
-// Check if there is a query string
-        currentURL = queryStringIndex !== -1 ? currentURL.substring(0, queryStringIndex) : currentURL;
-
-
-        // Encode parameters to make them URL-safe
-        const params = new URLSearchParams({
-            planName: planName,
-            monthlyPrice: monthlyPrice,
-            yearlyPrice: yearlyPrice,
-            returnURL: currentURL,  // Add the current URL as a query parameter
-            months: months
-        });
-
-
-        // Build the complete URL with query string
-        const fullURL = `${baseURL}?${params.toString()}`;
-
-        // Redirect to the constructed URL
-
-        window.location.href = fullURL;
-
-    }
-
-
-    $scope.fetchDetails = function () {
-
-        if ($scope.destinationType === 'SFTP') {
-            $scope.sftpHide = false;
-            $scope.localHide = true;
-            $scope.populateCurrentRecords();
-        } else {
-            $scope.sftpHide = true;
-            $scope.localHide = false;
-            $scope.populateCurrentRecords();
-        }
-    };
-
-    $scope.populateCurrentRecords = function () {
-
-        $scope.cyberpanelLoading = false;
-
-        url = "/backup/getCurrentBackupDestinations";
-
-        var type = 'SFTP';
-        if ($scope.destinationType === 'SFTP') {
-            type = 'SFTP';
-        } else {
-            type = 'local';
-        }
-
-        var data = {
-            type: type
-        };
-
-        var config = {
-            headers: {
-                'X-CSRFToken': getCookie('csrftoken')
-            }
-        };
-
-
-        $http.post(url, data, config).then(ListInitialDatas, cantLoadInitialDatas);
-
-
-        function ListInitialDatas(response) {
-            $scope.cyberpanelLoading = true;
-            if (response.data.status === 1) {
-                $scope.records = JSON.parse(response.data.data);
-            } else {
-                new PNotify({
-                    title: 'Operation Failed!',
-                    text: response.data.error_message,
-                    type: 'error'
-                });
-            }
-
-        }
-
-        function cantLoadInitialDatas(response) {
-            $scope.cyberpanelLoading = true;
-            new PNotify({
-                title: 'Operation Failed!',
-                text: 'Could not connect to server, please refresh this page',
-                type: 'error'
-            });
-        }
-
-    };
-
-    $scope.addDestination = function (type) {
-        $scope.cyberpanelLoading = false;
-
-        url = "/backup/submitDestinationCreation";
-
-        if (type === 'SFTP') {
-            var data = {
-                type: type,
-                name: $scope.name,
-                IPAddress: $scope.IPAddress,
-                userName: $scope.userName,
-                password: $scope.password,
-                backupSSHPort: $scope.backupSSHPort,
-                path: $scope.path
-            };
-        } else {
-            var data = {
-                type: type,
-                path: $scope.localPath,
-                name: $scope.name
-            };
-        }
-
-        var config = {
-            headers: {
-                'X-CSRFToken': getCookie('csrftoken')
-            }
-        };
-
-
-        $http.post(url, data, config).then(ListInitialDatas, cantLoadInitialDatas);
-
-
-        function ListInitialDatas(response) {
-            $scope.cyberpanelLoading = true;
-            $scope.populateCurrentRecords();
-            if (response.data.status === 1) {
-                new PNotify({
-                    title: 'Success!',
-                    text: 'Destination successfully added.',
-                    type: 'success'
-                });
-            } else {
-                new PNotify({
-                    title: 'Operation Failed!',
-                    text: response.data.error_message,
-                    type: 'error'
-                });
-            }
-
-        }
-
-        function cantLoadInitialDatas(response) {
-            $scope.cyberpanelLoading = true;
-            new PNotify({
-                title: 'Operation Failed!',
-                text: 'Could not connect to server, please refresh this page',
-                type: 'error'
-            });
-        }
-
-    };
-
-    $scope.removeDestination = function (type, nameOrPath) {
-        $scope.cyberpanelLoading = false;
-
-
-        url = "/backup/deleteDestination";
-
-        var data = {
-            type: type,
-            nameOrPath: nameOrPath,
-        };
-
-        var config = {
-            headers: {
-                'X-CSRFToken': getCookie('csrftoken')
-            }
-        };
-
-
-        $http.post(url, data, config).then(ListInitialDatas, cantLoadInitialDatas);
-
-
-        function ListInitialDatas(response) {
-            $scope.cyberpanelLoading = true;
-            $scope.populateCurrentRecords();
-            if (response.data.status === 1) {
-                new PNotify({
-                    title: 'Success!',
-                    text: 'Destination successfully removed.',
-                    type: 'success'
-                });
-            } else {
-                new PNotify({
-                    title: 'Operation Failed!',
-                    text: response.data.error_message,
-                    type: 'error'
-                });
-            }
-
-        }
-
-        function cantLoadInitialDatas(response) {
-            $scope.cyberpanelLoading = true;
-            new PNotify({
-                title: 'Operation Failed!',
-                text: 'Could not connect to server, please refresh this page',
-                type: 'error'
-            });
-        }
-
-    };
-
-    $scope.DeployAccount = function (id) {
-        $scope.cyberpanelLoading = false;
-
-        url = "/backup/DeployAccount";
-
-        var data = {
-            id:id
-
-        };
-
-        var config = {
-            headers: {
-                'X-CSRFToken': getCookie('csrftoken')
-            }
-        };
-
-        $http.post(url, data, config).then(ListInitialDatas, cantLoadInitialDatas);
-
-        function ListInitialDatas(response) {
-
-            $scope.cyberpanelLoading = true;
-            if (response.data.status === 1) {
-                new PNotify({
-                    title: 'Success',
-                    text: 'Successfully deployed.',
-                    type: 'success'
-                });
-                $window.location.reload();
-
-
-            } else {
-                new PNotify({
-                    title: 'Operation Failed!',
-                    text: response.data.error_message,
-                    type: 'error'
-                });
-            }
-
-        }
-
-        function cantLoadInitialDatas(response) {
-            $scope.couldNotConnect = false;
-            restoreBackupButton.disabled = false;
-        }
-
-    };
-
-    //// paypal
-
-    $scope.PaypalBuyNowBackup = function (planName, monthlyPrice, yearlyPrice, months) {
-
-        const baseURL = 'https://platform.cyberpersons.com/Billing/PaypalCreateOrderforBackupPlans';
-        // Get the current URL
-        var currentURL = window.location.href;
-
-// Find the position of the question mark
-        const queryStringIndex = currentURL.indexOf('?');
-
-// Check if there is a query string
-        currentURL = queryStringIndex !== -1 ? currentURL.substring(0, queryStringIndex) : currentURL;
-
-        // Encode parameters to make them URL-safe
-        const params = new URLSearchParams({
-            planName: planName,
-            monthlyPrice: monthlyPrice,
-            yearlyPrice: yearlyPrice,
-            returnURL: currentURL,  // Add the current URL as a query parameter
-            months: months
-        });
-
-
-        // Build the complete URL with query string
-        const fullURL = `${baseURL}?${params.toString()}`;
-
-        // Redirect to the constructed URL
-
-        window.location.href = fullURL;
-
-    }
-
-
-});
-
 
 app.controller('OneClickrestoreWebsiteControl', function ($scope, $http, $timeout) {
 

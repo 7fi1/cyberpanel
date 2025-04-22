@@ -241,10 +241,11 @@
                                         <div class="col-md-3">
                                             <h6 style="font-weight: bold">Search Engine Indexing</h6>
                                             <div class="custom-control custom-switch">
-                                                <input ng-click="UpdateWPSettings('searchIndex')"
-                                                       type="checkbox"
-                                                       class="custom-control-input ng-pristine ng-untouched ng-valid ng-not-empty"
-                                                       id="searchIndex">
+                                                <input type="checkbox"
+                                                       class="custom-control-input"
+                                                       id="searchIndex"
+                                                       ng-click="UpdateWPSettings('searchIndex')"
+                                                       ng-checked="searchIndex == 1">
                                                 <label class="custom-control-label"
                                                        for="searchIndex"></label>
                                             </div>

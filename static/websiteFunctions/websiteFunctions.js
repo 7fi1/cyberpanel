@@ -237,7 +237,7 @@ app.controller('createWebsite', function ($scope, $http, $timeout, $window) {
 $("#listFail").hide();
 
 
-app.controller('listWebsites', function ($scope, $http) {
+app.controller('listWebsites', function ($scope, $http, $window) {
 
 
     $scope.currentPage = 1;
@@ -384,6 +384,244 @@ app.controller('listWebsites', function ($scope, $http) {
 
     };
 
+    $scope.getFullUrl = function(url) {
+        console.log('getFullUrl called with:', url);
+        if (!url) {
+            // If no URL is provided, try to use the domain
+            if (this.wp && this.wp.domain) {
+                url = this.wp.domain;
+            } else {
+                return '';
+            }
+        }
+        if (url.startsWith('http://') || url.startsWith('https://')) {
+            return url;
+        }
+        return 'https://' + url;
+    };
+
+    $scope.showWPSites = function(domain) {
+        var site = $scope.WebSitesList.find(function(site) {
+            return site.domain === domain;
+        });
+        if (site) {
+            site.showWPSites = !site.showWPSites;
+            if (site.showWPSites && (!site.wp_sites || !site.wp_sites.length)) {
+                // Fetch WordPress sites if not already loaded
+                var config = {
+                    headers: {
+                        'X-CSRFToken': getCookie('csrftoken')
+                    }
+                };
+                var data = { domain: domain };
+                site.loadingWPSites = true;
+                $http.post('/websites/getWordPressSites', data, config).then(
+                    function(response) {
+                        site.loadingWPSites = false;
+                        if (response.data.status === 1) {
+                            site.wp_sites = response.data.sites;
+                            site.wp_sites.forEach(function(wp) {
+                                // Ensure each WP site has a URL
+                                if (!wp.url) {
+                                    wp.url = wp.domain || domain;
+                                }
+                                fetchWPSiteData(wp);
+                            });
+                        } else {
+                            new PNotify({
+                                title: 'Error!',
+                                text: response.data.error_message || 'Could not fetch WordPress sites',
+                                type: 'error'
+                            });
+                        }
+                    },
+                    function(response) {
+                        site.loadingWPSites = false;
+                        new PNotify({
+                            title: 'Error!',
+                            text: 'Could not connect to server',
+                            type: 'error'
+                        });
+                    }
+                );
+            }
+        }
+    };
+
+    function fetchWPSiteData(wp) {
+        var config = {
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        };
+        var data = { WPid: wp.id };
+        
+        // Fetch site data
+        $http.post('/websites/FetchWPdata', data, config).then(
+            function(response) {
+                if (response.data.status === 1) {
+                    var data = response.data.ret_data;
+                    wp.version = data.version;
+                    wp.phpVersion = data.phpVersion || 'PHP 7.4';
+                    wp.searchIndex = data.searchIndex === 1;
+                    wp.debugging = data.debugging === 1;
+                    wp.passwordProtection = data.passwordprotection === 1;
+                    wp.maintenanceMode = data.maintenanceMode === 1;
+                    fetchPluginData(wp);
+                    fetchThemeData(wp);
+                }
+            }
+        );
+    }
+
+    function fetchPluginData(wp) {
+        var config = {
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        };
+        var data = { WPid: wp.id };
+        $http.post('/websites/GetCurrentPlugins', data, config).then(
+            function(response) {
+                if (response.data.status === 1) {
+                    var plugins = JSON.parse(response.data.plugins);
+                    wp.activePlugins = plugins.filter(function(p) { return p.status === 'active'; }).length;
+                    wp.totalPlugins = plugins.length;
+                }
+            }
+        );
+    }
+
+    function fetchThemeData(wp) {
+        var config = {
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        };
+        var data = { WPid: wp.id };
+        $http.post('/websites/GetCurrentThemes', data, config).then(
+            function(response) {
+                if (response.data.status === 1) {
+                    var themes = JSON.parse(response.data.themes);
+                    wp.theme = themes.find(function(t) { return t.status === 'active'; }).name;
+                    wp.totalThemes = themes.length;
+                }
+            }
+        );
+    }
+
+    $scope.updateSetting = function(wp, setting) {
+        var settingMap = {
+            'search-indexing': 'searchIndex',
+            'debugging': 'debugging',
+            'password-protection': 'passwordProtection',
+            'maintenance-mode': 'maintenanceMode'
+        };
+
+        var data = {
+            siteId: wp.id,
+            setting: setting,
+            value: wp[settingMap[setting]] ? 1 : 0
+        };
+
+        var config = {
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        };
+
+        $http.post('/websites/UpdateWPSettings', data, config).then(
+            function(response) {
+                if (!response.data.status) {
+                    wp[settingMap[setting]] = !wp[settingMap[setting]];
+                    new PNotify({
+                        title: 'Operation Failed!',
+                        text: response.data.error_message || 'Unknown error',
+                        type: 'error'
+                    });
+                } else {
+                    new PNotify({
+                        title: 'Success!',
+                        text: 'Setting updated successfully.',
+                        type: 'success'
+                    });
+                }
+            },
+            function(response) {
+                wp[settingMap[setting]] = !wp[settingMap[setting]];
+                new PNotify({
+                    title: 'Operation Failed!',
+                    text: 'Could not connect to server, please try again.',
+                    type: 'error'
+                });
+            }
+        );
+    };
+
+    $scope.wpLogin = function(wpId) {
+        window.open('/websites/AutoLogin?id=' + wpId, '_blank');
+    };
+
+    $scope.manageWP = function(wpId) {
+        window.location.href = '/websites/WPHome?ID=' + wpId;
+    };
+
+    $scope.deleteWPSite = function(wp) {
+        if (confirm('Are you sure you want to delete this WordPress site? This action cannot be undone.')) {
+            var config = {
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken')
+                }
+            };
+            var data = {
+                wpid: wp.id,
+                domain: wp.domain
+            };
+            
+            $http.post('/websites/deleteWordPressSite', data, config).then(
+                function(response) {
+                    if (response.data.status === 1) {
+                        // Remove the WP site from the list
+                        var site = $scope.WebSitesList.find(function(site) {
+                            return site.domain === wp.domain;
+                        });
+                        if (site && site.wp_sites) {
+                            site.wp_sites = site.wp_sites.filter(function(wpSite) {
+                                return wpSite.id !== wp.id;
+                            });
+                        }
+                        new PNotify({
+                            title: 'Success!',
+                            text: 'WordPress site deleted successfully.',
+                            type: 'success'
+                        });
+                    } else {
+                        new PNotify({
+                            title: 'Error!',
+                            text: response.data.error_message || 'Could not delete WordPress site',
+                            type: 'error'
+                        });
+                    }
+                },
+                function(response) {
+                    new PNotify({
+                        title: 'Error!',
+                        text: 'Could not connect to server',
+                        type: 'error'
+                    });
+                }
+            );
+        }
+    };
+
+    $scope.visitSite = function(wp) {
+        var url = wp.url || wp.domain;
+        if (!url) return '';
+        if (url.startsWith('http://') || url.startsWith('https://')) {
+            return url;
+        }
+        return 'https://' + url;
+    };
 
 });
 
@@ -3459,7 +3697,6 @@ app.controller('manageAliasController', function ($scope, $http, $timeout, $wind
                 $timeout(function () {
                     $window.location.reload();
                 }, 3000);
-
 
             } else {
 
