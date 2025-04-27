@@ -927,7 +927,6 @@ class CustomACME:
                     encryption_algorithm=serialization.NoEncryption()
                 ))
             
-            
             logging.CyberCPLogFileWriter.writeToFile('Successfully completed certificate issuance')
             return True
         except Exception as e:
