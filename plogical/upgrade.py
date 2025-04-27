@@ -3402,6 +3402,25 @@ pm.max_spare_servers = 3
             WriteToFile.close()
 
     @staticmethod
+    def setupPHPSymlink():
+        try:
+            # Remove existing PHP symlink if it exists
+            if os.path.exists('/usr/bin/php'):
+                os.remove('/usr/bin/php')
+
+            # Create symlink to PHP 8.0
+            command = 'ln -s /usr/local/lsws/lsphp80/bin/php /usr/bin/php'
+            Upgrade.executioner(command, 'Setup PHP Symlink', 0)
+
+            Upgrade.stdOut("PHP symlink created successfully.")
+
+        except BaseException as msg:
+            Upgrade.stdOut('[ERROR] ' + str(msg) + " [setupPHPSymlink]")
+            return 0
+
+        return 1
+
+    @staticmethod
     def upgrade(branch):
 
         if branch.find('SoftUpgrade') > -1:
@@ -3464,6 +3483,7 @@ pm.max_spare_servers = 3
             Upgrade.executioner(command, 'tmp adjustment', 0)
 
         Upgrade.dockerUsers()
+        Upgrade.setupPHPSymlink()
         Upgrade.setupComposer()
 
         ##

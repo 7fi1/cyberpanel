@@ -14,7 +14,7 @@
                                               style="height: 23px;line-height: 21px;"
                                               class="btn btn-border btn-alt border-red btn-link font-red"
                                               title=""><span>{% trans "SSL Docs" %}</span></a></h2>
-            <p>{% trans "This page can be used to issue Let’s Encrypt SSL for existing websites on server." %}</p>
+            <p>{% trans "This page can be used to issue Let's Encrypt SSL for existing websites on server." %}</p>
         </div>
 
         <div ng-controller="sslIssueCtrl" class="panel">
@@ -36,6 +36,28 @@
                                         <option>{{ items }}</option>
                                     {% endfor %}
                                 </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group" ng-if="sslDetails">
+                            <div class="col-sm-12">
+                                <div class="panel panel-primary">
+                                    <div class="panel-heading">
+                                        <h3 class="panel-title">SSL Details</h3>
+                                    </div>
+                                    <div class="panel-body">
+                                        <div ng-if="sslDetails.hasSSL">
+                                            <p><strong>Status:</strong> Active</p>
+                                            <p><strong>Issued By:</strong> {$ sslDetails.authority $}</p>
+                                            <p><strong>Expiry Date:</strong> {$ sslDetails.expiryDate $}</p>
+                                            <p><strong>Days Remaining:</strong> {$ sslDetails.days $}</p>
+                                        </div>
+                                        <div ng-if="!sslDetails.hasSSL">
+                                            <p><strong>Status:</strong> No SSL Certificate</p>
+                                            <p ng-if="sslDetails.error_message"><strong>Error:</strong> {$ sslDetails.error_message $}</p>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
