@@ -7,477 +7,584 @@
     {% get_current_language as LANGUAGE_CODE %}
     <!-- Current language: {{ LANGUAGE_CODE }} -->
 
-    <div ng-controller="websitePages" class="container">
+    <style>
+    .cyberpanel-website-page {
+        /* background: #f7fafd; */
+        padding: 32px 0;
+        font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+    }
+    .cyberpanel-website-page .cyber-card {
+        background: #fff;
+        border-radius: 24px;
+        box-shadow: 0 2px 12px 0 rgba(40,60,90,0.06);
+        margin-bottom: 32px;
+        padding: 32px 28px 28px 28px;
+        transition: box-shadow 0.2s;
+    }
+    .cyberpanel-website-page .cyber-card:hover {
+        box-shadow: 0 4px 24px 0 rgba(40,60,90,0.10);
+    }
+    .cyberpanel-website-page .cyber-section-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        margin-bottom: 24px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: #222b38;
+    }
+    .cyberpanel-website-page .cyber-btn {
+        border-radius: 8px;
+        border: 1.5px solid #e0e6ed;
+        background: #fff;
+        color: #2d3a4a;
+        font-weight: 500;
+        padding: 7px 22px;
+        margin-left: 0;
+        margin-right: 16px;
+        transition: background 0.2s, color 0.2s;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 1.08rem;
+        box-shadow: none;
+    }
+    .cyberpanel-website-page .cyber-btn:last-child { margin-right: 0; }
+    .cyberpanel-website-page .cyber-btn.blue { background: #f6faff; color: #2563eb; border-color: #b6d4fe; }
+    .cyberpanel-website-page .cyber-btn.orange { background: #fff8f1; color: #ff9800; border-color: #ffd59e; }
+    .cyberpanel-website-page .cyber-btn.green { background: #f3fdf7; color: #00b894; border-color: #a2f5d3; }
+    .cyberpanel-website-page .cyber-btn.purple { background: #faf6ff; color: #8e44ad; border-color: #d1b3ff; }
+    .cyberpanel-website-page .cyber-btn:hover { background: #f0f4f8; color: #1a2233; }
+    .cyberpanel-website-page .cyber-table th, .cyberpanel-website-page .cyber-table td {
+        padding: 12px 18px;
+        border-bottom: 1px solid #f0f2f5;
+        font-size: 1.07rem;
+    }
+    .cyberpanel-website-page .cyber-table th {
+        color: #6b7c93;
+        font-weight: 700;
+        background: #f6faff;
+        border-top: none;
+    }
+    .cyberpanel-website-page .cyber-table tr:last-child td {
+        border-bottom: none;
+    }
+    .cyberpanel-website-page .cyber-progress {
+        background: #eaf0fa;
+        border-radius: 8px;
+        height: 18px;
+        width: 100%;
+        margin-bottom: 18px;
+        overflow: hidden;
+    }
+    .cyberpanel-website-page .cyber-progress-bar {
+        background: linear-gradient(90deg, #2563eb 0%, #60a5fa 100%);
+        height: 100%;
+        border-radius: 8px;
+        color: #fff;
+        font-size: 0.98rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        padding-right: 10px;
+        transition: width 0.4s;
+    }
+    .cyberpanel-website-page .cyber-resource-table {
+        margin-bottom: 0;
+    }
+    .cyberpanel-website-page .cyber-ssl-box {
+        background: #eaffea;
+        color: #2d3a4a;
+        border-radius: 10px;
+        padding: 18px 18px 10px 18px;
+        margin-bottom: 18px;
+        font-size: 1.05rem;
+        font-weight: 500;
+        border: 1px solid #c6f7d0;
+    }
+    .cyberpanel-website-page .cyber-resource-row {
+        display: flex;
+        gap: 32px;
+        align-items: stretch;
+    }
+    .cyberpanel-website-page .cyber-resource-col {
+        flex: 1;
+        min-width: 320px;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+    }
+    .cyberpanel-website-page .cyber-resource-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 18px;
+    }
+    @media (max-width: 900px) {
+        .cyberpanel-website-page .cyber-resource-row { flex-direction: column; gap: 0; }
+        .cyberpanel-website-page .cyber-resource-col { margin-bottom: 24px; }
+    }
+    </style>
 
-        <div id="page-title">
-            <h2><span id="domainNamePage">{{ domain }}</span> - <a target="_blank" href="{$ previewUrl $}"
-                                                                   style="height: 23px;line-height: 21px;"
-                                                                   class="btn btn-border btn-alt border-red btn-link font-red"
-                                                                   title=""><span>{% trans "Preview" %}</span></a></h2>
-            <p>{% trans "All functions related to a particular site." %}</p>
+    <div class="cyberpanel-website-page" ng-controller="websitePages">
+
+        <div id="page-title" style="margin-bottom: 32px;">
+            <h2 style="font-size:2.1rem;font-weight:700;color:#222b38;display:flex;align-items:center;gap:18px;">
+                <span id="domainNamePage">{{ domain }}</span>
+                <a target="_blank" href="{$ previewUrl $}"
+                   class="cyber-btn blue"
+                   title=""><span>{% trans "PREVIEW" %}</span></a>
+            </h2>
+            <p style="color:#6b7c93;font-size:1.13rem;margin-top:2px;">{% trans "All functions related to a particular site." %}</p>
         </div>
 
         {% if not error %}
 
+        <div style="display:flex;justify-content:flex-end;gap:18px;margin-bottom:18px;">
+            <a class="cyber-btn orange" href="/websites/{{ domain }}/manageGIT" title="Manage Git">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" style="vertical-align:middle;margin-right:7px;"><circle cx="10" cy="10" r="9" stroke="#ff9800" stroke-width="2"/><path d="M7 13L13 7M13 13V7H7" stroke="#ff9800" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                {% trans "Manage Git" %}
+            </a>
+            <a class="cyber-btn blue" href="/websites/{{ domain }}/setupStaging" title="">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" style="vertical-align:middle;margin-right:7px;"><rect x="3" y="3" width="14" height="14" rx="3" stroke="#2563eb" stroke-width="2"/><path d="M7 7H13V13" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                {% trans "Clone/Staging" %}
+            </a>
+            <a class="cyber-btn green" href="/websites/{{ domain }}/sshAccess" title="">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" style="vertical-align:middle;margin-right:7px;"><rect x="3" y="7" width="14" height="10" rx="2" stroke="#00b894" stroke-width="2"/><path d="M7 11V9C7 7.89543 7.89543 7 9 7H11C12.1046 7 13 7.89543 13 9V11" stroke="#00b894" stroke-width="2"/></svg>
+                {% trans "Set up SSH/SFTP Access" %}
+            </a>
+            <a class="cyber-btn purple" href="https://go.cyberpanel.net/StessTest" title="">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" style="vertical-align:middle;margin-right:7px;"><circle cx="10" cy="10" r="8" stroke="#8e44ad" stroke-width="2"/><path d="M10 10V5" stroke="#8e44ad" stroke-width="2" stroke-linecap="round"/><path d="M10 10L13 13" stroke="#8e44ad" stroke-width="2" stroke-linecap="round"/></svg>
+                {% trans "Stress Test" %}
+            </a>
+        </div>
 
-            <div class="example-box-wrapper">
+        <div class="cyber-card">
+            <div class="cyber-section-title" style="margin-bottom:28px;">
+                <span style="display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;border:1.5px solid #dbeafe;border-radius:8px;margin-right:12px;background:#f6faff;">
+                    <svg width="26" height="26" viewBox="0 0 26 26" fill="none"><rect x="3" y="6" width="20" height="14" rx="3" stroke="#222b38" stroke-width="2"/><rect x="7" y="10" width="12" height="2" rx="1" fill="#b6d4fe"/><rect x="7" y="14" width="7" height="2" rx="1" fill="#b6d4fe"/></svg>
+                </span>
+                <span>{% trans "Resource Usage" %}</span>
+            </div>
+            <div class="cyber-resource-row">
+                <div class="cyber-resource-col">
+                    <table class="cyber-table cyber-resource-table" style="width:100%;border-radius:10px;overflow:hidden;">
+                        <thead>
+                        <tr>
+                            <th>{% trans "Resource" %}</th>
+                            <th>{% trans "Usage" %}</th>
+                            <th>{% trans "Allowed" %}</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td>FTP</td>
+                            <td><span style="color:#00b894;font-weight:600;">{{ ftpUsed }}</span></td>
+                            <td><span style="color:#00b894;font-weight:600;">{{ ftpTotal }}</span></td>
+                        </tr>
+                        <tr>
+                            <td>Databases</td>
+                            <td><span style="color:#00b894;font-weight:600;">{{ databasesUsed }}</span></td>
+                            <td><span style="color:#00b894;font-weight:600;">{{ databasesTotal }}</span></td>
+                        </tr>
+                        <tr>
+                            <td>Disk Usage</td>
+                            <td><span style="color:#00b894;font-weight:600;">{{ diskInMB }} (MB)</span></td>
+                            <td><span style="color:#00b894;font-weight:600;">{{ diskInMBTotal }} (MB)</span></td>
+                        </tr>
+                        <tr>
+                            <td>Bandwidth Usage</td>
+                            <td><span style="color:#00b894;font-weight:600;">{{ bwInMB }} (MB)</span></td>
+                            <td><span style="color:#00b894;font-weight:600;">{{ bwInMBTotal }} (MB)</span></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="cyber-resource-col" style="max-width:520px;">
+                    {% if viewSSL == 1 %}
+                        <div class="cyber-ssl-box">
+                            <span style="font-weight:700;text-transform:uppercase;">{{ authority }}</span><br>
+                            Your SSL will expire in {{ days }} days.
+                        </div>
+                    {% endif %}
+                    <div style="margin-bottom:10px;">
+                        <span style="color:#2563eb;font-weight:600;">Disk Usage</span>
+                        <div class="cyber-progress">
+                            <div class="cyber-progress-bar" style="width: {{ diskUsage }}%;min-width:40px;">{{ diskUsage }}%</div>
+                        </div>
+                    </div>
+                    <div>
+                        <span style="color:#2563eb;font-weight:600;">Bandwidth Usage</span>
+                        <div class="cyber-progress">
+                            <div class="cyber-progress-bar" style="width: {{ bwUsage }}%;min-width:40px;">{{ bwUsage }}%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-                <div class="panel panel-body">
+        <div class="example-box-wrapper my-10">
+            <div class="panel panel-body">
+                <h3 class="content-box-header">
+                    {% trans "Logs" %} <img ng-hide="logFileLoading" src="/static/images/loading.gif">
+                </h3>
 
-                    <h3 class="content-box-header">
-                        {% trans "Resource Usage" %} <img ng-hide="domainLoading" src="/static/images/loading.gif">
+                <div class="content-box-wrapper">
+                    <div class="row mt-5 mx-10">
+                        <div class="col-md-6 panel-body">
+                            <a ng-click="fetchLogs(1)" href="" title="{% trans 'Load Access Logs' %}">
+                                <img src="{% static 'images/icons/log-file-format.png' %}" width="65">
+                            </a>
+                            &nbsp;
+                            <a ng-click="fetchLogs(1)" href="" title="{% trans 'Load Access Logs' %}">
+                                <span class="h4">{% trans "Access Logs" %}</span>
+                            </a>
+                        </div>
+                        <div class="col-md-6 panel-body">
+                            <a ng-click="fetchErrorLogs(1)" href="" title="{% trans 'Load Error Logs' %}">
+                                <img src="{% static 'images/icons/warning.png' %}" width="65" class="mr-10">
+                            </a>
+                            &nbsp;
+                            <a ng-click="fetchErrorLogs(1)" href="" title="{% trans 'Load Error Logs' %}">
+                                <span class="h4">{% trans "Error Logs" %}</span>
+                            </a>
+                        </div>
 
-                        <a style="float: right; margin-left: 2%" class="btn btn-border btn-alt border-orange btn-link font-orange" href="/websites/{{ domain }}/manageGIT" title="Manage Git"><span>{% trans "Manage Git" %}</span></a>
+                        <div class="col-md-12">
+                            <form ng-hide="hideLogs" class="form-horizontal bordered-row">
+                                <div ng-hide="logsFeteched" class="alert alert-success">
+                                    <p>{% trans "Logs Fetched" %}</p>
+                                </div>
+                                <div ng-hide="couldNotFetchLogs" class="alert alert-danger">
+                                    <p>{% trans "Could not fetch logs, see the logs file through command line. Error message:" %}
+                                        {$ errorMessage $}</p>
+                                </div>
+                                <div ng-hide="couldNotConnect" class="alert alert-danger">
+                                    <p>{% trans "Could not connect to server. Please refresh this page." %}</p>
+                                </div>
+                                <div ng-hide="fetchedData" class="mx-10">
+                                    <div class="col-sm-3">
+                                        <input placeholder="Search..." ng-model="logSearch" name="dom" type="text"
+                                               class="form-control" ng-model="domainNameCreate" required>
+                                    </div>
+                                    <div class="col-sm-2">
+                                        <input placeholder="Page Number" type="number" class="form-control"
+                                               ng-model="pageNumber" required>
+                                    </div>
 
-                        <a style="float: right; margin-left: 2%"
-                           class="btn btn-border btn-alt border-azure btn-link font-azure"
-                           href="/websites/{{ domain }}/setupStaging" title=""><span>{% trans "Clone/Staging" %}</span></a>
-                        <a style="float: right; margin-left: 2%" class="btn btn-border btn-alt border-blue-alt btn-link font-blue-alt"
-                           href="/websites/{{ domain }}/sshAccess" title=""><span>{% trans "Set up SSH/SFTP Access" %}</span></a>
-                        <a style="float: right" class="btn btn-border btn-alt border-black btn-link font-black"
-                           href="https://go.cyberpanel.net/StessTest" title=""><span>{% trans "Stress Test" %}</span></a>
-                    </h3>
+                                    <div class="col-sm-6">
+                                        <button ng-click="fetchLogs(3)" type="button"
+                                                class="btn ra-50 btn-primary mx-5">{% trans "Next" %}</button>
+                                        <button ng-click="fetchLogs(4)" type="button"
+                                                class="btn ra-50 btn-primary mx-5">{% trans "Previous" %}</button>
+                                    </div>
 
-                    <div class="content-box-wrapper">
-                        <div class="row">
+                                    <div style="margin-bottom: 1%;" class=" col-sm-1">
+                                        <a ng-click="hidelogsbtn()" href="">
+                                            <!--img src="/static/images/close-32.png"-->
+                                            <h3 class="glyph-icon icon-close text-danger mt-5"></h3>
+                                        </a>
+                                    </div>
+                                    <div class="col-sm-12">
+                                        <table class="table">
+                                            <thead>
+                                            <tr>
+                                                <th>Type</th>
+                                                <th>IP Address</th>
+                                                <th>Time</th>
+                                                <th>Resource</th>
+                                                <th>Size</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                            <tr ng-repeat="record in records | filter:logSearch">
+                                                <td ng-bind="record.domain"></td>
+                                                <td ng-bind="record.ipAddress"></td>
+                                                <td ng-bind="record.time"></td>
+                                                <td ng-bind="record.resource"></td>
+                                                <td ng-bind="record.size"></td>
+                                            </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
 
-                            <div class="col-md-6">
-                                <table class="table">
-                                    <thead>
-                                    <tr>
-                                        <th>{% trans "Resource" %}</th>
-                                        <th>{% trans "Usage" %}</th>
-                                        <th>{% trans "Allowed" %}</th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-                                    <tr>
-                                        <td class="row-title">{% trans "FTP" %}</td>
-                                        <td><span class="text-success h4">{{ ftpUsed }}</span></td>
-                                        <td><span class="text-success h4">{{ ftpTotal }}</span></td>
-                                    </tr>
-                                    <tr>
-                                        <td class="row-title">{% trans "Databases" %}</td>
-                                        <td><span class="text-success h4">{{ databasesUsed }}</span></td>
-                                        <td><span class="text-success h4">{{ databasesTotal }}</span></td>
-                                    </tr>
-                                    <tr>
-                                        <td class="row-title">{% trans "Disk Usage" %}</td>
-                                        <td><span class="text-success h4">{{ diskInMB }} (MB)</span></td>
-                                        <td><span class="text-success h4">{{ diskInMBTotal }} (MB)</span></td>
-                                    </tr>
-                                    <tr>
-                                        <td class="row-title">{% trans "Bandwidth Usage" %}</td>
-                                        <td><span class="text-success h4">{{ bwInMB }} (MB)</span></td>
-                                        <td><span class="text-success h4">{{ bwInMBTotal }} (MB)</span></td>
-                                    </tr>
-                                    </tbody>
-                                </table>
-                            </div>
 
-                            <div class="col-md-6">
-                                <div style="margin-top: 4%" class="content-box mt-5 mx-10">
-                                    <div class="panel-body">
-                                        {% if viewSSL == 1 %}
-                                            <div style="margin-top: 2%" class="alert alert-success">
-                                                <div class="alert-content">
-                                                    <h4 class="alert-title">{{ authority }}</h4>
-                                                    <p>Your SSL will expire in {{ days }} days.</p>
-                                                </div>
-                                            </div>
-                                        {% endif %}
-                                        <div class="example-box-wrapper">
-                                            <h3 class="title-hero">
-                                                {% trans "Disk Usage" %}
-                                            </h3>
-                                            <div class="progressbar" data-value="{{ diskUsage }}">
-                                                <div class="progressbar-value bg-primary">
-                                                    <div class="progress-overlay"></div>
-                                                    <div class="progress-label">{{ diskUsage }}%</div>
-                                                </div>
-                                            </div>
-                                            <h3 class="title-hero">
-                                                {% trans "Bandwidth Usage" %}
-                                            </h3>
-                                            <div class="progressbar" data-value="{{ bwUsage }}">
-                                                <div class="progressbar-value bg-primary">
-                                                    <div class="progress-overlay"></div>
-                                                    <div class="progress-label">{{ bwUsage }}%</div>
-                                                </div>
-                                            </div>
+                                <div ng-hide="hideErrorLogs" class="">
+
+                                    <div class="col-sm-2">
+                                        <input placeholder="Page Number" type="number" class="form-control"
+                                               ng-model="errorPageNumber" required>
+                                    </div>
+
+                                    <div class="col-sm-9">
+                                        <button ng-click="fetchErrorLogs(3)" type="button"
+                                                class="btn btn-sm ra-50 btn-primary mx-5">{% trans "Next" %}</button>
+                                        <button ng-click="fetchErrorLogs(4)" type="button"
+                                                class="btn btn-sm ra-50 btn-primary mx-5">{% trans "Previous" %}</button>
+                                    </div>
+
+                                    <div style="margin-bottom: 1%;" class=" col-sm-1">
+                                        <a ng-click="hideErrorLogsbtn()" href="">
+                                            <!--img src="/static/images/close-32.png"-->
+                                            <h3 class="glyph-icon icon-close text-danger mt-5"></h3>
+                                        </a>
+                                    </div>
+                                    <div class="col-sm-12">
+                                        <textarea ng-model="errorLogsData" rows="25"
+                                                  class="form-control"></textarea>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="example-box-wrapper my-10">
+            <div class="panel panel-body">
+                <h3 class="content-box-header">
+                    {% trans "Domains" %} <img ng-hide="domainLoading" src="/static/images/loading.gif">
+                </h3>
+                <div class="content-box-wrapper">
+                    <div class="row mx-10">
+                        <div class="col-md-3 panel-body">
+                            <a href="{% url 'CreateNewDomain' %}" title="{% trans 'Add Domains' %}" href="">
+                                <img src="{% static 'images/icons/domains.png' %}" width="65" class="mr-10">
+                            </a>
+                            <a href="{% url 'CreateNewDomain' %}" title="{% trans 'Add Domains' %}" href=""
+                               title="{% trans 'Add Domains' %}">
+                                <span class="h4">{% trans "Add Domains" %}</span>
+                            </a>
+                        </div>
+
+                        <div class="col-md-3 panel-body">
+                            <a href="" ng-click="showListDomains()" title="{% trans 'List Domains' %}" href=""
+                               title="{% trans 'List Domains' %}">
+                                <img src="{% static 'images/icons/sort.png' %}" width="65" class="mr-10">
+                            </a>
+                            <a ng-click="showListDomains()" title="{% trans 'List Domains' %}" href=""
+                               title="{% trans 'List Domains' %}">
+                                <span class="h4">{% trans "List Domains" %}</span>
+                            </a>
+                        </div>
+
+                        <div class="col-md-3 panel-body">
+                            <a href="{$ domainAliasURL $}" target="_self" title="{% trans 'Domain Alias' %}"
+                               href="" title="{% trans 'Domain Alias' %}">
+                                <img src="{% static 'images/icons/web-domain.png' %}" width="65" class="mr-10">
+                            </a>
+                            <a href="{$ domainAliasURL $}" target="_self" title="{% trans 'Domain Alias' %}"
+                               href="" title="{% trans 'Domain Alias' %}">
+                                <span class="h4">{% trans "Domain Alias" %}</span>
+                            </a>
+                        </div>
+
+                        <div class="col-md-3 panel-body">
+                            <a href="{% url 'listCron' %}?domain={{ domain }}" target="_self" title="{% trans 'Add new Cron Job' %}"
+                               href="" title="{% trans 'Add new Cron Job' %}">
+                                <img src="{% static 'images/icons/repeat.png' %}" width="65" class="mr-10">
+                            </a>
+                            <a href="{% url 'listCron' %}?domain={{ domain }}" target="_self" title="{% trans 'Add new Cron Job' %}"
+                               title="{% trans 'Add new Cron Job' %}">
+                                <span class="h4">{% trans "Cron Jobs" %}</span>
+                            </a>
+
+                        </div>
+
+
+                        <!---------- HTML For creating domains --------------->
+                        <div class="col-md-12 mx-10">
+                            <form id="domainCreationForm" name="websiteCreationForm" action="/"
+                                  class="form-horizontal bordered-row">
+
+                                <div ng-hide="installationDetailsForm" class="form-group">
+                                    <label class="col-sm-3 control-label">{% trans "Domain Name" %}</label>
+                                    <div class="col-sm-6">
+                                        <input name="dom" type="text" class="form-control"
+                                               ng-model="domainNameCreate" required>
+                                    </div>
+                                    <div style="margin-bottom: 1%;" class=" col-sm-1">
+                                        <a title="{% trans 'Cancel' %}" ng-click="hideDomainCreationForm()" href="">
+                                            <h3 class="glyph-icon icon-close text-danger mt-5"></h3>
+                                        </a>
+                                    </div>
+                                </div>
+
+                                <div ng-hide="installationDetailsForm" class="form-group">
+                                    <label class="col-sm-3 control-label">{% trans "Path" %}: /home/{{ domain }}/ </label>
+                                    <div class="col-sm-6">
+                                        <input placeholder="{% trans 'This path is relative to: ' %}{$ masterDomain $}. {% trans 'Leave empty to set default.' %}"
+                                               type="text" class="form-control" ng-model="docRootPath" required>
+                                    </div>
+                                    <div ng-show="websiteCreationForm.dom.$error.pattern"
+                                         class="current-pack">{% trans "Invalid Domain (Note: You don't need to add 'http' or 'https')" %}</div>
+                                </div>
+
+                                <div ng-hide="installationDetailsForm" class="form-group">
+                                    <label class="col-sm-3 control-label">{% trans "Select PHP" %}</label>
+                                    <div class="col-sm-6">
+                                        <select ng-model="phpSelection" class="form-control">
+                                            {% for php in phps %}
+                                                <option>{{ php }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div ng-hide="installationDetailsForm" ng-hide="installationDetailsForm"
+                                     class="form-group">
+                                    <label class="col-sm-3 control-label">{% trans "Additional Features" %}</label>
+                                    <div class="col-sm-9">
+                                        <div class="checkbox">
+                                            <label>
+                                                <input ng-model="sslCheck" type="checkbox" value="">
+                                                SSL
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <label class="col-sm-3 control-label"></label>
+                                    <div class="col-sm-9">
+                                        <div class="checkbox">
+                                            <label>
+                                                <input ng-model="dkimCheck" type="checkbox" value="">
+                                                DKIM Support
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <label class="col-sm-3 control-label"></label>
+                                    <div class="col-sm-9">
+                                        <div class="checkbox">
+                                            <label>
+                                                <input ng-model="openBasedir" type="checkbox" value="">
+                                                open_basedir Protection
+                                            </label>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
+
+                                <div ng-hide="installationDetailsForm" class="form-group">
+                                    <label class="col-sm-3 control-label"></label>
+                                    <div class="col-sm-4">
+                                        <button type="button" ng-click="createDomain()"
+                                                class="btn btn-primary btn-lg">{% trans "Create Domain" %}</button>
+
+                                    </div>
+                                </div>
+
+                                <div ng-hide="installationProgress" class="form-group">
+                                    <label class="col-sm-2 control-label"></label>
+                                    <div class="col-sm-7">
+
+                                        <div class="alert alert-success text-center">
+                                            <h2>{$ currentStatus $}</h2>
+                                        </div>
+
+                                        <div class="progress">
+                                            <div id="installProgress" class="progress-bar" role="progressbar"
+                                                 aria-valuenow="70" aria-valuemin="0" aria-valuemax="100"
+                                                 style="width:0%">
+                                                <span class="sr-only">70% Complete</span>
+                                            </div>
+                                        </div>
+
+                                        <div ng-hide="errorMessageBox" class="alert alert-danger">
+                                            <p>{% trans "Error message:" %} {$ errorMessage $}</p>
+                                        </div>
+
+                                        <div ng-hide="success" class="alert alert-success">
+                                            <p>{% trans "Website succesfully created." %}</p>
+                                        </div>
+
+
+                                        <div ng-hide="couldNotConnect" class="alert alert-danger">
+                                            <p>{% trans "Could not connect to server. Please refresh this page." %}</p>
+                                        </div>
+
+
+                                    </div>
+                                </div>
+
+                                <div ng-hide="installationProgress" class="form-group">
+                                    <label class="col-sm-3 control-label"></label>
+                                    <div class="col-sm-4">
+                                        <button type="button" ng-disabled="goBackDisable" ng-click="goBack()"
+                                                class="btn btn-primary btn-lg">{% trans "Go Back" %}</button>
+                                    </div>
+                                </div>
+
+
+                            </form>
                         </div>
-                    </div>
 
-                </div>
-            </div>
+                        <!---------- HTML For creating domains --------------->
 
-            <div class="example-box-wrapper my-10">
-                <div class="panel panel-body">
-                    <h3 class="content-box-header">
-                        {% trans "Logs" %} <img ng-hide="logFileLoading" src="/static/images/loading.gif">
-                    </h3>
+                        <!---------- HTML For Listing domains --------------->
 
-                    <div class="content-box-wrapper">
-                        <div class="row mt-5 mx-10">
-                            <div class="col-md-6 panel-body">
-                                <a ng-click="fetchLogs(1)" href="" title="{% trans 'Load Access Logs' %}">
-                                    <img src="{% static 'images/icons/log-file-format.png' %}" width="65">
-                                </a>
-                                &nbsp;
-                                <a ng-click="fetchLogs(1)" href="" title="{% trans 'Load Access Logs' %}">
-                                    <span class="h4">{% trans "Access Logs" %}</span>
-                                </a>
-                            </div>
-                            <div class="col-md-6 panel-body">
-                                <a ng-click="fetchErrorLogs(1)" href="" title="{% trans 'Load Error Logs' %}">
-                                    <img src="{% static 'images/icons/warning.png' %}" width="65" class="mr-10">
-                                </a>
-                                &nbsp;
-                                <a ng-click="fetchErrorLogs(1)" href="" title="{% trans 'Load Error Logs' %}">
-                                    <span class="h4">{% trans "Error Logs" %}</span>
-                                </a>
-                            </div>
+                        <div id="listDomains" class="col-md-12 mx-10">
 
-                            <div class="col-md-12">
-                                <form ng-hide="hideLogs" class="form-horizontal bordered-row">
-                                    <div ng-hide="logsFeteched" class="alert alert-success">
-                                        <p>{% trans "Logs Fetched" %}</p>
-                                    </div>
-                                    <div ng-hide="couldNotFetchLogs" class="alert alert-danger">
-                                        <p>{% trans "Could not fetch logs, see the logs file through command line. Error message:" %}
-                                            {$ errorMessage $}</p>
-                                    </div>
-                                    <div ng-hide="couldNotConnect" class="alert alert-danger">
-                                        <p>{% trans "Could not connect to server. Please refresh this page." %}</p>
-                                    </div>
-                                    <div ng-hide="fetchedData" class="mx-10">
-                                        <div class="col-sm-3">
-                                            <input placeholder="Search..." ng-model="logSearch" name="dom" type="text"
-                                                   class="form-control" ng-model="domainNameCreate" required>
-                                        </div>
-                                        <div class="col-sm-2">
-                                            <input placeholder="Page Number" type="number" class="form-control"
-                                                   ng-model="pageNumber" required>
-                                        </div>
+                            <form ng-hide="" class="form-horizontal bordered-row">
 
-                                        <div class="col-sm-6">
-                                            <button ng-click="fetchLogs(3)" type="button"
-                                                    class="btn ra-50 btn-primary mx-5">{% trans "Next" %}</button>
-                                            <button ng-click="fetchLogs(4)" type="button"
-                                                    class="btn ra-50 btn-primary mx-5">{% trans "Previous" %}</button>
-                                        </div>
 
-                                        <div style="margin-bottom: 1%;" class=" col-sm-1">
-                                            <a ng-click="hidelogsbtn()" href="">
-                                                <!--img src="/static/images/close-32.png"-->
-                                                <h3 class="glyph-icon icon-close text-danger mt-5"></h3>
-                                            </a>
-                                        </div>
-                                        <div class="col-sm-12">
-                                            <table class="table">
-                                                <thead>
-                                                <tr>
-                                                    <th>Type</th>
-                                                    <th>IP Address</th>
-                                                    <th>Time</th>
-                                                    <th>Resource</th>
-                                                    <th>Size</th>
-                                                </tr>
-                                                </thead>
-                                                <tbody>
-                                                <tr ng-repeat="record in records | filter:logSearch">
-                                                    <td ng-bind="record.domain"></td>
-                                                    <td ng-bind="record.ipAddress"></td>
-                                                    <td ng-bind="record.time"></td>
-                                                    <td ng-bind="record.resource"></td>
-                                                    <td ng-bind="record.size"></td>
-                                                </tr>
-                                                </tbody>
-                                            </table>
-                                        </div>
+                                <div ng-hide="phpChanged" class="alert alert-success">
+                                    <p>{% trans "PHP Version Changed to:" %} {$ changedPHPVersion $} </p>
+                                </div>
+
+                                <div ng-hide="domainDeleted" class="alert alert-success">
+                                    <p>{% trans "Deleted:" %} {$ deletedDomain $} </p>
+                                </div>
+
+                                <div ng-hide="sslIssued" class="alert alert-success">
+                                    <p>{% trans "SSL Issued:" %} {$ sslDomainIssued $} </p>
+                                </div>
+
+                                <div ng-hide="childBaseDirChanged" class="alert alert-success">
+                                    <p>{% trans "Changes applied successfully." %} </p>
+                                </div>
+
+
+                                <div ng-hide="domainError" class="alert alert-danger">
+                                    <p>{$ errorMessage $}</p>
+                                </div>
+
+
+                                <div ng-hide="couldNotConnect" class="alert alert-danger">
+                                    <p>{% trans "Could not connect to server. Please refresh this page." %}</p>
+                                </div>
+
+
+                                <div ng-hide="" class="form-group">
+
+                                    <div class="col-sm-11">
+                                        <input placeholder="Search Domain..." ng-model="logSearch" name="dom"
+                                               type="text" class="form-control" ng-model="domainNameCreate"
+                                               required>
                                     </div>
 
-
-                                    <div ng-hide="hideErrorLogs" class="">
-
-                                        <div class="col-sm-2">
-                                            <input placeholder="Page Number" type="number" class="form-control"
-                                                   ng-model="errorPageNumber" required>
-                                        </div>
-
-                                        <div class="col-sm-9">
-                                            <button ng-click="fetchErrorLogs(3)" type="button"
-                                                    class="btn btn-sm ra-50 btn-primary mx-5">{% trans "Next" %}</button>
-                                            <button ng-click="fetchErrorLogs(4)" type="button"
-                                                    class="btn btn-sm ra-50 btn-primary mx-5">{% trans "Previous" %}</button>
-                                        </div>
-
-                                        <div style="margin-bottom: 1%;" class=" col-sm-1">
-                                            <a ng-click="hideErrorLogsbtn()" href="">
-                                                <!--img src="/static/images/close-32.png"-->
-                                                <h3 class="glyph-icon icon-close text-danger mt-5"></h3>
-                                            </a>
-                                        </div>
-                                        <div class="col-sm-12">
-                                            <textarea ng-model="errorLogsData" rows="25"
-                                                      class="form-control"></textarea>
-                                        </div>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="example-box-wrapper my-10">
-                <div class="panel panel-body">
-                    <h3 class="content-box-header">
-                        {% trans "Domains" %} <img ng-hide="domainLoading" src="/static/images/loading.gif">
-                    </h3>
-                    <div class="content-box-wrapper">
-                        <div class="row mx-10">
-                            <div class="col-md-3 panel-body">
-                                <a href="{% url 'CreateNewDomain' %}" title="{% trans 'Add Domains' %}" href="">
-                                    <img src="{% static 'images/icons/domains.png' %}" width="65" class="mr-10">
-                                </a>
-                                <a href="{% url 'CreateNewDomain' %}" title="{% trans 'Add Domains' %}" href=""
-                                   title="{% trans 'Add Domains' %}">
-                                    <span class="h4">{% trans "Add Domains" %}</span>
-                                </a>
-                            </div>
-
-                            <div class="col-md-3 panel-body">
-                                <a href="" ng-click="showListDomains()" title="{% trans 'List Domains' %}" href=""
-                                   title="{% trans 'List Domains' %}">
-                                    <img src="{% static 'images/icons/sort.png' %}" width="65" class="mr-10">
-                                </a>
-                                <a ng-click="showListDomains()" title="{% trans 'List Domains' %}" href=""
-                                   title="{% trans 'List Domains' %}">
-                                    <span class="h4">{% trans "List Domains" %}</span>
-                                </a>
-                            </div>
-
-                            <div class="col-md-3 panel-body">
-                                <a href="{$ domainAliasURL $}" target="_self" title="{% trans 'Domain Alias' %}"
-                                   href="" title="{% trans 'Domain Alias' %}">
-                                    <img src="{% static 'images/icons/web-domain.png' %}" width="65" class="mr-10">
-                                </a>
-                                <a href="{$ domainAliasURL $}" target="_self" title="{% trans 'Domain Alias' %}"
-                                   href="" title="{% trans 'Domain Alias' %}">
-                                    <span class="h4">{% trans "Domain Alias" %}</span>
-                                </a>
-                            </div>
-
-                            <div class="col-md-3 panel-body">
-                                <a href="{% url 'listCron' %}?domain={{ domain }}" target="_self" title="{% trans 'Add new Cron Job' %}"
-                                   href="" title="{% trans 'Add new Cron Job' %}">
-                                    <img src="{% static 'images/icons/repeat.png' %}" width="65" class="mr-10">
-                                </a>
-                                <a href="{% url 'listCron' %}?domain={{ domain }}" target="_self" title="{% trans 'Add new Cron Job' %}"
-                                   title="{% trans 'Add new Cron Job' %}">
-                                    <span class="h4">{% trans "Cron Jobs" %}</span>
-                                </a>
-
-                            </div>
-
-
-                            <!---------- HTML For creating domains --------------->
-                            <div class="col-md-12 mx-10">
-                                <form id="domainCreationForm" name="websiteCreationForm" action="/"
-                                      class="form-horizontal bordered-row">
-
-                                    <div ng-hide="installationDetailsForm" class="form-group">
-                                        <label class="col-sm-3 control-label">{% trans "Domain Name" %}</label>
-                                        <div class="col-sm-6">
-                                            <input name="dom" type="text" class="form-control"
-                                                   ng-model="domainNameCreate" required>
-                                        </div>
-                                        <div style="margin-bottom: 1%;" class=" col-sm-1">
-                                            <a title="{% trans 'Cancel' %}" ng-click="hideDomainCreationForm()" href="">
-                                                <h3 class="glyph-icon icon-close text-danger mt-5"></h3>
-                                            </a>
-                                        </div>
-                                    </div>
-
-                                    <div ng-hide="installationDetailsForm" class="form-group">
-                                        <label class="col-sm-3 control-label">{% trans "Path" %}: /home/{{ domain }}/ </label>
-                                        <div class="col-sm-6">
-                                            <input placeholder="{% trans 'This path is relative to: ' %}{$ masterDomain $}. {% trans 'Leave empty to set default.' %}"
-                                                   type="text" class="form-control" ng-model="docRootPath" required>
-                                        </div>
-                                        <div ng-show="websiteCreationForm.dom.$error.pattern"
-                                             class="current-pack">{% trans "Invalid Domain (Note: You don't need to add 'http' or 'https')" %}</div>
-                                    </div>
-
-                                    <div ng-hide="installationDetailsForm" class="form-group">
-                                        <label class="col-sm-3 control-label">{% trans "Select PHP" %}</label>
-                                        <div class="col-sm-6">
-                                            <select ng-model="phpSelection" class="form-control">
-                                                {% for php in phps %}
-                                                    <option>{{ php }}</option>
-                                                {% endfor %}
-                                            </select>
-                                        </div>
-                                    </div>
-
-                                    <div ng-hide="installationDetailsForm" ng-hide="installationDetailsForm"
-                                         class="form-group">
-                                        <label class="col-sm-3 control-label">{% trans "Additional Features" %}</label>
-                                        <div class="col-sm-9">
-                                            <div class="checkbox">
-                                                <label>
-                                                    <input ng-model="sslCheck" type="checkbox" value="">
-                                                    SSL
-                                                </label>
-                                            </div>
-                                        </div>
-                                        <label class="col-sm-3 control-label"></label>
-                                        <div class="col-sm-9">
-                                            <div class="checkbox">
-                                                <label>
-                                                    <input ng-model="dkimCheck" type="checkbox" value="">
-                                                    DKIM Support
-                                                </label>
-                                            </div>
-                                        </div>
-                                        <label class="col-sm-3 control-label"></label>
-                                        <div class="col-sm-9">
-                                            <div class="checkbox">
-                                                <label>
-                                                    <input ng-model="openBasedir" type="checkbox" value="">
-                                                    open_basedir Protection
-                                                </label>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div ng-hide="installationDetailsForm" class="form-group">
-                                        <label class="col-sm-3 control-label"></label>
-                                        <div class="col-sm-4">
-                                            <button type="button" ng-click="createDomain()"
-                                                    class="btn btn-primary btn-lg">{% trans "Create Domain" %}</button>
-
-                                        </div>
-                                    </div>
-
-                                    <div ng-hide="installationProgress" class="form-group">
-                                        <label class="col-sm-2 control-label"></label>
-                                        <div class="col-sm-7">
-
-                                            <div class="alert alert-success text-center">
-                                                <h2>{$ currentStatus $}</h2>
-                                            </div>
-
-                                            <div class="progress">
-                                                <div id="installProgress" class="progress-bar" role="progressbar"
-                                                     aria-valuenow="70" aria-valuemin="0" aria-valuemax="100"
-                                                     style="width:0%">
-                                                    <span class="sr-only">70% Complete</span>
-                                                </div>
-                                            </div>
-
-                                            <div ng-hide="errorMessageBox" class="alert alert-danger">
-                                                <p>{% trans "Error message:" %} {$ errorMessage $}</p>
-                                            </div>
-
-                                            <div ng-hide="success" class="alert alert-success">
-                                                <p>{% trans "Website succesfully created." %}</p>
-                                            </div>
-
-
-                                            <div ng-hide="couldNotConnect" class="alert alert-danger">
-                                                <p>{% trans "Could not connect to server. Please refresh this page." %}</p>
-                                            </div>
-
-
-                                        </div>
-                                    </div>
-
-                                    <div ng-hide="installationProgress" class="form-group">
-                                        <label class="col-sm-3 control-label"></label>
-                                        <div class="col-sm-4">
-                                            <button type="button" ng-disabled="goBackDisable" ng-click="goBack()"
-                                                    class="btn btn-primary btn-lg">{% trans "Go Back" %}</button>
-                                        </div>
-                                    </div>
-
-
-                                </form>
-                            </div>
-
-                            <!---------- HTML For creating domains --------------->
-
-                            <!---------- HTML For Listing domains --------------->
-
-                            <div id="listDomains" class="col-md-12 mx-10">
-
-                                <form ng-hide="" class="form-horizontal bordered-row">
-
-
-                                    <div ng-hide="phpChanged" class="alert alert-success">
-                                        <p>{% trans "PHP Version Changed to:" %} {$ changedPHPVersion $} </p>
-                                    </div>
-
-                                    <div ng-hide="domainDeleted" class="alert alert-success">
-                                        <p>{% trans "Deleted:" %} {$ deletedDomain $} </p>
-                                    </div>
-
-                                    <div ng-hide="sslIssued" class="alert alert-success">
-                                        <p>{% trans "SSL Issued:" %} {$ sslDomainIssued $} </p>
-                                    </div>
-
-                                    <div ng-hide="childBaseDirChanged" class="alert alert-success">
-                                        <p>{% trans "Changes applied successfully." %} </p>
-                                    </div>
-
-
-                                    <div ng-hide="domainError" class="alert alert-danger">
-                                        <p>{$ errorMessage $}</p>
-                                    </div>
-
-
-                                    <div ng-hide="couldNotConnect" class="alert alert-danger">
-                                        <p>{% trans "Could not connect to server. Please refresh this page." %}</p>
-                                    </div>
-
-
-                                    <div ng-hide="" class="form-group">
-
-                                        <div class="col-sm-11">
-                                            <input placeholder="Search Domain..." ng-model="logSearch" name="dom"
-                                                   type="text" class="form-control" ng-model="domainNameCreate"
-                                                   required>
-                                        </div>
-
-                                        <div style="margin-bottom: 1%;" class=" col-sm-1">
-                                            <a title="{% trans 'Close' %}" ng-click="hideListDomains()" href="">
+                                    <div style="margin-bottom: 1%;" class=" col-sm-1">
+                                        <a title="{% trans 'Close' %}" ng-click="hideListDomains()" href="">
                                                 <h3 class="glyph-icon icon-close text-danger mt-5"></h3>
                                             </a>
                                         </div>
 
 
-                                        <div class="col-sm-12">
-                                            <table class="table">
-                                                <thead>
-                                                <tr>
-                                                    <th>Domain</th>
-                                                    <th>Launch</th>
-                                                    <th>Path</th>
-                                                    <th>open_basedir</th>
-                                                    <th>PHP</th>
-                                                    <th>SSL</th>
-                                                    <th>Delete</th>
-                                                </tr>
-                                                </thead>
-                                                <tbody>
-                                                <tr ng-repeat="record in childDomains | filter:logSearch">
-                                                    <td ng-bind="record.childDomain"></td>
-                                                    <td><a href="{$ record.childLunch $}"><img width="30px" height="30"
+                                    <div class="col-sm-12">
+                                        <table class="table">
+                                            <thead>
+                                            <tr>
+                                                <th>Domain</th>
+                                                <th>Launch</th>
+                                                <th>Path</th>
+                                                <th>open_basedir</th>
+                                                <th>PHP</th>
+                                                <th>SSL</th>
+                                                <th>Delete</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                            <tr ng-repeat="record in childDomains | filter:logSearch">
+                                                <td ng-bind="record.childDomain"></td>
+                                                <td><a href="{$ record.childLunch $}"><img width="30px" height="30"
                                                                                                class="center-block"
                                                                                                src="{% static 'baseTemplate/assets/image-resources/webPanel.png' %}"></a>
                                                     </td>
@@ -508,545 +615,544 @@
                                                                 class="btn ra-50 btn-primary">{% trans "Delete" %}</button>
                                                     </td>
                                                 </tr>
-                                                </tbody>
-                                            </table>
-                                        </div>
+                                            </tbody>
+                                        </table>
                                     </div>
+                                </div>
 
 
-                                </form>
+                            </form>
 
-                            </div>
-
-                            <!---------- HTML For Listing domains --------------->
                         </div>
 
+                        <!---------- HTML For Listing domains --------------->
                     </div>
                 </div>
             </div>
+        </div>
 
-            <div class="example-box-wrapper my-10">
-                <div class="panel panel-body">
-                    <h3 class="content-box-header">
-                        {% trans "Configurations" %} <img ng-hide="configFileLoading" src="/static/images/loading.gif">
-                    </h3>
-                    <div class="content-box-wrapper">
-                        <div class="row mx-10">
-                            <div class="col-md-3 panel-body">
-                                <a href="{% url 'ApacheManager' domain=domain  %}"
-                                   title="{% trans 'Apache Manager' %}">
-                                    <img src="{% static 'images/icons/file.png' %}" width="65" class="mr-10">
-                                </a>
-                                <a href="{% url 'ApacheManager' domain=domain  %}"
-                                   title="{% trans 'Apache Manager' %}">
-                                    <span class="h4">{% trans "Apache Manager" %}</span>
-                                </a>
-                            </div>
+        <div class="example-box-wrapper my-10">
+            <div class="panel panel-body">
+                <h3 class="content-box-header">
+                    {% trans "Configurations" %} <img ng-hide="configFileLoading" src="/static/images/loading.gif">
+                </h3>
+                <div class="content-box-wrapper">
+                    <div class="row mx-10">
+                        <div class="col-md-3 panel-body">
+                            <a href="{% url 'ApacheManager' domain=domain  %}"
+                               title="{% trans 'Apache Manager' %}">
+                                <img src="{% static 'images/icons/file.png' %}" width="65" class="mr-10">
+                            </a>
+                            <a href="{% url 'ApacheManager' domain=domain  %}"
+                               title="{% trans 'Apache Manager' %}">
+                                <span class="h4">{% trans "Apache Manager" %}</span>
+                            </a>
+                        </div>
 
-                            <div class="col-md-3 panel-body">
-                                <a ng-click="fetchConfigurations()" href=""
-                                   title="{% trans 'Edit vHost Main Configurations' %}">
-                                    <img src="{% static 'images/icons/file.png' %}" width="65" class="mr-10">
-                                </a>
-                                <a ng-click="fetchConfigurations()" href=""
-                                   title="{% trans 'Edit vHost Main Configurations' %}">
-                                    <span class="h4">{% trans "vHost Conf" %}</span>
-                                </a>
-                            </div>
+                        <div class="col-md-3 panel-body">
+                            <a ng-click="fetchConfigurations()" href=""
+                               title="{% trans 'Edit vHost Main Configurations' %}">
+                                <img src="{% static 'images/icons/file.png' %}" width="65" class="mr-10">
+                            </a>
+                            <a ng-click="fetchConfigurations()" href=""
+                               title="{% trans 'Edit vHost Main Configurations' %}">
+                                <span class="h4">{% trans "vHost Conf" %}</span>
+                            </a>
+                        </div>
 
-                            <div class="col-md-3 panel-body">
-                                <a ng-click="fetchRewriteFules()" href=""
-                                   title="{% trans 'Add Rewrite Rules (.htaccess)' %}">
-                                    <img src="{% static 'images/icons/pencilcase.png' %}" width="65" class="mr-10">
-                                </a>
-                                <a ng-click="fetchRewriteFules()" href=""
-                                   title="{% trans 'Rewrite Rules (.htaccess)' %}">
-                                    <span class="h4">{% trans "Rewrite Rules" %}</span>
-                                </a>
-                            </div>
+                        <div class="col-md-3 panel-body">
+                            <a ng-click="fetchRewriteFules()" href=""
+                               title="{% trans 'Add Rewrite Rules (.htaccess)' %}">
+                                <img src="{% static 'images/icons/pencilcase.png' %}" width="65" class="mr-10">
+                            </a>
+                            <a ng-click="fetchRewriteFules()" href=""
+                               title="{% trans 'Rewrite Rules (.htaccess)' %}">
+                                <span class="h4">{% trans "Rewrite Rules" %}</span>
+                            </a>
+                        </div>
 
-                            <div class="col-md-3 panel-body">
-                                <a ng-click="addSSL()" href="" title="{% trans 'Add Your Own SSL' %}">
-                                    <img src="{% static 'images/icons/locked.png' %}" width="65" class="mr-10">
-                                </a>
-                                <a ng-click="addSSL()" href="" title="{% trans 'Add Your Own SSL' %}">
-                                    <span class="h4">{% trans "Add SSL" %}</span>
-                                </a>
-                            </div>
+                        <div class="col-md-3 panel-body">
+                            <a ng-click="addSSL()" href="" title="{% trans 'Add Your Own SSL' %}">
+                                <img src="{% static 'images/icons/locked.png' %}" width="65" class="mr-10">
+                            </a>
+                            <a ng-click="addSSL()" href="" title="{% trans 'Add Your Own SSL' %}">
+                                <span class="h4">{% trans "Add SSL" %}</span>
+                            </a>
+                        </div>
 
-                            <div class="col-md-3 panel-body">
-                                <a ng-click="changePHPMaster()" href="" title="{% trans 'Change PHP Version' %}">
-                                    <img src="{% static 'images/icons/laptop.png' %}" width="65" class="mr-10">
-                                </a>
-                                <a ng-click="changePHPMaster()" href="" title="{% trans 'Change PHP Version' %}">
-                                    <span class="h4">{% trans "Change PHP" %}</span>
-                                </a>
-                            </div>
+                        <div class="col-md-3 panel-body">
+                            <a ng-click="changePHPMaster()" href="" title="{% trans 'Change PHP Version' %}">
+                                <img src="{% static 'images/icons/laptop.png' %}" width="65" class="mr-10">
+                            </a>
+                            <a ng-click="changePHPMaster()" href="" title="{% trans 'Change PHP Version' %}">
+                                <span class="h4">{% trans "Change PHP" %}</span>
+                            </a>
+                        </div>
 
-                            <!---- HTML for main ssl file ---->
+                        <!---- HTML for main ssl file ---->
 
-                            <div class="col-md-12">
+                        <div class="col-md-12">
 
-                                <form ng-hide="hidsslconfigs" class="form-horizontal bordered-row">
+                            <form ng-hide="hidsslconfigs" class="form-horizontal bordered-row">
 
-                                    <div ng-hide="sslSaved" class="alert alert-success">
-                                        <p>{% trans "SSL Saved" %}</p>
+                                <div ng-hide="sslSaved" class="alert alert-success">
+                                    <p>{% trans "SSL Saved" %}</p>
+                                </div>
+
+
+                                <div ng-hide="couldNotSaveSSL" class="alert alert-danger">
+                                    <p>{% trans "Could not save SSL. Error message:" %} {$ errorMessage $}</p>
+                                </div>
+
+
+                                <div ng-hide="couldNotConnect" class="alert alert-danger">
+                                    <p>{% trans "Could not connect to server. Please refresh this page." %}</p>
+                                </div>
+
+
+                                <div ng-hide="" class="form-group">
+                                    <div style="margin-bottom: 1%;" class="col-sm-offset-11 col-sm-1">
+                                        <a ng-click="hidesslbtn()" href=""><img
+                                                src="/static/images/close-32.png"></a>
                                     </div>
-
-
-                                    <div ng-hide="couldNotSaveSSL" class="alert alert-danger">
-                                        <p>{% trans "Could not save SSL. Error message:" %} {$ errorMessage $}</p>
+                                    <div class="col-sm-6">
+                                        <textarea placeholder="Paste Your Cert" ng-model="cert" rows="10"
+                                                  class="form-control"></textarea>
                                     </div>
-
-
-                                    <div ng-hide="couldNotConnect" class="alert alert-danger">
-                                        <p>{% trans "Could not connect to server. Please refresh this page." %}</p>
+                                    <div class="col-sm-6">
+                                        <textarea placeholder="Paste Your Key" ng-model="key" rows="10"
+                                                  class="form-control"></textarea>
                                     </div>
+                                </div>
 
-
-                                    <div ng-hide="" class="form-group">
-                                        <div style="margin-bottom: 1%;" class="col-sm-offset-11 col-sm-1">
-                                            <a ng-click="hidesslbtn()" href=""><img
-                                                    src="/static/images/close-32.png"></a>
-                                        </div>
-                                        <div class="col-sm-6">
-                                            <textarea placeholder="Paste Your Cert" ng-model="cert" rows="10"
-                                                      class="form-control"></textarea>
-                                        </div>
-                                        <div class="col-sm-6">
-                                            <textarea placeholder="Paste Your Key" ng-model="key" rows="10"
-                                                      class="form-control"></textarea>
-                                        </div>
+                                <div ng-hide="" class="form-group">
+                                    <label class="col-sm-3 control-label"></label>
+                                    <div class="col-sm-4">
+                                        <button type="button" ng-click="saveSSL()"
+                                                class="btn btn-primary btn-lg">{% trans "Save" %}</button>
                                     </div>
+                                </div>
+                            </form>
+                        </div>
 
-                                    <div ng-hide="" class="form-group">
-                                        <label class="col-sm-3 control-label"></label>
-                                        <div class="col-sm-4">
-                                            <button type="button" ng-click="saveSSL()"
-                                                    class="btn btn-primary btn-lg">{% trans "Save" %}</button>
-                                        </div>
+
+                        <!----- HTML For SSL ---->
+
+
+                        <!---- HTML for main conf file ---->
+
+                        <div class="col-md-12">
+                            <form ng-hide="configurationsBox" class="form-horizontal bordered-row">
+                                <div ng-hide="configsFetched" class="alert alert-success">
+                                    <p>{% trans "Current configuration in the file fetched." %}</p>
+                                </div>
+
+                                <div ng-hide="couldNotFetchConfigs" class="alert alert-danger">
+                                    <p>{% trans "Could not fetch current configuration. Error message:" %} {$
+                                        errorMessage $}</p>
+                                </div>
+
+                                <div ng-hide="couldNotConnect" class="alert alert-danger">
+                                    <p>{% trans "Could not connect to server. Please refresh this page." %}</p>
+                                </div>
+
+                                <div ng-hide="configSaved" class="alert alert-success">
+                                    <p>{% trans "Configurations saved." %}</p>
+                                </div>
+
+                                <div ng-hide="couldNotSaveConfigurations" class="alert alert-danger">
+                                    <p>{% trans "Could not fetch current configuration. Error message:" %} {$
+                                        errorMessage $}</p>
+                                </div>
+
+                                <div ng-hide="fetchedConfigsData" class="form-group">
+                                    <div style="margin-bottom: 1%;" class="col-sm-offset-11 col-sm-1">
+                                        <a ng-click="hideconfigbtn()" href=""><img
+                                                src="/static/images/close-32.png"></a>
                                     </div>
-                                </form>
-                            </div>
-
-
-                            <!----- HTML For SSL ---->
-
-
-                            <!---- HTML for main conf file ---->
-
-                            <div class="col-md-12">
-                                <form ng-hide="configurationsBox" class="form-horizontal bordered-row">
-                                    <div ng-hide="configsFetched" class="alert alert-success">
-                                        <p>{% trans "Current configuration in the file fetched." %}</p>
+                                    <div class="col-sm-12">
+                                        <textarea ng-model="configData" rows="20" class="form-control"></textarea>
                                     </div>
+                                </div>
 
-                                    <div ng-hide="couldNotFetchConfigs" class="alert alert-danger">
-                                        <p>{% trans "Could not fetch current configuration. Error message:" %} {$
-                                            errorMessage $}</p>
+                                <div ng-hide="saveConfigBtn" class="form-group">
+                                    <label class="col-sm-3 control-label"></label>
+                                    <div class="col-sm-4">
+                                        <button type="button" ng-click="saveCongiruations()"
+                                                class="btn btn-primary btn-lg">{% trans "Save" %}</button>
                                     </div>
+                                </div>
+                            </form>
+                        </div>
 
-                                    <div ng-hide="couldNotConnect" class="alert alert-danger">
-                                        <p>{% trans "Could not connect to server. Please refresh this page." %}</p>
-                                    </div>
+                        <!-- HTML For rewrite rules-->
 
-                                    <div ng-hide="configSaved" class="alert alert-success">
-                                        <p>{% trans "Configurations saved." %}</p>
-                                    </div>
+                        <div class="col-md-12">
+                            <form ng-hide="configurationsBoxRewrite" class="form-horizontal bordered-row">
+                                <div ng-hide="rewriteRulesFetched" class="alert alert-success">
+                                    <p>{% trans "It is not required to modify rules if you are using OpenLiteSpeed." %}
+                                        <a target="_blank"
+                                           href="http://go.cyberpanel.net/cyber9bed2">Click</a>
+                                        to read more about whats changed in <a target="_blank"
+                                                                               href="http://go.cyberpanel.net/rewrite">rewrite
+                                            rules</a> from v1.8 onwards.</p>
+                                </div>
 
-                                    <div ng-hide="couldNotSaveConfigurations" class="alert alert-danger">
-                                        <p>{% trans "Could not fetch current configuration. Error message:" %} {$
-                                            errorMessage $}</p>
-                                    </div>
-
-                                    <div ng-hide="fetchedConfigsData" class="form-group">
-                                        <div style="margin-bottom: 1%;" class="col-sm-offset-11 col-sm-1">
-                                            <a ng-click="hideconfigbtn()" href=""><img
-                                                    src="/static/images/close-32.png"></a>
-                                        </div>
-                                        <div class="col-sm-12">
-                                            <textarea ng-model="configData" rows="20" class="form-control"></textarea>
-                                        </div>
-                                    </div>
-
-                                    <div ng-hide="saveConfigBtn" class="form-group">
-                                        <label class="col-sm-3 control-label"></label>
-                                        <div class="col-sm-4">
-                                            <button type="button" ng-click="saveCongiruations()"
-                                                    class="btn btn-primary btn-lg">{% trans "Save" %}</button>
-                                        </div>
-                                    </div>
-                                </form>
-                            </div>
-
-                            <!-- HTML For rewrite rules-->
-
-                            <div class="col-md-12">
-                                <form ng-hide="configurationsBoxRewrite" class="form-horizontal bordered-row">
-                                    <div ng-hide="rewriteRulesFetched" class="alert alert-success">
-                                        <p>{% trans "It is not required to modify rules if you are using OpenLiteSpeed." %}
-                                            <a target="_blank"
-                                               href="http://go.cyberpanel.net/cyber9bed2">Click</a>
-                                            to read more about whats changed in <a target="_blank"
-                                                                                   href="http://go.cyberpanel.net/rewrite">rewrite
-                                                rules</a> from v1.8 onwards.</p>
-                                    </div>
-
-                                    <form name="websiteCreationForm" action="/" id="createPackages"
-                                          class="form-horizontal bordered-row panel-body">
-
-                                        <div ng-hide="fetchedRewriteRules" class="form-group">
-                                            <label class="col-sm-3 control-label">{% trans "Select Template" %}</label>
-                                            <div class="col-sm-6">
-                                                <select ng-change="applyRewriteTemplate()" ng-model="rewriteTemplate"
-                                                        class="form-control">
-                                                    <option>Force HTTP -> HTTPS</option>
-                                                    <option>Force WWW -> NON-WWW</option>
-                                                    <option>Force NON-WWW -> WWW</option>
-                                                    <option>Disable Wordpress XMLRPC & Trackback</option>
-                                                </select>
-                                            </div>
-                                        </div>
-
-                                    </form>
-
-                                    <div ng-hide="couldNotFetchRewriteRules" class="alert alert-danger">
-                                        <p>{% trans "Could not fetch current rewrite rules. Error message:" %} {$
-                                            errorMessage $}</p>
-                                    </div>
-
-                                    <div ng-hide="couldNotConnect" class="alert alert-danger">
-                                        <p>{% trans "Could not connect to server. Please refresh this page." %}</p>
-                                    </div>
-
-                                    <div ng-hide="rewriteRulesSaved" class="alert alert-success">
-                                        <p>{% trans "Configurations saved." %}</p>
-                                    </div>
-
-                                    <div ng-hide="couldNotSaveRewriteRules" class="alert alert-danger">
-                                        <p>{% trans "Could not save rewrite rules. Error message:" %} {$ errorMessage
-                                            $}</p>
-                                    </div>
+                                <form name="websiteCreationForm" action="/" id="createPackages"
+                                      class="form-horizontal bordered-row panel-body">
 
                                     <div ng-hide="fetchedRewriteRules" class="form-group">
-                                        <div style="margin-bottom: 1%;" class="col-sm-offset-11 col-sm-1">
-                                            <a ng-click="hideRewriteRulesbtn()" href=""><img
-                                                    src="/static/images/close-32.png"></a>
-                                        </div>
-                                        <div class="col-sm-12">
-                                            <textarea ng-model="rewriteRules" rows="10" class="form-control"></textarea>
-                                        </div>
-                                    </div>
-
-                                    <div ng-hide="saveRewriteRulesBTN" class="form-group">
-                                        <label class="col-sm-3 control-label"></label>
-                                        <div class="col-sm-4">
-                                            <button style="margin-top: 5%" type="button" ng-click="saveRewriteRules()"
-                                                    class="btn btn-primary btn-lg">{% trans "Save Rewrite Rules" %}</button>
-                                        </div>
-                                    </div>
-
-                                </form>
-
-                            </div>
-
-                            <!--- HTML To change PHP --->
-
-                            <div class="col-md-12">
-
-                                <form ng-hide="changePHPView" name="" action="/" class="form-horizontal bordered-row">
-
-
-                                    <div class="form-group">
-                                        <label class="col-sm-3 control-label">{% trans "Select PHP" %}</label>
+                                        <label class="col-sm-3 control-label">{% trans "Select Template" %}</label>
                                         <div class="col-sm-6">
-                                            <select ng-model="phpSelectionMaster" class="form-control">
-                                                {% for php in phps %}
-                                                    <option>{{ php }}</option>
-                                                {% endfor %}
+                                            <select ng-change="applyRewriteTemplate()" ng-model="rewriteTemplate"
+                                                    class="form-control">
+                                                <option>Force HTTP -> HTTPS</option>
+                                                <option>Force WWW -> NON-WWW</option>
+                                                <option>Force NON-WWW -> WWW</option>
+                                                <option>Disable Wordpress XMLRPC & Trackback</option>
                                             </select>
                                         </div>
-
-                                        <div style="margin-bottom: 1%;" class=" col-sm-1">
-                                            <a title="{% trans 'Cancel' %}" ng-click="hideChangePHPMaster()"
-                                               href=""><h3 class="glyph-icon icon-close text-danger mt-5"></h3></a>
-                                        </div>
-
-                                    </div>
-
-
-                                    <div class="form-group">
-                                        <label class="col-sm-3 control-label"></label>
-                                        <div class="col-sm-4">
-                                            <button type="button" ng-click="changePHPVersionMaster()"
-                                                    class="btn btn-primary btn-lg">{% trans "Change PHP" %}</button>
-                                        </div>
-                                    </div>
-
-
-                                    <div class="form-group">
-
-                                        <label class="col-sm-3 control-label"></label>
-                                        <div class="col-sm-4">
-                                            <div ng-hide="failedToChangePHPMaster" class="alert alert-danger">
-                                                <p>{% trans "Failed to change PHP version. Error message:" %} {$
-                                                    errorMessage $}</p>
-                                            </div>
-
-                                            <div ng-hide="phpChangedMaster" class="alert alert-success">
-                                                <p>{% trans "PHP successfully changed for: " %} <strong>{$ websiteDomain
-                                                    $}</strong></p>
-                                            </div>
-
-                                            <div ng-hide="couldNotConnect" class="alert alert-danger">
-                                                <p>{% trans "Could not connect to server. Please refresh this page." %}</p>
-                                            </div>
-                                        </div>
                                     </div>
 
                                 </form>
-                            </div>
+
+                                <div ng-hide="couldNotFetchRewriteRules" class="alert alert-danger">
+                                    <p>{% trans "Could not fetch current rewrite rules. Error message:" %} {$
+                                        errorMessage $}</p>
+                                </div>
+
+                                <div ng-hide="couldNotConnect" class="alert alert-danger">
+                                    <p>{% trans "Could not connect to server. Please refresh this page." %}</p>
+                                </div>
+
+                                <div ng-hide="rewriteRulesSaved" class="alert alert-success">
+                                    <p>{% trans "Configurations saved." %}</p>
+                                </div>
+
+                                <div ng-hide="couldNotSaveRewriteRules" class="alert alert-danger">
+                                    <p>{% trans "Could not save rewrite rules. Error message:" %} {$ errorMessage
+                                        $}</p>
+                                </div>
+
+                                <div ng-hide="fetchedRewriteRules" class="form-group">
+                                    <div style="margin-bottom: 1%;" class="col-sm-offset-11 col-sm-1">
+                                        <a ng-click="hideRewriteRulesbtn()" href=""><img
+                                                src="/static/images/close-32.png"></a>
+                                    </div>
+                                    <div class="col-sm-12">
+                                        <textarea ng-model="rewriteRules" rows="10" class="form-control"></textarea>
+                                    </div>
+                                </div>
+
+                                <div ng-hide="saveRewriteRulesBTN" class="form-group">
+                                    <label class="col-sm-3 control-label"></label>
+                                    <div class="col-sm-4">
+                                        <button style="margin-top: 5%" type="button" ng-click="saveRewriteRules()"
+                                                class="btn btn-primary btn-lg">{% trans "Save Rewrite Rules" %}</button>
+                                    </div>
+                                </div>
+
+                            </form>
 
                         </div>
+
+                        <!--- HTML To change PHP --->
+
+                        <div class="col-md-12">
+
+                            <form ng-hide="changePHPView" name="" action="/" class="form-horizontal bordered-row">
+
+
+                                <div class="form-group">
+                                    <label class="col-sm-3 control-label">{% trans "Select PHP" %}</label>
+                                    <div class="col-sm-6">
+                                        <select ng-model="phpSelectionMaster" class="form-control">
+                                            {% for php in phps %}
+                                                <option>{{ php }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+
+                                    <div style="margin-bottom: 1%;" class=" col-sm-1">
+                                        <a title="{% trans 'Cancel' %}" ng-click="hideChangePHPMaster()"
+                                           href=""><h3 class="glyph-icon icon-close text-danger mt-5"></h3></a>
+                                    </div>
+
+                                </div>
+
+
+                                <div class="form-group">
+                                    <label class="col-sm-3 control-label"></label>
+                                    <div class="col-sm-4">
+                                        <button type="button" ng-click="changePHPVersionMaster()"
+                                                class="btn btn-primary btn-lg">{% trans "Change PHP" %}</button>
+                                    </div>
+                                </div>
+
+
+                                <div class="form-group">
+
+                                    <label class="col-sm-3 control-label"></label>
+                                    <div class="col-sm-4">
+                                        <div ng-hide="failedToChangePHPMaster" class="alert alert-danger">
+                                            <p>{% trans "Failed to change PHP version. Error message:" %} {$
+                                                errorMessage $}</p>
+                                        </div>
+
+                                        <div ng-hide="phpChangedMaster" class="alert alert-success">
+                                            <p>{% trans "PHP successfully changed for: " %} <strong>{$ websiteDomain
+                                                $}</strong></p>
+                                        </div>
+
+                                        <div ng-hide="couldNotConnect" class="alert alert-danger">
+                                            <p>{% trans "Could not connect to server. Please refresh this page." %}</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </form>
+                        </div>
+
                     </div>
                 </div>
             </div>
+        </div>
 
 
-            <div class="example-box-wrapper my-10">
-                <div class="panel panel-body">
-                    <h3 class="content-box-header">
-                        {% trans "Files" %}
-                    </h3>
-                    <div class="content-box-wrapper">
-                        <div class="row mx-10">
-                            <div class="col-md-3 panel-body">
-                                <a href="{$ fileManagerURL $}" target="_self" title="{% trans 'File Manager' %}">
-                                    <img src="{% static 'images/icons/office-material.png' %}" width="65" class="mr-10">
-                                </a>
-                                <a href="{$ fileManagerURL $}" target="_self" title="{% trans 'File Manager' %}">
-                                    <span class="h4">{% trans "File Manager" %}</span>
-                                </a>
-                            </div>
-
-                            <div class="col-md-3 panel-body">
-                                <a ng-click="openBaseDirView()" href="" title="{% trans 'open_basedir Protection' %}">
-                                    <img src="{% static 'images/icons/open_basedir.png' %}" width="65" class="mr-10">
-                                </a>
-                                <a ng-click="openBaseDirView()" href="" title="{% trans 'open_basedir Protection' %}">
-                                    <span class="h4">{% trans "open_basedir" %}</span>
-                                </a>
-                            </div>
-
-
-                            {% if ftp %}
-
-                                <div class="col-md-3 panel-body">
-                                    <a href="{% url 'createFTPAccount' %}" title="{% trans 'Create FTP Account' %}">
-                                        <img src="{% static 'images/icons/ftp-upload.png' %}" width="65" class="mr-10">
-                                    </a>
-                                    <a href="{% url 'createFTPAccount' %}" title="{% trans 'Create FTP Account' %}">
-                                        <span class="h4">{% trans "Create FTP Acct" %}</span>
-                                    </a>
-                                </div>
-
-                                <div class="col-md-3 panel-body">
-                                    <a href="{% url 'deleteFTPAccount' %}" title="{% trans 'Delete FTP Account' %}">
-                                        <img src="{% static 'images/icons/delete-ftp.png' %}" width="65" class="mr-10">
-                                    </a>
-                                    <a href="{% url 'deleteFTPAccount' %}" title="{% trans 'Delete FTP Account' %}">
-                                        <span class="h4">{% trans "Delete FTP Acct" %}</span>
-                                    </a>
-                                </div>
-
-                            {% endif %}
-
-                            <!--- HTML To change open_basedir --->
-
-                            <div ng-hide="openBaseDirBox" class="col-md-12">
-                                <form action="/" class="form-horizontal bordered-row">
-                                    <div class="form-group">
-                                        <label class="col-sm-3 control-label">{% trans "open_basedir Protection" %}</label>
-                                        <div class="col-sm-6">
-                                            <select ng-model="openBasedirValue" class="form-control">
-                                                <option>Enable</option>
-                                                <option>Disable</option>
-                                            </select>
-                                        </div>
-
-                                        <div ng-hide="baseDirLoading" style="margin-bottom: 1%;" class=" col-sm-1">
-                                            <img src="{% static 'images/loading.gif' %}">
-                                        </div>
-
-                                        <div style="margin-bottom: 2%;" class="col-sm-1">
-                                            <a title="{% trans 'Cancel' %}" ng-click="hideOpenBasedir()" href=""><img
-                                                    src="/static/images/close-32.png"></a>
-                                        </div>
-                                    </div>
-
-
-                                    <div class="form-group">
-                                        <label class="col-sm-3 control-label"></label>
-                                        <div class="col-sm-4">
-                                            <button type="button" ng-click="applyOpenBasedirChanges()"
-                                                    class="btn btn-primary btn-lg">{% trans "Apply Changes" %}</button>
-                                        </div>
-                                    </div>
-                                    <div class="form-group">
-
-                                        <label class="col-sm-3 control-label"></label>
-                                        <div class="col-sm-4">
-                                            <div ng-hide="operationFailed" class="alert alert-danger">
-                                                <p>{% trans "Error message:" %} {$ errorMessage $} </p>
-                                            </div>
-
-                                            <div ng-hide="operationSuccessfull" class="alert alert-success">
-                                                <p>{% trans "Changes successfully saved." %}</p>
-                                            </div>
-
-                                            <div ng-hide="couldNotConnect" class="alert alert-danger">
-                                                <p>{% trans "Could not connect to server. Please refresh this page." %}</p>
-                                            </div>
-                                        </div>
-
-                                    </div>
-
-
-                                </form>
-                            </div>
-
-                            <!--- HTML To change open_basedir --->
-
-
+        <div class="example-box-wrapper my-10">
+            <div class="panel panel-body">
+                <h3 class="content-box-header">
+                    {% trans "Files" %}
+                </h3>
+                <div class="content-box-wrapper">
+                    <div class="row mx-10">
+                        <div class="col-md-3 panel-body">
+                            <a href="{$ fileManagerURL $}" target="_self" title="{% trans 'File Manager' %}">
+                                <img src="{% static 'images/icons/office-material.png' %}" width="65" class="mr-10">
+                            </a>
+                            <a href="{$ fileManagerURL $}" target="_self" title="{% trans 'File Manager' %}">
+                                <span class="h4">{% trans "File Manager" %}</span>
+                            </a>
                         </div>
+
+                        <div class="col-md-3 panel-body">
+                            <a ng-click="openBaseDirView()" href="" title="{% trans 'open_basedir Protection' %}">
+                                <img src="{% static 'images/icons/open_basedir.png' %}" width="65" class="mr-10">
+                            </a>
+                            <a ng-click="openBaseDirView()" href="" title="{% trans 'open_basedir Protection' %}">
+                                <span class="h4">{% trans "open_basedir" %}</span>
+                            </a>
+                        </div>
+
+
+                        {% if ftp %}
+
+                            <div class="col-md-3 panel-body">
+                                <a href="{% url 'createFTPAccount' %}" title="{% trans 'Create FTP Account' %}">
+                                    <img src="{% static 'images/icons/ftp-upload.png' %}" width="65" class="mr-10">
+                                </a>
+                                <a href="{% url 'createFTPAccount' %}" title="{% trans 'Create FTP Account' %}">
+                                    <span class="h4">{% trans "Create FTP Acct" %}</span>
+                                </a>
+                            </div>
+
+                            <div class="col-md-3 panel-body">
+                                <a href="{% url 'deleteFTPAccount' %}" title="{% trans 'Delete FTP Account' %}">
+                                    <img src="{% static 'images/icons/delete-ftp.png' %}" width="65" class="mr-10">
+                                </a>
+                                <a href="{% url 'deleteFTPAccount' %}" title="{% trans 'Delete FTP Account' %}">
+                                    <span class="h4">{% trans "Delete FTP Acct" %}</span>
+                                </a>
+                            </div>
+
+                        {% endif %}
+
+                        <!--- HTML To change open_basedir --->
+
+                        <div ng-hide="openBaseDirBox" class="col-md-12">
+                            <form action="/" class="form-horizontal bordered-row">
+                                <div class="form-group">
+                                    <label class="col-sm-3 control-label">{% trans "open_basedir Protection" %}</label>
+                                    <div class="col-sm-6">
+                                        <select ng-model="openBasedirValue" class="form-control">
+                                            <option>Enable</option>
+                                            <option>Disable</option>
+                                        </select>
+                                    </div>
+
+                                    <div ng-hide="baseDirLoading" style="margin-bottom: 1%;" class=" col-sm-1">
+                                        <img src="{% static 'images/loading.gif' %}">
+                                    </div>
+
+                                    <div style="margin-bottom: 2%;" class="col-sm-1">
+                                        <a title="{% trans 'Cancel' %}" ng-click="hideOpenBasedir()" href=""><img
+                                                src="/static/images/close-32.png"></a>
+                                    </div>
+                                </div>
+
+
+                                <div class="form-group">
+                                    <label class="col-sm-3 control-label"></label>
+                                    <div class="col-sm-4">
+                                        <button type="button" ng-click="applyOpenBasedirChanges()"
+                                                class="btn btn-primary btn-lg">{% trans "Apply Changes" %}</button>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+
+                                    <label class="col-sm-3 control-label"></label>
+                                    <div class="col-sm-4">
+                                        <div ng-hide="operationFailed" class="alert alert-danger">
+                                            <p>{% trans "Error message:" %} {$ errorMessage $} </p>
+                                        </div>
+
+                                        <div ng-hide="operationSuccessfull" class="alert alert-success">
+                                            <p>{% trans "Changes successfully saved." %}</p>
+                                        </div>
+
+                                        <div ng-hide="couldNotConnect" class="alert alert-danger">
+                                            <p>{% trans "Could not connect to server. Please refresh this page." %}</p>
+                                        </div>
+                                    </div>
+
+                                </div>
+
+
+                            </form>
+                        </div>
+
+                        <!--- HTML To change open_basedir --->
+
+
                     </div>
                 </div>
             </div>
+        </div>
 
-            {% if email %}
+        {% if email %}
 
-                {% if marketingStatus %}
+            {% if marketingStatus %}
 
-                    <div class="example-box-wrapper my-10">
-                        <div class="panel panel-body">
-                            <h3 class="content-box-header">
-                                {% trans "Email Marketing" %}
-                            </h3>
+                <div class="example-box-wrapper my-10">
+                    <div class="panel panel-body">
+                        <h3 class="content-box-header">
+                            {% trans "Email Marketing" %}
+                        </h3>
 
-                            <div class="content-box-wrapper">
-                                <div class="row mx-10">
-                                    <div class="col-md-3 panel-body">
-                                        <a id="emailLists" target="_self" title="{% trans 'Create Lists' %}">
-                                            <img src="{% static 'emailMarketing/mailing.png' %}" width="65"
-                                                 class="mr-10">
-                                        </a>
-                                        <a id="emailListsChild" target="_self" title="{% trans 'Create Lists' %}">
-                                            <span class="h4">{% trans "Create Lists" %}</span>
-                                        </a>
-                                    </div>
-
-                                    <div class="col-md-3 panel-body">
-                                        <a id="manageLists" target="_self" title="{% trans 'Manage Lists' %}">
-                                            <img src="{% static 'emailMarketing/checklist.png' %}" width="65"
-                                                 class="mr-10">
-                                        </a>
-                                        <a id="manageListsChild" target="_self" title="{% trans 'Manage Lists' %}">
-                                            <span class="h4">{% trans "Manage Lists" %}</span>
-                                        </a>
-                                    </div>
-
-                                    <div class="col-md-3 panel-body">
-                                        <a id="manageSMTPHosts" target="_self" title="{% trans 'SMTP Hosts' %}">
-                                            <img src="{% static 'emailMarketing/post-office.png' %}" width="65"
-                                                 class="mr-10">
-                                        </a>
-                                        <a id="manageSMTPHostsChild" target="_self" title="{% trans 'SMTP Hosts' %}">
-                                            <span class="h4">{% trans "SMTP Hosts" %}</span>
-                                        </a>
-                                    </div>
-
-                                    <div class="col-md-3 panel-body">
-                                        <a id="composeEmails" target="_self" title="{% trans 'Compose Message' %}">
-                                            <img src="{% static 'emailMarketing/compose.png' %}" width="65"
-                                                 class="mr-10">
-                                        </a>
-                                        <a id="composeEmailsChild" target="_self"
-                                           title="{% trans 'Compose Message' %}">
-                                            <span class="h4">{% trans "Compose" %}</span>
-                                        </a>
-                                    </div>
-
-                                    <div class="col-md-3 panel-body">
-                                        <a id="sendEmailsPage" target="_self" title="{% trans 'Send Emails' %}">
-                                            <img src="{% static 'emailMarketing/paper-plane.png' %}" width="65"
-                                                 class="mr-10">
-                                        </a>
-                                        <a id="sendEmailsPageChild" target="_self" title="{% trans 'Send Emails' %}">
-                                            <span class="h4">{% trans "Send Emails" %}</span>
-                                        </a>
-                                    </div>
-
+                        <div class="content-box-wrapper">
+                            <div class="row mx-10">
+                                <div class="col-md-3 panel-body">
+                                    <a id="emailLists" target="_self" title="{% trans 'Create Lists' %}">
+                                        <img src="{% static 'emailMarketing/mailing.png' %}" width="65"
+                                             class="mr-10">
+                                    </a>
+                                    <a id="emailListsChild" target="_self" title="{% trans 'Create Lists' %}">
+                                        <span class="h4">{% trans "Create Lists" %}</span>
+                                    </a>
                                 </div>
+
+                                <div class="col-md-3 panel-body">
+                                    <a id="manageLists" target="_self" title="{% trans 'Manage Lists' %}">
+                                        <img src="{% static 'emailMarketing/checklist.png' %}" width="65"
+                                             class="mr-10">
+                                    </a>
+                                    <a id="manageListsChild" target="_self" title="{% trans 'Manage Lists' %}">
+                                        <span class="h4">{% trans "Manage Lists" %}</span>
+                                    </a>
+                                </div>
+
+                                <div class="col-md-3 panel-body">
+                                    <a id="manageSMTPHosts" target="_self" title="{% trans 'SMTP Hosts' %}">
+                                        <img src="{% static 'emailMarketing/post-office.png' %}" width="65"
+                                             class="mr-10">
+                                    </a>
+                                    <a id="manageSMTPHostsChild" target="_self" title="{% trans 'SMTP Hosts' %}">
+                                        <span class="h4">{% trans "SMTP Hosts" %}</span>
+                                    </a>
+                                </div>
+
+                                <div class="col-md-3 panel-body">
+                                    <a id="composeEmails" target="_self" title="{% trans 'Compose Message' %}">
+                                        <img src="{% static 'emailMarketing/compose.png' %}" width="65"
+                                             class="mr-10">
+                                    </a>
+                                    <a id="composeEmailsChild" target="_self"
+                                       title="{% trans 'Compose Message' %}">
+                                        <span class="h4">{% trans "Compose" %}</span>
+                                    </a>
+                                </div>
+
+                                <div class="col-md-3 panel-body">
+                                    <a id="sendEmailsPage" target="_self" title="{% trans 'Send Emails' %}">
+                                        <img src="{% static 'emailMarketing/paper-plane.png' %}" width="65"
+                                             class="mr-10">
+                                    </a>
+                                    <a id="sendEmailsPageChild" target="_self" title="{% trans 'Send Emails' %}">
+                                        <span class="h4">{% trans "Send Emails" %}</span>
+                                    </a>
+                                </div>
+
                             </div>
                         </div>
                     </div>
-
-                {% endif %}
+                </div>
 
             {% endif %}
 
-            <div class="example-box-wrapper my-10">
-                <div class="panel panel-body">
-                    <h3 class="content-box-header">
-                        {% trans "Application Installer" %} <img ng-hide="applicationInstallerLoading"
+        {% endif %}
+
+        <div class="example-box-wrapper my-10">
+            <div class="panel panel-body">
+                <h3 class="content-box-header">
+                    {% trans "Application Installer" %} <img ng-hide="applicationInstallerLoading"
                                                                  src="/static/images/loading.gif">
-                    </h3>
+                </h3>
 
-                    <div class="content-box-wrapper">
-                        <div class="row mx-10">
-                            <div class="col-md-3 panel-body">
-                                <a href="{$ wordPressInstallURL $}" target="_self"
-                                   title="{% trans 'Install wordpress with LSCache' %}">
-                                    <img src="{% static 'images/icons/wordpress.png' %}" width="65" class="mr-10">
-                                </a>
-                                <a href="{$ wordPressInstallURL $}" target="_self"
-                                   title="{% trans 'Install wordpress with LSCache' %}">
-                                    <span class="h4">{% trans "WP + LSCache" %}</span>
-                                </a>
-                            </div>
+                <div class="content-box-wrapper">
+                    <div class="row mx-10">
+                        <div class="col-md-3 panel-body">
+                            <a href="{$ wordPressInstallURL $}" target="_self"
+                               title="{% trans 'Install wordpress with LSCache' %}">
+                                <img src="{% static 'images/icons/wordpress.png' %}" width="65" class="mr-10">
+                            </a>
+                            <a href="{$ wordPressInstallURL $}" target="_self"
+                               title="{% trans 'Install wordpress with LSCache' %}">
+                                <span class="h4">{% trans "WP + LSCache" %}</span>
+                            </a>
+                        </div>
 
-                            {% comment %}<div class="col-md-3 panel-body">
-                                <a href="{$ joomlaInstallURL $}" target="_self"
-                                   title="{% trans 'Install Joomla with LSCache' %}">
-                                    <img src="{% static 'images/icons/joomla-logo.png' %}" width="65" class="mr-10">
-                                </a>
-                                <a href="{$ joomlaInstallURL $}" target="_self"
-                                   title="{% trans 'Install Joomla with LSCache' %}">
-                                    <span class="h4">{% trans "Joomla" %}</span>
-                                </a>
-                            </div>{% endcomment %}
+                        {% comment %}<div class="col-md-3 panel-body">
+                            <a href="{$ joomlaInstallURL $}" target="_self"
+                               title="{% trans 'Install Joomla with LSCache' %}">
+                                <img src="{% static 'images/icons/joomla-logo.png' %}" width="65" class="mr-10">
+                            </a>
+                            <a href="{$ joomlaInstallURL $}" target="_self"
+                               title="{% trans 'Install Joomla with LSCache' %}">
+                                <span class="h4">{% trans "Joomla" %}</span>
+                            </a>
+                        </div>{% endcomment %}
 
-                            <div class="col-md-3 panel-body">
-                                <a href="/websites/{{ domain }}/manageGIT" target="_self"
-                                   title="{% trans 'Attach Git with this website!' %}">
-                                    <img src="{% static 'images/icons/git-logo.png' %}" width="65" class="mr-10">
-                                </a>
-                                <a href="/websites/{{ domain }}/manageGIT" target="_self"
-                                   title="{% trans 'Attach Git with this website!' %}">
-                                    <span class="h4">{% trans "Git" %}</span>
-                                </a>
-                            </div>
+                        <div class="col-md-3 panel-body">
+                            <a href="/websites/{{ domain }}/manageGIT" target="_self"
+                               title="{% trans 'Attach Git with this website!' %}">
+                                <img src="{% static 'images/icons/git-logo.png' %}" width="65" class="mr-10">
+                            </a>
+                            <a href="/websites/{{ domain }}/manageGIT" target="_self"
+                               title="{% trans 'Attach Git with this website!' %}">
+                                <span class="h4">{% trans "Git" %}</span>
+                            </a>
+                        </div>
 
-                            <div class="col-md-3 panel-body">
-                                <a href="{$ installPrestaURL $}" target="_self"
-                                   title="{% trans 'Install Prestashop' %}">
-                                    <img src="{% static 'images/icons/prestashop.png' %}" width="65" class="mr-10">
-                                </a>
-                                <a href="{$ installPrestaURL $}" target="_self"
-                                   title="{% trans 'Install Prestashop' %}">
-                                    <span class="h4">{% trans "Prestashop" %}</span>
-                                </a>
-                            </div>
+                        <div class="col-md-3 panel-body">
+                            <a href="{$ installPrestaURL $}" target="_self"
+                               title="{% trans 'Install Prestashop' %}">
+                                <img src="{% static 'images/icons/prestashop.png' %}" width="65" class="mr-10">
+                            </a>
+                            <a href="{$ installPrestaURL $}" target="_self"
+                               title="{% trans 'Install Prestashop' %}">
+                                <span class="h4">{% trans "Prestashop" %}</span>
+                            </a>
+                        </div>
 
 {#                            <div class="col-md-3 panel-body">#}
 {#                                <a href="{$ installMagentoURL $}" target="_self"#}
@@ -1059,21 +1165,21 @@
 {#                                </a>#}
 {#                            </div>#}
 
-                            <div class="col-md-3 panel-body">
-                                <a href="{$ installMauticURL $}" target="_self"
-                                   title="{% trans 'Install Mautic' %}">
-                                    <img src="{% static 'baseTemplate/images/icons/mautic.png' %}" width="65" class="mr-10">
-                                </a>
-                                <a href="{$ installMauticURL $}" target="_self"
-                                   title="{% trans 'Install Mautic' %}">
-                                    <span class="h4">{% trans "Mautic" %}</span>
-                                </a>
-                            </div>
+                        <div class="col-md-3 panel-body">
+                            <a href="{$ installMauticURL $}" target="_self"
+                               title="{% trans 'Install Mautic' %}">
+                                <img src="{% static 'baseTemplate/images/icons/mautic.png' %}" width="65" class="mr-10">
+                            </a>
+                            <a href="{$ installMauticURL $}" target="_self"
+                               title="{% trans 'Install Mautic' %}">
+                                <span class="h4">{% trans "Mautic" %}</span>
+                            </a>
                         </div>
                     </div>
-
                 </div>
+
             </div>
+        </div>
 
         {% else %}
 
