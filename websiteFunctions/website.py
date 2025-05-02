@@ -4566,8 +4566,7 @@ StrictHostKeyChecking no
 
         websites = ACLManager.searchWebsiteObjects(currentlACL, userID, searchTerm)
 
-        json_data = "["
-        checker = 0
+        json_data = []
 
         try:
             ipFile = "/etc/cyberpanel/machineIP"
@@ -4598,19 +4597,34 @@ StrictHostKeyChecking no
                 PHPVersionActual = 'PHP 8.1'
 
             diskUsed = "%sMB" % str(DiskUsage)
-            dic = {'domain': items.domain, 'adminEmail': items.adminEmail, 'ipAddress': ipAddress,
-                   'admin': items.admin.userName, 'package': items.package.packageName, 'state': state,
-                   'diskUsed': diskUsed, 'phpVersion': PHPVersionActual}
 
-            if checker == 0:
-                json_data = json_data + json.dumps(dic)
-                checker = 1
-            else:
-                json_data = json_data + ',' + json.dumps(dic)
+            # Get WordPress sites for this website
+            wp_sites = []
+            try:
+                wp_sites = WPSites.objects.filter(owner=items)
+                wp_sites = [{
+                    'id': wp.id,
+                    'title': wp.title,
+                    'url': wp.FinalURL,
+                    'version': wp.version if hasattr(wp, 'version') else 'Unknown',
+                    'phpVersion': wp.phpVersion if hasattr(wp, 'phpVersion') else 'Unknown'
+                } for wp in wp_sites]
+            except:
+                pass
 
-        json_data = json_data + ']'
+            json_data.append({
+                'domain': items.domain,
+                'adminEmail': items.adminEmail,
+                'ipAddress': ipAddress,
+                'admin': items.admin.userName,
+                'package': items.package.packageName,
+                'state': state,
+                'diskUsed': diskUsed,
+                'phpVersion': PHPVersionActual,
+                'wp_sites': wp_sites
+            })
 
-        return json_data
+        return json.dumps(json_data)
 
     def findWebsitesJson(self, currentACL, userID, pageNumber):
         finalPageNumber = ((pageNumber * 10)) - 10
