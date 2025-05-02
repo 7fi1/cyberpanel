@@ -1,9 +1,9 @@
 {% extends "baseTemplate/index.html" %}
 {% load i18n %}
+{% load static %}
 {% block title %}{{ domain }} - CyberPanel{% endblock %}
 {% block content %}
 
-    {% load static %}
     {% get_current_language as LANGUAGE_CODE %}
     <!-- Current language: {{ LANGUAGE_CODE }} -->
 
@@ -218,6 +218,29 @@
                             <div class="cyber-progress-bar" style="width: {{ bwUsage }}%;min-width:40px;">{{ bwUsage }}%</div>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Resource Usage Graphs -->
+        <div class="cyber-card">
+            <div class="cyber-section-title" style="margin-bottom:28px;">
+                <span style="display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;border:1.5px solid #dbeafe;border-radius:8px;margin-right:12px;background:#f6faff;">
+                    <svg width="26" height="26" viewBox="0 0 26 26" fill="none"><path d="M3 3V21H23" stroke="#222b38" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 16L9 10L13 14L23 4" stroke="#222b38" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </span>
+                <span>{% trans "Real-time Resource Usage" %}</span>
+            </div>
+            <div class="cyber-resource-row">
+                <div class="cyber-resource-col">
+                    <canvas id="cpuChart" style="width:100%;height:200px;"></canvas>
+                </div>
+                <div class="cyber-resource-col">
+                    <canvas id="memoryChart" style="width:100%;height:200px;"></canvas>
+                </div>
+            </div>
+            <div class="cyber-resource-row" style="margin-top:20px;">
+                <div class="cyber-resource-col">
+                    <canvas id="diskChart" style="width:100%;height:200px;"></canvas>
                 </div>
             </div>
         </div>
@@ -1195,4 +1218,11 @@
 
 
 
+{% endblock %}
+
+{% block footer_scripts %}
+{{ block.super }}
+<!-- Add Chart.js and resource monitoring script -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{% static 'websiteFunctions/js/resource-monitoring.js' %}"></script>
 {% endblock %}
