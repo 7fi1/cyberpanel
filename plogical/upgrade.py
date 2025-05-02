@@ -2207,6 +2207,10 @@ CREATE TABLE `websiteFunctions_backupsv2` (`id` integer AUTO_INCREMENT NOT NULL 
                 if not Upgrade.executioner(command, command, 1):
                     return 0, 'Failed to execute %s' % (command)
 
+                command = 'git clean -f'
+                if not Upgrade.executioner(command, command, 1):
+                    return 0, 'Failed to execute %s' % (command)
+
                 command = 'git pull'
                 if not Upgrade.executioner(command, command, 1):
                     return 0, 'Failed to execute %s' % (command)
