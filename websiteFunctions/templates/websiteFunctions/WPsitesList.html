@@ -87,6 +87,42 @@
                 }
             };
 
+            $scope.ScanWordpressSite = function () {
+                $('#cyberPanelLoading').show();
+                var url = "{% url 'ScanWordpressSite' %}";
+                var data = {};
+                var config = {
+                    headers: {
+                        'X-CSRFToken': getCookie('csrftoken')
+                    }
+                };
+
+                $http.post(url, data, config).then(function(response) {
+                    $('#cyberPanelLoading').hide();
+                    if (response.data.status === 1) {
+                        new PNotify({
+                            title: 'Success!',
+                            text: 'WordPress sites scanned successfully!',
+                            type: 'success'
+                        });
+                        location.reload();
+                    } else {
+                        new PNotify({
+                            title: 'Operation Failed!',
+                            text: response.data.error_message,
+                            type: 'error'
+                        });
+                    }
+                }, function(response) {
+                    $('#cyberPanelLoading').hide();
+                    new PNotify({
+                        title: 'Operation Failed!',
+                        text: response.data.error_message,
+                        type: 'error'
+                    });
+                });
+            };
+
             $scope.updateSetting = function(site, setting) {
                 var settingMap = {
                     'search-indexing': 'searchIndex',
@@ -355,6 +391,7 @@
                                 <h3 class="panel-title">{% trans "WordPress Sites" %}</h3>
                             </div>
                             <div class="col-sm-6 text-right">
+                                <button ng-click="ScanWordpressSite()" class="btn btn-info btn-sm" style="margin-right: 10px;">Scan WordPress Sites</button>
                                 <a href="{% url 'createWordpress' %}" class="btn btn-success btn-sm">Install WordPress</a>
                             </div>
                         </div>
@@ -603,5 +640,3 @@
         }
     </style>
 {% endblock content %}
-
-
