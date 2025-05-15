@@ -1959,7 +1959,9 @@ class WebsiteManager:
             currentACL = ACLManager.loadedACL(userID)
             admin = Administrator.objects.get(pk=userID)
             
-            siteId = data['siteId']
+            siteId = data.get('siteId') or data.get('WPid')
+            if not siteId:
+                return JsonResponse({'status': 0, 'error_message': 'Missing siteId or WPid'})
             setting = data['setting']
             value = data['value']
             
