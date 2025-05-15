@@ -1955,21 +1955,43 @@ class WebsiteManager:
             return HttpResponse(json_data)
         
     def UpdateWPSettings(self, userID=None, data=None):
+        # Map old setting names to new ones
+        setting_map = {
+            'PasswordProtection': 'password-protection',
+            'searchIndex': 'search-indexing',
+            'debugging': 'debugging',
+            'maintenanceMode': 'maintenance-mode',
+            'lscache': 'lscache',
+            'Wpcron': 'wpcron',
+            # Add more mappings as needed
+        }
+
+        siteId = data.get('siteId') or data.get('WPid')
+        if not siteId:
+            resp = {'status': 0, 'error_message': 'Missing siteId or WPid'}
+            return JsonResponse(resp)
+
+        # Accept both new and old setting names
+        setting = data.get('setting')
+        if not setting:
+            for old_key in setting_map:
+                if old_key in data:
+                    setting = old_key
+                    data['settingValue'] = data[old_key]
+                    break
+
+        # Map to new setting name if needed
+        setting = setting_map.get(setting, setting)
+        value = data.get('value') or data.get('settingValue')
+
         try:
             currentACL = ACLManager.loadedACL(userID)
             admin = Administrator.objects.get(pk=userID)
-            
-            siteId = data.get('siteId') or data.get('WPid')
-            if not siteId:
-                return JsonResponse({'status': 0, 'error_message': 'Missing siteId or WPid'})
-            setting = data['setting']
-            value = data['value']
-            
             wpsite = WPSites.objects.get(pk=siteId)
-            
+
             if ACLManager.checkOwnership(wpsite.owner.domain, admin, currentACL) != 1:
                 return ACLManager.loadError()
-                
+
             # Get PHP version and path
             Webobj = Websites.objects.get(pk=wpsite.owner_id)
             Vhuser = Webobj.externalApp
@@ -1979,10 +2001,8 @@ class WebsiteManager:
 
             # Update the appropriate setting based on the setting type
             if setting == 'search-indexing':
-                # Update search engine indexing
                 command = f'sudo -u {Vhuser} {FinalPHPPath} -d error_reporting=0 /usr/bin/wp option update blog_public {value} --skip-plugins --skip-themes --path={wpsite.path}'
             elif setting == 'debugging':
-                # Update debugging in wp-config.php
                 if value:
                     command = f'sudo -u {Vhuser} {FinalPHPPath} -d error_reporting=0 /usr/bin/wp config set WP_DEBUG true --raw --skip-plugins --skip-themes --path={wpsite.path}'
                 else:
@@ -1992,76 +2012,84 @@ class WebsiteManager:
                 vhostPassDir = f'/home/{vhostName}'
                 path = f'{vhostPassDir}/{siteId}'
                 if value:
-                    # Enable password protection
                     tempPath = f'/home/cyberpanel/{str(randint(1000, 9999))}'
                     os.makedirs(tempPath)
-
-                    # Create temporary .htpasswd file
                     htpasswd = f'{tempPath}/.htpasswd'
                     htaccess = f'{tempPath}/.htaccess'
                     password = randomPassword.generate_pass(12)
-        
-                    # Create .htpasswd file
                     command = f"htpasswd -cb {htpasswd} admin {password}"
                     ProcessUtilities.executioner(command)
-                    
-                    # Create .htaccess file content
                     htaccess_content = f"""
 AuthType Basic
 AuthName "Restricted Access"
 AuthUserFile {path}/.htpasswd
 Require valid-user
 """
-
                     with open(htaccess, 'w') as f:
                         f.write(htaccess_content)
-
-                    # Create final directory and move files
                     command = f"mkdir -p {path}"
                     ProcessUtilities.executioner(command, wpsite.owner.externalApp)
-
-                    # Move files to final location
                     command = f"mv {htpasswd} {path}/.htpasswd"
                     ProcessUtilities.executioner(command, wpsite.owner.externalApp)
-
-                    command = f"mv {htaccess} {wpsite.path}/.htaccess" 
+                    command = f"mv {htaccess} {wpsite.path}/.htaccess"
                     ProcessUtilities.executioner(command, wpsite.owner.externalApp)
-
-                    # Cleanup temp directory
                     command = f"rm -rf {tempPath}"
                     ProcessUtilities.executioner(command)
-
                 else:
-                    # Disable password protection
                     if os.path.exists(path):
                         command = f"rm -rf {path}"
                         ProcessUtilities.executioner(command, wpsite.owner.externalApp)
-
                     htaccess = f'{wpsite.path}/.htaccess'
                     if os.path.exists(htaccess):
                         command = f"rm -f {htaccess}"
                         ProcessUtilities.executioner(command, wpsite.owner.externalApp)
-
-                    return JsonResponse({'status': 1, 'error_message': 'None'})
+                    resp = {'status': 1, 'error_message': 'None'}
+                    if data.get('legacy_response'):
+                        import json
+                        return HttpResponse(json.dumps(resp))
+                    else:
+                        return JsonResponse(resp)
             elif setting == 'maintenance-mode':
                 if value:
                     command = f'sudo -u {Vhuser} {FinalPHPPath} -d error_reporting=0 /usr/bin/wp maintenance-mode activate --skip-plugins --skip-themes --path={wpsite.path}'
                 else:
                     command = f'sudo -u {Vhuser} {FinalPHPPath} -d error_reporting=0 /usr/bin/wp maintenance-mode deactivate --skip-plugins --skip-themes --path={wpsite.path}'
+            elif setting == 'lscache':
+                if value:
+                    command = f'sudo -u {Vhuser} {FinalPHPPath} -d error_reporting=0 /usr/bin/wp plugin activate litespeed-cache --skip-plugins --skip-themes --path={wpsite.path}'
+                else:
+                    command = f'sudo -u {Vhuser} {FinalPHPPath} -d error_reporting=0 /usr/bin/wp plugin deactivate litespeed-cache --skip-plugins --skip-themes --path={wpsite.path}'
             else:
-                return JsonResponse({'status': 0, 'error_message': 'Invalid setting type'})
-            
+                resp = {'status': 0, 'error_message': 'Invalid setting type'}
+                if data.get('legacy_response'):
+                    import json
+                    return HttpResponse(json.dumps(resp))
+                else:
+                    return JsonResponse(resp)
+
             result = ProcessUtilities.outputExecutioner(command)
             if result.find('Error:') > -1:
-                return JsonResponse({'status': 0, 'error_message': result})
-                
-            return JsonResponse({'status': 1, 'error_message': 'None'})
+                resp = {'status': 0, 'error_message': result}
+                if data.get('legacy_response'):
+                    import json
+                    return HttpResponse(json.dumps(resp))
+                else:
+                    return JsonResponse(resp)
+
+            resp = {'status': 1, 'error_message': 'None'}
+            if data.get('legacy_response'):
+                import json
+                return HttpResponse(json.dumps(resp))
+            else:
+                return JsonResponse(resp)
 
         except BaseException as msg:
-            return JsonResponse({'status': 0, 'error_message': str(msg)})
-
-
-
+            resp = {'status': 0, 'error_message': str(msg)}
+            if data and data.get('legacy_response'):
+                import json
+                return HttpResponse(json.dumps(resp))
+            else:
+                return JsonResponse(resp)
 
     def submitWorpressCreation(self, userID=None, data=None):
         try:
@@ -4789,7 +4817,6 @@ StrictHostKeyChecking no
             return ACLManager.loadErrorJson()
 
         tempStatusPath = "/home/cyberpanel/" + str(randint(1000, 9999))
-
         execPath = "/usr/local/CyberCP/bin/python " + virtualHostUtilities.cyberPanel + "/plogical/virtualHostUtilities.py"
         execPath = execPath + " switchServer --phpVersion '" + phpVersion + "' --server " + str(
             server) + " --virtualHostName " + domainName + " --tempStatusPath " + tempStatusPath
@@ -7232,4 +7259,3 @@ StrictHostKeyChecking no
             data_ret = {'status': 0, 'fetchStatus': 0, 'error_message': str(msg)}
             json_data = json.dumps(data_ret)
             return HttpResponse(json_data)
-
