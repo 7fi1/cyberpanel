@@ -1988,10 +1988,10 @@ class WebsiteManager:
             currentACL = ACLManager.loadedACL(userID)
             admin = Administrator.objects.get(pk=userID)
             wpsite = WPSites.objects.get(pk=siteId)
-
+            
             if ACLManager.checkOwnership(wpsite.owner.domain, admin, currentACL) != 1:
                 return ACLManager.loadError()
-
+                
             # Get PHP version and path
             Webobj = Websites.objects.get(pk=wpsite.owner_id)
             Vhuser = Webobj.externalApp
@@ -2031,7 +2031,7 @@ Require valid-user
                     ProcessUtilities.executioner(command, wpsite.owner.externalApp)
                     command = f"mv {htpasswd} {path}/.htpasswd"
                     ProcessUtilities.executioner(command, wpsite.owner.externalApp)
-                    command = f"mv {htaccess} {wpsite.path}/.htaccess"
+                    command = f"mv {htaccess} {wpsite.path}/.htaccess" 
                     ProcessUtilities.executioner(command, wpsite.owner.externalApp)
                     command = f"rm -rf {tempPath}"
                     ProcessUtilities.executioner(command)
@@ -2057,7 +2057,7 @@ Require valid-user
             elif setting == 'lscache':
                 if value:
                     command = f'sudo -u {Vhuser} {FinalPHPPath} -d error_reporting=0 /usr/bin/wp plugin activate litespeed-cache --skip-plugins --skip-themes --path={wpsite.path}'
-                else:
+            else:
                     command = f'sudo -u {Vhuser} {FinalPHPPath} -d error_reporting=0 /usr/bin/wp plugin deactivate litespeed-cache --skip-plugins --skip-themes --path={wpsite.path}'
             else:
                 resp = {'status': 0, 'error_message': 'Invalid setting type'}
@@ -2066,7 +2066,7 @@ Require valid-user
                     return HttpResponse(json.dumps(resp))
                 else:
                     return JsonResponse(resp)
-
+            
             result = ProcessUtilities.outputExecutioner(command)
             if result.find('Error:') > -1:
                 resp = {'status': 0, 'error_message': result}
