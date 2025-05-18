@@ -5000,6 +5000,38 @@ StrictHostKeyChecking no
             ProcessUtilities.outputExecutioner('systemctl is-active --quiet fastapi_ssh_server')
             ProcessUtilities.outputExecutioner('systemctl enable --now fastapi_ssh_server')
             ProcessUtilities.outputExecutioner('systemctl start fastapi_ssh_server')
+
+            csfPath = '/etc/csf'
+
+            sshPort = '8888'
+
+            if os.path.exists(csfPath):
+                    dataIn = {'protocol': 'TCP_IN', 'ports': sshPort}
+
+                    # self.modifyPorts is a method in the firewallManager.py file so how can we call it here?
+                    # we need to call the method from the firewallManager.py file
+                    from firewall.firewallManager import FirewallManager
+                    firewallManager = FirewallManager()
+                    firewallManager.modifyPorts(dataIn)
+                    dataIn = {'protocol': 'TCP_OUT', 'ports': sshPort}
+                    firewallManager.modifyPorts(dataIn)
+            else:
+                from plogical.firewallUtilities import FirewallUtilities
+                from firewall.models import FirewallRules
+                try:
+                    updateFW = FirewallRules.objects.get(name="WebTerminalPort")
+                    FirewallUtilities.deleteRule("tcp", updateFW.port, "0.0.0.0/0")
+                    updateFW.port = sshPort
+                    updateFW.save()
+                    FirewallUtilities.addRule('tcp', sshPort, "0.0.0.0/0")
+                except:
+                    try:
+                        newFireWallRule = FirewallRules(name="WebTerminalPort", port=sshPort, proto="tcp")
+                        newFireWallRule.save()
+                        FirewallUtilities.addRule('tcp', sshPort, "0.0.0.0/0")
+                    except BaseException as msg:
+                        logging.CyberCPLogFileWriter.writeToFile(str(msg))
+
         except Exception as e:
             CyberCPLogFileWriter.writeLog(f"Failed to ensure fastapi_ssh_server is running: {e}")
 
