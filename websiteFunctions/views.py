@@ -23,6 +23,8 @@ import jwt
 from datetime import datetime, timedelta
 import OpenSSL
 from plogical.processUtilities import ProcessUtilities
+import os
+import re
 
 def loadWebsitesHome(request):
     val = request.session['userID']
@@ -2016,12 +2018,25 @@ def get_terminal_jwt(request):
             return JsonResponse({'status': 0, 'error_message': 'SSH user not configured for this website.'})
         from datetime import datetime, timedelta
         import jwt as pyjwt
+        # Read JWT_SECRET from fastapi_ssh_server.py
+        jwt_secret = None
+        try:
+            with open(os.path.join(os.path.dirname(os.path.dirname(__file__)), '../fastapi_ssh_server.py')) as f:
+                for line in f:
+                    m = re.match(r'\s*JWT_SECRET\s*=\s*[\'"](.+)[\'"]', line)
+                    if m and m.group(1) != 'REPLACE_ME_WITH_INSTALLER':
+                        jwt_secret = m.group(1)
+                        break
+        except Exception as e:
+            logger.error(f"Could not read JWT_SECRET: {e}")
+        if not jwt_secret:
+            jwt_secret = 'YOUR_SECRET_KEY'  # fallback, should not be used in production
         payload = {
             'user_id': user_id,
             'ssh_user': ssh_user,
             'exp': datetime.utcnow() + timedelta(minutes=10)
         }
-        token = pyjwt.encode(payload, 'YOUR_SECRET_KEY', algorithm='HS256')
+        token = pyjwt.encode(payload, jwt_secret, algorithm='HS256')
         logger.error(f"JWT generated: {token}")
         return JsonResponse({'status': 1, 'token': token, 'ssh_user': ssh_user})
     except Exception as e:

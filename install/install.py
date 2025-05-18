@@ -13,6 +13,7 @@ import socket
 from os.path import *
 from stat import *
 import stat
+import secrets
 
 VERSION = '2.4'
 BUILD = 0
@@ -2639,6 +2640,20 @@ vmail
         command = f'chmod +x {filePath}'
         preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
 
+def configure_jwt_secret():
+    import secrets
+    secret = secrets.token_urlsafe(32)
+    fastapi_file = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'fastapi_ssh_server.py')
+    with open(fastapi_file, 'r') as f:
+        lines = f.readlines()
+    with open(fastapi_file, 'w') as f:
+        for line in lines:
+            if line.strip().startswith('JWT_SECRET'):
+                f.write(f'JWT_SECRET = "{secret}"\n')
+            else:
+                f.write(line)
+    print(f"Configured JWT_SECRET in fastapi_ssh_server.py")
+
 def main():
     parser = argparse.ArgumentParser(description='CyberPanel Installer')
     parser.add_argument('publicip', help='Please enter public IP for your VPS or dedicated server.')
@@ -2855,6 +2870,9 @@ echo $oConfig->Save() ? 'Done' : 'Error';
         pass
 
     checks.fixCyberPanelPermissions()
+    checks.configure_jwt_secret()
+
+    # 
 
     logging.InstallLog.writeToFile("CyberPanel installation successfully completed!,80")
 

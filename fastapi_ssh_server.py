@@ -11,7 +11,8 @@ from jose import jwt, JWTError
 import logging
 
 app = FastAPI()
-JWT_SECRET = "YOUR_SECRET_KEY"
+# JWT_SECRET = "YOUR_SECRET_KEY"
+JWT_SECRET = "REPLACE_ME_WITH_INSTALLER"
 JWT_ALGORITHM = "HS256"
 
 # Allow CORS for local dev/testing

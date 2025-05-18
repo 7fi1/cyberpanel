@@ -4981,6 +4981,26 @@ StrictHostKeyChecking no
         website = Websites.objects.get(domain=self.domain)
         externalApp = website.externalApp
 
+        #### update jwt secret if needed
+
+        import secrets
+        import re
+        import os
+        from plogical.processUtilities import ProcessUtilities
+
+        fastapi_file = os.path.join(os.path.dirname(os.path.dirname(__file__)), '../fastapi_ssh_server.py')
+        try:
+            with open(fastapi_file, 'r') as f:
+                content = f.read()
+            m = re.search(r'JWT_SECRET\s*=\s*[\'"](.+)[\'"]', content)
+            if m and m.group(1) in ['REPLACE_ME_WITH_INSTALLER', 'YOUR_SECRET_KEY']:
+                new_secret = secrets.token_urlsafe(32)
+                # Use sed to replace the line in-place (macOS compatible)
+                sed_cmd = f"sed -i '' 's|JWT_SECRET = \"{m.group(1)}\"|JWT_SECRET = \"{new_secret}\"|' '{fastapi_file}'"
+                ProcessUtilities.outputExecutioner(sed_cmd)
+        except Exception as e:
+            pass
+
         #####
 
         from plogical.CyberCPLogFileWriter import CyberCPLogFileWriter

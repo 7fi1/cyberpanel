@@ -3704,6 +3704,9 @@ pm.max_spare_servers = 3
 
         Upgrade.installDNS_CyberPanelACMEFile()
 
+        command = 'systemctl restart fastapi_ssh_server'
+        Upgrade.executioner(command, command, 0)
+
         Upgrade.stdOut("Upgrade Completed.")
 
         ### remove log file path incase its there
