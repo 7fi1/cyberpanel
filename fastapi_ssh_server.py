@@ -37,7 +37,7 @@ def generate_ssh_keypair():
 
 # Add public key to authorized_keys with a unique comment
 def add_key_to_authorized_keys(public_key, comment):
-    entry = f'from="127.0.0.1" {public_key} {comment}\n'
+    entry = f'from="127.0.0.1,::1" {public_key} {comment}\n'
     with open(AUTHORIZED_KEYS_PATH, "a") as f:
         f.write(entry)
 
@@ -76,7 +76,7 @@ async def websocket_endpoint(websocket: WebSocket, token: str = Query(None), ssh
 
     private_key, public_key = generate_ssh_keypair()
     comment = f"webterm-{os.urandom(8).hex()}"
-    entry = f'from="127.0.0.1" {public_key} {comment}\n'
+    entry = f'from="127.0.0.1,::1" {public_key} {comment}\n'
     with open(authorized_keys_path, "a") as f:
         f.write(entry)
 
