@@ -29,15 +29,10 @@
     border-radius: 8px 8px 0 0;
 }
 
-.header-logo:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--card-shadow-hover);
-}
-
-.header-logo img {
-    height: 32px;
-    width: auto;
-    filter: brightness(0.8) contrast(1.2);
+#uploadBoxLabel,#htmlEditorLable{
+    background: -moz-linear-gradient(#a4dbf5, #8cc5e0);
+    background: -webkit-linear-gradient(#a4dbf5, #8cc5e0);
+    background: -o-linear-gradient(#a4dbf5, #8cc5e0);
 }
 
 .my-drop-zone {
@@ -60,220 +55,59 @@
     border-radius: 3px;
 }
 
-.header-logo span {
-    font-size: 1.125rem;
-    font-weight: 500;
-    color: var(--text-primary);
+#htmlEditorContent{
+    width: 100%;
+    height: 500px;
 }
 
-/* Top Actions Bar */
+#htmlEditorStyles{
+    margin-bottom: 2%;
+    margin-top: 2%;
+}
 .flex-wrap {
-    padding: 0.5rem;
-    background: var(--background-lighter);
-    border-radius: 0.5rem;
-    box-shadow: var(--card-shadow);
-    margin: 0.5rem 0;
-}
-
-.nav {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.5rem;
-    padding: 0.5rem;
+}
+.mt-5 {
+    margin-top: 5px !important;
+}
+.mt-10 {
+    margin-top: 10px;
+}
+.mt-20 {
+    margin-top: 20px;
+}
+.mt-30 {
+    margin-top: 30px;
+}
+.mr-10 {
+    margin-right: 10px;
+}
+.mb-10 {
+    margin-bottom: 10px;
+}
+.ml-10 {
+    margin-left: 10px;
+}
+.my-10 {
+    margin-top: 10px;
+    margin-bottom: 10px;
 }
 
-/* Enhanced Action Buttons */
-.nav-item .nav-link {
-    display: inline-flex;
-    align-items: center;
-    padding: 0.75rem 1.25rem;
-    color: var(--text-secondary);
-    background: var(--background-lighter);
-    border: 1.5px solid var(--border-color);
-    border-radius: 0.75rem;
-    transition: var(--transition-bounce);
-    font-size: 0.875rem;
-    font-weight: 600;
-    text-decoration: none;
-    box-shadow: var(--button-shadow);
+.mx-5 {
+    margin-left: 5px;
+    margin-right: 5px;
 }
-
-.nav-item .nav-link:hover {
-    color: var(--primary-color);
-    border-color: var(--primary-color);
-    background: var(--background-lighter);
-    transform: translateY(-2px);
-    box-shadow: var(--button-shadow-hover);
+.mx-10 {
+    margin-left: 10px;
+    margin-right: 10px;
 }
-
-.nav-item .nav-link i {
-    margin-right: 0.5rem;
-    font-size: 1rem;
-}
-
-/* File Manager Layout */
-.row {
-    margin: 0;
-    background: var(--background-lighter);
-}
-
-/* Modern File List Section */
-.table {
-    background: var(--background-lighter);
-    border-radius: 1.25rem;
-    box-shadow: var(--card-shadow);
-    overflow: hidden;
-    border: 1.5px solid var(--border-color);
-    margin-top: 1.5rem;
-}
-
-#tableHead th {
-    background: var(--background-light);
-    padding: 1.25rem 1.5rem;
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: var(--text-secondary);
-    border-bottom: 1.5px solid var(--border-color);
-}
-
-.table tbody tr {
-    transition: var(--transition-smooth);
-}
-
-.table tbody tr:hover {
-    background: var(--hover-bg);
-    transform: translateY(-1px);
-    box-shadow: var(--button-shadow);
-}
-
-.table td {
-    padding: 1.25rem 1.5rem;
-    vertical-align: middle;
-    color: var(--text-secondary);
-    font-size: 0.875rem;
-    border-bottom: 1px solid var(--border-color);
-}
-
-/* Enhanced File Actions */
-.file-actions {
-    display: flex;
-    gap: 0.75rem;
-    opacity: 0;
-    transition: var(--transition-smooth);
-}
-
-.file-action-btn {
-    padding: 0.625rem;
-    border-radius: 0.75rem;
-    border: 1.5px solid var(--border-color);
-    background: var(--background-lighter);
-    color: var(--text-secondary);
-    transition: var(--transition-bounce);
-    box-shadow: var(--button-shadow);
-}
-
-.file-action-btn:hover {
-    color: var(--primary-color);
-    border-color: var(--primary-color);
-    background: var(--background-lighter);
-    transform: translateY(-2px);
-    box-shadow: var(--button-shadow-hover);
-}
-
-/* Modern Tree View */
-.tree-item {
-    display: flex;
-    align-items: center;
-    padding: 0.75rem 1rem;
-    border-radius: 0.75rem;
-    cursor: pointer;
-    transition: var(--transition-smooth);
-    margin: 0.25rem 0;
-}
-
-.tree-item:hover {
-    background: var(--hover-bg);
-    transform: translateX(4px);
-}
-
-.tree-item i {
-    margin-right: 0.5rem;
-    font-size: 1rem;
-}
-
-/* File List */
-.file-list {
-    background: var(--background-lighter);
-    border-radius: 0.5rem;
-    margin: 1rem;
-}
-
-.file-list-header {
-    display: flex;
-    align-items: center;
-    padding: 0.75rem 1rem;
-    background: var(--background-light);
-    border-bottom: 1px solid var(--border-color);
-    border-top-left-radius: 0.5rem;
-    border-top-right-radius: 0.5rem;
-}
-
-.file-item {
-    display: flex;
-    align-items: center;
-    padding: 0.5rem 1rem;
-    border-bottom: 1px solid var(--border-color);
-    transition: all 0.15s ease;
-}
-
-.file-item:hover {
-    background: var(--hover-bg);
-}
-
-.file-item-icon {
-    margin-right: 0.75rem;
-    color: var(--secondary-color);
-}
-
-.file-item-name {
-    flex: 1;
-    font-size: 0.875rem;
-    color: var(--text-primary);
-}
-
-.file-item-size {
-    width: 100px;
-    text-align: right;
-    font-size: 0.875rem;
-    color: var(--text-secondary);
-}
-
-.file-item-date {
-    width: 150px;
-    text-align: right;
-    font-size: 0.875rem;
-    color: var(--text-secondary);
-}
-
-.file-item-permissions {
-    width: 100px;
-    text-align: right;
-    font-family: monospace;
-    font-size: 0.875rem;
-    color: var(--text-secondary);
-}
-
-/* Enhanced Path Navigation */
-.path-nav {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 1rem 1.5rem;
-    background: var(--background-light);
-    border-bottom: 1.5px solid var(--border-color);
-    border-radius: 1rem 1rem 0 0;
+.header-logo {
+    width: 315px;
+/*    text-align: center;*/
+    font-size: 16px;
+    float: left;
+    position: relative;
 }
 
 a.nav-link {
@@ -287,41 +121,15 @@ a.nav-link:hover {
     transform: translateY(-1px);
 }
 
-.path-nav-separator {
-    color: var(--border-color);
+.point-events {
+    pointer-events: all;
 }
 
-/* Selection Styles */
-.selected {
-    background: var(--hover-bg);
-    border-color: var(--primary-color);
-}
-
-/* Modern Current Path Display */
-#currentRPath {
-    font-size: 0.875rem;
-    color: var(--text-secondary);
-    background-color: var(--background-light);
-    border: 1.5px solid var(--border-color);
-    padding: 1rem 1.25rem;
-    border-radius: 1rem;
-    margin-bottom: 1.5rem;
-    transition: var(--transition-bounce);
-    box-shadow: var(--button-shadow);
-}
-
-#currentRPath:hover {
-    border-color: var(--primary-color);
-    transform: translateY(-1px);
-    box-shadow: var(--button-shadow-hover);
-}
-
-/* Enhanced File Icons */
-i.fa.fa-folder {
-    color: var(--warning-color) !important;
-    margin-right: 0.75rem;
-    font-size: 1.25rem;
-    transition: var(--transition-smooth);
+.card-header {
+    padding: .75rem 1.25rem;
+    margin-bottom: 0;
+    background-color: transparent;
+    border-bottom: none;
 }
 .form-control {
     padding: 0.5rem 1rem;

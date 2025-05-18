@@ -6,7 +6,6 @@ import shlex
 import subprocess
 import socket
 from plogical.processUtilities import ProcessUtilities
-
 try:
     from websiteFunctions.models import ChildDomains, Websites
 except:
@@ -15,6 +14,7 @@ from plogical.acl import ACLManager
 
 
 class sslUtilities:
+
     Server_root = "/usr/local/lsws"
     redisConf = '/usr/local/lsws/conf/dvhost_redis.conf'
 
@@ -48,6 +48,7 @@ class sslUtilities:
         except BaseException as msg:
             return 0, str(msg)
 
+
     @staticmethod
     def CheckIfSSLNeedsToBeIssued(virtualHostName):
         #### if website already have an SSL, better not issue again - need to check for wild-card
@@ -60,6 +61,7 @@ class sslUtilities:
             if os.path.exists(ProcessUtilities.debugPath):
                 logging.CyberCPLogFileWriter.writeToFile(f'SSL provider for {virtualHostName} is {SSLProvider}.')
 
+
             #### totally seprate check to see if both non-www and www are covered
 
             if SSLProvider == "(STAGING) Let's Encrypt":
@@ -71,8 +73,7 @@ class sslUtilities:
                     if len(domains) > 1:
                         ### need further checks here to see if ssl is valid for less then 15 days etc
                         logging.CyberCPLogFileWriter.writeToFile(
-                            '[CheckIfSSLNeedsToBeIssued] SSL exists for %s and both versions are covered, just need to ensure if SSL is valid for less then 15 days.' % (
-                                virtualHostName), 0)
+                            '[CheckIfSSLNeedsToBeIssued] SSL exists for %s and both versions are covered, just need to ensure if SSL is valid for less then 15 days.' % (virtualHostName), 0)
                         pass
                     else:
                         return sslUtilities.ISSUE_SSL
@@ -85,7 +86,7 @@ class sslUtilities:
             now = datetime.now()
             diff = finalDate - now
 
-            if int(diff.days) >= 15 and SSLProvider != 'Denial':
+            if int(diff.days) >= 15 and SSLProvider!='Denial':
                 logging.CyberCPLogFileWriter.writeToFile(
                     '[CheckIfSSLNeedsToBeIssued] SSL exists for %s and is not ready to fetch new SSL., skipping..' % (
                         virtualHostName), 0)
@@ -143,7 +144,8 @@ class sslUtilities:
             logging.CyberCPLogFileWriter.writeToFile(str(msg) + " [IO Error with main config file [checkSSLListener]]")
             return str(msg)
         return 0
-
+    
+ 
     @staticmethod
     def checkSSLIPv6Listener():
         try:
@@ -153,8 +155,7 @@ class sslUtilities:
                     return 1
 
         except BaseException as msg:
-            logging.CyberCPLogFileWriter.writeToFile(
-                str(msg) + " [IO Error with main config file [checkSSLIPv6Listener]]")
+            logging.CyberCPLogFileWriter.writeToFile(str(msg) + " [IO Error with main config file [checkSSLIPv6Listener]]")
             return str(msg)
         return 0
 
@@ -344,7 +345,7 @@ context /.well-known/acme-challenge {
                     writeDataToFile.writelines(certFile)
                     writeDataToFile.writelines(certChain)
                     writeDataToFile.writelines(sslProtocol)
-                    writeDataToFile.writelines(enableECDHE)
+                    writeDataToFile.writelines(enableECDHE) 
                     writeDataToFile.writelines(renegProtection)
                     writeDataToFile.writelines(sslSessionCache)
                     writeDataToFile.writelines(enableSpdy)
@@ -383,7 +384,7 @@ context /.well-known/acme-challenge {
                     writeDataToFile.writelines(certFile)
                     writeDataToFile.writelines(certChain)
                     writeDataToFile.writelines(sslProtocol)
-                    writeDataToFile.writelines(enableECDHE)
+                    writeDataToFile.writelines(enableECDHE) 
                     writeDataToFile.writelines(renegProtection)
                     writeDataToFile.writelines(sslSessionCache)
                     writeDataToFile.writelines(enableSpdy)
@@ -664,7 +665,7 @@ context /.well-known/acme-challenge {
 
                 try:
                     command = acmePath + " --issue -d " + virtualHostName + " -d www." + virtualHostName \
-                              + ' -d ' + aliasDomain + ' -d www.' + aliasDomain \
+                              + ' -d ' + aliasDomain + ' -d www.' + aliasDomain\
                               + ' --cert-file ' + existingCertPath + '/cert.pem' + ' --key-file ' + existingCertPath + '/privkey.pem' \
                               + ' --fullchain-file ' + existingCertPath + '/fullchain.pem' + ' -w /usr/local/lsws/Example/html -k ec-256 --force --server letsencrypt'
 
@@ -698,16 +699,13 @@ def issueSSLForDomain(domain, adminEmail, sslpath, aliasDomain=None):
 
             if os.path.exists(pathToStoreSSLFullChain):
                 import OpenSSL
-                x509 = OpenSSL.crypto.load_certificate(OpenSSL.crypto.FILETYPE_PEM,
-                                                       open(pathToStoreSSLFullChain, 'r').read())
+                x509 = OpenSSL.crypto.load_certificate(OpenSSL.crypto.FILETYPE_PEM, open(pathToStoreSSLFullChain, 'r').read())
                 SSLProvider = x509.get_issuer().get_components()[1][1].decode('utf-8')
 
                 if SSLProvider != 'Denial':
                     if sslUtilities.installSSLForDomain(domain) == 1:
-                        logging.CyberCPLogFileWriter.writeToFile(
-                            "We are not able to get new SSL for " + domain + ". But there is an existing SSL, it might only be for the main domain (excluding www).")
-                        return [1,
-                                "We are not able to get new SSL for " + domain + ". But there is an existing SSL, it might only be for the main domain (excluding www)." + " [issueSSLForDomain]"]
+                        logging.CyberCPLogFileWriter.writeToFile("We are not able to get new SSL for " + domain + ". But there is an existing SSL, it might only be for the main domain (excluding www).")
+                        return [1, "We are not able to get new SSL for " + domain + ". But there is an existing SSL, it might only be for the main domain (excluding www)." + " [issueSSLForDomain]"]
 
             command = 'openssl req -newkey rsa:2048 -new -nodes -x509 -days 3650 -subj "/C=US/ST=Denial/L=Springfield/O=Dis/CN=' + domain + '" -keyout ' + pathToStoreSSLPrivKey + ' -out ' + pathToStoreSSLFullChain
             cmd = shlex.split(command)
