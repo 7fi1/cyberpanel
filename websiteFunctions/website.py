@@ -4989,19 +4989,20 @@ StrictHostKeyChecking no
         from plogical.processUtilities import ProcessUtilities
 
         fastapi_file = '/usr/local/CyberCP/fastapi_ssh_server.py'
+        from plogical.CyberCPLogFileWriter import CyberCPLogFileWriter
         try:
-            with open(fastapi_file, 'r') as f:
-                content = f.read()
-            m = re.search(r'JWT_SECRET\s*=\s*[\'"](.+)[\'"]', content)
-            if m and m.group(1) in ['REPLACE_ME_WITH_INSTALLER', 'YOUR_SECRET_KEY']:
+            
+            content = ProcessUtilities.outputExecutioner(f'cat {fastapi_file}')
+            if 'REPLACE_ME_WITH_INSTALLER' in content:
                 new_secret = secrets.token_urlsafe(32)
-                # Use sed to replace the line in-place (macOS compatible)
-                sed_cmd = f"sed -i '' 's|JWT_SECRET = \"{m.group(1)}\"|JWT_SECRET = \"{new_secret}\"|' '{fastapi_file}'"
+                
+                sed_cmd = f"sed -i 's|JWT_SECRET = \"REPLACE_ME_WITH_INSTALLER\"|JWT_SECRET = \"{new_secret}\"|' '{fastapi_file}'"
                 ProcessUtilities.outputExecutioner(sed_cmd)
-
+                
                 command = 'systemctl restart fastapi_ssh_server'
                 ProcessUtilities.outputExecutioner(command)
-        except Exception as e:
+        except Exception:
+            CyberCPLogFileWriter.writeLog(f"Failed to update JWT secret: {e}")
             pass
 
         #####

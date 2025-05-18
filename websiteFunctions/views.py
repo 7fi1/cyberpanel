@@ -2018,15 +2018,15 @@ def get_terminal_jwt(request):
             return JsonResponse({'status': 0, 'error_message': 'SSH user not configured for this website.'})
         from datetime import datetime, timedelta
         import jwt as pyjwt
-        # Read JWT_SECRET from fastapi_ssh_server.py
+        # Read JWT_SECRET from fastapi_ssh_server.py using ProcessUtilities
         jwt_secret = None
         try:
-            with open('/usr/local/CyberCP/fastapi_ssh_server.py', 'r') as f:
-                for line in f:
-                    m = re.match(r'\s*JWT_SECRET\s*=\s*[\'"](.+)[\'"]', line)
-                    if m and m.group(1) != 'REPLACE_ME_WITH_INSTALLER':
-                        jwt_secret = m.group(1)
-                        break
+            content = ProcessUtilities.outputExecutioner('cat /usr/local/CyberCP/fastapi_ssh_server.py')
+            for line in content.splitlines():
+                m = re.match(r'\s*JWT_SECRET\s*=\s*[\'"](.+)[\'"]', line)
+                if m and m.group(1) != 'REPLACE_ME_WITH_INSTALLER':
+                    jwt_secret = m.group(1)
+                    break
         except Exception as e:
             logger.error(f"Could not read JWT_SECRET: {e}")
         if not jwt_secret:
