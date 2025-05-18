@@ -30,3 +30,10 @@ tldextract==5.1.2
 tornado==6.4.1
 validators==0.33.0
 websocket-client==1.8.0
+
+fastapi==0.115.12
+uvicorn==0.34.2
+asyncssh==2.21.0
+python-jose==3.4.0
+websockets==15.0.1
+jwt
