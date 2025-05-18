@@ -2643,7 +2643,7 @@ vmail
 def configure_jwt_secret():
     import secrets
     secret = secrets.token_urlsafe(32)
-    fastapi_file = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'fastapi_ssh_server.py')
+    fastapi_file = '/usr/local/CyberCP/fastapi_ssh_server.py'
     with open(fastapi_file, 'r') as f:
         lines = f.readlines()
     with open(fastapi_file, 'w') as f:

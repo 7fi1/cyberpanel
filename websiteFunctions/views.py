@@ -2021,7 +2021,7 @@ def get_terminal_jwt(request):
         # Read JWT_SECRET from fastapi_ssh_server.py
         jwt_secret = None
         try:
-            with open(os.path.join(os.path.dirname(os.path.dirname(__file__)), '../fastapi_ssh_server.py')) as f:
+            with open('/usr/local/CyberCP/fastapi_ssh_server.py', 'r') as f:
                 for line in f:
                     m = re.match(r'\s*JWT_SECRET\s*=\s*[\'"](.+)[\'"]', line)
                     if m and m.group(1) != 'REPLACE_ME_WITH_INSTALLER':
