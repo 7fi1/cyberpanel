@@ -37,3 +37,4 @@ asyncssh==2.21.0
 python-jose==3.4.0
 websockets==15.0.1
 jwt
+PyJWT

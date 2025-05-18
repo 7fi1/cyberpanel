@@ -885,6 +885,11 @@ local_name %s {
                 cmd = shlex.split(command)
                 subprocess.call(cmd)
 
+            
+            command = 'systemctl restart fastapi_ssh_server.service'
+            cmd = shlex.split(command)
+            subprocess.call(cmd)
+
             print("1,None")
             return 1, 'None'
 
