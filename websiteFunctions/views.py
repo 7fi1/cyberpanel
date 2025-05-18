@@ -2,11 +2,12 @@
 
 
 from django.shortcuts import redirect
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from loginSystem.models import Administrator
 from loginSystem.views import loadLoginPage
 import json
 import plogical.CyberCPLogFileWriter as logging
+from plogical.acl import ACLManager
 
 
 from plogical.httpProc import httpProc
@@ -17,6 +18,7 @@ from django.views.decorators.csrf import csrf_exempt
 from .dockerviews import startContainer as docker_startContainer
 from .dockerviews import stopContainer as docker_stopContainer
 from .dockerviews import restartContainer as docker_restartContainer
+from .resource_monitoring import get_website_resource_usage
 
 def loadWebsitesHome(request):
     val = request.session['userID']
@@ -1883,3 +1885,41 @@ def restartContainer(request):
         return HttpResponse('Not allowed')
     except KeyError:
         return redirect(loadLoginPage)
+
+@csrf_exempt
+def get_website_resources(request):
+    try:
+        data = json.loads(request.body)
+        domain = data['domain']
+
+        # Get userID from session
+        try:
+            userID = request.session['userID']
+            admin = Administrator.objects.get(pk=userID)
+        except:
+            return JsonResponse({'status': 0, 'error_message': 'Unauthorized access'})
+
+        # Verify domain ownership
+        currentACL = ACLManager.loadedACL(userID)
+        
+        from websiteFunctions.models import Websites
+        try:
+            website = Websites.objects.get(domain=domain)
+        except Websites.DoesNotExist:
+            return JsonResponse({'status': 0, 'error_message': 'Website not found'})
+
+        if ACLManager.checkOwnership(domain, admin, currentACL) == 1:
+            pass
+        else:
+            return ACLManager.loadError()
+
+        # Get resource usage data using externalApp
+        resource_data = get_website_resource_usage(website.externalApp)
+        if resource_data['status'] == 0:
+            return JsonResponse(resource_data)
+
+        return JsonResponse(resource_data)
+
+    except BaseException as msg:
+        logging.CyberCPLogFileWriter.writeToFile(f'Error in get_website_resources: {str(msg)}')
+        return JsonResponse({'status': 0, 'error_message': str(msg)})

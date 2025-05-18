@@ -66,7 +66,7 @@
                                             <label class="col-sm-2 control-label">{% trans "Select Domain" %} </label>
                                             <div class="col-sm-6">
                                                 <select ng-model="virtualHost"
-                                                        class="form-control">
+                                                        class="form-control" ng-change="showbtn()">
                                                     {% for items in websiteList %}
                                                         <option>{{ items }}</option>
                                                     {% endfor %}
@@ -83,8 +83,29 @@
 
                                         </div>
 
-                                        <div class="form-group">
+                                        <div class="form-group" ng-if="sslDetails">
+                                            <div class="col-sm-12">
+                                                <div class="panel panel-primary">
+                                                    <div class="panel-heading">
+                                                        <h3 class="panel-title">SSL Details</h3>
+                                                    </div>
+                                                    <div class="panel-body">
+                                                        <div ng-if="sslDetails.hasSSL">
+                                                            <p><strong>Status:</strong> Active</p>
+                                                            <p><strong>Issued By:</strong> {$ sslDetails.authority $}</p>
+                                                            <p><strong>Expiry Date:</strong> {$ sslDetails.expiryDate $}</p>
+                                                            <p><strong>Days Remaining:</strong> {$ sslDetails.days $}</p>
+                                                        </div>
+                                                        <div ng-if="!sslDetails.hasSSL">
+                                                            <p><strong>Status:</strong> No SSL Certificate</p>
+                                                            <p ng-if="sslDetails.error_message"><strong>Error:</strong> {$ sslDetails.error_message $}</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
 
+                                        <div class="form-group">
                                             <div class="col-sm-12">
                                                 <h3 style="margin: 2%">SSL Status: {$ sslStatus $}</h3>
                                                 <div class="col-sm-12">

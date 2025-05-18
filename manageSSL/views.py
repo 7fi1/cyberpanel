@@ -333,3 +333,73 @@ def obtainMailServerSSL(request):
                     'error_message': str(msg)}
         json_data = json.dumps(data_ret)
         return HttpResponse(json_data)
+
+def getSSLDetails(request):
+    try:
+        userID = request.session['userID']
+        admin = Administrator.objects.get(pk=userID)
+        try:
+            if request.method == 'POST':
+                currentACL = ACLManager.loadedACL(userID)
+
+                if currentACL['admin'] == 1:
+                    pass
+                elif currentACL['manageSSL'] == 1:
+                    pass
+                else:
+                    return ACLManager.loadErrorJson('SSL', 0)
+
+                data = json.loads(request.body)
+                virtualHost = data['virtualHost']
+
+                if ACLManager.checkOwnership(virtualHost, admin, currentACL) == 1:
+                    pass
+                else:
+                    return ACLManager.loadErrorJson()
+
+                try:
+                    website = ChildDomains.objects.get(domain=virtualHost)
+                except:
+                    website = Websites.objects.get(domain=virtualHost)
+
+                try:
+                    import OpenSSL
+                    from datetime import datetime
+                    filePath = '/etc/letsencrypt/live/%s/fullchain.pem' % (virtualHost)
+                    x509 = OpenSSL.crypto.load_certificate(OpenSSL.crypto.FILETYPE_PEM,
+                                                           open(filePath, 'r').read())
+                    expireData = x509.get_notAfter().decode('ascii')
+                    finalDate = datetime.strptime(expireData, '%Y%m%d%H%M%SZ')
+
+                    now = datetime.now()
+                    diff = finalDate - now
+                    
+                    data_ret = {
+                        'status': 1,
+                        'hasSSL': True,
+                        'days': str(diff.days),
+                        'authority': x509.get_issuer().get_components()[1][1].decode('utf-8'),
+                        'expiryDate': finalDate.strftime('%Y-%m-%d %H:%M:%S')
+                    }
+                    
+                    if data_ret['authority'] == 'Denial':
+                        data_ret['authority'] = 'SELF-SIGNED SSL'
+                    
+                except BaseException as msg:
+                    data_ret = {
+                        'status': 1,
+                        'hasSSL': False,
+                        'error_message': str(msg)
+                    }
+
+                json_data = json.dumps(data_ret)
+                return HttpResponse(json_data)
+
+        except BaseException as msg:
+            data_ret = {'status': 0, 'error_message': str(msg)}
+            json_data = json.dumps(data_ret)
+            return HttpResponse(json_data)
+    except KeyError:
+        data_ret = {'status': 0, 'error_message': 'Not logged in'}
+        json_data = json.dumps(data_ret)
+        return HttpResponse(json_data)

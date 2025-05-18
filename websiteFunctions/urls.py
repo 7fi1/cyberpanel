@@ -200,4 +200,6 @@ urlpatterns = [
     # Catch all for domains
     path('<domain>/<childDomain>', views.launchChild, name='launchChild'),
     path('<domain>', views.domain, name='domain'),
+
+    path('get_website_resources/', views.get_website_resources, name='get_website_resources'),
 ]

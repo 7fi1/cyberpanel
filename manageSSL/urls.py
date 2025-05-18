@@ -6,6 +6,7 @@ urlpatterns = [
 
     path('manageSSL', views.manageSSL, name='manageSSL'),
     path('issueSSL', views.issueSSL, name='issueSSL'),
+    path('getSSLDetails', views.getSSLDetails, name='getSSLDetails'),
 
     path('sslForHostName', views.sslForHostName, name='sslForHostName'),
     path('obtainHostNameSSL', views.obtainHostNameSSL, name='obtainHostNameSSL'),

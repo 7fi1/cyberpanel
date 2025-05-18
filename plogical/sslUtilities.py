@@ -173,14 +173,14 @@ class sslUtilities:
     @staticmethod
     def PatchVhostConf(virtualHostName):
         """Patch the virtual host configuration to add ACME challenge support
-
+        
         This function adds the necessary configuration to handle ACME challenges
         for both OpenLiteSpeed (OLS) and Apache configurations. It also checks
         for potential configuration conflicts before making changes.
-
+        
         Args:
             virtualHostName (str): The domain name to configure
-
+            
         Returns:
             tuple: (status, message) where status is 1 for success, 0 for failure
         """
@@ -188,12 +188,12 @@ class sslUtilities:
             # Construct paths
             confPath = os.path.join(sslUtilities.Server_root, "conf", "vhosts", virtualHostName)
             completePathToConfigFile = os.path.join(confPath, "vhost.conf")
-
+            
             # Check if file exists
             if not os.path.exists(completePathToConfigFile):
                 logging.CyberCPLogFileWriter.writeToFile(f'Configuration file not found: {completePathToConfigFile}')
                 return 0, f'Configuration file not found: {completePathToConfigFile}'
-
+            
             # Read current configuration
             try:
                 with open(completePathToConfigFile, 'r') as f:
@@ -201,42 +201,41 @@ class sslUtilities:
             except IOError as e:
                 logging.CyberCPLogFileWriter.writeToFile(f'Error reading configuration file: {str(e)}')
                 return 0, f'Error reading configuration file: {str(e)}'
-
+            
             # Check for potential conflicts
             conflicts = []
-
+            
             # Check if ACME challenge is already configured
             if DataVhost.find('/.well-known/acme-challenge') != -1:
                 logging.CyberCPLogFileWriter.writeToFile(f'ACME challenge already configured for {virtualHostName}')
                 return 1, 'ACME challenge already configured'
-
+            
             # Check for conflicting rewrite rules
             if DataVhost.find('rewrite') != -1 and DataVhost.find('enable 1') != -1:
                 conflicts.append('Active rewrite rules found that might interfere with ACME challenges')
-
+            
             # Check for conflicting location blocks
             if DataVhost.find('location /.well-known') != -1:
                 conflicts.append('Existing location block for /.well-known found')
-
+            
             # Check for conflicting aliases
             if DataVhost.find('Alias /.well-known') != -1:
                 conflicts.append('Existing alias for /.well-known found')
-
+            
             # Check for conflicting context blocks
             if DataVhost.find('context /.well-known') != -1:
                 conflicts.append('Existing context block for /.well-known found')
-
+            
             # Check for conflicting access controls
             if DataVhost.find('deny from all') != -1 and DataVhost.find('location') != -1:
                 conflicts.append('Global deny rules found that might block ACME challenges')
-
+            
             # If conflicts found, log them and return
             if conflicts:
                 conflict_message = 'Configuration conflicts found: ' + '; '.join(conflicts)
-                logging.CyberCPLogFileWriter.writeToFile(
-                    f'Configuration conflicts for {virtualHostName}: {conflict_message}')
+                logging.CyberCPLogFileWriter.writeToFile(f'Configuration conflicts for {virtualHostName}: {conflict_message}')
                 return 0, conflict_message
-
+            
             # Create challenge directory if it doesn't exist
             challenge_dir = '/usr/local/lsws/Example/html/.well-known/acme-challenge'
             try:
@@ -246,7 +245,7 @@ class sslUtilities:
             except OSError as e:
                 logging.CyberCPLogFileWriter.writeToFile(f'Error creating challenge directory: {str(e)}')
                 return 0, f'Error creating challenge directory: {str(e)}'
-
+            
             # Handle configuration based on server type
             if ProcessUtilities.decideServer() == ProcessUtilities.OLS:
                 # OpenLiteSpeed configuration
@@ -274,31 +273,29 @@ context /.well-known/acme-challenge {
                     # Read current configuration
                     with open(completePathToConfigFile, 'r') as f:
                         lines = f.readlines()
-
+                    
                     # Write new configuration
                     with open(completePathToConfigFile, 'w') as f:
                         check = 0
                         for line in lines:
                             f.write(line)
                             if line.find('DocumentRoot /home/') > -1 and check == 0:
-                                f.write(
-                                    '    Alias /.well-known/acme-challenge /usr/local/lsws/Example/html/.well-known/acme-challenge\n')
+                                f.write('    Alias /.well-known/acme-challenge /usr/local/lsws/Example/html/.well-known/acme-challenge\n')
                                 check = 1
                 except IOError as e:
                     logging.CyberCPLogFileWriter.writeToFile(f'Error writing Apache configuration: {str(e)}')
                     return 0, f'Error writing Apache configuration: {str(e)}'
-
+            
             # Restart LiteSpeed
             try:
                 from plogical import installUtilities
                 installUtilities.installUtilities.reStartLiteSpeed()
-                logging.CyberCPLogFileWriter.writeToFile(
-                    f'Successfully configured ACME challenge for {virtualHostName}')
+                logging.CyberCPLogFileWriter.writeToFile(f'Successfully configured ACME challenge for {virtualHostName}')
                 return 1, 'Successfully configured ACME challenge'
             except Exception as e:
                 logging.CyberCPLogFileWriter.writeToFile(f'Error restarting LiteSpeed: {str(e)}')
                 return 0, f'Error restarting LiteSpeed: {str(e)}'
-
+                
         except Exception as e:
             logging.CyberCPLogFileWriter.writeToFile(f'Unexpected error in PatchVhostConf: {str(e)}')
             return 0, f'Unexpected error: {str(e)}'
@@ -578,12 +575,12 @@ context /.well-known/acme-challenge {
         command = f'chmod -R 755 /usr/local/lsws/Example/html'
         ProcessUtilities.executioner(command)
 
-        # Try custom ACME implementation first
+        # Try Let's Encrypt first
         try:
             domains = [virtualHostName, f'www.{virtualHostName}']
             if aliasDomain:
                 domains.extend([aliasDomain, f'www.{aliasDomain}'])
-
+            
             # Check if Cloudflare is used
             use_dns = False
             try:
@@ -592,17 +589,32 @@ context /.well-known/acme-challenge {
                     use_dns = True
             except:
                 pass
-
-            acme = CustomACME(virtualHostName, adminEmail, staging=False)  # Force production environment
+            
+            acme = CustomACME(virtualHostName, adminEmail, staging=False, provider='letsencrypt')
             if acme.issue_certificate(domains, use_dns=use_dns):
                 logging.CyberCPLogFileWriter.writeToFile(
-                    f"Successfully obtained SSL using custom ACME implementation for: {virtualHostName}")
+                    f"Successfully obtained SSL using Let's Encrypt for: {virtualHostName}")
                 return 1
         except Exception as e:
             logging.CyberCPLogFileWriter.writeToFile(
-                f"Custom ACME implementation failed: {str(e)}. Falling back to acme.sh")
+                f"Let's Encrypt failed: {str(e)}. Trying ZeroSSL...")
 
-        # Fallback to acme.sh if custom implementation fails
+        # Try ZeroSSL if Let's Encrypt fails
+        try:
+            domains = [virtualHostName, f'www.{virtualHostName}']
+            if aliasDomain:
+                domains.extend([aliasDomain, f'www.{aliasDomain}'])
+            
+            acme = CustomACME(virtualHostName, adminEmail, staging=False, provider='zerossl')
+            if acme.issue_certificate(domains, use_dns=use_dns):
+                logging.CyberCPLogFileWriter.writeToFile(
+                    f"Successfully obtained SSL using ZeroSSL for: {virtualHostName}")
+                return 1
+        except Exception as e:
+            logging.CyberCPLogFileWriter.writeToFile(
+                f"ZeroSSL failed: {str(e)}. Falling back to acme.sh")
+
+        # Fallback to acme.sh if both ACME providers fail
         try:
             acmePath = '/root/.acme.sh/acme.sh'
             command = '%s --register-account -m %s' % (acmePath, adminEmail)
@@ -621,20 +633,19 @@ context /.well-known/acme-challenge {
                     command = acmePath + " --issue -d " + virtualHostName + " -d www." + virtualHostName \
                               + ' --cert-file ' + existingCertPath + '/cert.pem' + ' --key-file ' + existingCertPath + '/privkey.pem' \
                               + ' --fullchain-file ' + existingCertPath + '/fullchain.pem' + ' -w /usr/local/lsws/Example/html -k ec-256 --force --staging'
-
+                    
                     if ProcessUtilities.decideServer() == ProcessUtilities.OLS:
                         result = subprocess.run(command, capture_output=True, universal_newlines=True, shell=True)
                     else:
-                        result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                                                universal_newlines=True, shell=True)
+                        result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True, shell=True)
 
                     if result.returncode == 0:
                         command = acmePath + " --issue -d " + virtualHostName + " -d www." + virtualHostName \
                                   + ' --cert-file ' + existingCertPath + '/cert.pem' + ' --key-file ' + existingCertPath + '/privkey.pem' \
                                   + ' --fullchain-file ' + existingCertPath + '/fullchain.pem' + ' -w /usr/local/lsws/Example/html -k ec-256 --force --server letsencrypt'
-
+                        
                         result = subprocess.run(command, capture_output=True, universal_newlines=True, shell=True)
-
+                        
                         if result.returncode == 0:
                             logging.CyberCPLogFileWriter.writeToFile(
                                 "Successfully obtained SSL for: " + virtualHostName + " and: www." + virtualHostName, 0)
@@ -658,7 +669,7 @@ context /.well-known/acme-challenge {
                               + ' --fullchain-file ' + existingCertPath + '/fullchain.pem' + ' -w /usr/local/lsws/Example/html -k ec-256 --force --server letsencrypt'
 
                     result = subprocess.run(command, capture_output=True, universal_newlines=True, shell=True)
-
+                    
                     if result.returncode == 0:
                         return 1
                     return 0

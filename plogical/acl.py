@@ -14,7 +14,7 @@ django.setup()
 from loginSystem.models import Administrator, ACL
 from django.shortcuts import HttpResponse
 from packages.models import Package
-from websiteFunctions.models import Websites, ChildDomains, aliasDomains, DockerSites
+from websiteFunctions.models import Websites, ChildDomains, aliasDomains, DockerSites, WPSites
 import json
 from subprocess import call, CalledProcessError
 from shlex import split
@@ -582,24 +582,44 @@ class ACLManager:
 
     @staticmethod
     def searchWebsiteObjects(currentACL, userID, searchTerm):
-
         if currentACL['admin'] == 1:
-            return Websites.objects.filter(domain__istartswith=searchTerm)
+            # Get websites that match the search term
+            websites = Websites.objects.filter(domain__istartswith=searchTerm)
+            # Get WordPress sites that match the search term
+            wp_sites = WPSites.objects.filter(title__icontains=searchTerm)
+            # Add WordPress sites' parent websites to the results
+            for wp in wp_sites:
+                if wp.owner not in websites:
+                    websites = websites | Websites.objects.filter(pk=wp.owner.pk)
+            return websites
         else:
             websiteList = []
             admin = Administrator.objects.get(pk=userID)
 
+            # Get websites that match the search term
             websites = admin.websites_set.filter(domain__istartswith=searchTerm)
-
             for items in websites:
                 websiteList.append(items)
 
-            admins = Administrator.objects.filter(owner=admin.pk)
+            # Get WordPress sites that match the search term
+            wp_sites = WPSites.objects.filter(title__icontains=searchTerm)
+            for wp in wp_sites:
+                if wp.owner.admin == admin and wp.owner not in websiteList:
+                    websiteList.append(wp.owner)
 
+            admins = Administrator.objects.filter(owner=admin.pk)
             for items in admins:
+                # Get websites that match the search term
                 webs = items.websites_set.filter(domain__istartswith=searchTerm)
                 for web in webs:
-                    websiteList.append(web)
+                    if web not in websiteList:
+                        websiteList.append(web)
+                
+                # Get WordPress sites that match the search term
+                wp_sites = WPSites.objects.filter(title__icontains=searchTerm)
+                for wp in wp_sites:
+                    if wp.owner.admin == items and wp.owner not in websiteList:
+                        websiteList.append(wp.owner)
 
             return websiteList
 

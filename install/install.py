@@ -2329,8 +2329,26 @@ milter_default_action = accept
         command = "chmod +x /usr/local/CyberCP/cli/cyberPanel.py"
         preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
 
+    def setupPHPSymlink(self):
+        try:
+            # Remove existing PHP symlink if it exists
+            if os.path.exists('/usr/bin/php'):
+                os.remove('/usr/bin/php')
+
+            # Create symlink to PHP 8.0
+            command = 'ln -s /usr/local/lsws/lsphp80/bin/php /usr/bin/php'
+            preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
+
+            logging.InstallLog.writeToFile("[setupPHPSymlink] PHP symlink created successfully.")
+
+        except OSError as msg:
+            logging.InstallLog.writeToFile('[ERROR] ' + str(msg) + " [setupPHPSymlink]")
+            return 0
+
     def setupPHPAndComposer(self):
         try:
+            # First setup the PHP symlink
+            self.setupPHPSymlink()
 
             if self.distro == ubuntu:
                 if not os.access('/usr/local/lsws/lsphp70/bin/php', os.R_OK):
