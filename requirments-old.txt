@@ -36,4 +36,4 @@ uvicorn
 asyncssh
 python-jose
 websockets
-jwt
+PyJWT
