@@ -3072,6 +3072,45 @@ Require valid-user
             else:
                 Data['ftp'] = 0
 
+            # Add-on check logic (copied from sshAccess)
+            url = "https://platform.cyberpersons.com/CyberpanelAdOns/Adonpermission"
+            addon_data = {
+                "name": "all",
+                "IP": ACLManager.GetServerIP()
+            }
+            import requests
+            import json
+            try:
+                response = requests.post(url, data=json.dumps(addon_data))
+                Status = response.json().get('status', 0)
+            except Exception:
+                Status = 0
+            Data['has_addons'] = bool((Status == 1) or ProcessUtilities.decideServer() == ProcessUtilities.ent)
+
+            # SSL check (self-signed logic)
+            cert_path = '/etc/letsencrypt/live/%s/fullchain.pem' % (self.domain)
+            is_selfsigned = False
+            ssl_issue_link = '/manageSSL/sslForHostName'
+            try:
+                import OpenSSL
+                with open(cert_path, 'r') as f:
+                    pem_data = f.read()
+                cert = OpenSSL.crypto.load_certificate(OpenSSL.crypto.FILETYPE_PEM, pem_data)
+                # Only check the first cert in the PEM
+                issuer_org = None
+                for k, v in cert.get_issuer().get_components():
+                    if k.decode() == 'O':
+                        issuer_org = v.decode()
+                        break
+                if issuer_org == 'Denial':
+                    is_selfsigned = True
+                else:
+                    is_selfsigned = False
+            except Exception:
+                is_selfsigned = True  # If cert missing or unreadable, treat as self-signed
+            Data['is_selfsigned_ssl'] = bool(is_selfsigned)
+            Data['ssl_issue_link'] = ssl_issue_link
+
             proc = httpProc(request, 'websiteFunctions/website.html', Data)
             return proc.render()
         else:
@@ -4942,8 +4981,67 @@ StrictHostKeyChecking no
         website = Websites.objects.get(domain=self.domain)
         externalApp = website.externalApp
 
+        #####
+
+        from plogical.CyberCPLogFileWriter import CyberCPLogFileWriter
+        # Ensure FastAPI SSH server systemd service file is in place
+        try:
+            service_path = '/etc/systemd/system/fastapi_ssh_server.service'
+            local_service_path = 'fastapi_ssh_server.service'
+            check_service = ProcessUtilities.outputExecutioner(f'test -f {service_path} && echo exists || echo missing')
+            if 'missing' in check_service:
+                ProcessUtilities.outputExecutioner(f'cp /usr/local/CyberCP/fastapi_ssh_server.service {service_path}')
+                ProcessUtilities.outputExecutioner('systemctl daemon-reload')
+        except Exception as e:
+            CyberCPLogFileWriter.writeLog(f"Failed to copy or reload fastapi_ssh_server.service: {e}")
+
+        # Ensure FastAPI SSH server is running using ProcessUtilities
+        try:
+            ProcessUtilities.outputExecutioner('systemctl is-active --quiet fastapi_ssh_server')
+            ProcessUtilities.outputExecutioner('systemctl enable --now fastapi_ssh_server')
+            ProcessUtilities.outputExecutioner('systemctl start fastapi_ssh_server')
+        except Exception as e:
+            CyberCPLogFileWriter.writeLog(f"Failed to ensure fastapi_ssh_server is running: {e}")
+
+        # Add-on check logic
+        url = "https://platform.cyberpersons.com/CyberpanelAdOns/Adonpermission"
+        data = {
+            "name": "all",
+            "IP": ACLManager.GetServerIP()
+        }
+        import requests
+        import json
+        try:
+            response = requests.post(url, data=json.dumps(data))
+            Status = response.json().get('status', 0)
+        except Exception:
+            Status = 0
+        has_addons = (Status == 1) or ProcessUtilities.decideServer() == ProcessUtilities.ent
+
+        from plogical.CyberCPLogFileWriter import CyberCPLogFileWriter
+
+        #CyberCPLogFileWriter.writeToFile(f"has_addons: {has_addons}")
+
+        # SSL check
+        cert_path = '/usr/local/lscp/conf/cert.pem'
+        is_selfsigned = False
+        ssl_issue_link = '/manageSSL/sslForHostName'
+        try:
+            import OpenSSL
+            cert_content = ProcessUtilities.outputExecutioner(f'cat {cert_path}')
+            cert = OpenSSL.crypto.load_certificate(OpenSSL.crypto.FILETYPE_PEM, cert_content)
+            ssl_provider = cert.get_issuer().get_components()[1][1].decode('utf-8')
+            CyberCPLogFileWriter.writeToFile(f"ssl_provider: {ssl_provider}")
+            if ssl_provider == 'Denial':
+                is_selfsigned = True
+            else:
+                is_selfsigned = False
+        except Exception as e:
+            is_selfsigned = True  # If cert missing or unreadable, treat as self-signed
+            CyberCPLogFileWriter.writeToFile(f"is_selfsigned: {is_selfsigned}. Error: {str(e)}")
+
         proc = httpProc(request, 'websiteFunctions/sshAccess.html',
-                        {'domainName': self.domain, 'externalApp': externalApp})
+                        {'domainName': self.domain, 'externalApp': externalApp, 'has_addons': has_addons, 'is_selfsigned_ssl': is_selfsigned, 'ssl_issue_link': ssl_issue_link})
         return proc.render()
 
     def saveSSHAccessChanges(self, userID=None, data=None):
@@ -7259,3 +7357,5 @@ StrictHostKeyChecking no
             data_ret = {'status': 0, 'fetchStatus': 0, 'error_message': str(msg)}
             json_data = json.dumps(data_ret)
             return HttpResponse(json_data)
+
+

@@ -10093,6 +10093,100 @@ function website_child_domain_checkbox_function() {
 
 app.controller('websitePages', function ($scope, $http, $timeout, $window) {
 
+    $scope.openWebTerminal = function() {
+        console.log('[DEBUG] openWebTerminal called');
+        $('#web-terminal-modal').modal('show');
+        console.log('[DEBUG] Modal should now be visible');
+
+        if ($scope.term) {
+            console.log('[DEBUG] Disposing previous terminal instance');
+            $scope.term.dispose();
+        }
+        var term = new Terminal({
+            cursorBlink: true,
+            fontFamily: 'monospace',
+            fontSize: 14,
+            theme: { background: '#000' }
+        });
+        $scope.term = term;
+        term.open(document.getElementById('xterm-container'));
+        term.focus();
+        console.log('[DEBUG] Terminal initialized and opened');
+
+        // Fetch JWT from backend with CSRF token
+        var domain = $("#domainNamePage").text();
+        var csrftoken = getCookie('csrftoken');
+        console.log('[DEBUG] Fetching JWT for domain:', domain);
+        $http.post('/websites/getTerminalJWT', { domain: domain }, {
+            headers: { 'X-CSRFToken': csrftoken }
+        })
+        .then(function(response) {
+            console.log('[DEBUG] JWT fetch response:', response);
+            if (response.data.status === 1 && response.data.token) {
+                var token = response.data.token;
+                var ssh_user = response.data.ssh_user;
+                var wsProto = location.protocol === 'https:' ? 'wss' : 'ws';
+                var wsUrl = wsProto + '://' + window.location.hostname + ':8888/ws?token=' + encodeURIComponent(token) + '&ssh_user=' + encodeURIComponent(ssh_user);
+                console.log('[DEBUG] Connecting to WebSocket:', wsUrl);
+                var socket = new WebSocket(wsUrl);
+                socket.binaryType = 'arraybuffer';
+                $scope.terminalSocket = socket;
+
+                socket.onopen = function() {
+                    console.log('[DEBUG] WebSocket connection opened');
+                    term.write('\x1b[32mConnected.\x1b[0m\r\n');
+                };
+                socket.onclose = function(event) {
+                    console.log('[DEBUG] WebSocket connection closed', event);
+                    term.write('\r\n\x1b[31mConnection closed.\x1b[0m\r\n');
+                    // Optionally, log modal state
+                    console.log('[DEBUG] Modal state on close:', $('#web-terminal-modal').is(':visible'));
+                };
+                socket.onerror = function(e) {
+                    console.log('[DEBUG] WebSocket error', e);
+                    term.write('\r\n\x1b[31mWebSocket error.\x1b[0m\r\n');
+                };
+                socket.onmessage = function(event) {
+                    if (event.data instanceof ArrayBuffer) {
+                        var text = new Uint8Array(event.data);
+                        term.write(new TextDecoder().decode(text));
+                    } else if (typeof event.data === 'string') {
+                        term.write(event.data);
+                    }
+                };
+                term.onData(function(data) {
+                    if (socket.readyState === WebSocket.OPEN) {
+                        var encoder = new TextEncoder();
+                        socket.send(encoder.encode(data));
+                    }
+                });
+                term.onResize(function(size) {
+                    if (socket.readyState === WebSocket.OPEN) {
+                        var msg = JSON.stringify({resize: {cols: size.cols, rows: size.rows}});
+                        socket.send(msg);
+                    }
+                });
+                $('#web-terminal-modal').on('hidden.bs.modal', function() {
+                    console.log('[DEBUG] Modal hidden event triggered');
+                    if ($scope.term) {
+                        $scope.term.dispose();
+                        $scope.term = null;
+                    }
+                    if ($scope.terminalSocket) {
+                        $scope.terminalSocket.close();
+                        $scope.terminalSocket = null;
+                    }
+                });
+            } else {
+                console.log('[DEBUG] Failed to get terminal token', response);
+                term.write('\x1b[31mFailed to get terminal token.\x1b[0m\r\n');
+            }
+        }, function(error) {
+            console.log('[DEBUG] Failed to contact backend', error);
+            term.write('\x1b[31mFailed to contact backend.\x1b[0m\r\n');
+        });
+    };
+
     $scope.logFileLoading = true;
     $scope.logsFeteched = true;
     $scope.couldNotFetchLogs = true;
@@ -14666,6 +14760,85 @@ app.controller('installMauticCTRL', function ($scope, $http, $timeout) {
 
 app.controller('sshAccess', function ($scope, $http, $timeout) {
 
+    $scope.openWebTerminal = function() {
+        $('#web-terminal-modal').modal('show');
+    
+        if ($scope.term) {
+            $scope.term.dispose();
+        }
+        var term = new Terminal({
+            cursorBlink: true,
+            fontFamily: 'monospace',
+            fontSize: 14,
+            theme: { background: '#000' }
+        });
+        $scope.term = term;
+        term.open(document.getElementById('xterm-container'));
+        term.focus();
+    
+        // Fetch JWT from backend with CSRF token
+        var domain = $("#domainName").text();
+        var csrftoken = getCookie('csrftoken');
+        $http.post('/websites/getTerminalJWT', { domain: domain }, {
+            headers: { 'X-CSRFToken': csrftoken }
+        })
+        .then(function(response) {
+            if (response.data.status === 1 && response.data.token) {
+                var token = response.data.token;
+                var ssh_user = $("#externalApp").text();
+                var wsProto = location.protocol === 'https:' ? 'wss' : 'ws';
+                var wsUrl = wsProto + '://' + window.location.hostname + ':8888/ws?token=' + encodeURIComponent(token) + '&ssh_user=' + encodeURIComponent(ssh_user);
+                var socket = new WebSocket(wsUrl);
+                socket.binaryType = 'arraybuffer';
+                $scope.terminalSocket = socket;
+    
+                socket.onopen = function() {
+                    term.write('\x1b[32mConnected.\x1b[0m\r\n');
+                };
+                socket.onclose = function() {
+                    term.write('\r\n\x1b[31mConnection closed.\x1b[0m\r\n');
+                };
+                socket.onerror = function(e) {
+                    term.write('\r\n\x1b[31mWebSocket error.\x1b[0m\r\n');
+                };
+                socket.onmessage = function(event) {
+                    if (event.data instanceof ArrayBuffer) {
+                        var text = new Uint8Array(event.data);
+                        term.write(new TextDecoder().decode(text));
+                    } else if (typeof event.data === 'string') {
+                        term.write(event.data);
+                    }
+                };
+                term.onData(function(data) {
+                    if (socket.readyState === WebSocket.OPEN) {
+                        var encoder = new TextEncoder();
+                        socket.send(encoder.encode(data));
+                    }
+                });
+                term.onResize(function(size) {
+                    if (socket.readyState === WebSocket.OPEN) {
+                        var msg = JSON.stringify({resize: {cols: size.cols, rows: size.rows}});
+                        socket.send(msg);
+                    }
+                });
+                $('#web-terminal-modal').on('hidden.bs.modal', function() {
+                    if ($scope.term) {
+                        $scope.term.dispose();
+                        $scope.term = null;
+                    }
+                    if ($scope.terminalSocket) {
+                        $scope.terminalSocket.close();
+                        $scope.terminalSocket = null;
+                    }
+                });
+            } else {
+                term.write('\x1b[31mFailed to get terminal token.\x1b[0m\r\n');
+            }
+        }, function() {
+            term.write('\x1b[31mFailed to contact backend.\x1b[0m\r\n');
+        });
+    };
+
     $scope.wpInstallLoading = true;
 
     $scope.setupSSHAccess = function () {
@@ -17837,4 +18010,3 @@ app.controller('launchChild', function ($scope, $http) {
     }
 
 });
-

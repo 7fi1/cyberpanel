@@ -196,10 +196,13 @@ urlpatterns = [
     path('statusFunc', views.statusFunc, name='statusFunc'),
     path('tuneSettings', views.tuneSettings, name='tuneSettings'),
     path('saveApacheConfigsToFile', views.saveApacheConfigsToFile, name='saveApacheConfigsToFile'),
+    path('getTerminalJWT', views.get_terminal_jwt, name='get_terminal_jwt'),
 
     # Catch all for domains
     path('<domain>/<childDomain>', views.launchChild, name='launchChild'),
     path('<domain>', views.domain, name='domain'),
 
     path('get_website_resources/', views.get_website_resources, name='get_website_resources'),
+
+    
 ]
