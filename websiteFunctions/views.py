@@ -2026,6 +2026,9 @@ def get_terminal_jwt(request):
                 m = re.match(r'\s*JWT_SECRET\s*=\s*[\'"](.+)[\'"]', line)
                 if m and m.group(1) != 'REPLACE_ME_WITH_INSTALLER':
                     jwt_secret = m.group(1)
+                    if os.path.exists(ProcessUtilities.debugPath):
+                        from plogical.CyberCPLogFileWriter import CyberCPLogFileWriter
+                        CyberCPLogFileWriter.writeLog(f"JWT_SECRET: {jwt_secret}")
                     break
         except Exception as e:
             logger.error(f"Could not read JWT_SECRET: {e}")
