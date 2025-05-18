@@ -4998,6 +4998,9 @@ StrictHostKeyChecking no
                 # Use sed to replace the line in-place (macOS compatible)
                 sed_cmd = f"sed -i '' 's|JWT_SECRET = \"{m.group(1)}\"|JWT_SECRET = \"{new_secret}\"|' '{fastapi_file}'"
                 ProcessUtilities.outputExecutioner(sed_cmd)
+
+                command = 'systemctl restart fastapi_ssh_server'
+                ProcessUtilities.outputExecutioner(command)
         except Exception as e:
             pass
 
