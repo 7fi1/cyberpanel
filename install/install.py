@@ -2641,18 +2641,21 @@ vmail
         preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
 
 def configure_jwt_secret():
-    import secrets
-    secret = secrets.token_urlsafe(32)
-    fastapi_file = '/usr/local/CyberCP/fastapi_ssh_server.py'
-    with open(fastapi_file, 'r') as f:
-        lines = f.readlines()
-    with open(fastapi_file, 'w') as f:
-        for line in lines:
-            if line.strip().startswith('JWT_SECRET'):
-                f.write(f'JWT_SECRET = "{secret}"\n')
-            else:
-                f.write(line)
-    print(f"Configured JWT_SECRET in fastapi_ssh_server.py")
+    try:
+        import secrets
+        secret = secrets.token_urlsafe(32)
+        fastapi_file = '/usr/local/CyberCP/fastapi_ssh_server.py'
+        with open(fastapi_file, 'r') as f:
+            lines = f.readlines()
+        with open(fastapi_file, 'w') as f:
+            for line in lines:
+                if line.strip().startswith('JWT_SECRET'):
+                    f.write(f'JWT_SECRET = "{secret}"\n')
+                else:
+                    f.write(line)
+            print(f"Configured JWT_SECRET in fastapi_ssh_server.py")
+    except:
+        pass
 
 def main():
     parser = argparse.ArgumentParser(description='CyberPanel Installer')
@@ -2870,7 +2873,7 @@ echo $oConfig->Save() ? 'Done' : 'Error';
         pass
 
     checks.fixCyberPanelPermissions()
-    checks.configure_jwt_secret()
+    configure_jwt_secret()
 
     # 
 
