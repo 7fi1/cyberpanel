@@ -43,6 +43,7 @@ from plogical.cronUtil import CronUtil
 from .StagingSetup import StagingSetup
 import validators
 from django.http import JsonResponse
+import ipaddress
 
 
 class WebsiteManager:
@@ -3110,6 +3111,23 @@ Require valid-user
                 is_selfsigned = True  # If cert missing or unreadable, treat as self-signed
             Data['is_selfsigned_ssl'] = bool(is_selfsigned)
             Data['ssl_issue_link'] = ssl_issue_link
+            
+
+            # Detect if accessed via IP
+            from plogical.CyberCPLogFileWriter import CyberCPLogFileWriter
+            accessed_via_ip = False
+            try:
+                host = request.get_host().split(':')[0]  # Remove port if present
+                try:
+                    ipaddress.ip_address(host)
+                    accessed_via_ip = True
+                except ValueError:
+                    accessed_via_ip = False
+            except Exception as e:
+                accessed_via_ip = False
+                CyberCPLogFileWriter.writeToFile(f"Error detecting accessed_via_ip: {str(e)}")
+
+            Data['accessed_via_ip'] = bool(accessed_via_ip)
 
             proc = httpProc(request, 'websiteFunctions/website.html', Data)
             return proc.render()
@@ -5096,8 +5114,21 @@ StrictHostKeyChecking no
             is_selfsigned = True  # If cert missing or unreadable, treat as self-signed
             CyberCPLogFileWriter.writeToFile(f"is_selfsigned: {is_selfsigned}. Error: {str(e)}")
 
+        # Detect if accessed via IP
+        accessed_via_ip = False
+        try:
+            host = request.get_host().split(':')[0]  # Remove port if present
+            try:
+                ipaddress.ip_address(host)
+                accessed_via_ip = True
+            except ValueError:
+                accessed_via_ip = False
+        except Exception as e:
+            accessed_via_ip = False
+            CyberCPLogFileWriter.writeToFile(f"Error detecting accessed_via_ip: {str(e)}")
+
         proc = httpProc(request, 'websiteFunctions/sshAccess.html',
-                        {'domainName': self.domain, 'externalApp': externalApp, 'has_addons': has_addons, 'is_selfsigned_ssl': is_selfsigned, 'ssl_issue_link': ssl_issue_link})
+                        {'domainName': self.domain, 'externalApp': externalApp, 'has_addons': has_addons, 'is_selfsigned_ssl': is_selfsigned, 'ssl_issue_link': ssl_issue_link, 'accessed_via_ip': accessed_via_ip})
         return proc.render()
 
     def saveSSHAccessChanges(self, userID=None, data=None):

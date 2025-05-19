@@ -142,6 +142,14 @@
 
         {% if not error %}
 
+        {% if accessed_via_ip %}
+        <div class="alert alert-danger ssh-access-warning">
+            <strong>Notice:</strong> You are accessing CyberPanel via an <b>IP address</b>.<br>
+            The Web Terminal will not work when accessed via IP. Please issue a <b>hostname SSL</b> and access the panel using your hostname (with valid SSL) to enable the terminal.<br>
+            <a href="{{ ssl_issue_link }}" target="_blank" class="btn btn-warning" style="margin-top:10px;">Issue Hostname SSL</a>
+        </div>
+        {% endif %}
+
         <div style="display:flex;justify-content:flex-end;gap:18px;margin-bottom:18px;align-items:center;">
             <!-- Open Terminal Button -->
             <button ng-click="openWebTerminal()" type="button" class="btn btn-success"

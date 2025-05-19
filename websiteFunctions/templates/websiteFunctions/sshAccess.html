@@ -209,6 +209,13 @@
                 </div>
         </div>
             <div class="panel-body">
+                {% if accessed_via_ip %}
+                <div class="alert alert-danger ssh-access-warning">
+                    <strong>Notice:</strong> You are accessing CyberPanel via an <b>IP address</b>.<br>
+                    The Web Terminal will not work when accessed via IP. Please issue a <b>hostname SSL</b> and access the panel using your hostname (with valid SSL) to enable the terminal.<br>
+                    <a href="{{ ssl_issue_link }}" target="_blank" class="btn btn-warning" style="margin-top:10px;">Issue Hostname SSL</a>
+                </div>
+            {% endif %}
         {% if is_selfsigned_ssl %}
                 <div class="alert alert-warning ssh-access-warning">
             <strong>Warning:</strong> Your server is using a <b>self-signed SSL certificate</b> for the web terminal.<br>
