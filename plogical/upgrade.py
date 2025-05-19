@@ -18,7 +18,7 @@ import random
 import string
 
 VERSION = '2.4'
-BUILD = 0
+BUILD = 1
 
 CENTOS7 = 0
 CENTOS8 = 1

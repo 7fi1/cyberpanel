@@ -16,7 +16,7 @@ import stat
 import secrets
 
 VERSION = '2.4'
-BUILD = 0
+BUILD = 1
 
 char_set = {'small': 'abcdefghijklmnopqrstuvwxyz', 'nums': '0123456789', 'big': 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'}
 
