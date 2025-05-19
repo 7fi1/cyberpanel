@@ -3008,6 +3008,8 @@ Require valid-user
 
             Data = {}
 
+            from plogical.processUtilities import ProcessUtilities
+
             marketingStatus = emACL.checkIfEMEnabled(admin.userName)
 
             Data['marketingStatus'] = marketingStatus
@@ -3133,7 +3135,6 @@ Require valid-user
             #### update jwt secret if needed
 
             import secrets
-            from plogical.processUtilities import ProcessUtilities
 
             fastapi_file = '/usr/local/CyberCP/fastapi_ssh_server.py'
             from plogical.CyberCPLogFileWriter import CyberCPLogFileWriter
