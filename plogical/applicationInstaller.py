@@ -670,6 +670,9 @@ class ApplicationInstaller(multi.Thread):
             command = "sed -i.bak 's/^memory_limit = .*/memory_limit = 256M/' /usr/local/lsws/lsphp82/etc/php/8.2/litespeed/php.ini"
             ProcessUtilities.executioner(command)
 
+            command = "sed -i.bak 's/^memory_limit = .*/memory_limit = 256M/' /usr/local/lsws/lsphp82/etc/php.ini"
+            ProcessUtilities.executioner(command)
+
             from plogical.phpUtilities import phpUtilities
 
             vhFile = f'/usr/local/lsws/conf/vhosts/{domainName}/vhost.conf'
