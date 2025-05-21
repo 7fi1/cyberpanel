@@ -665,6 +665,10 @@ class ApplicationInstaller(multi.Thread):
 
             ### lets first find php path
 
+            
+
+            command = "sed -i.bak 's/^memory_limit = .*/memory_limit = 256M/' /usr/local/lsws/lsphp82/etc/php/8.2/litespeed/php.ini"
+            ProcessUtilities.executioner(command)
 
             from plogical.phpUtilities import phpUtilities
 
