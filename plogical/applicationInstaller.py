@@ -660,7 +660,7 @@ class ApplicationInstaller(multi.Thread):
             completePathToConfigFile = f'/usr/local/lsws/conf/vhosts/{domainName}/vhost.conf'
 
             execPath = "/usr/local/CyberCP/bin/python " + virtualHostUtilities.cyberPanel + "/plogical/virtualHostUtilities.py"
-            execPath = execPath + " changePHP --phpVersion 'PHP 8.0' --path " + completePathToConfigFile
+            execPath = execPath + " changePHP --phpVersion 'PHP 8.2' --path " + completePathToConfigFile
             ProcessUtilities.executioner(execPath)
 
             ### lets first find php path
@@ -676,13 +676,13 @@ class ApplicationInstaller(multi.Thread):
                 phpPath = '/usr/local/lsws/lsphp80/bin/php'
 
 
-            ### basically for now php 8.0 is being checked
+            ### basically for now php 8.2 is being checked
 
             if not os.path.exists(phpPath):
                 statusFile = open(tempStatusPath, 'w')
-                statusFile.writelines('PHP 8.0 missing installing now..,20')
+                statusFile.writelines('PHP 8.2 missing installing now..,20')
                 statusFile.close()
-                phpUtilities.InstallSaidPHP('80')
+                phpUtilities.InstallSaidPHP('82')
 
 
             finalPath = ''
@@ -1904,7 +1904,7 @@ class ApplicationInstaller(multi.Thread):
 
             DataToPass['domainName'] = self.data['domainName']
             DataToPass['adminEmail'] = self.data['adminEmail']
-            DataToPass['phpSelection'] = "PHP 8.0"
+            DataToPass['phpSelection'] = "PHP 8.2"
             DataToPass['websiteOwner'] = self.data['websiteOwner']
             DataToPass['package'] = self.data['package']
             DataToPass['ssl'] = 1
@@ -1921,7 +1921,7 @@ class ApplicationInstaller(multi.Thread):
                 website = Websites.objects.get(domain=DataToPass['domainName'])
 
                 if website.phpSelection == 'PHP 7.3':
-                    website.phpSelection = 'PHP 8.0'
+                    website.phpSelection = 'PHP 8.2'
                     website.save()
 
                 admin = Administrator.objects.get(pk=self.extraArgs['adminID'])
