@@ -2371,6 +2371,14 @@ app.controller('listWebsites', function ($scope, $http, $window) {
     $scope.currentPage = 1;
     $scope.recordsToShow = 10;
 
+    $scope.expandedSites = {};
+    $scope.toggleSite = function(site) {
+        $scope.expandedSites[site.domain] = !$scope.expandedSites[site.domain];
+    };
+    $scope.isExpanded = function(domain) {
+        return !!$scope.expandedSites[domain];
+    };
+
     // Initial fetch of websites
     $scope.getFurtherWebsitesFromDB = function () {
         $scope.loading = true; // Set loading to true when starting fetch
@@ -2392,6 +2400,11 @@ app.controller('listWebsites', function ($scope, $http, $window) {
                 $scope.WebSitesList = JSON.parse(response.data.data);
                 $scope.pagination = response.data.pagination;
                 $("#listFail").hide();
+                // Expand the first website by default
+                if ($scope.WebSitesList.length > 0) {
+                    $scope.expandedSites = {};
+                    $scope.expandedSites[$scope.WebSitesList[0].domain] = true;
+                }
             } else {
                 $("#listFail").fadeIn();
                 $scope.errorMessage = response.data.error_message;
@@ -5510,6 +5523,14 @@ app.controller('listWebsites', function ($scope, $http, $window) {
     $scope.currentPage = 1;
     $scope.recordsToShow = 10;
 
+    $scope.expandedSites = {};
+    $scope.toggleSite = function(site) {
+        $scope.expandedSites[site.domain] = !$scope.expandedSites[site.domain];
+    };
+    $scope.isExpanded = function(domain) {
+        return !!$scope.expandedSites[domain];
+    };
+
     // Initial fetch of websites
     $scope.getFurtherWebsitesFromDB = function () {
         $scope.loading = true; // Set loading to true when starting fetch
@@ -5531,6 +5552,11 @@ app.controller('listWebsites', function ($scope, $http, $window) {
                 $scope.WebSitesList = JSON.parse(response.data.data);
                 $scope.pagination = response.data.pagination;
                 $("#listFail").hide();
+                // Expand the first website by default
+                if ($scope.WebSitesList.length > 0) {
+                    $scope.expandedSites = {};
+                    $scope.expandedSites[$scope.WebSitesList[0].domain] = true;
+                }
             } else {
                 $("#listFail").fadeIn();
                 $scope.errorMessage = response.data.error_message;
@@ -8996,6 +9022,14 @@ app.controller('listWebsites', function ($scope, $http, $window) {
     $scope.currentPage = 1;
     $scope.recordsToShow = 10;
 
+    $scope.expandedSites = {};
+    $scope.toggleSite = function(site) {
+        $scope.expandedSites[site.domain] = !$scope.expandedSites[site.domain];
+    };
+    $scope.isExpanded = function(domain) {
+        return !!$scope.expandedSites[domain];
+    };
+
     // Initial fetch of websites
     $scope.getFurtherWebsitesFromDB = function () {
         $scope.loading = true; // Set loading to true when starting fetch
@@ -9017,6 +9051,11 @@ app.controller('listWebsites', function ($scope, $http, $window) {
                 $scope.WebSitesList = JSON.parse(response.data.data);
                 $scope.pagination = response.data.pagination;
                 $("#listFail").hide();
+                // Expand the first website by default
+                if ($scope.WebSitesList.length > 0) {
+                    $scope.expandedSites = {};
+                    $scope.expandedSites[$scope.WebSitesList[0].domain] = true;
+                }
             } else {
                 $("#listFail").fadeIn();
                 $scope.errorMessage = response.data.error_message;
