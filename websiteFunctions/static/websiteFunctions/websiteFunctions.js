@@ -2367,16 +2367,34 @@ app.controller('listWebsites', function ($scope, $http, $window) {
     $scope.web = {};
     $scope.WebSitesList = [];
     $scope.loading = true; // Add loading state
+    $scope.expandedSites = {}; // Track which sites are expanded
 
     $scope.currentPage = 1;
     $scope.recordsToShow = 10;
 
-    $scope.expandedSites = {};
+    // Function to toggle site expansion
     $scope.toggleSite = function(site) {
-        $scope.expandedSites[site.domain] = !$scope.expandedSites[site.domain];
+        if (!$scope.expandedSites[site.domain]) {
+            $scope.expandedSites[site.domain] = true;
+            site.loading = true;
+            // You can add any data fetching logic here if needed
+            setTimeout(function() {
+                site.loading = false;
+                $scope.$apply();
+            }, 500);
+        } else {
+            $scope.expandedSites[site.domain] = false;
+        }
     };
-    $scope.isExpanded = function(domain) {
-        return !!$scope.expandedSites[domain];
+
+    // Function to check if site is expanded
+    $scope.isExpanded = function(siteId) {
+        return $scope.expandedSites[siteId];
+    };
+
+    // Function to check if site data is loaded
+    $scope.isDataLoaded = function(site) {
+        return site.version !== undefined;
     };
 
     // Initial fetch of websites
@@ -2400,11 +2418,6 @@ app.controller('listWebsites', function ($scope, $http, $window) {
                 $scope.WebSitesList = JSON.parse(response.data.data);
                 $scope.pagination = response.data.pagination;
                 $("#listFail").hide();
-                // Expand the first website by default
-                if ($scope.WebSitesList.length > 0) {
-                    $scope.expandedSites = {};
-                    $scope.expandedSites[$scope.WebSitesList[0].domain] = true;
-                }
             } else {
                 $("#listFail").fadeIn();
                 $scope.errorMessage = response.data.error_message;
@@ -2517,6 +2530,12 @@ app.controller('listWebsites', function ($scope, $http, $window) {
 
     $scope.manageWP = function(wpId) {
         window.location.href = '/websites/WPHome?ID=' + wpId;
+    };
+
+    $scope.deleteWPSite = function(wp) {
+        if (confirm('Are you sure you want to delete this WordPress site? This action cannot be undone.')) {
+            window.location.href = '/websites/ListWPSites?DeleteID=' + wp.id;
+        }
     };
 
     $scope.getFullUrl = function(url) {
@@ -5519,16 +5538,34 @@ app.controller('listWebsites', function ($scope, $http, $window) {
     $scope.web = {};
     $scope.WebSitesList = [];
     $scope.loading = true; // Add loading state
+    $scope.expandedSites = {}; // Track which sites are expanded
 
     $scope.currentPage = 1;
     $scope.recordsToShow = 10;
 
-    $scope.expandedSites = {};
+    // Function to toggle site expansion
     $scope.toggleSite = function(site) {
-        $scope.expandedSites[site.domain] = !$scope.expandedSites[site.domain];
+        if (!$scope.expandedSites[site.domain]) {
+            $scope.expandedSites[site.domain] = true;
+            site.loading = true;
+            // You can add any data fetching logic here if needed
+            setTimeout(function() {
+                site.loading = false;
+                $scope.$apply();
+            }, 500);
+        } else {
+            $scope.expandedSites[site.domain] = false;
+        }
     };
-    $scope.isExpanded = function(domain) {
-        return !!$scope.expandedSites[domain];
+
+    // Function to check if site is expanded
+    $scope.isExpanded = function(siteId) {
+        return $scope.expandedSites[siteId];
+    };
+
+    // Function to check if site data is loaded
+    $scope.isDataLoaded = function(site) {
+        return site.version !== undefined;
     };
 
     // Initial fetch of websites
@@ -5552,11 +5589,6 @@ app.controller('listWebsites', function ($scope, $http, $window) {
                 $scope.WebSitesList = JSON.parse(response.data.data);
                 $scope.pagination = response.data.pagination;
                 $("#listFail").hide();
-                // Expand the first website by default
-                if ($scope.WebSitesList.length > 0) {
-                    $scope.expandedSites = {};
-                    $scope.expandedSites[$scope.WebSitesList[0].domain] = true;
-                }
             } else {
                 $("#listFail").fadeIn();
                 $scope.errorMessage = response.data.error_message;
@@ -5668,7 +5700,13 @@ app.controller('listWebsites', function ($scope, $http, $window) {
     };
 
     $scope.manageWP = function(wpId) {
-        window.location.href = '/websites/listWPsites?wpID=' + wpId;
+        window.location.href = '/websites/WPHome?ID=' + wpId;
+    };
+
+    $scope.deleteWPSite = function(wp) {
+        if (confirm('Are you sure you want to delete this WordPress site? This action cannot be undone.')) {
+            window.location.href = '/websites/ListWPSites?DeleteID=' + wp.id;
+        }
     };
 
     $scope.getFullUrl = function(url) {
@@ -9018,16 +9056,34 @@ app.controller('listWebsites', function ($scope, $http, $window) {
     $scope.web = {};
     $scope.WebSitesList = [];
     $scope.loading = true; // Add loading state
+    $scope.expandedSites = {}; // Track which sites are expanded
 
     $scope.currentPage = 1;
     $scope.recordsToShow = 10;
 
-    $scope.expandedSites = {};
+    // Function to toggle site expansion
     $scope.toggleSite = function(site) {
-        $scope.expandedSites[site.domain] = !$scope.expandedSites[site.domain];
+        if (!$scope.expandedSites[site.domain]) {
+            $scope.expandedSites[site.domain] = true;
+            site.loading = true;
+            // You can add any data fetching logic here if needed
+            setTimeout(function() {
+                site.loading = false;
+                $scope.$apply();
+            }, 500);
+        } else {
+            $scope.expandedSites[site.domain] = false;
+        }
     };
-    $scope.isExpanded = function(domain) {
-        return !!$scope.expandedSites[domain];
+
+    // Function to check if site is expanded
+    $scope.isExpanded = function(siteId) {
+        return $scope.expandedSites[siteId];
+    };
+
+    // Function to check if site data is loaded
+    $scope.isDataLoaded = function(site) {
+        return site.version !== undefined;
     };
 
     // Initial fetch of websites
@@ -9051,11 +9107,6 @@ app.controller('listWebsites', function ($scope, $http, $window) {
                 $scope.WebSitesList = JSON.parse(response.data.data);
                 $scope.pagination = response.data.pagination;
                 $("#listFail").hide();
-                // Expand the first website by default
-                if ($scope.WebSitesList.length > 0) {
-                    $scope.expandedSites = {};
-                    $scope.expandedSites[$scope.WebSitesList[0].domain] = true;
-                }
             } else {
                 $("#listFail").fadeIn();
                 $scope.errorMessage = response.data.error_message;
