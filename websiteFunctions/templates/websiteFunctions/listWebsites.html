@@ -65,15 +65,12 @@
                 <p>{% trans "On this page you can launch, list, modify and delete websites from your server." %}</p>
             </div>
 
-            <div class="col-sm-10" style="padding: 0px; box-shadow: 0px 0px 1px 0px #888888; margin-bottom: 2%">
-                <input ng-keypress="$event.keyCode === 13 && searchWebsites()" placeholder="Search... (Press Enter to search)" ng-model="patternAdded" name="dom" type="text"
-                       class="form-control" required>
+            <div class="row" style="margin-bottom: 18px;">
+                <div class="col-sm-10">
+                    <input ng-keypress="$event.keyCode === 13 && searchWebsites()" placeholder="Search... (Press Enter to search)" ng-model="patternAdded" name="dom" type="text" class="form-control" required>
             </div>
-
             <div class="col-sm-2">
-                <div class="form-group">
-                    <select ng-model="recordsToShow" ng-change="getFurtherWebsitesFromDB()"
-                            class="form-control" id="example-select">
+                    <select ng-model="recordsToShow" ng-change="getFurtherWebsitesFromDB()" class="form-control" id="example-select">
                         <option>10</option>
                         <option>50</option>
                         <option>100</option>
@@ -82,239 +79,75 @@
             </div>
 
             <!-- Websites List with New Collapsed Design -->
-            <div ng-repeat="web in WebSitesList track by $index" class="website-item">
-                <div class="row">
-                    <div class="col-sm-12">
-                        <!-- Website Header (Always Visible) -->
-                        <div class="website-header">
-                            <div class="row">
-                                <div class="col-sm-8">
-                                    <h4>
-                                        <i class="fas" 
-                                           ng-class="{'fa-chevron-down': isExpanded(web.domain), 'fa-chevron-right': !isExpanded(web.domain)}"
-                                           ng-click="toggleSite(web)"
-                                           style="cursor: pointer; margin-right: 10px; color: #666;"></i>
-                                        <a href="http://{$ web.domain $}" target="_blank" title="Visit Site" style="text-decoration: none; color: #414C59;">
-                                            {$ web.domain $}
-                                        </a>
-                                        <span ng-if="web.loading" class="loading-indicator">
-                                            <i class="fa fa-spinner fa-spin" style="color: #00749C; font-size: 14px;"></i>
-                                        </span>
-                                    </h4>
-                                </div>
-                                <div class="col-sm-4 text-right">
-                                    <a href="/websites/{$ web.domain $}" target="_self" title="Manage Website" class="btn btn-primary btn-sm">
-                                        <i class="fa fa-external-link"></i> {% trans "Manage" %}
-                                    </a>
-                                    <a target="_self" href="/filemanager/{$ web.domain $}" title="Open File Manager" class="btn btn-outline-secondary btn-sm">
-                                        <i class="fa fa-folder"></i> {% trans "File Manager" %}
-                                    </a>
-                                </div>
+            <div ng-repeat="web in WebSitesList track by $index" class="website-card">
+                <div class="website-header" ng-click="toggleSite(web)" title="Expand/collapse details">
+                    <div class="header-left">
+                        <i class="fas chevron" ng-class="{'fa-chevron-down': isExpanded(web.domain), 'fa-chevron-right': !isExpanded(web.domain)}"></i>
+                        <span class="domain" title="{$ web.domain $}">{$ web.domain $}</span>
+                        <span ng-if="web.loading" class="loading-indicator"><i class="fa fa-spinner fa-spin"></i></span>
+                            </div>
+                    <div class="header-actions">
+                        <button class="btn btn-primary btn-sm" title="{% trans 'Manage' %}" ng-click="goToManage($event, web.domain)">Manage</button>
+                        <button class="btn btn-outline-secondary btn-sm" title="{% trans 'File Manager' %}" ng-click="goToFileManager($event, web.domain)">Filemanager</button>
                             </div>
                         </div>
-
-                        <!-- Website Content (Expandable) -->
-                        <div class="website-content" ng-if="isExpanded(web.domain)">
+                <div class="website-content" ng-if="isExpanded(web.domain)">
+                    <div class="row">
+                        <div class="col-md-3 col-sm-12">
+                            <img ng-src="https://api.microlink.io/?url=https://{$ web.domain $}&screenshot=true&meta=false&embed=screenshot.url" alt="{$ web.domain $}" class="img-responsive website-screenshot" onerror="this.onerror=null; this.src='{% static 'baseTemplate/assets/image-resources/webPanel.png' %}';">
+                            <div class="text-center website-action-buttons">
+                                <a href="http://{$ web.domain $}" target="_blank" class="btn btn-outline-secondary btn-sm" title="{% trans 'Visit Site' %}">{% trans 'Visit Site' %}</a>
+                                <a ng-click="issueSSL(web.domain)" href="javascript:void(0);" class="btn btn-outline-primary btn-sm" title="{% trans 'Issue SSL' %}">{% trans 'Issue SSL' %}</a>
+                                <button ng-click="showWPSites(web.domain); $event.stopPropagation();" class="btn btn-outline-info btn-sm wp-toggle-btn" title="Show/Hide WordPress Sites">
+                                    {$ (web.wp_sites && web.wp_sites.length) || 0 $} WP Site<span ng-if="(web.wp_sites && web.wp_sites.length) != 1">s</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-9 col-sm-12">
+                            <div class="row info-row">
+                                <div class="col-md-4 col-sm-6 info-box"><label>{% trans 'State' %}</label><span>{$ web.state $}</span></div>
+                                <div class="col-md-4 col-sm-6 info-box"><label>{% trans 'IP Address' %}</label><span>{$ web.ipAddress $}</span></div>
+                                <div class="col-md-4 col-sm-6 info-box"><label>{% trans 'PHP Version' %}</label><span>{$ web.phpVersion $}</span></div>
+                            </div>
+                            <div class="row info-row">
+                                <div class="col-md-4 col-sm-6 info-box"><label>{% trans 'Disk Usage' %}</label><span>{$ web.diskUsed $}</span></div>
+                                <div class="col-md-4 col-sm-6 info-box"><label>{% trans 'Package' %}</label><span>{$ web.package $}</span></div>
+                                <div class="col-md-4 col-sm-6 info-box"><label>{% trans 'Owner' %}</label><span>{$ web.admin $}</span></div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- WordPress Sites section moved OUTSIDE the row for full width -->
+                    <div class="wp-sites-section" ng-if="web.showWPSites && web.wp_sites && web.wp_sites.length > 0" style="width: 100%;">
+                        <h5 class="wp-sites-title"><i class="fa-brands fa-wordpress"></i> {% trans 'WordPress Sites' %} <span class="badge badge-info">{$ web.wp_sites.length $}</span></h5>
+                        <div ng-repeat="wp in web.wp_sites" class="wp-site-item">
                             <div class="row">
-                                <!-- Website Screenshot -->
-                                <div class="col-sm-3">
-                                    <img ng-src="https://api.microlink.io/?url=https://{$ web.domain $}&screenshot=true&meta=false&embed=screenshot.url" 
-                                         alt="{$ web.domain $}" 
-                                         class="img-responsive website-screenshot"
-                                         style="max-width: 100%; margin-bottom: 10px; min-height: 150px; background: #f5f5f5; border-radius: 6px;"
-                                         onerror="this.onerror=null; this.src='{% static 'baseTemplate/assets/image-resources/webPanel.png' %}';">
-                                    <div class="text-center website-action-buttons">
-                                        <a href="http://{$ web.domain $}" target="_blank" class="btn btn-outline-secondary btn-sm">
-                                            <i class="fa fa-external-link"></i> Visit Site
-                                        </a>
-                                        <a ng-click="issueSSL(web.domain)" href="javascript:void(0);" class="btn btn-outline-primary btn-sm">
-                                            <i class="fa fa-lock"></i> {% trans "Issue SSL" %}
-                                        </a>
+                                <div class="col-md-3 col-sm-12">
+                                    <img ng-src="{$ wp.screenshot $}" alt="{$ wp.title $}" class="img-responsive wp-screenshot" onerror="this.onerror=null; this.src='https://s.wordpress.org/style/images/about/WordPress-logotype-standard.png'">
+                                    <div class="text-center wp-action-buttons">
+                                        <a href="javascript:void(0);" ng-click="visitSite(wp)" class="btn btn-outline-secondary btn-sm wp-action-btn" title="{% trans 'Visit Site' %}"><i class="fa-solid fa-external-link"></i> {% trans 'Visit Site' %}</a>
+                                        <a href="{% url 'AutoLogin' %}?id={$ wp.id $}" target="_blank" class="btn btn-outline-primary btn-sm wp-action-btn" title="{% trans 'WP Login' %}"><i class="fa-brands fa-wordpress"></i> {% trans 'WP Login' %}</a>
                                     </div>
                                 </div>
-
-                                <!-- Website Details -->
-                                <div class="col-sm-9">
+                                <div class="col-md-9 col-sm-12">
                                     <div class="row">
-                                        <div class="col-sm-3">
-                                            <div class="info-box">
-                                                <label><i class="fa fa-sticky-note" style="margin-right: 5px;"></i>State</label>
-                                                <span>{$ web.state $}</span>
-                                            </div>
-                                        </div>
-                                        <div class="col-sm-3">
-                                            <div class="info-box">
-                                                <label><i class="fa fa-map-marker" style="margin-right: 5px;"></i>IP Address</label>
-                                                <span>{$ web.ipAddress $}</span>
-                                            </div>
-                                        </div>
-                                        <div class="col-sm-3">
-                                            <div class="info-box">
-                                                <label><i class="fa fa-code" style="margin-right: 5px;"></i>PHP Version</label>
-                                                <span>{$ web.phpVersion $}</span>
-                                            </div>
-                                        </div>
-                                        <div class="col-sm-3">
-                                            <div class="info-box">
-                                                <label><i class="fa fa-hard-drive" style="margin-right: 5px;"></i>Disk Usage</label>
-                                                <span>{$ web.diskUsed $}</span>
-                                            </div>
-                                        </div>
+                                        <div class="col-md-3 col-sm-6 info-box"><label>WordPress</label><span>{$ wp.version || 'Loading...' $}</span></div>
+                                        <div class="col-md-3 col-sm-6 info-box"><label>PHP Version</label><span>{$ wp.phpVersion || 'Loading...' $}</span></div>
+                                        <div class="col-md-3 col-sm-6 info-box"><label>Theme</label><span>{$ wp.theme || 'Loading...' $}</span></div>
+                                        <div class="col-md-3 col-sm-6 info-box"><label>Plugins</label><span>{$ wp.activePlugins || '0' $} active</span></div>
                                     </div>
-                                    <div class="row">
-                                        <div class="col-sm-3">
-                                            <div class="info-box">
-                                                <label><i class="fa fa-cubes" style="margin-right: 5px;"></i>Package</label>
-                                                <span>{$ web.package $}</span>
-                                            </div>
-                                        </div>
-                                        <div class="col-sm-3">
-                                            <div class="info-box">
-                                                <label><i class="fa fa-user" style="margin-right: 5px;"></i>Owner</label>
-                                                <span>{$ web.admin $}</span>
-                                            </div>
+                                    <div class="row mt-3">
+                                        <div class="col-sm-6">
+                                            <div class="checkbox"><label><input type="checkbox" ng-click="updateSetting(wp, 'search-indexing')" ng-checked="wp.searchIndex == 1"> {% trans 'Search engine indexing' %}</label></div>
+                                            <div class="checkbox"><label><input type="checkbox" ng-click="updateSetting(wp, 'debugging')" ng-checked="wp.debugging == 1"> {% trans 'Debugging' %}</label></div>
                                         </div>
                                         <div class="col-sm-6">
-                                            <div class="info-box">
-                                                <label><i class="fa-brands fa-wordpress" style="margin-right: 5px;"></i>WordPress Sites</label>
-                                                <div style="display: flex; align-items: center; gap: 10px;">
-                                                    <span>{$ (web.wp_sites && web.wp_sites.length) || 0 $} sites</span>
-                                                    <button ng-click="showWPSites(web.domain)" class="btn btn-outline-info btn-xs">
-                                                        <span ng-if="!web.loadingWPSites">
-                                                            <i class="fa" ng-class="{'fa-eye': !web.showWPSites, 'fa-eye-slash': web.showWPSites}"></i>
-                                                            {$ web.showWPSites ? 'Hide' : 'Show' $}
-                                                        </span>
-                                                        <span ng-if="web.loadingWPSites">
-                                                            Loading <i class="fa fa-spinner fa-spin"></i>
-                                                        </span>
-                                                    </button>
-                                                </div>
-                                            </div>
+                                            <div class="checkbox"><label><input type="checkbox" ng-model="wp.passwordProtection" ng-init="wp.passwordProtection = wp.passwordProtection || false" ng-change="togglePasswordProtection(wp)"> {% trans 'Password protection' %}</label></div>
+                                            <div class="checkbox"><label><input type="checkbox" ng-click="updateSetting(wp, 'maintenance-mode')" ng-checked="wp.maintenanceMode == 1"> {% trans 'Maintenance mode' %}</label></div>
                                         </div>
                                     </div>
-
-                                    <!-- WordPress Sites Section -->
-                                    <div ng-if="web.showWPSites && web.wp_sites && web.wp_sites.length > 0" style="margin-top: 20px;">
-                                        <h5 style="margin-bottom: 15px; color: #00749C;">
-                                            <i class="fa-brands fa-wordpress"></i> WordPress Sites ({$ web.wp_sites.length $})
-                                        </h5>
-                                        <div ng-repeat="wp in web.wp_sites" class="wp-site-item">
-                                            <div class="row">
-                                                <div class="col-sm-12">
-                                                    <div class="wp-site-header">
-                                                        <div class="row">
-                                                            <div class="col-sm-8">
-                                                                <h4>
-                                                                    <i class="fa-brands fa-wordpress" style="color: #00749C; margin-right: 8px;"></i>
-                                                                    {$ wp.title $}
-                                                                    <span ng-if="wp.loading || wp.loadingPlugins || wp.loadingTheme" class="loading-indicator">
-                                                                        <i class="fa fa-spinner fa-spin" style="color: #00749C; font-size: 14px;"></i>
-                                                                    </span>
-                                                                </h4>
-                                                            </div>
-                                                            <div class="col-sm-4 text-right">
-                                                                <button class="btn btn-outline-primary btn-sm wp-action-btn" ng-click="manageWP(wp.id)">
-                                                                    <i class="fa-solid fa-cog"></i> Manage
-                                                                </button>
-                                                                <button class="btn btn-outline-danger btn-sm wp-action-btn" ng-click="deleteWPSite(wp)">
-                                                                    <i class="fa-solid fa-trash"></i> Delete
-                                                                </button>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="wp-site-content">
-                                                        <div class="row">
-                                                            <div class="col-sm-3">
-                                                                <img ng-src="{$ wp.screenshot $}" 
-                                                                     alt="{$ wp.title $}" 
-                                                                     class="img-responsive"
-                                                                     style="max-width: 100%; margin-bottom: 10px; min-height: 150px; background: #f5f5f5;"
-                                                                     onerror="this.onerror=null; this.src='https://s.wordpress.org/style/images/about/WordPress-logotype-standard.png';">
-                                                                <div class="text-center wp-action-buttons">
-                                                                    <a href="javascript:void(0);" ng-click="visitSite(wp)" class="btn btn-outline-secondary btn-sm wp-action-btn">
-                                                                        <i class="fa-solid fa-external-link"></i> Visit Site
-                                                                    </a>
-                                                                    <a href="{% url 'AutoLogin' %}?id={$ wp.id $}" target="_blank" class="btn btn-outline-primary btn-sm wp-action-btn">
-                                                                        <i class="fa-brands fa-wordpress"></i> WP Login
-                                                                    </a>
-                                                                </div>
-                                                            </div>
-                                                            <div class="col-sm-9">
-                                                                <div class="row">
-                                                                    <div class="col-sm-3">
-                                                                        <div class="info-box">
-                                                                            <label>WordPress</label>
-                                                                            <span>{$ wp.version || 'Loading...' $}</span>
-                                                                            <i ng-if="wp.loading" class="fa fa-spinner fa-spin" style="margin-left: 5px; font-size: 12px;"></i>
-                                                                        </div>
-                                                                    </div>
-                                                                    <div class="col-sm-3">
-                                                                        <div class="info-box">
-                                                                            <label>PHP Version</label>
-                                                                            <span>{$ wp.phpVersion || 'Loading...' $}</span>
-                                                                            <i ng-if="wp.loading" class="fa fa-spinner fa-spin" style="margin-left: 5px; font-size: 12px;"></i>
-                                                                        </div>
-                                                                    </div>
-                                                                    <div class="col-sm-3">
-                                                                        <div class="info-box">
-                                                                            <label>Theme</label>
-                                                                            <span>{$ wp.theme || 'Loading...' $}</span>
-                                                                            <i ng-if="wp.loadingTheme" class="fa fa-spinner fa-spin" style="margin-left: 5px; font-size: 12px;"></i>
-                                                                        </div>
-                                                                    </div>
-                                                                    <div class="col-sm-3">
-                                                                        <div class="info-box">
-                                                                            <label>Plugins</label>
-                                                                            <span>{$ wp.activePlugins || '0' $} active</span>
-                                                                            <i ng-if="wp.loadingPlugins" class="fa fa-spinner fa-spin" style="margin-left: 5px; font-size: 12px;"></i>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                                <div class="row mt-3">
-                                                                    <div class="col-sm-6">
-                                                                        <div class="checkbox">
-                                                                            <label>
-                                                                                <input type="checkbox" 
-                                                                                       ng-click="updateSetting(wp, 'search-indexing')"
-                                                                                       ng-checked="wp.searchIndex == 1">
-                                                                                Search engine indexing
-                                                                            </label>
-                                                                        </div>
-                                                                        <div class="checkbox">
-                                                                            <label>
-                                                                                <input type="checkbox" 
-                                                                                       ng-click="updateSetting(wp, 'debugging')"
-                                                                                       ng-checked="wp.debugging == 1">
-                                                                                Debugging
-                                                                            </label>
-                                                                        </div>
-                                                                    </div>
-                                                                    <div class="col-sm-6">
-                                                                        <div class="checkbox">
-                                                                            <label>
-                                                                                <input type="checkbox" 
-                                                                                       ng-model="wp.passwordProtection"
-                                                                                       ng-init="wp.passwordProtection = wp.passwordProtection || false"
-                                                                                       ng-change="togglePasswordProtection(wp)">
-                                                                                Password protection
-                                                                            </label>
-                                                                        </div>
-                                                                        <div class="checkbox">
-                                                                            <label>
-                                                                                <input type="checkbox" 
-                                                                                       ng-click="updateSetting(wp, 'maintenance-mode')"
-                                                                                       ng-checked="wp.maintenanceMode == 1">
-                                                                                Maintenance mode
-                                                                            </label>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
+                                    <div class="wp-site-actions text-right">
+                                        <button class="btn btn-outline-primary btn-sm wp-action-btn" ng-click="manageWP(wp.id)"><i class="fa-solid fa-cog"></i> {% trans 'Manage' %}</button>
+                                        <button class="btn btn-outline-danger btn-sm wp-action-btn" ng-click="deleteWPSite(wp)"><i class="fa-solid fa-trash"></i> {% trans 'Delete' %}</button>
                                     </div>
                                 </div>
                             </div>
@@ -332,234 +165,258 @@
             <div style="margin-top: 2%" class="row">
                 <div class="col-md-12">
                     <div class="row">
-                        <div class="col-md-9">
-                        </div>
+                        <div class="col-md-9"></div>
                         <div class="col-md-3">
                             <div class="form-group">
-                                <select ng-model="currentPage" class="form-control"
-                                        ng-change="getFurtherWebsitesFromDB()">
+                                <select ng-model="currentPage" class="form-control" ng-change="getFurtherWebsitesFromDB()">
                                     <option ng-repeat="page in pagination">{$ $index + 1 $}</option>
                                 </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <!-- Enhanced Styles -->
-    <style>
-        /* Website Item Styles */
-        .website-item {
-            border: 1px solid #ddd;
-            margin-bottom: 20px;
-            border-radius: 8px;
-            background: white;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
-
-        .website-header {
-            padding: 15px 20px;
-            border-bottom: 1px solid #ddd;
-            background: #f8f9fa;
-            border-radius: 8px 8px 0 0;
-            cursor: pointer;
-        }
-
-        .website-header h4 {
-            margin: 0;
-            font-size: 18px;
-            line-height: 34px;
-            color: #2c3338;
-            font-weight: 500;
-        }
-
-        .website-content {
-            padding: 20px;
+                        <style>
+        .website-card {
+            margin-bottom: 24px;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.07);
             background: #fff;
-            border-radius: 0 0 8px 8px;
+            transition: box-shadow 0.2s;
         }
-
+        .website-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 18px 24px;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f0f0;
+            transition: background 0.2s;
+        }
+        .website-header:hover {
+            background: #f8fafc;
+        }
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 0;
+        }
+        .chevron {
+            font-size: 1.4em;
+            color: #b0b4b9;
+            min-width: 24px;
+        }
+        .domain {
+            font-weight: 600;
+            font-size: 1.1em;
+            max-width: 220px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .header-actions .btn {
+            margin-left: 8px;
+        }
+        .website-content {
+            padding: 24px;
+            background: #fcfcfd;
+            border-radius: 0 0 12px 12px;
+            animation: fadeIn 0.2s;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-8px);}
+            to { opacity: 1; transform: translateY(0);}
+        }
         .website-screenshot {
-            border: 1px solid #e0e0e0;
+                                border: 1px solid #e0e0e0;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-
+                                border-radius: 8px;
+            width: 100%;
+            margin-bottom: 18px;
+            min-height: 120px;
+            background: #f5f5f5;
+                            }
         .website-action-buttons {
-            margin-top: 15px;
+            margin-top: 10px;
             display: flex;
             gap: 8px;
             justify-content: center;
+                            }
+        .info-row {
+            margin-bottom: 18px;
+            gap: 0 18px;
         }
-
-        /* Info Box Styles */
         .info-box {
-            margin-bottom: 15px;
-            background: #f8f9fa;
-            padding: 12px;
-            border-radius: 6px;
+            background: #f8fafc;
+            border-radius: 10px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+            padding: 22px 18px 16px 18px;
+            margin-bottom: 0;
+            margin-top: 0;
+            border: none;
+            min-height: 90px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .info-box label {
+            font-size: 13px;
+            color: #7b8794;
+            font-weight: 600;
+            letter-spacing: 1px;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+        }
+        .info-box span {
+            font-size: 1.18em;
+            color: #23272f;
+            font-weight: 700;
+            letter-spacing: 0.2px;
+        }
+        .wp-sites-box {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: #eaf6ff;
             border-left: 3px solid #007cba;
         }
-
-        .info-box label {
-            display: block;
-            font-size: 12px;
-            color: #646970;
-            margin-bottom: 6px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+        .badge-info {
+            background: #007cba;
+            color: #fff;
+            font-size: 13px;
+            padding: 4px 10px;
+            border-radius: 12px;
+            margin-left: 6px;
         }
-
-        .info-box span {
-            font-size: 14px;
-            font-weight: 600;
-            color: #2c3338;
+        .wp-toggle-btn {
+            margin-left: 12px;
+            font-size: 13px;
+            padding: 2px 12px;
         }
-
-        /* WordPress Site Styles */
+        .wp-sites-section {
+            margin-top: 18px;
+            background: #f6fafd;
+            border-radius: 8px;
+            padding: 18px 12px 8px 12px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.03);
+        }
+        .wp-sites-title {
+            color: #00749C;
+            font-size: 1.1em;
+                                font-weight: 600;
+            margin-bottom: 18px;
+                            }
         .wp-site-item {
             border: 1px solid #e0e0e0;
             margin-bottom: 15px;
             border-radius: 6px;
             background: white;
             box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            padding: 12px 8px 8px 8px;
         }
-
-        .wp-site-header {
-            padding: 12px 15px;
-            border-bottom: 1px solid #e0e0e0;
-            background: #f8f9fa;
-            border-radius: 6px 6px 0 0;
-        }
-
-        .wp-site-header h4 {
-            margin: 0;
-            font-size: 16px;
-            line-height: 28px;
-            color: #2c3338;
-            font-weight: 500;
-        }
-
-        .wp-site-content {
-            padding: 15px;
-        }
-
-        /* Button Styles */
-        .wp-action-btn {
-            margin: 0 4px;
-            padding: 6px 12px;
-            font-size: 13px;
-            font-weight: 500;
-            transition: all 0.2s ease;
-            border-width: 1.5px;
-            line-height: 1.5;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            vertical-align: middle;
-            height: 32px;
-        }
-
-        .wp-action-btn i {
-            margin-right: 6px;
-            font-size: 14px;
-            display: inline-flex;
-            align-items: center;
-        }
-
+        .wp-screenshot {
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            width: 100%;
+                                margin-bottom: 10px;
+            min-height: 80px;
+            background: #f5f5f5;
+                            }
         .wp-action-buttons {
-            margin-top: 12px;
+            margin-top: 8px;
             display: flex;
             gap: 8px;
             justify-content: center;
         }
-
-        .wp-action-buttons .wp-action-btn {
-            min-width: 110px;
-            flex: 0 1 auto;
+                            .wp-action-btn {
+                                margin: 0 4px;
+                                padding: 6px 12px;
+                                font-size: 13px;
+                                font-weight: 500;
+                                border-width: 1.5px;
+                                line-height: 1.5;
+                                display: inline-flex;
+                                align-items: center;
+                                justify-content: center;
+                                vertical-align: middle;
+                                height: 32px;
+                            }
+                            .wp-action-btn i {
+                                margin-right: 6px;
+                                font-size: 14px;
+                                display: inline-flex;
+                                align-items: center;
+                            }
+        .wp-site-actions {
+            margin-top: 10px;
         }
-
-        /* Checkbox Styles */
         .checkbox {
             margin-bottom: 10px;
         }
-
         .mt-3 {
             margin-top: 1rem;
         }
-
-        /* Loading Indicator */
         .loading-indicator {
             display: inline-flex;
             align-items: center;
-            gap: 8px;
+                                gap: 8px;
             color: #00749C;
             font-size: 14px;
             padding: 0 8px;
-        }
-
+                            }
         .loading-indicator i {
             font-size: 14px;
             margin-left: 4px;
-        }
-
-        /* Button Color Overrides */
-        .btn-outline-primary {
-            color: #0073aa;
-            border-color: #0073aa;
-        }
-
-        .btn-outline-primary:hover {
-            background-color: #0073aa;
-            color: white;
-        }
-
-        .btn-outline-secondary {
-            color: #50575e;
-            border-color: #50575e;
-        }
-
-        .btn-outline-secondary:hover {
-            background-color: #50575e;
-            color: white;
-        }
-
-        .btn-outline-danger {
-            color: #dc3545;
-            border-color: #dc3545;
-        }
-
-        .btn-outline-danger:hover {
-            background-color: #dc3545;
-            color: white;
-        }
-
+                            }
+                            .btn-outline-primary {
+                                color: #0073aa;
+                                border-color: #0073aa;
+                            }
+                            .btn-outline-primary:hover {
+                                background-color: #0073aa;
+                                color: white;
+                            }
+                            .btn-outline-secondary {
+                                color: #50575e;
+                                border-color: #50575e;
+                            }
+                            .btn-outline-secondary:hover {
+                                background-color: #50575e;
+                                color: white;
+                            }
+                            .btn-outline-danger {
+                                color: #dc3545;
+                                border-color: #dc3545;
+                            }
+                            .btn-outline-danger:hover {
+                                background-color: #dc3545;
+                                color: white;
+                            }
         .btn-outline-info {
             color: #17a2b8;
             border-color: #17a2b8;
         }
-
         .btn-outline-info:hover {
             background-color: #17a2b8;
             color: white;
         }
-
-        /* Responsive adjustments */
+        @media (max-width: 991px) {
+            .website-header, .website-content { padding: 12px; }
+            .info-row { gap: 0 8px; }
+            .info-box { padding: 16px 10px; min-height: 60px; }
+        }
         @media (max-width: 768px) {
-            .website-header .col-sm-4 {
-                text-align: left !important;
-                margin-top: 10px;
-            }
-            
-            .website-action-buttons {
-                flex-direction: column;
-            }
-            
-            .info-box {
-                margin-bottom: 10px;
-            }
+            .website-header { flex-direction: column; align-items: flex-start; }
+            .header-actions { margin-top: 10px; }
+            .domain { max-width: 100%; }
+            .website-content { padding: 12px; }
+            .info-row { flex-direction: column; gap: 12px 0; }
+            .info-box { width: 100%; }
         }
     </style>
 
