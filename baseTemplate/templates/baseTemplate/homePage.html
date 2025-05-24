@@ -14,47 +14,55 @@
 
         <!-- Dashboard Stats Section -->
         <div ng-controller="dashboardStatsController" class="row" style="margin-bottom: 30px;">
-            <!-- Info Cards -->
+            <!-- Improved Info Cards -->
             <div class="col-md-3">
-                <div class="card text-white bg-primary mb-3" style="max-width: 18rem;">
-                    <div class="card-header">Total Sites</div>
-                    <div class="card-body">
-                        <h5 class="card-title" style="font-size:2.5rem;">{$ totalSites $}</h5>
+                <div class="card shadow-sm border-0 mb-4" style="border-radius: 1rem; background: linear-gradient(135deg, #007bff 60%, #00c6ff 100%); color: #fff;">
+                    <div class="card-body d-flex align-items-center">
+                        <div style="font-size: 2.5rem; margin-right: 15px;"><i class="fa fa-globe"></i></div>
+                        <div>
+                            <div style="font-size: 2.7rem; font-weight: bold;">{$ totalSites $}</div>
+                            <div style="font-size: 1.1rem; opacity: 0.85;">Total Sites</div>
+                        </div>
                     </div>
                 </div>
             </div>
             <div class="col-md-3">
-                <div class="card text-white bg-info mb-3" style="max-width: 18rem;">
-                    <div class="card-header">WordPress Sites</div>
-                    <div class="card-body">
-                        <h5 class="card-title" style="font-size:2.5rem;">{$ totalWPSites $}</h5>
+                <div class="card shadow-sm border-0 mb-4" style="border-radius: 1rem; background: linear-gradient(135deg, #6f42c1 60%, #b993ff 100%); color: #fff;">
+                    <div class="card-body d-flex align-items-center">
+                        <div style="font-size: 2.5rem; margin-right: 15px;"><i class="fa fa-wordpress"></i></div>
+                        <div>
+                            <div style="font-size: 2.7rem; font-weight: bold;">{$ totalWPSites $}</div>
+                            <div style="font-size: 1.1rem; opacity: 0.85;">WordPress Sites</div>
+                        </div>
                     </div>
                 </div>
             </div>
-            <!-- Traffic Graph -->
+            <!-- Graphs in Tabs -->
             <div class="col-md-6">
-                <div class="card mb-3">
-                    <div class="card-header">Traffic (Bytes)</div>
+                <div class="card shadow-sm border-0 mb-4" style="border-radius: 1rem;">
                     <div class="card-body">
-                        <canvas id="trafficChart" height="80"></canvas>
-                    </div>
-                </div>
-            </div>
-            <!-- Disk IO Graph -->
-            <div class="col-md-6">
-                <div class="card mb-3">
-                    <div class="card-header">Disk IO (Bytes)</div>
-                    <div class="card-body">
-                        <canvas id="diskIOChart" height="80"></canvas>
-                    </div>
-                </div>
-            </div>
-            <!-- CPU Usage Graph -->
-            <div class="col-md-6">
-                <div class="card mb-3">
-                    <div class="card-header">CPU Usage (%)</div>
-                    <div class="card-body">
-                        <canvas id="cpuChart" height="80"></canvas>
+                        <ul class="nav nav-tabs" id="dashboardGraphTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <a class="nav-link active" id="traffic-tab" data-toggle="tab" href="#traffic" role="tab" aria-controls="traffic" aria-selected="true"><i class="fa fa-exchange"></i> Traffic</a>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <a class="nav-link" id="diskio-tab" data-toggle="tab" href="#diskio" role="tab" aria-controls="diskio" aria-selected="false"><i class="fa fa-hdd-o"></i> Disk IO</a>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <a class="nav-link" id="cpu-tab" data-toggle="tab" href="#cpu" role="tab" aria-controls="cpu" aria-selected="false"><i class="fa fa-microchip"></i> CPU Usage</a>
+                            </li>
+                        </ul>
+                        <div class="tab-content pt-3" id="dashboardGraphTabsContent">
+                            <div class="tab-pane fade show active" id="traffic" role="tabpanel" aria-labelledby="traffic-tab">
+                                <canvas id="trafficChart" height="80"></canvas>
+                            </div>
+                            <div class="tab-pane fade" id="diskio" role="tabpanel" aria-labelledby="diskio-tab">
+                                <canvas id="diskIOChart" height="80"></canvas>
+                            </div>
+                            <div class="tab-pane fade" id="cpu" role="tabpanel" aria-labelledby="cpu-tab">
+                                <canvas id="cpuChart" height="80"></canvas>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -63,6 +71,8 @@
 
         <!-- Chart.js CDN -->
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <!-- FontAwesome for icons -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
 
         <!--- Hide statistics for non-admins--->
         <div class="mx-10 col-lg-9 panel col-md-push-50">

@@ -750,7 +750,7 @@ app.controller('OnboardingCP', function ($scope, $http, $timeout, $window) {
                 } else {
                     $scope.functionProgress = {"width": response.data.installationProgress + "%"};
                     $scope.functionStatus = response.data.currentStatus;
-                    $timeout(statusFunc, 3000);
+                    timeout(statusFunc, 3000);
                 }
 
             } else {
@@ -984,11 +984,25 @@ app.controller('dashboardStatsController', function ($scope, $http, $timeout) {
             data: {
                 labels: [],
                 datasets: [
-                    { label: 'RX (Bytes/sec)', data: [], borderColor: '#007bff', fill: false },
-                    { label: 'TX (Bytes/sec)', data: [], borderColor: '#28a745', fill: false }
+                    { label: 'RX (Bytes/sec)', data: [], borderColor: '#007bff', backgroundColor: 'rgba(0,123,255,0.08)', pointBackgroundColor: '#007bff', tension: 0.4, fill: true },
+                    { label: 'TX (Bytes/sec)', data: [], borderColor: '#28a745', backgroundColor: 'rgba(40,167,69,0.08)', pointBackgroundColor: '#28a745', tension: 0.4, fill: true }
                 ]
             },
-            options: { responsive: true, animation: false, scales: { y: { beginAtZero: true } } }
+            options: {
+                responsive: true,
+                animation: false,
+                plugins: {
+                    legend: { display: true, labels: { font: { size: 14 } } },
+                    title: { display: true, text: 'Network Traffic', font: { size: 18 } },
+                    tooltip: { enabled: true, mode: 'index', intersect: false }
+                },
+                interaction: { mode: 'nearest', axis: 'x', intersect: false },
+                scales: {
+                    x: { grid: { color: '#e9ecef' }, ticks: { font: { size: 12 } } },
+                    y: { beginAtZero: true, grid: { color: '#e9ecef' }, ticks: { font: { size: 12 } } }
+                },
+                layout: { padding: 10 }
+            }
         });
         var diskCtx = document.getElementById('diskIOChart').getContext('2d');
         diskIOChart = new Chart(diskCtx, {
@@ -996,11 +1010,25 @@ app.controller('dashboardStatsController', function ($scope, $http, $timeout) {
             data: {
                 labels: [],
                 datasets: [
-                    { label: 'Read (Bytes/sec)', data: [], borderColor: '#17a2b8', fill: false },
-                    { label: 'Write (Bytes/sec)', data: [], borderColor: '#ffc107', fill: false }
+                    { label: 'Read (Bytes/sec)', data: [], borderColor: '#17a2b8', backgroundColor: 'rgba(23,162,184,0.08)', pointBackgroundColor: '#17a2b8', tension: 0.4, fill: true },
+                    { label: 'Write (Bytes/sec)', data: [], borderColor: '#ffc107', backgroundColor: 'rgba(255,193,7,0.08)', pointBackgroundColor: '#ffc107', tension: 0.4, fill: true }
                 ]
             },
-            options: { responsive: true, animation: false, scales: { y: { beginAtZero: true } } }
+            options: {
+                responsive: true,
+                animation: false,
+                plugins: {
+                    legend: { display: true, labels: { font: { size: 14 } } },
+                    title: { display: true, text: 'Disk IO', font: { size: 18 } },
+                    tooltip: { enabled: true, mode: 'index', intersect: false }
+                },
+                interaction: { mode: 'nearest', axis: 'x', intersect: false },
+                scales: {
+                    x: { grid: { color: '#e9ecef' }, ticks: { font: { size: 12 } } },
+                    y: { beginAtZero: true, grid: { color: '#e9ecef' }, ticks: { font: { size: 12 } } }
+                },
+                layout: { padding: 10 }
+            }
         });
         var cpuCtx = document.getElementById('cpuChart').getContext('2d');
         cpuChart = new Chart(cpuCtx, {
@@ -1008,10 +1036,33 @@ app.controller('dashboardStatsController', function ($scope, $http, $timeout) {
             data: {
                 labels: [],
                 datasets: [
-                    { label: 'CPU Usage (%)', data: [], borderColor: '#dc3545', fill: false }
+                    { label: 'CPU Usage (%)', data: [], borderColor: '#dc3545', backgroundColor: 'rgba(220,53,69,0.08)', pointBackgroundColor: '#dc3545', tension: 0.4, fill: true }
                 ]
             },
-            options: { responsive: true, animation: false, scales: { y: { beginAtZero: true, max: 100 } } }
+            options: {
+                responsive: true,
+                animation: false,
+                plugins: {
+                    legend: { display: true, labels: { font: { size: 14 } } },
+                    title: { display: true, text: 'CPU Usage', font: { size: 18 } },
+                    tooltip: { enabled: true, mode: 'index', intersect: false }
+                },
+                interaction: { mode: 'nearest', axis: 'x', intersect: false },
+                scales: {
+                    x: { grid: { color: '#e9ecef' }, ticks: { font: { size: 12 } } },
+                    y: { beginAtZero: true, max: 100, grid: { color: '#e9ecef' }, ticks: { font: { size: 12 } } }
+                },
+                layout: { padding: 10 }
+            }
+        });
+
+        // Redraw charts on tab shown
+        $("a[data-toggle='tab']").on('shown.bs.tab', function (e) {
+            setTimeout(function() {
+                if (trafficChart) trafficChart.resize();
+                if (diskIOChart) diskIOChart.resize();
+                if (cpuChart) cpuChart.resize();
+            }, 100);
         });
     }
 
