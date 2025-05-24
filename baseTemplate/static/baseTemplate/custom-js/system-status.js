@@ -1068,6 +1068,20 @@ app.controller('dashboardStatsController', function ($scope, $http, $timeout) {
                 if (cpuChart) cpuChart.resize();
             }, 100);
         });
+        
+        // Also handle custom tab switching
+        document.addEventListener('DOMContentLoaded', function() {
+            var tabs = document.querySelectorAll('a[data-toggle="tab"]');
+            tabs.forEach(function(tab) {
+                tab.addEventListener('click', function(e) {
+                    setTimeout(function() {
+                        if (trafficChart) trafficChart.resize();
+                        if (diskIOChart) diskIOChart.resize();
+                        if (cpuChart) cpuChart.resize();
+                    }, 200);
+                });
+            });
+        });
     }
 
     // Initial setup

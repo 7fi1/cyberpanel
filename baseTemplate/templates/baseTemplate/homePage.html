@@ -13,88 +13,151 @@
         </div>
 
         <!-- Dashboard Stats Section -->
-        <div ng-controller="dashboardStatsController" class="row" style="margin-bottom: 30px;">
-            <!-- Improved Info Cards -->
-            <div class="col-md-3">
-                <div class="card shadow-sm border-0 mb-4" style="border-radius: 1rem; background: linear-gradient(135deg, #007bff 60%, #00c6ff 100%); color: #fff;">
-                    <div class="card-body d-flex align-items-center">
-                        <div style="font-size: 2.5rem; margin-right: 15px;"><i class="fa fa-globe"></i></div>
-                        <div>
-                            <div style="font-size: 2.7rem; font-weight: bold;">{$ totalSites $}</div>
-                            <div style="font-size: 1.1rem; opacity: 0.85;">Total Sites</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card shadow-sm border-0 mb-4" style="border-radius: 1rem; background: linear-gradient(135deg, #6f42c1 60%, #b993ff 100%); color: #fff;">
-                    <div class="card-body d-flex align-items-center">
-                        <div style="font-size: 2.5rem; margin-right: 15px;"><i class="fa fa-wordpress"></i></div>
-                        <div>
-                            <div style="font-size: 2.7rem; font-weight: bold;">{$ totalWPSites $}</div>
-                            <div style="font-size: 1.1rem; opacity: 0.85;">WordPress Sites</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card shadow-sm border-0 mb-4" style="border-radius: 1rem; background: linear-gradient(135deg, #17a2b8 60%, #6fe7dd 100%); color: #fff;">
-                    <div class="card-body d-flex align-items-center">
-                        <div style="font-size: 2.5rem; margin-right: 15px;"><i class="fa fa-database"></i></div>
-                        <div>
-                            <div style="font-size: 2.7rem; font-weight: bold;">{$ totalDBs $}</div>
-                            <div style="font-size: 1.1rem; opacity: 0.85;">Total Databases</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card shadow-sm border-0 mb-4" style="border-radius: 1rem; background: linear-gradient(135deg, #ff9800 60%, #ffc107 100%); color: #fff;">
-                    <div class="card-body d-flex align-items-center">
-                        <div style="font-size: 2.5rem; margin-right: 15px;"><i class="fa fa-envelope"></i></div>
-                        <div>
-                            <div style="font-size: 2.7rem; font-weight: bold;">{$ totalEmails $}</div>
-                            <div style="font-size: 1.1rem; opacity: 0.85;">Total Emails</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <!-- Graphs in Tabs -->
-            <div class="col-md-12">
-                <div class="card shadow-sm border-0 mb-4" style="border-radius: 1rem; background: #fff;">
-                    <div class="card-body">
-                        <ul class="nav nav-pills mb-3 justify-content-center" id="dashboardGraphTabs" role="tablist" style="gap: 1rem;">
-                            <li class="nav-item" role="presentation">
-                                <a class="nav-link active" id="traffic-tab" data-toggle="tab" href="#traffic" role="tab" aria-controls="traffic" aria-selected="true" style="font-size: 1.1rem; font-weight: 500;"><i class="fa fa-exchange"></i> Traffic</a>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <a class="nav-link" id="diskio-tab" data-toggle="tab" href="#diskio" role="tab" aria-controls="diskio" aria-selected="false" style="font-size: 1.1rem; font-weight: 500;"><i class="fa fa-hdd-o"></i> Disk IO</a>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <a class="nav-link" id="cpu-tab" data-toggle="tab" href="#cpu" role="tab" aria-controls="cpu" aria-selected="false" style="font-size: 1.1rem; font-weight: 500;"><i class="fa fa-microchip"></i> CPU Usage</a>
-                            </li>
-                        </ul>
-                        <div class="tab-content pt-4 pb-2 px-3" id="dashboardGraphTabsContent" style="background: #f8f9fa; border-radius: 0.75rem; box-shadow: 0 2px 8px rgba(0,0,0,0.04); border: 1px solid #e3e6f0; min-height: 260px;">
-                            <div class="tab-pane fade show active" id="traffic" role="tabpanel" aria-labelledby="traffic-tab">
-                                <canvas id="trafficChart" height="80"></canvas>
-                            </div>
-                            <div class="tab-pane fade" id="diskio" role="tabpanel" aria-labelledby="diskio-tab">
-                                <canvas id="diskIOChart" height="80"></canvas>
-                            </div>
-                            <div class="tab-pane fade" id="cpu" role="tabpanel" aria-labelledby="cpu-tab">
-                                <canvas id="cpuChart" height="80"></canvas>
+        <div ng-controller="dashboardStatsController" style="margin-bottom: 30px;">
+            <!-- Info Cards Row -->
+            <div style="display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 30px;">
+                <!-- Total Sites Card -->
+                <div style="flex: 1; min-width: 200px; max-width: 300px;">
+                    <div style="background: linear-gradient(135deg, #007bff 0%, #00c6ff 100%); color: #fff; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,123,255,0.3); height: 100%;">
+                        <div style="display: flex; align-items: center;">
+                            <div style="font-size: 2.5rem; margin-right: 15px; opacity: 0.9;"><i class="fa fa-globe"></i></div>
+                            <div>
+                                <div style="font-size: 2.5rem; font-weight: bold; line-height: 1;">{$ totalSites $}</div>
+                                <div style="font-size: 0.95rem; opacity: 0.85; margin-top: 5px;">Total Sites</div>
                             </div>
                         </div>
+                    </div>
+                </div>
+                <!-- WordPress Sites Card -->
+                <div style="flex: 1; min-width: 200px; max-width: 300px;">
+                    <div style="background: linear-gradient(135deg, #6f42c1 0%, #b993ff 100%); color: #fff; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(111,66,193,0.3); height: 100%;">
+                        <div style="display: flex; align-items: center;">
+                            <div style="font-size: 2.5rem; margin-right: 15px; opacity: 0.9;"><i class="fa fa-wordpress"></i></div>
+                            <div>
+                                <div style="font-size: 2.5rem; font-weight: bold; line-height: 1;">{$ totalWPSites $}</div>
+                                <div style="font-size: 0.95rem; opacity: 0.85; margin-top: 5px;">WordPress Sites</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Total Databases Card -->
+                <div style="flex: 1; min-width: 200px; max-width: 300px;">
+                    <div style="background: linear-gradient(135deg, #17a2b8 0%, #6fe7dd 100%); color: #fff; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(23,162,184,0.3); height: 100%;">
+                        <div style="display: flex; align-items: center;">
+                            <div style="font-size: 2.5rem; margin-right: 15px; opacity: 0.9;"><i class="fa fa-database"></i></div>
+                            <div>
+                                <div style="font-size: 2.5rem; font-weight: bold; line-height: 1;">{$ totalDBs $}</div>
+                                <div style="font-size: 0.95rem; opacity: 0.85; margin-top: 5px;">Total Databases</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Total Emails Card -->
+                <div style="flex: 1; min-width: 200px; max-width: 300px;">
+                    <div style="background: linear-gradient(135deg, #ff9800 0%, #ffc107 100%); color: #fff; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(255,152,0,0.3); height: 100%;">
+                        <div style="display: flex; align-items: center;">
+                            <div style="font-size: 2.5rem; margin-right: 15px; opacity: 0.9;"><i class="fa fa-envelope"></i></div>
+                            <div>
+                                <div style="font-size: 2.5rem; font-weight: bold; line-height: 1;">{$ totalEmails $}</div>
+                                <div style="font-size: 0.95rem; opacity: 0.85; margin-top: 5px;">Total Emails</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Graphs Section -->
+            <div style="background: #fff; border-radius: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); padding: 25px;">
+                <!-- Tab Navigation -->
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <ul style="list-style: none; padding: 0; margin: 0; display: inline-flex; background: #f5f7fa; border-radius: 10px; padding: 5px; gap: 5px;">
+                        <li style="display: inline-block;">
+                            <a href="#traffic" id="traffic-tab" data-toggle="tab" style="display: block; padding: 12px 24px; background: #007bff; color: white; border-radius: 8px; text-decoration: none; font-weight: 500; transition: all 0.3s;">
+                                <i class="fa fa-exchange"></i> Traffic
+                            </a>
+                        </li>
+                        <li style="display: inline-block;">
+                            <a href="#diskio" id="diskio-tab" data-toggle="tab" style="display: block; padding: 12px 24px; background: transparent; color: #6c757d; border-radius: 8px; text-decoration: none; font-weight: 500; transition: all 0.3s;">
+                                <i class="fa fa-hdd-o"></i> Disk IO
+                            </a>
+                        </li>
+                        <li style="display: inline-block;">
+                            <a href="#cpu" id="cpu-tab" data-toggle="tab" style="display: block; padding: 12px 24px; background: transparent; color: #6c757d; border-radius: 8px; text-decoration: none; font-weight: 500; transition: all 0.3s;">
+                                <i class="fa fa-microchip"></i> CPU Usage
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                
+                <!-- Tab Content -->
+                <div class="tab-content" style="background: #f8f9fa; border-radius: 12px; padding: 20px; min-height: 300px; border: 1px solid #e9ecef;">
+                    <div class="tab-pane fade show active" id="traffic" role="tabpanel">
+                        <canvas id="trafficChart" height="80"></canvas>
+                    </div>
+                    <div class="tab-pane fade" id="diskio" role="tabpanel">
+                        <canvas id="diskIOChart" height="80"></canvas>
+                    </div>
+                    <div class="tab-pane fade" id="cpu" role="tabpanel">
+                        <canvas id="cpuChart" height="80"></canvas>
                     </div>
                 </div>
             </div>
         </div>
         <!-- End Dashboard Stats Section -->
 
+        <!-- Add custom styles for tab switching -->
+        <style>
+            #dashboardGraphTabs a[data-toggle="tab"] {
+                cursor: pointer;
+            }
+            #dashboardGraphTabs a[data-toggle="tab"]:hover {
+                background: #e9ecef !important;
+                color: #495057 !important;
+            }
+            #dashboardGraphTabs a[data-toggle="tab"].active {
+                background: #007bff !important;
+                color: white !important;
+            }
+        </style>
+
         <!-- Chart.js CDN -->
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <!-- FontAwesome for icons -->
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
+
+        <script>
+            // Handle tab switching
+            document.addEventListener('DOMContentLoaded', function() {
+                var tabs = document.querySelectorAll('a[data-toggle="tab"]');
+                tabs.forEach(function(tab) {
+                    tab.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        
+                        // Remove active from all tabs and panes
+                        tabs.forEach(function(t) {
+                            t.classList.remove('active');
+                            t.style.background = 'transparent';
+                            t.style.color = '#6c757d';
+                        });
+                        document.querySelectorAll('.tab-pane').forEach(function(pane) {
+                            pane.classList.remove('show', 'active');
+                        });
+                        
+                        // Add active to clicked tab
+                        this.classList.add('active');
+                        this.style.background = '#007bff';
+                        this.style.color = 'white';
+                        
+                        // Show corresponding pane
+                        var target = this.getAttribute('href');
+                        var targetPane = document.querySelector(target);
+                        if (targetPane) {
+                            targetPane.classList.add('show', 'active');
+                        }
+                    });
+                });
+            });
+        </script>
 
         <!--- Hide statistics for non-admins--->
         <div class="mx-10 col-lg-9 panel col-md-push-50">
