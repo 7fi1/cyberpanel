@@ -37,22 +37,44 @@
                     </div>
                 </div>
             </div>
+            <div class="col-md-3">
+                <div class="card shadow-sm border-0 mb-4" style="border-radius: 1rem; background: linear-gradient(135deg, #17a2b8 60%, #6fe7dd 100%); color: #fff;">
+                    <div class="card-body d-flex align-items-center">
+                        <div style="font-size: 2.5rem; margin-right: 15px;"><i class="fa fa-database"></i></div>
+                        <div>
+                            <div style="font-size: 2.7rem; font-weight: bold;">{$ totalDBs $}</div>
+                            <div style="font-size: 1.1rem; opacity: 0.85;">Total Databases</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card shadow-sm border-0 mb-4" style="border-radius: 1rem; background: linear-gradient(135deg, #ff9800 60%, #ffc107 100%); color: #fff;">
+                    <div class="card-body d-flex align-items-center">
+                        <div style="font-size: 2.5rem; margin-right: 15px;"><i class="fa fa-envelope"></i></div>
+                        <div>
+                            <div style="font-size: 2.7rem; font-weight: bold;">{$ totalEmails $}</div>
+                            <div style="font-size: 1.1rem; opacity: 0.85;">Total Emails</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
             <!-- Graphs in Tabs -->
-            <div class="col-md-6">
-                <div class="card shadow-sm border-0 mb-4" style="border-radius: 1rem;">
+            <div class="col-md-12">
+                <div class="card shadow-sm border-0 mb-4" style="border-radius: 1rem; background: #fff;">
                     <div class="card-body">
-                        <ul class="nav nav-tabs" id="dashboardGraphTabs" role="tablist">
+                        <ul class="nav nav-pills mb-3 justify-content-center" id="dashboardGraphTabs" role="tablist" style="gap: 1rem;">
                             <li class="nav-item" role="presentation">
-                                <a class="nav-link active" id="traffic-tab" data-toggle="tab" href="#traffic" role="tab" aria-controls="traffic" aria-selected="true"><i class="fa fa-exchange"></i> Traffic</a>
+                                <a class="nav-link active" id="traffic-tab" data-toggle="tab" href="#traffic" role="tab" aria-controls="traffic" aria-selected="true" style="font-size: 1.1rem; font-weight: 500;"><i class="fa fa-exchange"></i> Traffic</a>
                             </li>
                             <li class="nav-item" role="presentation">
-                                <a class="nav-link" id="diskio-tab" data-toggle="tab" href="#diskio" role="tab" aria-controls="diskio" aria-selected="false"><i class="fa fa-hdd-o"></i> Disk IO</a>
+                                <a class="nav-link" id="diskio-tab" data-toggle="tab" href="#diskio" role="tab" aria-controls="diskio" aria-selected="false" style="font-size: 1.1rem; font-weight: 500;"><i class="fa fa-hdd-o"></i> Disk IO</a>
                             </li>
                             <li class="nav-item" role="presentation">
-                                <a class="nav-link" id="cpu-tab" data-toggle="tab" href="#cpu" role="tab" aria-controls="cpu" aria-selected="false"><i class="fa fa-microchip"></i> CPU Usage</a>
+                                <a class="nav-link" id="cpu-tab" data-toggle="tab" href="#cpu" role="tab" aria-controls="cpu" aria-selected="false" style="font-size: 1.1rem; font-weight: 500;"><i class="fa fa-microchip"></i> CPU Usage</a>
                             </li>
                         </ul>
-                        <div class="tab-content pt-3" id="dashboardGraphTabsContent">
+                        <div class="tab-content pt-4 pb-2 px-3" id="dashboardGraphTabsContent" style="background: #f8f9fa; border-radius: 0.75rem; box-shadow: 0 2px 8px rgba(0,0,0,0.04); border: 1px solid #e3e6f0; min-height: 260px;">
                             <div class="tab-pane fade show active" id="traffic" role="tabpanel" aria-labelledby="traffic-tab">
                                 <canvas id="trafficChart" height="80"></canvas>
                             </div>

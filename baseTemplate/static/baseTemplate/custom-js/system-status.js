@@ -872,6 +872,8 @@ app.controller('dashboardStatsController', function ($scope, $http, $timeout) {
     // Card values
     $scope.totalSites = 0;
     $scope.totalWPSites = 0;
+    $scope.totalDBs = 0;
+    $scope.totalEmails = 0;
 
     // Chart.js chart objects
     var trafficChart, diskIOChart, cpuChart;
@@ -890,6 +892,8 @@ app.controller('dashboardStatsController', function ($scope, $http, $timeout) {
             if (response.data.status === 1) {
                 $scope.totalSites = response.data.total_sites;
                 $scope.totalWPSites = response.data.total_wp_sites;
+                $scope.totalDBs = response.data.total_dbs;
+                $scope.totalEmails = response.data.total_emails;
             }
         });
     }
