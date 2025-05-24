@@ -647,7 +647,7 @@ app.controller('versionManagment', function ($scope, $http, $timeout) {
                 } else {
                     $scope.upgradelogBox = false;
                     $scope.upgradeLog = response.data.upgradeLog;
-                    $timeout(getUpgradeStatus, 2000);
+                    timeout(getUpgradeStatus, 2000);
                 }
             }
 
@@ -866,4 +866,170 @@ app.controller('OnboardingCP', function ($scope, $http, $timeout, $window) {
         }
     };
 
+});
+
+app.controller('dashboardStatsController', function ($scope, $http, $timeout) {
+    // Card values
+    $scope.totalSites = 0;
+    $scope.totalWPSites = 0;
+
+    // Chart.js chart objects
+    var trafficChart, diskIOChart, cpuChart;
+    // Data arrays for live graphs
+    var trafficLabels = [], rxData = [], txData = [];
+    var diskLabels = [], readData = [], writeData = [];
+    var cpuLabels = [], cpuUsageData = [];
+    // For rate calculation
+    var lastRx = null, lastTx = null, lastDiskRead = null, lastDiskWrite = null, lastCPU = null;
+    var lastCPUTimes = null;
+    var pollInterval = 2000; // ms
+    var maxPoints = 30;
+
+    function pollDashboardStats() {
+        $http.get('/base/getDashboardStats').then(function(response) {
+            if (response.data.status === 1) {
+                $scope.totalSites = response.data.total_sites;
+                $scope.totalWPSites = response.data.total_wp_sites;
+            }
+        });
+    }
+
+    function pollTraffic() {
+        $http.get('/base/getTrafficStats').then(function(response) {
+            if (response.data.status === 1) {
+                var now = new Date();
+                var rx = response.data.rx_bytes;
+                var tx = response.data.tx_bytes;
+                if (lastRx !== null && lastTx !== null) {
+                    var rxRate = (rx - lastRx) / (pollInterval / 1000); // bytes/sec
+                    var txRate = (tx - lastTx) / (pollInterval / 1000);
+                    trafficLabels.push(now.toLocaleTimeString());
+                    rxData.push(rxRate);
+                    txData.push(txRate);
+                    if (trafficLabels.length > maxPoints) {
+                        trafficLabels.shift(); rxData.shift(); txData.shift();
+                    }
+                    if (trafficChart) {
+                        trafficChart.data.labels = trafficLabels.slice();
+                        trafficChart.data.datasets[0].data = rxData.slice();
+                        trafficChart.data.datasets[1].data = txData.slice();
+                        trafficChart.update();
+                    }
+                }
+                lastRx = rx; lastTx = tx;
+            }
+        });
+    }
+
+    function pollDiskIO() {
+        $http.get('/base/getDiskIOStats').then(function(response) {
+            if (response.data.status === 1) {
+                var now = new Date();
+                var read = response.data.read_bytes;
+                var write = response.data.write_bytes;
+                if (lastDiskRead !== null && lastDiskWrite !== null) {
+                    var readRate = (read - lastDiskRead) / (pollInterval / 1000); // bytes/sec
+                    var writeRate = (write - lastDiskWrite) / (pollInterval / 1000);
+                    diskLabels.push(now.toLocaleTimeString());
+                    readData.push(readRate);
+                    writeData.push(writeRate);
+                    if (diskLabels.length > maxPoints) {
+                        diskLabels.shift(); readData.shift(); writeData.shift();
+                    }
+                    if (diskIOChart) {
+                        diskIOChart.data.labels = diskLabels.slice();
+                        diskIOChart.data.datasets[0].data = readData.slice();
+                        diskIOChart.data.datasets[1].data = writeData.slice();
+                        diskIOChart.update();
+                    }
+                }
+                lastDiskRead = read; lastDiskWrite = write;
+            }
+        });
+    }
+
+    function pollCPU() {
+        $http.get('/base/getCPULoadGraph').then(function(response) {
+            if (response.data.status === 1 && response.data.cpu_times && response.data.cpu_times.length >= 4) {
+                var now = new Date();
+                var cpuTimes = response.data.cpu_times;
+                if (lastCPUTimes) {
+                    var idle = cpuTimes[3];
+                    var total = cpuTimes.reduce(function(a, b) { return a + b; }, 0);
+                    var lastIdle = lastCPUTimes[3];
+                    var lastTotal = lastCPUTimes.reduce(function(a, b) { return a + b; }, 0);
+                    var idleDiff = idle - lastIdle;
+                    var totalDiff = total - lastTotal;
+                    var usage = totalDiff > 0 ? (100 * (1 - idleDiff / totalDiff)) : 0;
+                    cpuLabels.push(now.toLocaleTimeString());
+                    cpuUsageData.push(usage);
+                    if (cpuLabels.length > maxPoints) {
+                        cpuLabels.shift(); cpuUsageData.shift();
+                    }
+                    if (cpuChart) {
+                        cpuChart.data.labels = cpuLabels.slice();
+                        cpuChart.data.datasets[0].data = cpuUsageData.slice();
+                        cpuChart.update();
+                    }
+                }
+                lastCPUTimes = cpuTimes;
+            }
+        });
+    }
+
+    function setupCharts() {
+        var trafficCtx = document.getElementById('trafficChart').getContext('2d');
+        trafficChart = new Chart(trafficCtx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [
+                    { label: 'RX (Bytes/sec)', data: [], borderColor: '#007bff', fill: false },
+                    { label: 'TX (Bytes/sec)', data: [], borderColor: '#28a745', fill: false }
+                ]
+            },
+            options: { responsive: true, animation: false, scales: { y: { beginAtZero: true } } }
+        });
+        var diskCtx = document.getElementById('diskIOChart').getContext('2d');
+        diskIOChart = new Chart(diskCtx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [
+                    { label: 'Read (Bytes/sec)', data: [], borderColor: '#17a2b8', fill: false },
+                    { label: 'Write (Bytes/sec)', data: [], borderColor: '#ffc107', fill: false }
+                ]
+            },
+            options: { responsive: true, animation: false, scales: { y: { beginAtZero: true } } }
+        });
+        var cpuCtx = document.getElementById('cpuChart').getContext('2d');
+        cpuChart = new Chart(cpuCtx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [
+                    { label: 'CPU Usage (%)', data: [], borderColor: '#dc3545', fill: false }
+                ]
+            },
+            options: { responsive: true, animation: false, scales: { y: { beginAtZero: true, max: 100 } } }
+        });
+    }
+
+    // Initial setup
+    $timeout(function() {
+        setupCharts();
+        pollDashboardStats();
+        pollTraffic();
+        pollDiskIO();
+        pollCPU();
+        // Start polling
+        function pollAll() {
+            pollDashboardStats();
+            pollTraffic();
+            pollDiskIO();
+            pollCPU();
+            $timeout(pollAll, pollInterval);
+        }
+        pollAll();
+    }, 500);
 });

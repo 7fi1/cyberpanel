@@ -3,7 +3,6 @@
 {% block title %}{% trans "Home - CyberPanel" %}{% endblock %}
 {% block content %}
 
-
     {% get_current_language as LANGUAGE_CODE %}
     <!-- Current language: {{ LANGUAGE_CODE }} -->
 
@@ -13,6 +12,57 @@
             <p>{% trans "Use the tabs to navigate through the control panel." %}</p>
         </div>
 
+        <!-- Dashboard Stats Section -->
+        <div ng-controller="dashboardStatsController" class="row" style="margin-bottom: 30px;">
+            <!-- Info Cards -->
+            <div class="col-md-3">
+                <div class="card text-white bg-primary mb-3" style="max-width: 18rem;">
+                    <div class="card-header">Total Sites</div>
+                    <div class="card-body">
+                        <h5 class="card-title" style="font-size:2.5rem;">{$ totalSites $}</h5>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-white bg-info mb-3" style="max-width: 18rem;">
+                    <div class="card-header">WordPress Sites</div>
+                    <div class="card-body">
+                        <h5 class="card-title" style="font-size:2.5rem;">{$ totalWPSites $}</h5>
+                    </div>
+                </div>
+            </div>
+            <!-- Traffic Graph -->
+            <div class="col-md-6">
+                <div class="card mb-3">
+                    <div class="card-header">Traffic (Bytes)</div>
+                    <div class="card-body">
+                        <canvas id="trafficChart" height="80"></canvas>
+                    </div>
+                </div>
+            </div>
+            <!-- Disk IO Graph -->
+            <div class="col-md-6">
+                <div class="card mb-3">
+                    <div class="card-header">Disk IO (Bytes)</div>
+                    <div class="card-body">
+                        <canvas id="diskIOChart" height="80"></canvas>
+                    </div>
+                </div>
+            </div>
+            <!-- CPU Usage Graph -->
+            <div class="col-md-6">
+                <div class="card mb-3">
+                    <div class="card-header">CPU Usage (%)</div>
+                    <div class="card-body">
+                        <canvas id="cpuChart" height="80"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- End Dashboard Stats Section -->
+
+        <!-- Chart.js CDN -->
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
         <!--- Hide statistics for non-admins--->
         <div class="mx-10 col-lg-9 panel col-md-push-50">

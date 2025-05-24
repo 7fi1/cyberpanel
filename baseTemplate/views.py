@@ -17,6 +17,7 @@ from manageServices.models import PDNSStatus
 from django.views.decorators.csrf import ensure_csrf_cookie
 from plogical.processUtilities import ProcessUtilities
 from plogical.httpProc import httpProc
+from websiteFunctions.models import Websites, WPSites
 
 # Create your views here.
 
@@ -420,3 +421,84 @@ def RestartCyberPanel(request):
         dic = {'status': 0, 'error_message': str(msg)}
         json_data = json.dumps(dic)
         return HttpResponse(json_data)
+
+def getDashboardStats(request):
+    try:
+        total_sites = Websites.objects.count()
+        total_wp_sites = WPSites.objects.count()
+        data = {
+            'total_sites': total_sites,
+            'total_wp_sites': total_wp_sites,
+            'status': 1
+        }
+        return HttpResponse(json.dumps(data), content_type='application/json')
+    except Exception as e:
+        return HttpResponse(json.dumps({'status': 0, 'error_message': str(e)}), content_type='application/json')
+
+def getTrafficStats(request):
+    try:
+        # Get network stats from /proc/net/dev (Linux)
+        rx = tx = 0
+        with open('/proc/net/dev', 'r') as f:
+            for line in f.readlines():
+                if 'lo:' in line:
+                    continue
+                if ':' in line:
+                    parts = line.split()
+                    rx += int(parts[1])
+                    tx += int(parts[9])
+        data = {
+            'rx_bytes': rx,
+            'tx_bytes': tx,
+            'status': 1
+        }
+        return HttpResponse(json.dumps(data), content_type='application/json')
+    except Exception as e:
+        return HttpResponse(json.dumps({'status': 0, 'error_message': str(e)}), content_type='application/json')
+
+def getDiskIOStats(request):
+    try:
+        # Parse /proc/diskstats for all disks
+        read_sectors = 0
+        write_sectors = 0
+        sector_size = 512  # Most Linux systems use 512 bytes per sector
+        with open('/proc/diskstats', 'r') as f:
+            for line in f:
+                parts = line.split()
+                if len(parts) < 14:
+                    continue
+                # parts[2] is device name, skip loopback/ram devices
+                dev = parts[2]
+                if dev.startswith('loop') or dev.startswith('ram'):
+                    continue
+                # 6th and 10th columns: sectors read/written
+                read_sectors += int(parts[5])
+                write_sectors += int(parts[9])
+        data = {
+            'read_bytes': read_sectors * sector_size,
+            'write_bytes': write_sectors * sector_size,
+            'status': 1
+        }
+        return HttpResponse(json.dumps(data), content_type='application/json')
+    except Exception as e:
+        return HttpResponse(json.dumps({'status': 0, 'error_message': str(e)}), content_type='application/json')
+
+def getCPULoadGraph(request):
+    try:
+        # Parse /proc/stat for the 'cpu' line
+        with open('/proc/stat', 'r') as f:
+            for line in f:
+                if line.startswith('cpu '):
+                    parts = line.strip().split()
+                    # parts[1:] are user, nice, system, idle, iowait, irq, softirq, steal, guest, guest_nice
+                    cpu_times = [float(x) for x in parts[1:]]
+                    break
+            else:
+                cpu_times = []
+        data = {
+            'cpu_times': cpu_times,
+            'status': 1
+        }
+        return HttpResponse(json.dumps(data), content_type='application/json')
+    except Exception as e:
+        return HttpResponse(json.dumps({'status': 0, 'error_message': str(e)}), content_type='application/json')

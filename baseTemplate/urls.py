@@ -15,4 +15,8 @@ urlpatterns = [
     re_path(r'^runonboarding$', views.runonboarding, name='runonboarding'),
     re_path(r'^UpgradeStatus$', views.upgradeStatus, name='UpgradeStatus'),
     re_path(r'^upgradeVersion$', views.upgradeVersion, name='upgradeVersion'),
+    re_path(r'^getDashboardStats$', views.getDashboardStats, name='getDashboardStats'),
+    re_path(r'^getTrafficStats$', views.getTrafficStats, name='getTrafficStats'),
+    re_path(r'^getDiskIOStats$', views.getDiskIOStats, name='getDiskIOStats'),
+    re_path(r'^getCPULoadGraph$', views.getCPULoadGraph, name='getCPULoadGraph'),
 ]
