@@ -156,12 +156,6 @@
                         }
                     });
                 });
-                // Ensure traffic chart is visible and resized on load
-                setTimeout(function() {
-                    if (window.trafficChart && typeof window.trafficChart.resize === 'function') {
-                        window.trafficChart.resize();
-                    }
-                }, 700);
             });
         </script>
 

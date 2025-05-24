@@ -1008,6 +1008,13 @@ app.controller('dashboardStatsController', function ($scope, $http, $timeout) {
                 layout: { padding: 10 }
             }
         });
+        window.trafficChart = trafficChart;
+        setTimeout(function() {
+            if (window.trafficChart) {
+                window.trafficChart.resize();
+                window.trafficChart.update();
+            }
+        }, 500);
         var diskCtx = document.getElementById('diskIOChart').getContext('2d');
         diskIOChart = new Chart(diskCtx, {
             type: 'line',
