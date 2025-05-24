@@ -899,6 +899,7 @@ app.controller('dashboardStatsController', function ($scope, $http, $timeout) {
     }
 
     function pollTraffic() {
+        console.log('pollTraffic called');
         $http.get('/base/getTrafficStats').then(function(response) {
             if (response.data.status === 1) {
                 var now = new Date();
@@ -918,6 +919,7 @@ app.controller('dashboardStatsController', function ($scope, $http, $timeout) {
                         trafficChart.data.datasets[0].data = rxData.slice();
                         trafficChart.data.datasets[1].data = txData.slice();
                         trafficChart.update();
+                        console.log('trafficChart updated:', trafficChart.data.labels, trafficChart.data.datasets[0].data, trafficChart.data.datasets[1].data);
                     }
                 } else {
                     // First poll, push zero data point
@@ -929,9 +931,12 @@ app.controller('dashboardStatsController', function ($scope, $http, $timeout) {
                         trafficChart.data.datasets[0].data = rxData.slice();
                         trafficChart.data.datasets[1].data = txData.slice();
                         trafficChart.update();
+                        console.log('trafficChart first update:', trafficChart.data.labels, trafficChart.data.datasets[0].data, trafficChart.data.datasets[1].data);
                     }
                 }
                 lastRx = rx; lastTx = tx;
+            } else {
+                console.log('pollTraffic error or no data:', response);
             }
         });
     }
@@ -1013,6 +1018,7 @@ app.controller('dashboardStatsController', function ($scope, $http, $timeout) {
     }
 
     function setupCharts() {
+        console.log('setupCharts called, initializing charts...');
         var trafficCtx = document.getElementById('trafficChart').getContext('2d');
         trafficChart = new Chart(trafficCtx, {
             type: 'line',
@@ -1044,6 +1050,7 @@ app.controller('dashboardStatsController', function ($scope, $http, $timeout) {
             if (window.trafficChart) {
                 window.trafficChart.resize();
                 window.trafficChart.update();
+                console.log('trafficChart resized and updated after setup.');
             }
         }, 500);
         var diskCtx = document.getElementById('diskIOChart').getContext('2d');
@@ -1125,6 +1132,7 @@ app.controller('dashboardStatsController', function ($scope, $http, $timeout) {
     // Initial setup
     $timeout(function() {
         setupCharts();
+        // Immediately poll once so charts are updated on first load
         pollDashboardStats();
         pollTraffic();
         pollDiskIO();
