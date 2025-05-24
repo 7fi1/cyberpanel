@@ -1040,7 +1040,7 @@ app.controller('dashboardStatsController', function ($scope, $http, $timeout) {
                 interaction: { mode: 'nearest', axis: 'x', intersect: false },
                 scales: {
                     x: { grid: { color: '#e9ecef' }, ticks: { font: { size: 12 } } },
-                    y: { beginAtZero: true, grid: { color: '#e9ecef' }, ticks: { font: { size: 12 } } }
+                    y: { beginAtZero: true, suggestedMin: 0, suggestedMax: 1000, grid: { color: '#e9ecef' }, ticks: { font: { size: 12 } } }
                 },
                 layout: { padding: 10 }
             }
