@@ -17,8 +17,8 @@
             <!-- Info Cards Row -->
             <div style="display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 30px;">
                 <!-- Total Sites Card -->
-                <div style="flex: 1; min-width: 200px; max-width: 300px;">
-                    <div style="background: linear-gradient(135deg, #007bff 0%, #00c6ff 100%); color: #fff; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,123,255,0.3); height: 100%;">
+                <a href="{% url 'loadWebsitesHome' %}" style="flex: 1; min-width: 200px; max-width: 300px; text-decoration: none;">
+                    <div style="background: linear-gradient(135deg, #007bff 0%, #00c6ff 100%); color: #fff; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,123,255,0.3); height: 100%; cursor: pointer;">
                         <div style="display: flex; align-items: center;">
                             <div style="font-size: 2.5rem; margin-right: 15px; opacity: 0.9;"><i class="fa fa-globe"></i></div>
                             <div>
@@ -27,10 +27,10 @@
                             </div>
                         </div>
                     </div>
-                </div>
+                </a>
                 <!-- WordPress Sites Card -->
-                <div style="flex: 1; min-width: 200px; max-width: 300px;">
-                    <div style="background: linear-gradient(135deg, #6f42c1 0%, #b993ff 100%); color: #fff; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(111,66,193,0.3); height: 100%;">
+                <a href="{% url 'loadWebsitesHome' %}?wp=1" style="flex: 1; min-width: 200px; max-width: 300px; text-decoration: none;">
+                    <div style="background: linear-gradient(135deg, #6f42c1 0%, #b993ff 100%); color: #fff; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(111,66,193,0.3); height: 100%; cursor: pointer;">
                         <div style="display: flex; align-items: center;">
                             <div style="font-size: 2.5rem; margin-right: 15px; opacity: 0.9;"><i class="fa fa-wordpress"></i></div>
                             <div>
@@ -39,10 +39,10 @@
                             </div>
                         </div>
                     </div>
-                </div>
+                </a>
                 <!-- Total Databases Card -->
-                <div style="flex: 1; min-width: 200px; max-width: 300px;">
-                    <div style="background: linear-gradient(135deg, #17a2b8 0%, #6fe7dd 100%); color: #fff; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(23,162,184,0.3); height: 100%;">
+                <a href="{% url 'loadDatabaseHome' %}" style="flex: 1; min-width: 200px; max-width: 300px; text-decoration: none;">
+                    <div style="background: linear-gradient(135deg, #17a2b8 0%, #6fe7dd 100%); color: #fff; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(23,162,184,0.3); height: 100%; cursor: pointer;">
                         <div style="display: flex; align-items: center;">
                             <div style="font-size: 2.5rem; margin-right: 15px; opacity: 0.9;"><i class="fa fa-database"></i></div>
                             <div>
@@ -51,10 +51,10 @@
                             </div>
                         </div>
                     </div>
-                </div>
+                </a>
                 <!-- Total Emails Card -->
-                <div style="flex: 1; min-width: 200px; max-width: 300px;">
-                    <div style="background: linear-gradient(135deg, #ff9800 0%, #ffc107 100%); color: #fff; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(255,152,0,0.3); height: 100%;">
+                <a href="{% url 'loadEmailHome' %}" style="flex: 1; min-width: 200px; max-width: 300px; text-decoration: none;">
+                    <div style="background: linear-gradient(135deg, #ff9800 0%, #ffc107 100%); color: #fff; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(255,152,0,0.3); height: 100%; cursor: pointer;">
                         <div style="display: flex; align-items: center;">
                             <div style="font-size: 2.5rem; margin-right: 15px; opacity: 0.9;"><i class="fa fa-envelope"></i></div>
                             <div>
@@ -63,7 +63,7 @@
                             </div>
                         </div>
                     </div>
-                </div>
+                </a>
             </div>
             
             <!-- Graphs Section -->

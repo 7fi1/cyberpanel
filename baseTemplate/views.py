@@ -18,6 +18,8 @@ from django.views.decorators.csrf import ensure_csrf_cookie
 from plogical.processUtilities import ProcessUtilities
 from plogical.httpProc import httpProc
 from websiteFunctions.models import Websites, WPSites
+from databases.models import Databases
+from mailServer.models import EUsers
 
 # Create your views here.
 
@@ -426,9 +428,13 @@ def getDashboardStats(request):
     try:
         total_sites = Websites.objects.count()
         total_wp_sites = WPSites.objects.count()
+        total_dbs = Databases.objects.count()
+        total_emails = EUsers.objects.count()
         data = {
             'total_sites': total_sites,
             'total_wp_sites': total_wp_sites,
+            'total_dbs': total_dbs,
+            'total_emails': total_emails,
             'status': 1
         }
         return HttpResponse(json.dumps(data), content_type='application/json')
