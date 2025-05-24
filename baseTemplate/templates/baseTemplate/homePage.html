@@ -156,6 +156,15 @@
                         }
                     });
                 });
+                
+                // Force traffic tab to be active on page load
+                setTimeout(function() {
+                    var trafficTab = document.getElementById('traffic-tab');
+                    if (trafficTab) {
+                        trafficTab.click();
+                        console.log('Traffic tab manually activated on page load');
+                    }
+                }, 100);
             });
         </script>
 
