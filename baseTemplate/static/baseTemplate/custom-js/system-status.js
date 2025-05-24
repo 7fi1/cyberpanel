@@ -919,6 +919,17 @@ app.controller('dashboardStatsController', function ($scope, $http, $timeout) {
                         trafficChart.data.datasets[1].data = txData.slice();
                         trafficChart.update();
                     }
+                } else {
+                    // First poll, push zero data point
+                    trafficLabels.push(now.toLocaleTimeString());
+                    rxData.push(0);
+                    txData.push(0);
+                    if (trafficChart) {
+                        trafficChart.data.labels = trafficLabels.slice();
+                        trafficChart.data.datasets[0].data = rxData.slice();
+                        trafficChart.data.datasets[1].data = txData.slice();
+                        trafficChart.update();
+                    }
                 }
                 lastRx = rx; lastTx = tx;
             }
@@ -940,6 +951,17 @@ app.controller('dashboardStatsController', function ($scope, $http, $timeout) {
                     if (diskLabels.length > maxPoints) {
                         diskLabels.shift(); readData.shift(); writeData.shift();
                     }
+                    if (diskIOChart) {
+                        diskIOChart.data.labels = diskLabels.slice();
+                        diskIOChart.data.datasets[0].data = readData.slice();
+                        diskIOChart.data.datasets[1].data = writeData.slice();
+                        diskIOChart.update();
+                    }
+                } else {
+                    // First poll, push zero data point
+                    diskLabels.push(now.toLocaleTimeString());
+                    readData.push(0);
+                    writeData.push(0);
                     if (diskIOChart) {
                         diskIOChart.data.labels = diskLabels.slice();
                         diskIOChart.data.datasets[0].data = readData.slice();
@@ -970,6 +992,15 @@ app.controller('dashboardStatsController', function ($scope, $http, $timeout) {
                     if (cpuLabels.length > maxPoints) {
                         cpuLabels.shift(); cpuUsageData.shift();
                     }
+                    if (cpuChart) {
+                        cpuChart.data.labels = cpuLabels.slice();
+                        cpuChart.data.datasets[0].data = cpuUsageData.slice();
+                        cpuChart.update();
+                    }
+                } else {
+                    // First poll, push zero data point
+                    cpuLabels.push(now.toLocaleTimeString());
+                    cpuUsageData.push(0);
                     if (cpuChart) {
                         cpuChart.data.labels = cpuLabels.slice();
                         cpuChart.data.datasets[0].data = cpuUsageData.slice();
