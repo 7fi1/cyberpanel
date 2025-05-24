@@ -932,6 +932,13 @@ app.controller('dashboardStatsController', function ($scope, $http, $timeout) {
                         trafficChart.data.datasets[1].data = txData.slice();
                         trafficChart.update();
                         console.log('trafficChart first update:', trafficChart.data.labels, trafficChart.data.datasets[0].data, trafficChart.data.datasets[1].data);
+                        setTimeout(function() {
+                            if (window.trafficChart) {
+                                window.trafficChart.resize();
+                                window.trafficChart.update();
+                                console.log('trafficChart forced resize/update after first poll.');
+                            }
+                        }, 1000);
                     }
                 }
                 lastRx = rx; lastTx = tx;
