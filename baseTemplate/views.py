@@ -426,6 +426,8 @@ def RestartCyberPanel(request):
 
 def getDashboardStats(request):
     try:
+        val = request.session['userID']
+        currentACL = ACLManager.loadedACL(val)
         total_sites = Websites.objects.count()
         total_wp_sites = WPSites.objects.count()
         total_dbs = Databases.objects.count()
@@ -443,6 +445,8 @@ def getDashboardStats(request):
 
 def getTrafficStats(request):
     try:
+        val = request.session['userID']
+        currentACL = ACLManager.loadedACL(val)
         # Get network stats from /proc/net/dev (Linux)
         rx = tx = 0
         with open('/proc/net/dev', 'r') as f:
@@ -464,6 +468,8 @@ def getTrafficStats(request):
 
 def getDiskIOStats(request):
     try:
+        val = request.session['userID']
+        currentACL = ACLManager.loadedACL(val)
         # Parse /proc/diskstats for all disks
         read_sectors = 0
         write_sectors = 0
@@ -491,6 +497,8 @@ def getDiskIOStats(request):
 
 def getCPULoadGraph(request):
     try:
+        val = request.session['userID']
+        currentACL = ACLManager.loadedACL(val)
         # Parse /proc/stat for the 'cpu' line
         with open('/proc/stat', 'r') as f:
             for line in f:
