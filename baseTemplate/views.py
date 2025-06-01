@@ -14,12 +14,13 @@ import os
 import plogical.CyberCPLogFileWriter as logging
 from plogical.acl import ACLManager
 from manageServices.models import PDNSStatus
-from django.views.decorators.csrf import ensure_csrf_cookie
+from django.views.decorators.csrf import ensure_csrf_cookie, csrf_exempt
 from plogical.processUtilities import ProcessUtilities
 from plogical.httpProc import httpProc
 from websiteFunctions.models import Websites, WPSites
 from databases.models import Databases
 from mailServer.models import EUsers
+from django.views.decorators.http import require_GET
 
 # Create your views here.
 
@@ -516,3 +517,74 @@ def getCPULoadGraph(request):
         return HttpResponse(json.dumps(data), content_type='application/json')
     except Exception as e:
         return HttpResponse(json.dumps({'status': 0, 'error_message': str(e)}), content_type='application/json')
+
+@csrf_exempt
+@require_GET
+def getRecentSSHLogins(request):
+    try:
+        user_id = request.session.get('userID')
+        if not user_id:
+            return HttpResponse(json.dumps({'error': 'Not logged in'}), content_type='application/json', status=403)
+        currentACL = ACLManager.loadedACL(user_id)
+        if not currentACL.get('admin', 0):
+            return HttpResponse(json.dumps({'error': 'Admin only'}), content_type='application/json', status=403)
+
+        import re, time
+        from collections import OrderedDict
+
+        # Run 'last -n 20' to get recent SSH logins
+        try:
+            output = ProcessUtilities.outputExecutioner('last -n 20')
+        except Exception as e:
+            return HttpResponse(json.dumps({'error': 'Failed to run last: %s' % str(e)}), content_type='application/json', status=500)
+
+        lines = output.strip().split('\n')
+        logins = []
+        ip_cache = {}
+        for line in lines:
+            if not line.strip() or any(x in line for x in ['reboot', 'system boot', 'wtmp begins']):
+                continue
+            # Example: ubuntu   pts/0        206.84.168.7     Sun Jun  1 19:41   still logged in
+            # or:     ubuntu   pts/0        206.84.169.36    Tue May 27 11:34 - 13:47  (02:13)
+            parts = re.split(r'\s+', line, maxsplit=5)
+            if len(parts) < 5:
+                continue
+            user, tty, ip, *rest = parts
+            # Find date/time and session info
+            date_session = rest[-1] if rest else ''
+            # Try to extract date/session
+            date_match = re.search(r'([A-Za-z]{3} [A-Za-z]{3} +\d+ [\d:]+)', line)
+            date_str = date_match.group(1) if date_match else ''
+            session_info = ''
+            if '-' in line:
+                # Session ended
+                session_info = line.split('-')[-1].strip()
+            elif 'still logged in' in line:
+                session_info = 'still logged in'
+            # GeoIP lookup (cache per request)
+            country = flag = ''
+            if re.match(r'\d+\.\d+\.\d+\.\d+', ip) and ip != '127.0.0.1':
+                if ip in ip_cache:
+                    country, flag = ip_cache[ip]
+                else:
+                    try:
+                        geo = requests.get(f'http://ip-api.com/json/{ip}', timeout=2).json()
+                        country = geo.get('countryCode', '')
+                        flag = f"https://flagcdn.com/24x18/{country.lower()}.png" if country else ''
+                        ip_cache[ip] = (country, flag)
+                    except Exception:
+                        country, flag = '', ''
+            elif ip == '127.0.0.1':
+                country, flag = 'Local', ''
+            logins.append({
+                'user': user,
+                'ip': ip,
+                'country': country,
+                'flag': flag,
+                'date': date_str,
+                'session': session_info,
+                'raw': line
+            })
+        return HttpResponse(json.dumps({'logins': logins}), content_type='application/json')
+    except Exception as e:
+        return HttpResponse(json.dumps({'error': str(e)}), content_type='application/json', status=500)
