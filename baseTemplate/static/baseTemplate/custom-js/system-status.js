@@ -881,7 +881,7 @@ app.controller('dashboardStatsController', function ($scope, $http, $timeout) {
     $scope.errorSSHLogins = '';
     function fetchSSHLogins() {
         $scope.loadingSSHLogins = true;
-        $http.get('/baseTemplate/getRecentSSHLogins').then(function (response) {
+        $http.get('/base/getRecentSSHLogins').then(function (response) {
             $scope.loadingSSHLogins = false;
             if (response.data && response.data.logins) {
                 $scope.sshLogins = response.data.logins;
