@@ -1196,4 +1196,54 @@ app.controller('dashboardStatsController', function ($scope, $http, $timeout) {
         }
         pollAll();
     }, 500);
+
+    // User Session Modal logic
+    $scope.showSessionModal = false;
+    $scope.sessionUser = '';
+    $scope.sessionTTY = '';
+    $scope.sessionWOutput = '';
+    $scope.sessionTTYProcesses = '';
+    $scope.sessionProcesses = '';
+    $scope.sessionLoading = false;
+    $scope.sessionError = '';
+
+    $scope.showUserSession = function(login) {
+        $scope.sessionUser = login.user;
+        $scope.sessionTTY = login.tty || '';
+        $scope.sessionWOutput = '';
+        $scope.sessionTTYProcesses = '';
+        $scope.sessionProcesses = '';
+        $scope.sessionLoading = true;
+        $scope.sessionError = '';
+        $scope.showSessionModal = true;
+        var postData = { user: login.user };
+        // Try to extract tty from login.raw or login.tty if available
+        if (login.raw) {
+            var m = login.raw.match(/(pts\/[0-9]+)/);
+            if (m) postData.tty = m[1];
+        } else if (login.tty) {
+            postData.tty = login.tty;
+        }
+        $http.post('/base/getUserSessionInfo', postData).then(function(response) {
+            $scope.sessionLoading = false;
+            var data = response.data;
+            $scope.sessionWOutput = data.w_output || '';
+            $scope.sessionTTYProcesses = data.tty_processes || '';
+            $scope.sessionProcesses = data.processes || '';
+        }, function(err) {
+            $scope.sessionLoading = false;
+            $scope.sessionError = (err.data && err.data.error) ? err.data.error : 'Failed to fetch session info.';
+        });
+    };
+
+    $scope.closeSessionModal = function() {
+        $scope.showSessionModal = false;
+        $scope.sessionUser = '';
+        $scope.sessionTTY = '';
+        $scope.sessionWOutput = '';
+        $scope.sessionTTYProcesses = '';
+        $scope.sessionProcesses = '';
+        $scope.sessionLoading = false;
+        $scope.sessionError = '';
+    };
 });

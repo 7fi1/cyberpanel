@@ -20,7 +20,7 @@ from plogical.httpProc import httpProc
 from websiteFunctions.models import Websites, WPSites
 from databases.models import Databases
 from mailServer.models import EUsers
-from django.views.decorators.http import require_GET
+from django.views.decorators.http import require_GET, require_POST
 
 # Create your views here.
 
@@ -623,5 +623,39 @@ def getRecentSSHLogs(request):
                 message = line
             logs.append({'timestamp': timestamp, 'message': message, 'raw': line})
         return HttpResponse(json.dumps({'logs': logs}), content_type='application/json')
+    except Exception as e:
+        return HttpResponse(json.dumps({'error': str(e)}), content_type='application/json', status=500)
+
+@csrf_exempt
+@require_POST
+def getUserSessionInfo(request):
+    try:
+        user_id = request.session.get('userID')
+        if not user_id:
+            return HttpResponse(json.dumps({'error': 'Not logged in'}), content_type='application/json', status=403)
+        currentACL = ACLManager.loadedACL(user_id)
+        if not currentACL.get('admin', 0):
+            return HttpResponse(json.dumps({'error': 'Admin only'}), content_type='application/json', status=403)
+        from plogical.processUtilities import ProcessUtilities
+        data = json.loads(request.body.decode('utf-8'))
+        user = data.get('user')
+        tty = data.get('tty')
+        if not user:
+            return HttpResponse(json.dumps({'error': 'Missing user'}), content_type='application/json', status=400)
+        result = {}
+        try:
+            result['processes'] = ProcessUtilities.outputExecutioner(f'ps -u {user}')
+        except Exception as e:
+            result['processes'] = f'Error: {str(e)}'
+        if tty:
+            try:
+                result['tty_processes'] = ProcessUtilities.outputExecutioner(f'ps -ft {tty}')
+            except Exception as e:
+                result['tty_processes'] = f'Error: {str(e)}'
+        try:
+            result['w_output'] = ProcessUtilities.outputExecutioner(f'w -h {user}')
+        except Exception as e:
+            result['w_output'] = f'Error: {str(e)}'
+        return HttpResponse(json.dumps(result), content_type='application/json')
     except Exception as e:
         return HttpResponse(json.dumps({'error': str(e)}), content_type='application/json', status=500)
