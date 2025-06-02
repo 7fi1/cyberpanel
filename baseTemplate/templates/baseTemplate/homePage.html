@@ -108,7 +108,7 @@
                                         "
                                     >
                                         {$ totalSites $}
-                                    </div>
+                                </div>
                                     <div
                                         style="
                                             font-size: 1rem;
@@ -118,12 +118,12 @@
                                         "
                                     >
                                         Total Sites
-                                    </div>
-                                </div>
-                            </div>
                         </div>
-                    </div>
-                </a>
+                                </div>
+                                </div>
+                        </div>
+                                </div>
+                            </a>
 
                 <!-- WordPress Sites Card -->
                 <a
@@ -167,7 +167,7 @@
                                         "
                                     >
                                         {$ totalWPSites $}
-                                    </div>
+                                </div>
                                     <div
                                         style="
                                             font-size: 1rem;
@@ -177,12 +177,12 @@
                                         "
                                     >
                                         WordPress Sites
-                                    </div>
-                                </div>
-                            </div>
                         </div>
-                    </div>
-                </a>
+                                </div>
+                                </div>
+                        </div>
+                                </div>
+                            </a>
 
                 <!-- Total Databases Card -->
                 <a
@@ -239,9 +239,9 @@
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    </div>
-                </a>
+                                    </div>
+                                    </div>
+                                </a>
 
                 <!-- Total Emails Card -->
                 <a
@@ -298,12 +298,12 @@
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                            </div>
                     </div>
                 </a>
             </div>
 
-            {% if admin %}
+        {% if admin %}
                 <div ng-controller="homePageStatus" style="margin-bottom: 40px;">
                     <div style="display: flex; justify-content: center; gap: 30px; align-items: stretch; flex-wrap: wrap;" class="system-stats-row">
                         <!-- CPU Usage -->
@@ -312,41 +312,41 @@
                             <div style="display: flex; justify-content: center;">
                                 <div id="redcircle" class="c100 red p{$ cpuUsage $}">
                                     <span style="font-weight: 700; font-size: 1.2rem; color: #333;">{$ cpuUsage $}%</span>
-                                    <div class="slice">
-                                        <div class="bar"></div>
-                                        <div class="fill"></div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                                                    <div class="slice">
+                                                        <div class="bar"></div>
+                                                        <div class="fill"></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
                         <!-- RAM Usage -->
                         <div style="background: #fff; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); padding: 30px 40px; flex: 1 1 0; min-width: 0; text-align: center; border: 1px solid #e9ecef;">
                             <div style="font-size: 1rem; color: #43a047; font-weight: 600; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px;">{% trans "Ram Usage" %}</div>
                             <div style="display: flex; justify-content: center;">
                                 <div id="greencircle" class="c100 p{$ ramUsage $} green">
                                     <span style="font-weight: 700; font-size: 1.2rem; color: #333;">{$ ramUsage $}%</span>
-                                    <div class="slice">
-                                        <div class="bar"></div>
-                                        <div class="fill"></div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                                                    <div class="slice">
+                                                        <div class="bar"></div>
+                                                        <div class="fill"></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
                         <!-- Disk Usage -->
                         <div style="background: #fff; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); padding: 30px 40px; flex: 1 1 0; min-width: 0; text-align: center; border: 1px solid #e9ecef;">
                             <div style="font-size: 1rem; color: #d81b60; font-weight: 600; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px;">{% trans "Disk Usage '/'" %}</div>
                             <div style="display: flex; justify-content: center;">
                                 <div id="pinkcircle" class="c100 pink p{$ diskUsage $}">
                                     <span style="font-weight: 700; font-size: 1.2rem; color: #333;">{$ diskUsage $}%</span>
-                                    <div class="slice">
-                                        <div class="bar"></div>
-                                        <div class="fill"></div>
+                                                    <div class="slice">
+                                                        <div class="bar"></div>
+                                                        <div class="fill"></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
             {% endif %}
 
             <!--
@@ -449,7 +449,7 @@
                             </a>
                         </li>
                     </ul>
-                </div>
+                            </div>
 
                 <!-- Tab Content -->
                 <div
@@ -484,68 +484,74 @@
                         <canvas id="cpuChart" height="80"></canvas>
                     </div>
                 </div>
-            </div>
+                        </div>
 
             <!-- SSH Logins and Logs Row (side by side) -->
             {% if admin %}
             <div style="display: flex; gap: 30px; justify-content: center; align-items: flex-start; flex-wrap: wrap; margin-bottom: 40px;">
                 <!-- Recent SSH Logins Widget -->
                 <div style="flex: 1 1 420px; min-width: 320px; max-width: 600px; background: #fff; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); padding: 25px 30px; border: 1px solid #e9ecef;">
-                    <div style="font-size: 1.25rem; font-weight: 700; color: #333; letter-spacing: 0.5px; margin-bottom: 18px;">Recent SSH Logins</div>
-                    <div ng-if="loadingSSHLogins" style="text-align: center; padding: 20px; color: #888;">Loading recent SSH logins...</div>
-                    <div ng-if="!loadingSSHLogins && sshLogins.length === 0" style="text-align: center; color: #888; padding: 20px;">No recent SSH logins found.</div>
-                    <div ng-if="!loadingSSHLogins && sshLogins.length > 0" style="overflow-x: auto;">
-                        <table style="width: 100%; border-collapse: collapse; min-width: 320px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <div style="font-size: 1.25rem; font-weight: 700; color: #333;">Recent SSH Logins</div>
+                        <button class="btn btn-sm btn-outline-primary" ng-click="refreshSSHLogins()" title="Refresh"><span style="font-size:1.2em;">&#x21bb;</span> Refresh</button>
+                    </div>
+                    <div ng-if="loadingSSHLogins" style="text-align:center; color:#888; padding:20px;">Loading...</div>
+                    <div ng-if="errorSSHLogins" style="color:#e53935;">{$ errorSSHLogins $}</div>
+                    <div ng-if="!loadingSSHLogins && !errorSSHLogins && sshLogins.length === 0" style="text-align:center; color:#888; padding:20px;">No recent SSH logins found.</div>
+                    <div style="overflow-x:auto;">
+                        <table class="table table-striped table-hover" style="margin-bottom:0;">
                             <thead>
-                                <tr style="background: #4c5fad; color: #fff;">
-                                    <th style="padding: 12px 15px; border-radius: 8px 0 0 8px; text-align: left; font-weight: 600;">User</th>
-                                    <th style="padding: 12px 15px; text-align: left; font-weight: 600;">IP</th>
-                                    <th style="padding: 12px 15px; text-align: left; font-weight: 600;">Country</th>
-                                    <th style="padding: 12px 15px; text-align: left; font-weight: 600;">Date/Time</th>
-                                    <th style="padding: 12px 15px; border-radius: 0 8px 8px 0; text-align: left; font-weight: 600;">Session</th>
+                                <tr style="background:#f1f3f6;">
+                                    <th>User</th>
+                                    <th>IP</th>
+                                    <th>Country</th>
+                                    <th>Date</th>
+                                    <th>Session</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr ng-repeat="login in sshLogins" class="ssh-login-row" style="background: #f8f9fa; border-bottom: 1px solid #e9ecef; transition: background 0.2s;">
-                                    <td style="padding: 10px 15px; font-weight: 600; color: #333;">{$ login.user $}</td>
-                                    <td style="padding: 10px 15px; color: #555;">{$ login.ip $}</td>
-                                    <td style="padding: 10px 15px;">
-                                        <span ng-if="login.flag"><img ng-src="{$ login.flag $}" alt="{$ login.country $}" style="height: 18px; margin-right: 6px; vertical-align: middle; border-radius: 2px;" /></span>
+                                <tr ng-repeat="login in sshLogins" style="background: #f8f9fa; border-bottom: 1px solid #e9ecef;">
+                                    <td style="padding: 8px 8px; font-weight: 600; color: #333;">{$ login.user $}</td>
+                                    <td style="padding: 8px 8px; color: #555;">{$ login.ip $}</td>
+                                    <td style="padding: 8px 8px;">
+                                        <span ng-if="login.flag"><img ng-src="{$ login.flag $}" alt="{$ login.country $}" style="height: 18px; margin-right: 6px; vertical-align: middle;" /></span>
                                         <span ng-if="!login.flag && login.country">{$ login.country $}</span>
-                                        <span ng-if="!login.flag && !login.country">-</span>
                                     </td>
-                                    <td style="padding: 10px 15px; color: #555;">{$ login.date $}</td>
-                                    <td style="padding: 10px 15px; color: #888;">{$ login.session $}</td>
+                                    <td style="padding: 8px 8px;">{$ login.date $}</td>
+                                    <td style="padding: 8px 8px;">{$ login.session $}</td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
                 </div>
                 <!-- Recent SSH Logs Widget -->
-                <div style="flex: 1 1 420px; min-width: 320px; max-width: 600px; background: #fff; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); padding: 25px 30px; border: 1px solid #e9ecef;">
-                    <div style="font-size: 1.25rem; font-weight: 700; color: #333; letter-spacing: 0.5px; margin-bottom: 18px;">Recent SSH Logs</div>
-                    <div ng-if="loadingSSHLogs" style="text-align: center; padding: 20px; color: #888;">Loading recent SSH logs...</div>
-                    <div ng-if="errorSSHLogs" style="text-align: center; color: #d81b60; padding: 20px;">{$ errorSSHLogs $}</div>
-                    <div ng-if="!loadingSSHLogs && sshLogs.length === 0 && !errorSSHLogs" style="text-align: center; color: #888; padding: 20px;">No recent SSH logs found.</div>
-                    <div ng-if="!loadingSSHLogs && sshLogs.length > 0" style="overflow-x: auto; max-height: 350px;">
-                        <table style="width: 100%; border-collapse: collapse; min-width: 320px;">
+                <div style="flex: 1 1 520px; min-width: 380px; max-width: 900px; background: #fff; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); padding: 25px 30px; border: 1px solid #e9ecef; min-height: 480px; max-height: 600px; display: flex; flex-direction: column;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <div style="font-size: 1.25rem; font-weight: 700; color: #333;">Recent SSH Logs</div>
+                        <button class="btn btn-sm btn-outline-primary" ng-click="refreshSSHLogs()" title="Refresh"><span style="font-size:1.2em;">&#x21bb;</span> Refresh</button>
+                    </div>
+                    <div ng-if="loadingSSHLogs" style="text-align:center; color:#888; padding:20px;">Loading...</div>
+                    <div ng-if="errorSSHLogs" style="color:#e53935;">{$ errorSSHLogs $}</div>
+                    <div ng-if="!loadingSSHLogs && !errorSSHLogs && sshLogs.length === 0" style="text-align:center; color:#888; padding:20px;">No recent SSH logs found.</div>
+                    <div style="overflow-y:auto; flex:1; max-height: 480px;">
+                        <table class="table table-striped table-hover" style="margin-bottom:0;">
                             <thead>
-                                <tr style="background: #4c5fad; color: #fff;">
-                                    <th style="padding: 12px 15px; border-radius: 8px 0 0 8px; text-align: left; font-weight: 600;">Timestamp</th>
-                                    <th style="padding: 12px 15px; border-radius: 0 8px 8px 0; text-align: left; font-weight: 600;">Message</th>
+                                <tr style="background:#f1f3f6;">
+                                    <th style="width: 160px;">Timestamp</th>
+                                    <th>Message</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr ng-repeat="log in sshLogs" style="background: #f8f9fa; border-bottom: 1px solid #e9ecef; transition: background 0.2s;">
-                                    <td style="padding: 10px 15px; color: #555; white-space: nowrap;">{$ log.timestamp $}</td>
-                                    <td style="padding: 10px 15px; color: #333;">{$ log.message $}</td>
+                                <tr ng-repeat="log in sshLogs">
+                                    <td style="padding: 8px 8px; color: #555;">{$ log.timestamp $}</td>
+                                    <td style="padding: 8px 8px; font-family: monospace;">{$ log.message $}</td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
                 </div>
             </div>
-            {% endif %}
+        {% endif %}
         </div>
         <!-- End Dashboard Stats Section -->
 

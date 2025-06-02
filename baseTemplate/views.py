@@ -612,16 +612,16 @@ def getRecentSSHLogs(request):
         lines = output.split('\n')
         logs = []
         for line in lines:
-            if 'sshd' in line:
-                # Try to split into timestamp and message
-                parts = line.split()
-                if len(parts) > 4:
-                    timestamp = ' '.join(parts[:3])
-                    message = ' '.join(parts[4:])
-                else:
-                    timestamp = ''
-                    message = line
-                logs.append({'timestamp': timestamp, 'message': message, 'raw': line})
+            if not line.strip():
+                continue
+            parts = line.split()
+            if len(parts) > 4:
+                timestamp = ' '.join(parts[:3])
+                message = ' '.join(parts[4:])
+            else:
+                timestamp = ''
+                message = line
+            logs.append({'timestamp': timestamp, 'message': message, 'raw': line})
         return HttpResponse(json.dumps({'logs': logs}), content_type='application/json')
     except Exception as e:
         return HttpResponse(json.dumps({'error': str(e)}), content_type='application/json', status=500)

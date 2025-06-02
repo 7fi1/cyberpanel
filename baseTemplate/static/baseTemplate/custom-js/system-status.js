@@ -868,18 +868,37 @@ app.controller('OnboardingCP', function ($scope, $http, $timeout, $window) {
 
 });
 
-app.controller('dashboardStatsController', function ($scope, $http, $timeout) {
+app.controller('dashboardStatsController', function ($scope, $http) {
     // Card values
     $scope.totalSites = 0;
     $scope.totalWPSites = 0;
     $scope.totalDBs = 0;
     $scope.totalEmails = 0;
 
+    // SSH Logins
+    $scope.sshLogins = [];
+    $scope.loadingSSHLogins = true;
+    $scope.errorSSHLogins = '';
+    $scope.refreshSSHLogins = function() {
+        $scope.loadingSSHLogins = true;
+        $http.get('/base/getRecentSSHLogins').then(function (response) {
+            $scope.loadingSSHLogins = false;
+            if (response.data && response.data.logins) {
+                $scope.sshLogins = response.data.logins;
+            } else {
+                $scope.sshLogins = [];
+            }
+        }, function (err) {
+            $scope.loadingSSHLogins = false;
+            $scope.errorSSHLogins = 'Failed to load SSH logins.';
+        });
+    };
+
     // SSH Logs
     $scope.sshLogs = [];
     $scope.loadingSSHLogs = true;
     $scope.errorSSHLogs = '';
-    function fetchSSHLogs() {
+    $scope.refreshSSHLogs = function() {
         $scope.loadingSSHLogs = true;
         $http.get('/base/getRecentSSHLogs').then(function (response) {
             $scope.loadingSSHLogs = false;
@@ -892,35 +911,11 @@ app.controller('dashboardStatsController', function ($scope, $http, $timeout) {
             $scope.loadingSSHLogs = false;
             $scope.errorSSHLogs = 'Failed to load SSH logs.';
         });
-    }
-    fetchSSHLogs();
-    setInterval(fetchSSHLogs, 10000);
-
-    // SSH Logins
-    $scope.sshLogins = [];
-    $scope.loadingSSHLogins = true;
-    $scope.errorSSHLogins = '';
-    function fetchSSHLogins() {
-        $scope.loadingSSHLogins = true;
-        $http.get('/base/getRecentSSHLogins').then(function (response) {
-            $scope.loadingSSHLogins = false;
-            if (response.data && response.data.logins) {
-                $scope.sshLogins = response.data.logins;
-            } else {
-                $scope.sshLogins = [];
-            }
-        }, function (error) {
-            $scope.loadingSSHLogins = false;
-            $scope.sshLogins = [];
-            $scope.errorSSHLogins = 'Failed to load SSH logins.';
-        });
-    }
-    fetchSSHLogins();
-    var sshPoller = function() {
-        fetchSSHLogins();
-        $timeout(sshPoller, 10000);
     };
-    $timeout(sshPoller, 10000);
+
+    // Initial fetch
+    $scope.refreshSSHLogins();
+    $scope.refreshSSHLogs();
 
     // Chart.js chart objects
     var trafficChart, diskIOChart, cpuChart;
