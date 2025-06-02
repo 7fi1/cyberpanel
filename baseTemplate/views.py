@@ -21,6 +21,7 @@ from websiteFunctions.models import Websites, WPSites
 from databases.models import Databases
 from mailServer.models import EUsers
 from django.views.decorators.http import require_GET, require_POST
+import pwd
 
 # Create your views here.
 
@@ -629,7 +630,7 @@ def getRecentSSHLogs(request):
 @csrf_exempt
 @require_POST
 def getSSHUserActivity(request):
-    import json
+    import json, os
     from plogical.processUtilities import ProcessUtilities
     try:
         user_id = request.session.get('userID')
@@ -641,28 +642,95 @@ def getSSHUserActivity(request):
         data = json.loads(request.body.decode('utf-8'))
         user = data.get('user')
         tty = data.get('tty')
+        login_ip = data.get('ip', '')
         if not user:
             return HttpResponse(json.dumps({'error': 'Missing user'}), content_type='application/json', status=400)
         # Get processes for the user
-        ps_cmd = f"ps -u {user} -o pid,tty,time,cmd --no-headers"
+        ps_cmd = f"ps -u {user} -o pid,ppid,tty,time,cmd --no-headers"
         try:
             ps_output = ProcessUtilities.outputExecutioner(ps_cmd)
         except Exception as e:
             ps_output = ''
         processes = []
+        pid_map = {}
         if ps_output:
             for line in ps_output.strip().split('\n'):
-                parts = line.split(None, 3)
-                if len(parts) == 4:
-                    pid, tty_val, time_val, cmd = parts
+                parts = line.split(None, 4)
+                if len(parts) == 5:
+                    pid, ppid, tty_val, time_val, cmd = parts
                     if tty and tty not in tty_val:
                         continue
-                    processes.append({
+                    # Try to get CWD
+                    cwd = ''
+                    try:
+                        cwd_path = f"/proc/{pid}/cwd"
+                        if os.path.islink(cwd_path):
+                            cwd = os.readlink(cwd_path)
+                    except Exception:
+                        cwd = ''
+                    proc = {
                         'pid': pid,
+                        'ppid': ppid,
                         'tty': tty_val,
                         'time': time_val,
-                        'cmd': cmd
-                    })
+                        'cmd': cmd,
+                        'cwd': cwd
+                    }
+                    processes.append(proc)
+                    pid_map[pid] = proc
+        # Build process tree
+        tree = []
+        def build_tree(parent_pid, level=0):
+            for proc in processes:
+                if proc['ppid'] == parent_pid:
+                    proc_copy = proc.copy()
+                    proc_copy['level'] = level
+                    tree.append(proc_copy)
+                    build_tree(proc['pid'], level+1)
+        build_tree('1', 0)  # Start from init
+        # Find main shell process for history
+        shell_history = []
+        try:
+            shell_home = pwd.getpwnam(user).pw_dir
+        except Exception:
+            shell_home = f"/home/{user}"
+        history_file = ''
+        for shell in ['.bash_history', '.zsh_history']:
+            path = os.path.join(shell_home, shell)
+            if os.path.exists(path):
+                history_file = path
+                break
+        if history_file:
+            try:
+                with open(history_file, 'r') as f:
+                    lines = f.readlines()
+                    shell_history = [l.strip() for l in lines[-10:]]
+            except Exception:
+                shell_history = []
+        # Disk usage
+        disk_usage = ''
+        try:
+            du_out = ProcessUtilities.outputExecutioner(f'du -sh {shell_home}')
+            disk_usage = du_out.strip().split('\t')[0] if du_out else ''
+        except Exception:
+            disk_usage = ''
+        # GeoIP details
+        geoip = {}
+        if login_ip and login_ip not in ['127.0.0.1', 'localhost']:
+            try:
+                geo = requests.get(f'http://ip-api.com/json/{login_ip}?fields=status,message,country,regionName,city,isp,org,as,query', timeout=2).json()
+                if geo.get('status') == 'success':
+                    geoip = {
+                        'country': geo.get('country'),
+                        'region': geo.get('regionName'),
+                        'city': geo.get('city'),
+                        'isp': geo.get('isp'),
+                        'org': geo.get('org'),
+                        'as': geo.get('as'),
+                        'ip': geo.get('query')
+                    }
+            except Exception:
+                geoip = {}
         # Optionally, get 'w' output for more info
         w_cmd = f"w -h {user}"
         try:
@@ -673,6 +741,13 @@ def getSSHUserActivity(request):
         if w_output:
             for line in w_output.strip().split('\n'):
                 w_lines.append(line)
-        return HttpResponse(json.dumps({'processes': processes, 'w': w_lines}), content_type='application/json')
+        return HttpResponse(json.dumps({
+            'processes': processes,
+            'process_tree': tree,
+            'shell_history': shell_history,
+            'disk_usage': disk_usage,
+            'geoip': geoip,
+            'w': w_lines
+        }), content_type='application/json')
     except Exception as e:
         return HttpResponse(json.dumps({'error': str(e)}), content_type='application/json', status=500)
