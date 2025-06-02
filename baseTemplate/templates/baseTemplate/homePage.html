@@ -6,10 +6,6 @@
     {% get_current_language as LANGUAGE_CODE %}
     <!-- Current language: {{ LANGUAGE_CODE }} -->
 
-    <!--
-      Note: We have updated colors to match the CyberPanel theme and fixed the system resource cards
-      to display properly with horizontal layout. All existing JS/selectors are preserved.
-    -->
     <div
         class="container"
         style="
@@ -308,158 +304,44 @@
             </div>
 
             {% if admin %}
-                <!--
-                ===============================
-                  System Stat Cards (CPU / RAM / Disk) - Fixed to match image design
-                ===============================
-                -->
                 <div ng-controller="homePageStatus" style="margin-bottom: 40px;">
-                    <div
-                        style="
-                            display: flex;
-                            justify-content: center;
-                            gap: 20px;
-                            align-items: stretch;
-                            flex-wrap: wrap;
-                        "
-                    >
+                    <div style="display: flex; justify-content: center; gap: 30px; align-items: stretch; flex-wrap: wrap;" class="system-stats-row">
                         <!-- CPU Usage -->
-                        <div
-                            class="system-stat-card"
-                            style="
-                                background: #fff;
-                                border-radius: 10px;
-                                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-                                padding: 30px 40px;
-                                min-width: 200px;
-                                text-align: center;
-                                border: 1px solid #e9ecef;
-                                transition: all 0.3s ease;
-                            "
-                        >
-                            <div
-                                style="
-                                    font-size: 1rem;
-                                    color: #e53935;
-                                    font-weight: 600;
-                                    margin-bottom: 15px;
-                                    text-transform: uppercase;
-                                    letter-spacing: 1px;
-                                "
-                            >
-                                {% trans "CPU Usage" %}
-                            </div>
-                            <div
-                                id="redcircle"
-                                class="c100 red cpu"
-                                style="margin: 0 auto;"
-                            >
-                                <span
-                                    style="
-                                        font-weight: 700;
-                                        font-size: 1.2rem;
-                                        color: #333;
-                                    "
-                                >
-                                    {$ cpuUsage $}%
-                                </span>
-                                <div class="slice">
-                                    <div class="bar" style="border-color: #e53935;"></div>
-                                    <div class="fill" style="border-color: #e53935;"></div>
+                        <div style="background: #fff; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); padding: 30px 40px; flex: 1 1 0; min-width: 0; text-align: center; border: 1px solid #e9ecef;">
+                            <div style="font-size: 1rem; color: #e53935; font-weight: 600; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px;">{% trans "CPU Usage" %}</div>
+                            <div style="display: flex; justify-content: center;">
+                                <div id="redcircle" class="c100 red p{$ cpuUsage $}">
+                                    <span style="font-weight: 700; font-size: 1.2rem; color: #333;">{$ cpuUsage $}%</span>
+                                    <div class="slice">
+                                        <div class="bar"></div>
+                                        <div class="fill"></div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-
                         <!-- RAM Usage -->
-                        <div
-                            class="system-stat-card"
-                            style="
-                                background: #fff;
-                                border-radius: 10px;
-                                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-                                padding: 30px 40px;
-                                min-width: 200px;
-                                text-align: center;
-                                border: 1px solid #e9ecef;
-                                transition: all 0.3s ease;
-                            "
-                        >
-                            <div
-                                style="
-                                    font-size: 1rem;
-                                    color: #43a047;
-                                    font-weight: 600;
-                                    margin-bottom: 15px;
-                                    text-transform: uppercase;
-                                    letter-spacing: 1px;
-                                "
-                            >
-                                {% trans "Ram Usage" %}
-                            </div>
-                            <div
-                                id="greencircle"
-                                class="c100 p0 green ram"
-                                style="margin: 0 auto;"
-                            >
-                                <span
-                                    style="
-                                        font-weight: 700;
-                                        font-size: 1.2rem;
-                                        color: #333;
-                                    "
-                                >
-                                    {$ ramUsage $}%
-                                </span>
-                                <div class="slice">
-                                    <div class="bar" style="border-color: #43a047;"></div>
-                                    <div class="fill" style="border-color: #43a047;"></div>
+                        <div style="background: #fff; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); padding: 30px 40px; flex: 1 1 0; min-width: 0; text-align: center; border: 1px solid #e9ecef;">
+                            <div style="font-size: 1rem; color: #43a047; font-weight: 600; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px;">{% trans "Ram Usage" %}</div>
+                            <div style="display: flex; justify-content: center;">
+                                <div id="greencircle" class="c100 p{$ ramUsage $} green">
+                                    <span style="font-weight: 700; font-size: 1.2rem; color: #333;">{$ ramUsage $}%</span>
+                                    <div class="slice">
+                                        <div class="bar"></div>
+                                        <div class="fill"></div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-
                         <!-- Disk Usage -->
-                        <div
-                            class="system-stat-card"
-                            style="
-                                background: #fff;
-                                border-radius: 10px;
-                                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-                                padding: 30px 40px;
-                                min-width: 200px;
-                                text-align: center;
-                                border: 1px solid #e9ecef;
-                                transition: all 0.3s ease;
-                            "
-                        >
-                            <div
-                                style="
-                                    font-size: 1rem;
-                                    color: #d81b60;
-                                    font-weight: 600;
-                                    margin-bottom: 15px;
-                                    text-transform: uppercase;
-                                    letter-spacing: 1px;
-                                "
-                            >
-                                {% trans "Disk Usage '/'" %}
-                            </div>
-                            <div
-                                id="pinkcircle"
-                                class="c100 pink disk"
-                                style="margin: 0 auto;"
-                            >
-                                <span
-                                    style="
-                                        font-weight: 700;
-                                        font-size: 1.2rem;
-                                        color: #333;
-                                    "
-                                >
-                                    {$ diskUsage $}%
-                                </span>
-                                <div class="slice">
-                                    <div class="bar" style="border-color: #d81b60;"></div>
-                                    <div class="fill" style="border-color: #d81b60;"></div>
+                        <div style="background: #fff; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); padding: 30px 40px; flex: 1 1 0; min-width: 0; text-align: center; border: 1px solid #e9ecef;">
+                            <div style="font-size: 1rem; color: #d81b60; font-weight: 600; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px;">{% trans "Disk Usage '/'" %}</div>
+                            <div style="display: flex; justify-content: center;">
+                                <div id="pinkcircle" class="c100 pink p{$ diskUsage $}">
+                                    <span style="font-weight: 700; font-size: 1.2rem; color: #333;">{$ diskUsage $}%</span>
+                                    <div class="slice">
+                                        <div class="bar"></div>
+                                        <div class="fill"></div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -604,180 +486,66 @@
                 </div>
             </div>
 
-            <!--
-            =========================================
-              Recent SSH Logins Widget (Table)
-            =========================================
-            -->
-            <div style="margin-bottom: 40px;">
-                <div
-                    style="
-                        background: #fff;
-                        border-radius: 10px;
-                        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-                        padding: 25px 30px;
-                        max-width: 900px;
-                        margin: 0 auto;
-                        border: 1px solid #e9ecef;
-                    "
-                >
-                    <div
-                        style="
-                            display: flex;
-                            align-items: center;
-                            margin-bottom: 18px;
-                        "
-                    >
-                        <span
-                            style="
-                                font-size: 1.25rem;
-                                font-weight: 700;
-                                color: #333;
-                                letter-spacing: 0.5px;
-                            "
-                        >
-                            Recent SSH Logins
-                        </span>
-                    </div>
-
-                    <!-- Loading State -->
-                    <div
-                        ng-if="loadingSSHLogins"
-                        style="text-align: center; padding: 20px; color: #888;"
-                    >
-                        <i class="fa fa-spinner fa-spin"></i> Loading recent SSH logins...
-                    </div>
-
-                    <!-- No Logins Found -->
-                    <div
-                        ng-if="!loadingSSHLogins && sshLogins.length === 0"
-                        style="text-align: center; color: #888; padding: 20px;"
-                    >
-                        No recent SSH logins found.
-                    </div>
-
-                    <!-- Table of Logins -->
-                    <div
-                        ng-if="!loadingSSHLogins && sshLogins.length > 0"
-                        style="overflow-x: auto;"
-                    >
-                        <table
-                            style="
-                                width: 100%;
-                                border-collapse: collapse;
-                                min-width: 600px;
-                            "
-                        >
+            <!-- SSH Logins and Logs Row (side by side) -->
+            {% if admin %}
+            <div style="display: flex; gap: 30px; justify-content: center; align-items: flex-start; flex-wrap: wrap; margin-bottom: 40px;">
+                <!-- Recent SSH Logins Widget -->
+                <div style="flex: 1 1 420px; min-width: 320px; max-width: 600px; background: #fff; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); padding: 25px 30px; border: 1px solid #e9ecef;">
+                    <div style="font-size: 1.25rem; font-weight: 700; color: #333; letter-spacing: 0.5px; margin-bottom: 18px;">Recent SSH Logins</div>
+                    <div ng-if="loadingSSHLogins" style="text-align: center; padding: 20px; color: #888;">Loading recent SSH logins...</div>
+                    <div ng-if="!loadingSSHLogins && sshLogins.length === 0" style="text-align: center; color: #888; padding: 20px;">No recent SSH logins found.</div>
+                    <div ng-if="!loadingSSHLogins && sshLogins.length > 0" style="overflow-x: auto;">
+                        <table style="width: 100%; border-collapse: collapse; min-width: 320px;">
                             <thead>
-                                <tr
-                                    style="
-                                        background: #4c5fad;
-                                        color: #fff;
-                                    "
-                                >
-                                    <th
-                                        style="
-                                            padding: 12px 15px;
-                                            border-radius: 8px 0 0 8px;
-                                            text-align: left;
-                                            font-weight: 600;
-                                        "
-                                    >
-                                        User
-                                    </th>
-                                    <th
-                                        style="
-                                            padding: 12px 15px;
-                                            text-align: left;
-                                            font-weight: 600;
-                                        "
-                                    >
-                                        IP
-                                    </th>
-                                    <th
-                                        style="
-                                            padding: 12px 15px;
-                                            text-align: left;
-                                            font-weight: 600;
-                                        "
-                                    >
-                                        Country
-                                    </th>
-                                    <th
-                                        style="
-                                            padding: 12px 15px;
-                                            text-align: left;
-                                            font-weight: 600;
-                                        "
-                                    >
-                                        Date/Time
-                                    </th>
-                                    <th
-                                        style="
-                                            padding: 12px 15px;
-                                            border-radius: 0 8px 8px 0;
-                                            text-align: left;
-                                            font-weight: 600;
-                                        "
-                                    >
-                                        Session
-                                    </th>
+                                <tr style="background: #4c5fad; color: #fff;">
+                                    <th style="padding: 12px 15px; border-radius: 8px 0 0 8px; text-align: left; font-weight: 600;">User</th>
+                                    <th style="padding: 12px 15px; text-align: left; font-weight: 600;">IP</th>
+                                    <th style="padding: 12px 15px; text-align: left; font-weight: 600;">Country</th>
+                                    <th style="padding: 12px 15px; text-align: left; font-weight: 600;">Date/Time</th>
+                                    <th style="padding: 12px 15px; border-radius: 0 8px 8px 0; text-align: left; font-weight: 600;">Session</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr
-                                    ng-repeat="login in sshLogins"
-                                    class="ssh-login-row"
-                                    style="
-                                        background: #f8f9fa;
-                                        border-bottom: 1px solid #e9ecef;
-                                        transition: background 0.2s;
-                                    "
-                                >
-                                    <td
-                                        style="
-                                            padding: 10px 15px;
-                                            font-weight: 600;
-                                            color: #333;
-                                        "
-                                    >
-                                        {$ login.user $}
-                                    </td>
-                                    <td style="padding: 10px 15px; color: #555;">
-                                        {$ login.ip $}
-                                    </td>
+                                <tr ng-repeat="login in sshLogins" class="ssh-login-row" style="background: #f8f9fa; border-bottom: 1px solid #e9ecef; transition: background 0.2s;">
+                                    <td style="padding: 10px 15px; font-weight: 600; color: #333;">{$ login.user $}</td>
+                                    <td style="padding: 10px 15px; color: #555;">{$ login.ip $}</td>
                                     <td style="padding: 10px 15px;">
-                                        <span ng-if="login.flag">
-                                            <img
-                                                ng-src="{$ login.flag $}"
-                                                alt="{$ login.country $}"
-                                                style="
-                                                    height: 18px;
-                                                    margin-right: 6px;
-                                                    vertical-align: middle;
-                                                    border-radius: 2px;
-                                                "
-                                            />
-                                        </span>
-                                        <span ng-if="!login.flag && login.country">
-                                            {$ login.country $}
-                                        </span>
-                                        <span ng-if="!login.flag && !login.country">
-                                            -
-                                        </span>
+                                        <span ng-if="login.flag"><img ng-src="{$ login.flag $}" alt="{$ login.country $}" style="height: 18px; margin-right: 6px; vertical-align: middle; border-radius: 2px;" /></span>
+                                        <span ng-if="!login.flag && login.country">{$ login.country $}</span>
+                                        <span ng-if="!login.flag && !login.country">-</span>
                                     </td>
-                                    <td style="padding: 10px 15px; color: #555;">
-                                        {$ login.date $}
-                                    </td>
-                                    <td style="padding: 10px 15px; color: #888;">
-                                        {$ login.session $}
-                                    </td>
+                                    <td style="padding: 10px 15px; color: #555;">{$ login.date $}</td>
+                                    <td style="padding: 10px 15px; color: #888;">{$ login.session $}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <!-- Recent SSH Logs Widget -->
+                <div style="flex: 1 1 420px; min-width: 320px; max-width: 600px; background: #fff; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); padding: 25px 30px; border: 1px solid #e9ecef;">
+                    <div style="font-size: 1.25rem; font-weight: 700; color: #333; letter-spacing: 0.5px; margin-bottom: 18px;">Recent SSH Logs</div>
+                    <div ng-if="loadingSSHLogs" style="text-align: center; padding: 20px; color: #888;">Loading recent SSH logs...</div>
+                    <div ng-if="errorSSHLogs" style="text-align: center; color: #d81b60; padding: 20px;">{$ errorSSHLogs $}</div>
+                    <div ng-if="!loadingSSHLogs && sshLogs.length === 0 && !errorSSHLogs" style="text-align: center; color: #888; padding: 20px;">No recent SSH logs found.</div>
+                    <div ng-if="!loadingSSHLogs && sshLogs.length > 0" style="overflow-x: auto; max-height: 350px;">
+                        <table style="width: 100%; border-collapse: collapse; min-width: 320px;">
+                            <thead>
+                                <tr style="background: #4c5fad; color: #fff;">
+                                    <th style="padding: 12px 15px; border-radius: 8px 0 0 8px; text-align: left; font-weight: 600;">Timestamp</th>
+                                    <th style="padding: 12px 15px; border-radius: 0 8px 8px 0; text-align: left; font-weight: 600;">Message</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr ng-repeat="log in sshLogs" style="background: #f8f9fa; border-bottom: 1px solid #e9ecef; transition: background 0.2s;">
+                                    <td style="padding: 10px 15px; color: #555; white-space: nowrap;">{$ log.timestamp $}</td>
+                                    <td style="padding: 10px 15px; color: #333;">{$ log.message $}</td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
                 </div>
             </div>
+            {% endif %}
         </div>
         <!-- End Dashboard Stats Section -->
 
@@ -831,53 +599,293 @@
                 color: #4c5fad !important;
             }
 
-            /* CSS for circular progress bars - ensuring they display correctly */
+            /* CSS for circular progress bars */
             .c100 {
                 position: relative;
-                width: 100px;
-                height: 100px;
+                font-size: 100px;
+                width: 1em;
+                height: 1em;
                 border-radius: 50%;
-                background: #f0f0f0;
                 margin: 0 auto;
+                background-color: #f3f3f3;
+                display: inline-block;
+            }
+
+            .c100 *,
+            .c100 *:before,
+            .c100 *:after {
+                box-sizing: content-box;
+            }
+
+            .c100 > span {
+                position: absolute;
+                width: 100%;
+                z-index: 1;
+                left: 0;
+                top: 0;
+                line-height: 1em;
+                font-size: 0.2em;
+                color: #333;
+                display: block;
+                text-align: center;
+                white-space: nowrap;
+                height: 100%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .c100:after {
+                position: absolute;
+                top: 0.08em;
+                left: 0.08em;
+                display: block;
+                content: " ";
+                border-radius: 50%;
+                background-color: #fff;
+                width: 0.84em;
+                height: 0.84em;
             }
 
             .c100 .slice {
                 position: absolute;
-                width: 100px;
-                height: 100px;
-                clip: rect(0px, 100px, 100px, 50px);
+                width: 1em;
+                height: 1em;
+                clip: rect(0em, 1em, 1em, 0.5em);
+            }
+
+            .c100.p50 .slice {
+                clip: rect(auto, auto, auto, auto);
             }
 
             .c100 .bar {
                 position: absolute;
-                border: 8px solid transparent;
-                width: 84px;
-                height: 84px;
+                border: 0.08em solid #307bbb;
+                width: 0.84em;
+                height: 0.84em;
+                clip: rect(0em, 0.5em, 1em, 0em);
                 border-radius: 50%;
-                clip: rect(0px, 50px, 100px, 0px);
+                transform: rotate(0deg);
             }
 
             .c100 .fill {
                 position: absolute;
-                border: 8px solid transparent;
-                width: 84px;
-                height: 84px;
+                border: 0.08em solid #307bbb;
+                width: 0.84em;
+                height: 0.84em;
+                clip: rect(0em, 0.5em, 1em, 0em);
                 border-radius: 50%;
-                clip: rect(0px, 50px, 100px, 0px);
                 transform: rotate(180deg);
             }
 
-            .c100 span {
-                position: absolute;
-                width: 100px;
-                z-index: 1;
-                left: 0;
-                top: 0;
-                line-height: 100px;
-                text-align: center;
-                font-size: 20px;
-                color: #333;
+            /* Generate rotation classes for percentages 0-49 */
+            .c100.p0 .bar { transform: rotate(0deg); }
+            .c100.p1 .bar { transform: rotate(3.6deg); }
+            .c100.p2 .bar { transform: rotate(7.2deg); }
+            .c100.p3 .bar { transform: rotate(10.8deg); }
+            .c100.p4 .bar { transform: rotate(14.4deg); }
+            .c100.p5 .bar { transform: rotate(18deg); }
+            .c100.p6 .bar { transform: rotate(21.6deg); }
+            .c100.p7 .bar { transform: rotate(25.2deg); }
+            .c100.p8 .bar { transform: rotate(28.8deg); }
+            .c100.p9 .bar { transform: rotate(32.4deg); }
+            .c100.p10 .bar { transform: rotate(36deg); }
+            .c100.p11 .bar { transform: rotate(39.6deg); }
+            .c100.p12 .bar { transform: rotate(43.2deg); }
+            .c100.p13 .bar { transform: rotate(46.8deg); }
+            .c100.p14 .bar { transform: rotate(50.4deg); }
+            .c100.p15 .bar { transform: rotate(54deg); }
+            .c100.p16 .bar { transform: rotate(57.6deg); }
+            .c100.p17 .bar { transform: rotate(61.2deg); }
+            .c100.p18 .bar { transform: rotate(64.8deg); }
+            .c100.p19 .bar { transform: rotate(68.4deg); }
+            .c100.p20 .bar { transform: rotate(72deg); }
+            .c100.p21 .bar { transform: rotate(75.6deg); }
+            .c100.p22 .bar { transform: rotate(79.2deg); }
+            .c100.p23 .bar { transform: rotate(82.8deg); }
+            .c100.p24 .bar { transform: rotate(86.4deg); }
+            .c100.p25 .bar { transform: rotate(90deg); }
+            .c100.p26 .bar { transform: rotate(93.6deg); }
+            .c100.p27 .bar { transform: rotate(97.2deg); }
+            .c100.p28 .bar { transform: rotate(100.8deg); }
+            .c100.p29 .bar { transform: rotate(104.4deg); }
+            .c100.p30 .bar { transform: rotate(108deg); }
+            .c100.p31 .bar { transform: rotate(111.6deg); }
+            .c100.p32 .bar { transform: rotate(115.2deg); }
+            .c100.p33 .bar { transform: rotate(118.8deg); }
+            .c100.p34 .bar { transform: rotate(122.4deg); }
+            .c100.p35 .bar { transform: rotate(126deg); }
+            .c100.p36 .bar { transform: rotate(129.6deg); }
+            .c100.p37 .bar { transform: rotate(133.2deg); }
+            .c100.p38 .bar { transform: rotate(136.8deg); }
+            .c100.p39 .bar { transform: rotate(140.4deg); }
+            .c100.p40 .bar { transform: rotate(144deg); }
+            .c100.p41 .bar { transform: rotate(147.6deg); }
+            .c100.p42 .bar { transform: rotate(151.2deg); }
+            .c100.p43 .bar { transform: rotate(154.8deg); }
+            .c100.p44 .bar { transform: rotate(158.4deg); }
+            .c100.p45 .bar { transform: rotate(162deg); }
+            .c100.p46 .bar { transform: rotate(165.6deg); }
+            .c100.p47 .bar { transform: rotate(169.2deg); }
+            .c100.p48 .bar { transform: rotate(172.8deg); }
+            .c100.p49 .bar { transform: rotate(176.4deg); }
+            .c100.p50 .bar { transform: rotate(180deg); }
+
+            /* For values > 50%, show the fill */
+            .c100.p51 .slice,
+            .c100.p52 .slice,
+            .c100.p53 .slice,
+            .c100.p54 .slice,
+            .c100.p55 .slice,
+            .c100.p56 .slice,
+            .c100.p57 .slice,
+            .c100.p58 .slice,
+            .c100.p59 .slice,
+            .c100.p60 .slice,
+            .c100.p61 .slice,
+            .c100.p62 .slice,
+            .c100.p63 .slice,
+            .c100.p64 .slice,
+            .c100.p65 .slice,
+            .c100.p66 .slice,
+            .c100.p67 .slice,
+            .c100.p68 .slice,
+            .c100.p69 .slice,
+            .c100.p70 .slice,
+            .c100.p71 .slice,
+            .c100.p72 .slice,
+            .c100.p73 .slice,
+            .c100.p74 .slice,
+            .c100.p75 .slice,
+            .c100.p76 .slice,
+            .c100.p77 .slice,
+            .c100.p78 .slice,
+            .c100.p79 .slice,
+            .c100.p80 .slice,
+            .c100.p81 .slice,
+            .c100.p82 .slice,
+            .c100.p83 .slice,
+            .c100.p84 .slice,
+            .c100.p85 .slice,
+            .c100.p86 .slice,
+            .c100.p87 .slice,
+            .c100.p88 .slice,
+            .c100.p89 .slice,
+            .c100.p90 .slice,
+            .c100.p91 .slice,
+            .c100.p92 .slice,
+            .c100.p93 .slice,
+            .c100.p94 .slice,
+            .c100.p95 .slice,
+            .c100.p96 .slice,
+            .c100.p97 .slice,
+            .c100.p98 .slice,
+            .c100.p99 .slice,
+            .c100.p100 .slice {
+                clip: rect(auto, auto, auto, auto);
             }
+
+            .c100.p51 .bar { transform: rotate(180deg); }
+            .c100.p52 .bar { transform: rotate(180deg); }
+            .c100.p53 .bar { transform: rotate(180deg); }
+            .c100.p54 .bar { transform: rotate(180deg); }
+            .c100.p55 .bar { transform: rotate(180deg); }
+            .c100.p56 .bar { transform: rotate(180deg); }
+            .c100.p57 .bar { transform: rotate(180deg); }
+            .c100.p58 .bar { transform: rotate(180deg); }
+            .c100.p59 .bar { transform: rotate(180deg); }
+            .c100.p60 .bar { transform: rotate(180deg); }
+            .c100.p61 .bar { transform: rotate(180deg); }
+            .c100.p62 .bar { transform: rotate(180deg); }
+            .c100.p63 .bar { transform: rotate(180deg); }
+            .c100.p64 .bar { transform: rotate(180deg); }
+            .c100.p65 .bar { transform: rotate(180deg); }
+            .c100.p66 .bar { transform: rotate(180deg); }
+            .c100.p67 .bar { transform: rotate(180deg); }
+            .c100.p68 .bar { transform: rotate(180deg); }
+            .c100.p69 .bar { transform: rotate(180deg); }
+            .c100.p70 .bar { transform: rotate(180deg); }
+            .c100.p71 .bar { transform: rotate(180deg); }
+            .c100.p72 .bar { transform: rotate(180deg); }
+            .c100.p73 .bar { transform: rotate(180deg); }
+            .c100.p74 .bar { transform: rotate(180deg); }
+            .c100.p75 .bar { transform: rotate(180deg); }
+            .c100.p76 .bar { transform: rotate(180deg); }
+            .c100.p77 .bar { transform: rotate(180deg); }
+            .c100.p78 .bar { transform: rotate(180deg); }
+            .c100.p79 .bar { transform: rotate(180deg); }
+            .c100.p80 .bar { transform: rotate(180deg); }
+            .c100.p81 .bar { transform: rotate(180deg); }
+            .c100.p82 .bar { transform: rotate(180deg); }
+            .c100.p83 .bar { transform: rotate(180deg); }
+            .c100.p84 .bar { transform: rotate(180deg); }
+            .c100.p85 .bar { transform: rotate(180deg); }
+            .c100.p86 .bar { transform: rotate(180deg); }
+            .c100.p87 .bar { transform: rotate(180deg); }
+            .c100.p88 .bar { transform: rotate(180deg); }
+            .c100.p89 .bar { transform: rotate(180deg); }
+            .c100.p90 .bar { transform: rotate(180deg); }
+            .c100.p91 .bar { transform: rotate(180deg); }
+            .c100.p92 .bar { transform: rotate(180deg); }
+            .c100.p93 .bar { transform: rotate(180deg); }
+            .c100.p94 .bar { transform: rotate(180deg); }
+            .c100.p95 .bar { transform: rotate(180deg); }
+            .c100.p96 .bar { transform: rotate(180deg); }
+            .c100.p97 .bar { transform: rotate(180deg); }
+            .c100.p98 .bar { transform: rotate(180deg); }
+            .c100.p99 .bar { transform: rotate(180deg); }
+            .c100.p100 .bar { transform: rotate(180deg); }
+
+            .c100.p51 .fill { transform: rotate(183.6deg); }
+            .c100.p52 .fill { transform: rotate(187.2deg); }
+            .c100.p53 .fill { transform: rotate(190.8deg); }
+            .c100.p54 .fill { transform: rotate(194.4deg); }
+            .c100.p55 .fill { transform: rotate(198deg); }
+            .c100.p56 .fill { transform: rotate(201.6deg); }
+            .c100.p57 .fill { transform: rotate(205.2deg); }
+            .c100.p58 .fill { transform: rotate(208.8deg); }
+            .c100.p59 .fill { transform: rotate(212.4deg); }
+            .c100.p60 .fill { transform: rotate(216deg); }
+            .c100.p61 .fill { transform: rotate(219.6deg); }
+            .c100.p62 .fill { transform: rotate(223.2deg); }
+            .c100.p63 .fill { transform: rotate(226.8deg); }
+            .c100.p64 .fill { transform: rotate(230.4deg); }
+            .c100.p65 .fill { transform: rotate(234deg); }
+            .c100.p66 .fill { transform: rotate(237.6deg); }
+            .c100.p67 .fill { transform: rotate(241.2deg); }
+            .c100.p68 .fill { transform: rotate(244.8deg); }
+            .c100.p69 .fill { transform: rotate(248.4deg); }
+            .c100.p70 .fill { transform: rotate(252deg); }
+            .c100.p71 .fill { transform: rotate(255.6deg); }
+            .c100.p72 .fill { transform: rotate(259.2deg); }
+            .c100.p73 .fill { transform: rotate(262.8deg); }
+            .c100.p74 .fill { transform: rotate(266.4deg); }
+            .c100.p75 .fill { transform: rotate(270deg); }
+            .c100.p76 .fill { transform: rotate(273.6deg); }
+            .c100.p77 .fill { transform: rotate(277.2deg); }
+            .c100.p78 .fill { transform: rotate(280.8deg); }
+            .c100.p79 .fill { transform: rotate(284.4deg); }
+            .c100.p80 .fill { transform: rotate(288deg); }
+            .c100.p81 .fill { transform: rotate(291.6deg); }
+            .c100.p82 .fill { transform: rotate(295.2deg); }
+            .c100.p83 .fill { transform: rotate(298.8deg); }
+            .c100.p84 .fill { transform: rotate(302.4deg); }
+            .c100.p85 .fill { transform: rotate(306deg); }
+            .c100.p86 .fill { transform: rotate(309.6deg); }
+            .c100.p87 .fill { transform: rotate(313.2deg); }
+            .c100.p88 .fill { transform: rotate(316.8deg); }
+            .c100.p89 .fill { transform: rotate(320.4deg); }
+            .c100.p90 .fill { transform: rotate(324deg); }
+            .c100.p91 .fill { transform: rotate(327.6deg); }
+            .c100.p92 .fill { transform: rotate(331.2deg); }
+            .c100.p93 .fill { transform: rotate(334.8deg); }
+            .c100.p94 .fill { transform: rotate(338.4deg); }
+            .c100.p95 .fill { transform: rotate(342deg); }
+            .c100.p96 .fill { transform: rotate(345.6deg); }
+            .c100.p97 .fill { transform: rotate(349.2deg); }
+            .c100.p98 .fill { transform: rotate(352.8deg); }
+            .c100.p99 .fill { transform: rotate(356.4deg); }
+            .c100.p100 .fill { transform: rotate(360deg); }
 
             /* Color variants for progress circles */
             .c100.red .bar, .c100.red .fill {
@@ -895,6 +903,12 @@
             /* Disable transitions on chart elements so they render crisply */
             canvas {
                 transition: none !important;
+            }
+
+            @media (min-width: 900px) {
+                .system-stats-row {
+                    flex-wrap: nowrap !important;
+                }
             }
         </style>
 

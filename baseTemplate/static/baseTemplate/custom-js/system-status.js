@@ -875,6 +875,27 @@ app.controller('dashboardStatsController', function ($scope, $http, $timeout) {
     $scope.totalDBs = 0;
     $scope.totalEmails = 0;
 
+    // SSH Logs
+    $scope.sshLogs = [];
+    $scope.loadingSSHLogs = true;
+    $scope.errorSSHLogs = '';
+    function fetchSSHLogs() {
+        $scope.loadingSSHLogs = true;
+        $http.get('/base/getRecentSSHLogs').then(function (response) {
+            $scope.loadingSSHLogs = false;
+            if (response.data && response.data.logs) {
+                $scope.sshLogs = response.data.logs;
+            } else {
+                $scope.sshLogs = [];
+            }
+        }, function (err) {
+            $scope.loadingSSHLogs = false;
+            $scope.errorSSHLogs = 'Failed to load SSH logs.';
+        });
+    }
+    fetchSSHLogs();
+    setInterval(fetchSSHLogs, 10000);
+
     // SSH Logins
     $scope.sshLogins = [];
     $scope.loadingSSHLogins = true;

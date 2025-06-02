@@ -588,3 +588,40 @@ def getRecentSSHLogins(request):
         return HttpResponse(json.dumps({'logins': logins}), content_type='application/json')
     except Exception as e:
         return HttpResponse(json.dumps({'error': str(e)}), content_type='application/json', status=500)
+
+@csrf_exempt
+@require_GET
+def getRecentSSHLogs(request):
+    try:
+        user_id = request.session.get('userID')
+        if not user_id:
+            return HttpResponse(json.dumps({'error': 'Not logged in'}), content_type='application/json', status=403)
+        currentACL = ACLManager.loadedACL(user_id)
+        if not currentACL.get('admin', 0):
+            return HttpResponse(json.dumps({'error': 'Admin only'}), content_type='application/json', status=403)
+        from plogical.processUtilities import ProcessUtilities
+        distro = ProcessUtilities.decideDistro()
+        if distro in [ProcessUtilities.ubuntu, ProcessUtilities.ubuntu20]:
+            log_path = '/var/log/auth.log'
+        else:
+            log_path = '/var/log/secure'
+        try:
+            output = ProcessUtilities.outputExecutioner(f'tail -n 100 {log_path}')
+        except Exception as e:
+            return HttpResponse(json.dumps({'error': f'Failed to read log: {str(e)}'}), content_type='application/json', status=500)
+        lines = output.split('\n')
+        logs = []
+        for line in lines:
+            if 'sshd' in line:
+                # Try to split into timestamp and message
+                parts = line.split()
+                if len(parts) > 4:
+                    timestamp = ' '.join(parts[:3])
+                    message = ' '.join(parts[4:])
+                else:
+                    timestamp = ''
+                    message = line
+                logs.append({'timestamp': timestamp, 'message': message, 'raw': line})
+        return HttpResponse(json.dumps({'logs': logs}), content_type='application/json')
+    except Exception as e:
+        return HttpResponse(json.dumps({'error': str(e)}), content_type='application/json', status=500)
