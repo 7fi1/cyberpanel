@@ -868,7 +868,7 @@ app.controller('OnboardingCP', function ($scope, $http, $timeout, $window) {
 
 });
 
-app.controller('dashboardStatsController', function ($scope, $http) {
+app.controller('dashboardStatsController', function ($scope, $http, $timeout) {
     // Card values
     $scope.totalSites = 0;
     $scope.totalWPSites = 0;
