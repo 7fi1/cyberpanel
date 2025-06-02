@@ -869,10 +869,6 @@ app.controller('OnboardingCP', function ($scope, $http, $timeout, $window) {
 });
 
 app.controller('dashboardStatsController', function ($scope, $http, $timeout) {
-    // Defensive: force modal hidden on load
-    $scope.showSessionModal = false;
-    $timeout(function() { $scope.showSessionModal = false; }, 200);
-
     // Card values
     $scope.totalSites = 0;
     $scope.totalWPSites = 0;
@@ -1201,54 +1197,41 @@ app.controller('dashboardStatsController', function ($scope, $http, $timeout) {
         pollAll();
     }, 500);
 
-    // User Session Modal logic
-    $scope.showSessionModal = false;
-    $scope.sessionUser = '';
-    $scope.sessionTTY = '';
-    $scope.sessionWOutput = '';
-    $scope.sessionTTYProcesses = '';
-    $scope.sessionProcesses = '';
-    $scope.sessionLoading = false;
-    $scope.sessionError = '';
-
-    $scope.showUserSession = function(login) {
-        $scope.sessionUser = login.user;
-        $scope.sessionTTY = login.tty || '';
-        $scope.sessionWOutput = '';
-        $scope.sessionTTYProcesses = '';
-        $scope.sessionProcesses = '';
-        $scope.sessionLoading = true;
-        $scope.sessionError = '';
-        $scope.showSessionModal = true;
-        var postData = { user: login.user };
-        // Try to extract tty from login.raw or login.tty if available
+    // SSH User Activity Modal
+    $scope.showSSHActivityModal = false;
+    $scope.sshActivity = { processes: [], w: [] };
+    $scope.sshActivityUser = '';
+    $scope.loadingSSHActivity = false;
+    $scope.errorSSHActivity = '';
+    $scope.viewSSHActivity = function(login) {
+        $scope.showSSHActivityModal = true;
+        $scope.sshActivity = { processes: [], w: [] };
+        $scope.sshActivityUser = login.user;
+        $scope.loadingSSHActivity = true;
+        $scope.errorSSHActivity = '';
+        var tty = '';
+        // Try to extract tty from login.raw or login.session if available
         if (login.raw) {
-            var m = login.raw.match(/(pts\/[0-9]+)/);
-            if (m) postData.tty = m[1];
-        } else if (login.tty) {
-            postData.tty = login.tty;
+            var match = login.raw.match(/(pts\/[0-9]+)/);
+            if (match) tty = match[1];
         }
-        $http.post('/base/getUserSessionInfo', postData).then(function(response) {
-            $scope.sessionLoading = false;
-            var data = response.data;
-            $scope.sessionWOutput = data.w_output || '';
-            $scope.sessionTTYProcesses = data.tty_processes || '';
-            $scope.sessionProcesses = data.processes || '';
+        $http.post('/baseTemplate/getSSHUserActivity', { user: login.user, tty: tty }).then(function(response) {
+            $scope.loadingSSHActivity = false;
+            if (response.data) {
+                $scope.sshActivity = response.data;
+            } else {
+                $scope.sshActivity = { processes: [], w: [] };
+            }
         }, function(err) {
-            $scope.sessionLoading = false;
-            $scope.sessionError = (err.data && err.data.error) ? err.data.error : 'Failed to fetch session info.';
+            $scope.loadingSSHActivity = false;
+            $scope.errorSSHActivity = (err.data && err.data.error) ? err.data.error : 'Failed to fetch activity.';
         });
     };
-
-    $scope.closeSessionModal = function() {
-        $scope.showSessionModal = false;
-        $scope.sessionUser = '';
-        $scope.sessionTTY = '';
-        $scope.sessionWOutput = '';
-        $scope.sessionTTYProcesses = '';
-        $scope.sessionProcesses = '';
-        $scope.sessionLoading = false;
-        $scope.sessionError = '';
-        $timeout(function() { $scope.showSessionModal = false; }, 200);
+    $scope.closeSSHActivityModal = function() {
+        $scope.showSSHActivityModal = false;
+        $scope.sshActivity = { processes: [], w: [] };
+        $scope.sshActivityUser = '';
+        $scope.loadingSSHActivity = false;
+        $scope.errorSSHActivity = '';
     };
 });

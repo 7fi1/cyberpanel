@@ -628,7 +628,10 @@ def getRecentSSHLogs(request):
 
 @csrf_exempt
 @require_POST
-def getUserSessionInfo(request):
+def getSSHUserActivity(request):
+    import json
+    from plogical.ACLManager import ACLManager
+    from plogical.processUtilities import ProcessUtilities
     try:
         user_id = request.session.get('userID')
         if not user_id:
@@ -636,26 +639,41 @@ def getUserSessionInfo(request):
         currentACL = ACLManager.loadedACL(user_id)
         if not currentACL.get('admin', 0):
             return HttpResponse(json.dumps({'error': 'Admin only'}), content_type='application/json', status=403)
-        from plogical.processUtilities import ProcessUtilities
         data = json.loads(request.body.decode('utf-8'))
         user = data.get('user')
         tty = data.get('tty')
         if not user:
             return HttpResponse(json.dumps({'error': 'Missing user'}), content_type='application/json', status=400)
-        result = {}
+        # Get processes for the user
+        ps_cmd = f"ps -u {user} -o pid,tty,time,cmd --no-headers"
         try:
-            result['processes'] = ProcessUtilities.outputExecutioner(f'ps -u {user}')
+            ps_output = ProcessUtilities.outputExecutioner(ps_cmd)
         except Exception as e:
-            result['processes'] = f'Error: {str(e)}'
-        if tty:
-            try:
-                result['tty_processes'] = ProcessUtilities.outputExecutioner(f'ps -ft {tty}')
-            except Exception as e:
-                result['tty_processes'] = f'Error: {str(e)}'
+            ps_output = ''
+        processes = []
+        if ps_output:
+            for line in ps_output.strip().split('\n'):
+                parts = line.split(None, 3)
+                if len(parts) == 4:
+                    pid, tty_val, time_val, cmd = parts
+                    if tty and tty not in tty_val:
+                        continue
+                    processes.append({
+                        'pid': pid,
+                        'tty': tty_val,
+                        'time': time_val,
+                        'cmd': cmd
+                    })
+        # Optionally, get 'w' output for more info
+        w_cmd = f"w -h {user}"
         try:
-            result['w_output'] = ProcessUtilities.outputExecutioner(f'w -h {user}')
+            w_output = ProcessUtilities.outputExecutioner(w_cmd)
         except Exception as e:
-            result['w_output'] = f'Error: {str(e)}'
-        return HttpResponse(json.dumps(result), content_type='application/json')
+            w_output = ''
+        w_lines = []
+        if w_output:
+            for line in w_output.strip().split('\n'):
+                w_lines.append(line)
+        return HttpResponse(json.dumps({'processes': processes, 'w': w_lines}), content_type='application/json')
     except Exception as e:
         return HttpResponse(json.dumps({'error': str(e)}), content_type='application/json', status=500)

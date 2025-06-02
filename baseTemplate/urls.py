@@ -21,5 +21,5 @@ urlpatterns = [
     re_path(r'^getCPULoadGraph$', views.getCPULoadGraph, name='getCPULoadGraph'),
     re_path(r'^getRecentSSHLogins$', views.getRecentSSHLogins, name='getRecentSSHLogins'),
     re_path(r'^getRecentSSHLogs$', views.getRecentSSHLogs, name='getRecentSSHLogs'),
-    re_path(r'^getUserSessionInfo$', views.getUserSessionInfo, name='getUserSessionInfo'),
+    re_path(r'^getSSHUserActivity$', views.getSSHUserActivity, name='getSSHUserActivity'),
 ]

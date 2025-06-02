@@ -126,7 +126,7 @@
                                         "
                                     >
                                         {$ totalSites $}
-                                    </div>
+                                </div>
                                     <div
                                         style="
                                             font-size: 1.1rem;
@@ -136,12 +136,12 @@
                                         "
                                     >
                                         Total Sites
-                                    </div>
-                                </div>
-                            </div>
                         </div>
-                    </div>
-                </a>
+                                </div>
+                                </div>
+                        </div>
+                                </div>
+                            </a>
 
                 <!-- WordPress Sites Card -->
                 <a
@@ -193,7 +193,7 @@
                                         "
                                     >
                                         {$ totalWPSites $}
-                                    </div>
+                                </div>
                                     <div
                                         style="
                                             font-size: 1.1rem;
@@ -203,12 +203,12 @@
                                         "
                                     >
                                         WordPress Sites
-                                    </div>
-                                </div>
-                            </div>
                         </div>
-                    </div>
-                </a>
+                                </div>
+                                </div>
+                        </div>
+                                </div>
+                            </a>
 
                 <!-- Total Databases Card -->
                 <a
@@ -260,7 +260,7 @@
                                         "
                                     >
                                         {$ totalDBs $}
-                                    </div>
+                                </div>
                                     <div
                                         style="
                                             font-size: 1.1rem;
@@ -270,12 +270,12 @@
                                         "
                                     >
                                         Total Databases
-                                    </div>
-                                </div>
-                            </div>
                         </div>
-                    </div>
-                </a>
+                                </div>
+                                </div>
+                        </div>
+                                </div>
+                            </a>
 
                 <!-- Total Emails Card -->
                 <a
@@ -340,10 +340,10 @@
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    </div>
-                </a>
-            </div>
+                                    </div>
+                                    </div>
+                                </a>
+                            </div>
 
             <!--
             ====================================
@@ -447,7 +447,7 @@
                             </a>
                         </li>
                     </ul>
-                </div>
+                            </div>
 
                 <!-- Enhanced Tab Content -->
                 <div
@@ -467,14 +467,14 @@
                         role="tabpanel"
                     >
                         <canvas id="trafficChart" height="80"></canvas>
-                    </div>
+                                    </div>
                     <div
                         class="tab-pane fade"
                         id="diskio"
                         role="tabpanel"
                     >
                         <canvas id="diskIOChart" height="80"></canvas>
-                    </div>
+                                    </div>
                     <div
                         class="tab-pane fade"
                         id="cpu"
@@ -486,7 +486,7 @@
             </div>
 
             <!-- Place SSH Logins and Logs row here, after graphs section -->
-            {% if admin %}
+        {% if admin %}
             <div style="display: flex; gap: 30px; justify-content: center; align-items: flex-start; flex-wrap: wrap; margin-bottom: 40px;">
                 <!-- Recent SSH Logins Widget -->
                 <div style="flex: 1 1 420px; min-width: 320px; max-width: 600px; background: linear-gradient(135deg, #e3eafc 0%, #f8fafc 100%); border-radius: 16px; box-shadow: 0 4px 24px rgba(76,95,173,0.10); border-left: 6px solid #4c5fad; padding: 28px 32px 24px 28px; border: 1px solid #e9ecef; position: relative;">
@@ -494,12 +494,12 @@
                         <div style="font-size: 1.35rem; font-weight: 800; color: #2d3a5a; letter-spacing: 0.5px; display: flex; align-items: center; gap: 10px;">
                             <span style="display: inline-block; width: 6px; height: 24px; background: #4c5fad; border-radius: 3px; margin-right: 10px;"></span>
                             Recent SSH Logins
-                        </div>
+                                                    </div>
                         <button class="btn btn-sm btn-outline-primary refresh-btn" ng-click="refreshSSHLogins()" title="Refresh" style="display: flex; align-items: center; gap: 7px; font-size: 1.08rem; font-weight: 600; border-radius: 20px; padding: 6px 18px; border: 2px solid #4c5fad; color: #4c5fad; background: #fff; transition: all 0.2s;">
                             <span class="refresh-icon" style="display: inline-block; transition: transform 0.4s;">&#x21bb;</span>
                             Refresh
                         </button>
-                    </div>
+                                                </div>
                     <div ng-if="loadingSSHLogins" style="text-align: center; color: #888; padding: 20px 0;">Loading...</div>
                     <div ng-if="errorSSHLogins" style="color: #e53935; padding: 10px 0;">{$ errorSSHLogins $}</div>
                     <div ng-if="!loadingSSHLogins && !errorSSHLogins && sshLogins.length === 0" style="text-align: center; color: #888; padding: 20px 0;">No recent SSH logins found.</div>
@@ -512,7 +512,7 @@
                                     <th style="font-weight: 700; color: #4c5fad; background: #e3eafc;">Country</th>
                                     <th style="font-weight: 700; color: #4c5fad; background: #e3eafc;">Date</th>
                                     <th style="font-weight: 700; color: #4c5fad; background: #e3eafc;">Session</th>
-                                    <th style="font-weight: 700; color: #4c5fad; background: #e3eafc;">Actions</th>
+                                    <th style="font-weight: 700; color: #4c5fad; background: #e3eafc;">Activity</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -523,15 +523,13 @@
                                     <td style="padding: 8px 8px; font-family: 'Menlo', 'Monaco', 'Consolas', monospace;">{$ login.date $}</td>
                                     <td style="padding: 8px 8px;">{$ login.session $}</td>
                                     <td style="padding: 8px 8px;">
-                                        <button class="btn btn-xs btn-outline-primary view-session-btn" ng-click="showUserSession(login)" title="View Session" style="font-size: 0.98rem; font-weight: 600; border-radius: 16px; padding: 4px 14px; border: 2px solid #4c5fad; color: #4c5fad; background: #fff; transition: all 0.2s;">
-                                            <span style="font-size: 1.1rem; margin-right: 4px;">&#128065;</span> View Session
-                                        </button>
+                                        <button class="btn btn-xs btn-outline-primary" style="padding: 4px 12px; font-size: 0.95rem; border-radius: 14px; font-weight: 600;" ng-click="viewSSHActivity(login)">View Activity</button>
                                     </td>
                                 </tr>
                             </tbody>
                         </table>
-                    </div>
-                </div>
+                                            </div>
+                                        </div>
                 <!-- Recent SSH Logs Widget -->
                 <div style="flex: 1 1 520px; min-width: 320px; max-width: 700px; background: linear-gradient(135deg, #fff4e3 0%, #f8fafc 100%); border-radius: 16px; box-shadow: 0 4px 24px rgba(255,167,38,0.10); border-left: 6px solid #ffa726; padding: 28px 32px 24px 28px; border: 1px solid #e9ecef; max-height: 600px; overflow-y: auto; position: relative;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
@@ -565,7 +563,7 @@
                     </div>
                 </div>
             </div>
-            {% endif %}
+        {% endif %}
         </div>
         <!-- End Dashboard Stats Section -->
 
@@ -1038,31 +1036,6 @@
             .refresh-btn:hover .refresh-icon {
                 transform: rotate(360deg);
             }
-
-            /* User Session Modal */
-            .view-session-btn:hover {
-                background: #4c5fad !important;
-                color: #fff !important;
-                border-color: #4c5fad !important;
-                transform: translateY(-2px);
-                box-shadow: 0 4px 15px rgba(76,95,173,0.10);
-            }
-
-            .modal.fade[ng-show] {
-                display: block !important;
-                opacity: 1;
-                pointer-events: auto;
-                z-index: 9999;
-            }
-
-            [ng-cloak] { display: none !important; }
-            .modal.fade[ng-show] {
-                display: block !important;
-                opacity: 1;
-                pointer-events: auto;
-                z-index: 9999;
-                transition: opacity 0.2s;
-            }
         </style>
 
         <!-- Chart.js (unchanged) -->
@@ -1118,35 +1091,42 @@
                 }, 100);
             });
         </script>
-    </div>
 
-    <!-- User Session Modal -->
-    <div id="userSessionModal" class="modal fade" tabindex="-1" role="dialog" ng-show="showSessionModal" ng-cloak style="background: rgba(44,62,80,0.25); transition: opacity 0.2s;">
-        <div class="modal-dialog modal-lg" role="document" style="max-width: 800px;">
-            <div class="modal-content" style="border-radius: 16px; box-shadow: 0 8px 32px rgba(44,62,80,0.18);">
-                <div class="modal-header" style="background: #4c5fad; color: #fff; border-radius: 16px 16px 0 0;">
-                    <h5 class="modal-title" style="font-weight: 700;">User Session Info: <span style="font-family: monospace;">{$ sessionUser $}</span></h5>
-                    <button type="button" class="close" ng-click="closeSessionModal()" style="color: #fff; font-size: 1.8rem; background: none; border: none; outline: none;">&times;</button>
+        <!-- Modal for SSH User Activity -->
+        <div ng-if="showSSHActivityModal" class="modal fade show" tabindex="-1" style="display: block; background: rgba(44,62,80,0.25); position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 9999;">
+            <div style="max-width: 540px; margin: 80px auto; background: #fff; border-radius: 16px; box-shadow: 0 8px 40px rgba(44,62,80,0.18); padding: 32px 28px 24px 28px; position: relative;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
+                    <div style="font-size: 1.2rem; font-weight: 800; color: #4c5fad; letter-spacing: 0.5px;">User Activity: <span style="color: #222;">{$ sshActivityUser $}</span></div>
+                    <button class="btn btn-sm btn-outline-primary" style="border-radius: 12px; font-size: 1.1rem; padding: 2px 12px;" ng-click="closeSSHActivityModal()">&times;</button>
                 </div>
-                <div class="modal-body" style="background: #f8fafc; max-height: 500px; overflow-y: auto;">
-                    <div ng-if="sessionLoading" style="color: #888; text-align: center; padding: 30px 0;">Loading session info...</div>
-                    <div ng-if="sessionError" style="color: #e53935; padding: 10px 0;">{$ sessionError $}</div>
-                    <div ng-if="!sessionLoading && !sessionError">
-                        <div style="margin-bottom: 18px;">
-                            <strong>TTY:</strong> <span style="font-family: monospace;">{$ sessionTTY $}</span>
-                        </div>
-                        <div style="margin-bottom: 18px;">
-                            <strong>Current Command (w):</strong>
-                            <pre style="background: #fff; border-radius: 8px; padding: 12px; font-size: 1rem; font-family: 'Menlo', 'Monaco', 'Consolas', monospace; color: #333;">{$ sessionWOutput $}</pre>
-                        </div>
-                        <div style="margin-bottom: 18px;">
-                            <strong>TTY Processes:</strong>
-                            <pre style="background: #fff; border-radius: 8px; padding: 12px; font-size: 1rem; font-family: 'Menlo', 'Monaco', 'Consolas', monospace; color: #333;">{$ sessionTTYProcesses $}</pre>
-                        </div>
-                        <div>
-                            <strong>All User Processes:</strong>
-                            <pre style="background: #fff; border-radius: 8px; padding: 12px; font-size: 1rem; font-family: 'Menlo', 'Monaco', 'Consolas', monospace; color: #333;">{$ sessionProcesses $}</pre>
-                        </div>
+                <div ng-if="loadingSSHActivity" style="text-align: center; color: #888; padding: 20px 0;">Loading activity...</div>
+                <div ng-if="errorSSHActivity" style="color: #e53935; padding: 10px 0;">{$ errorSSHActivity $}</div>
+                <div ng-if="!loadingSSHActivity && !errorSSHActivity">
+                    <div ng-if="sshActivity.processes.length === 0 && sshActivity.w.length === 0" style="text-align: center; color: #888; padding: 20px 0;">No active processes found for this user.</div>
+                    <div ng-if="sshActivity.processes.length > 0">
+                        <div style="font-weight: 700; color: #4c5fad; margin-bottom: 8px;">Processes:</div>
+                        <table class="table table-sm" style="font-size: 0.98rem;">
+                            <thead>
+                                <tr style="background: #e3eafc;">
+                                    <th>PID</th>
+                                    <th>TTY</th>
+                                    <th>Time</th>
+                                    <th>Command</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr ng-repeat="proc in sshActivity.processes">
+                                    <td style="font-family: 'Menlo', monospace;">{$ proc.pid $}</td>
+                                    <td style="font-family: 'Menlo', monospace;">{$ proc.tty $}</td>
+                                    <td style="font-family: 'Menlo', monospace;">{$ proc.time $}</td>
+                                    <td style="font-family: 'Menlo', monospace;">{$ proc.cmd $}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div ng-if="sshActivity.w.length > 0">
+                        <div style="font-weight: 700; color: #4c5fad; margin: 12px 0 8px 0;">w output:</div>
+                        <pre style="background: #f8f9fa; border-radius: 8px; padding: 10px 12px; color: #333; font-size: 0.97rem;">{$ sshActivity.w.join('\n') $}</pre>
                     </div>
                 </div>
             </div>
