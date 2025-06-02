@@ -1054,6 +1054,15 @@
                 pointer-events: auto;
                 z-index: 9999;
             }
+
+            [ng-cloak] { display: none !important; }
+            .modal.fade[ng-show] {
+                display: block !important;
+                opacity: 1;
+                pointer-events: auto;
+                z-index: 9999;
+                transition: opacity 0.2s;
+            }
         </style>
 
         <!-- Chart.js (unchanged) -->
@@ -1112,7 +1121,7 @@
     </div>
 
     <!-- User Session Modal -->
-    <div id="userSessionModal" class="modal fade" tabindex="-1" role="dialog" ng-show="showSessionModal" style="display: none; background: rgba(44,62,80,0.25);">
+    <div id="userSessionModal" class="modal fade" tabindex="-1" role="dialog" ng-show="showSessionModal" ng-cloak style="background: rgba(44,62,80,0.25); transition: opacity 0.2s;">
         <div class="modal-dialog modal-lg" role="document" style="max-width: 800px;">
             <div class="modal-content" style="border-radius: 16px; box-shadow: 0 8px 32px rgba(44,62,80,0.18);">
                 <div class="modal-header" style="background: #4c5fad; color: #fff; border-radius: 16px 16px 0 0;">

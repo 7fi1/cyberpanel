@@ -869,6 +869,10 @@ app.controller('OnboardingCP', function ($scope, $http, $timeout, $window) {
 });
 
 app.controller('dashboardStatsController', function ($scope, $http, $timeout) {
+    // Defensive: force modal hidden on load
+    $scope.showSessionModal = false;
+    $timeout(function() { $scope.showSessionModal = false; }, 200);
+
     // Card values
     $scope.totalSites = 0;
     $scope.totalWPSites = 0;
@@ -1245,5 +1249,6 @@ app.controller('dashboardStatsController', function ($scope, $http, $timeout) {
         $scope.sessionProcesses = '';
         $scope.sessionLoading = false;
         $scope.sessionError = '';
+        $timeout(function() { $scope.showSessionModal = false; }, 200);
     };
 });
