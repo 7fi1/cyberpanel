@@ -691,7 +691,11 @@ def getSSHUserActivity(request):
         # Find main shell process for history
         shell_history = []
         try:
-            shell_home = pwd.getpwnam(user).pw_dir
+            try:
+                website = Websites.objects.get(externalApp=user)
+                shell_home = f'/home/{website.domain}'
+            except Exception:
+                shell_home = pwd.getpwnam(user).pw_dir
         except Exception:
             shell_home = f"/home/{user}"
         history_file = ''
