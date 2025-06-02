@@ -564,6 +564,87 @@
                 </div>
             </div>
         {% endif %}
+            
+            <!-- Fixed SSH Activity Modal -->
+            <div ng-if="showSSHActivityModal" class="modal-backdrop" style="
+                position: fixed; 
+                top: 0; 
+                left: 0; 
+                width: 100vw; 
+                height: 100vh; 
+                background: rgba(0,0,0,0.5); 
+                z-index: 10000;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 20px;
+                box-sizing: border-box;
+            " ng-click="closeModalOnBackdrop($event)">
+                <div class="modal-content" style="
+                    max-width: 90vw;
+                    max-height: 90vh;
+                    width: 600px;
+                    background: #fff; 
+                    border-radius: 16px; 
+                    box-shadow: 0 8px 40px rgba(44,62,80,0.18); 
+                    padding: 32px 28px 24px 28px; 
+                    position: relative;
+                    overflow-y: auto;
+                ">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
+                        <div style="font-size: 1.2rem; font-weight: 800; color: #4c5fad; letter-spacing: 0.5px;">
+                            User Activity: <span style="color: #222;">{$ sshActivityUser $}</span>
+                        </div>
+                        <button class="btn btn-sm btn-outline-primary" 
+                                style="border-radius: 12px; font-size: 1.1rem; padding: 2px 12px; cursor: pointer;" 
+                                ng-click="closeSSHActivityModal()">
+                            &times;
+                        </button>
+                    </div>
+                    
+                    <div ng-if="loadingSSHActivity" style="text-align: center; color: #888; padding: 20px 0;">
+                        Loading activity...
+                    </div>
+                    
+                    <div ng-if="errorSSHActivity" style="color: #e53935; padding: 10px 0;">
+                        {$ errorSSHActivity $}
+                    </div>
+                    
+                    <div ng-if="!loadingSSHActivity && !errorSSHActivity">
+                        <div ng-if="sshActivity.processes.length === 0 && sshActivity.w.length === 0" 
+                             style="text-align: center; color: #888; padding: 20px 0;">
+                            No active processes found for this user.
+                        </div>
+                        
+                        <div ng-if="sshActivity.processes.length > 0">
+                            <div style="font-weight: 700; color: #4c5fad; margin-bottom: 8px;">Processes:</div>
+                            <table class="table table-sm" style="font-size: 0.98rem;">
+                                <thead>
+                                    <tr style="background: #e3eafc;">
+                                        <th>PID</th>
+                                        <th>TTY</th>
+                                        <th>Time</th>
+                                        <th>Command</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr ng-repeat="proc in sshActivity.processes">
+                                        <td style="font-family: 'Menlo', monospace;">{$ proc.pid $}</td>
+                                        <td style="font-family: 'Menlo', monospace;">{$ proc.tty $}</td>
+                                        <td style="font-family: 'Menlo', monospace;">{$ proc.time $}</td>
+                                        <td style="font-family: 'Menlo', monospace;">{$ proc.cmd $}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div ng-if="sshActivity.w.length > 0">
+                            <div style="font-weight: 700; color: #4c5fad; margin: 12px 0 8px 0;">w output:</div>
+                            <pre style="background: #f8f9fa; border-radius: 8px; padding: 10px 12px; color: #333; font-size: 0.97rem; white-space: pre-wrap; word-wrap: break-word;">{$ sshActivity.w.join('\n') $}</pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
         <!-- End Dashboard Stats Section -->
 
@@ -967,6 +1048,31 @@
                 to { transform: rotate(360deg); }
             }
 
+            /* Modal Styles */
+            .modal-backdrop {
+                backdrop-filter: blur(2px);
+            }
+
+            .modal-content {
+                animation: modalFadeIn 0.3s ease-out;
+            }
+
+            @keyframes modalFadeIn {
+                from { 
+                    opacity: 0; 
+                    transform: scale(0.9) translateY(-20px); 
+                }
+                to { 
+                    opacity: 1; 
+                    transform: scale(1) translateY(0); 
+                }
+            }
+
+            /* Prevent body scroll when modal is open */
+            body.modal-open {
+                overflow: hidden;
+            }
+
             /* Responsive improvements */
             @media (max-width: 768px) {
                 .container {
@@ -1091,45 +1197,5 @@
                 }, 100);
             });
         </script>
-
-        <!-- Modal for SSH User Activity -->
-        <div ng-if="showSSHActivityModal" class="modal fade show" tabindex="-1" style="display: block; background: rgba(44,62,80,0.25); position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 9999;">
-            <div style="max-width: 540px; margin: 80px auto; background: #fff; border-radius: 16px; box-shadow: 0 8px 40px rgba(44,62,80,0.18); padding: 32px 28px 24px 28px; position: relative;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
-                    <div style="font-size: 1.2rem; font-weight: 800; color: #4c5fad; letter-spacing: 0.5px;">User Activity: <span style="color: #222;">{$ sshActivityUser $}</span></div>
-                    <button class="btn btn-sm btn-outline-primary" style="border-radius: 12px; font-size: 1.1rem; padding: 2px 12px;" ng-click="closeSSHActivityModal()">&times;</button>
-                </div>
-                <div ng-if="loadingSSHActivity" style="text-align: center; color: #888; padding: 20px 0;">Loading activity...</div>
-                <div ng-if="errorSSHActivity" style="color: #e53935; padding: 10px 0;">{$ errorSSHActivity $}</div>
-                <div ng-if="!loadingSSHActivity && !errorSSHActivity">
-                    <div ng-if="sshActivity.processes.length === 0 && sshActivity.w.length === 0" style="text-align: center; color: #888; padding: 20px 0;">No active processes found for this user.</div>
-                    <div ng-if="sshActivity.processes.length > 0">
-                        <div style="font-weight: 700; color: #4c5fad; margin-bottom: 8px;">Processes:</div>
-                        <table class="table table-sm" style="font-size: 0.98rem;">
-                            <thead>
-                                <tr style="background: #e3eafc;">
-                                    <th>PID</th>
-                                    <th>TTY</th>
-                                    <th>Time</th>
-                                    <th>Command</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr ng-repeat="proc in sshActivity.processes">
-                                    <td style="font-family: 'Menlo', monospace;">{$ proc.pid $}</td>
-                                    <td style="font-family: 'Menlo', monospace;">{$ proc.tty $}</td>
-                                    <td style="font-family: 'Menlo', monospace;">{$ proc.time $}</td>
-                                    <td style="font-family: 'Menlo', monospace;">{$ proc.cmd $}</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    <div ng-if="sshActivity.w.length > 0">
-                        <div style="font-weight: 700; color: #4c5fad; margin: 12px 0 8px 0;">w output:</div>
-                        <pre style="background: #f8f9fa; border-radius: 8px; padding: 10px 12px; color: #333; font-size: 0.97rem;">{$ sshActivity.w.join('\n') $}</pre>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
 {% endblock %}

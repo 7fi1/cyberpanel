@@ -1203,6 +1203,7 @@ app.controller('dashboardStatsController', function ($scope, $http, $timeout) {
     $scope.sshActivityUser = '';
     $scope.loadingSSHActivity = false;
     $scope.errorSSHActivity = '';
+    
     $scope.viewSSHActivity = function(login) {
         $scope.showSSHActivityModal = true;
         $scope.sshActivity = { processes: [], w: [] };
@@ -1227,11 +1228,19 @@ app.controller('dashboardStatsController', function ($scope, $http, $timeout) {
             $scope.errorSSHActivity = (err.data && err.data.error) ? err.data.error : 'Failed to fetch activity.';
         });
     };
+    
     $scope.closeSSHActivityModal = function() {
         $scope.showSSHActivityModal = false;
         $scope.sshActivity = { processes: [], w: [] };
         $scope.sshActivityUser = '';
         $scope.loadingSSHActivity = false;
         $scope.errorSSHActivity = '';
+    };
+
+    // Close modal when clicking backdrop
+    $scope.closeModalOnBackdrop = function(event) {
+        if (event.target === event.currentTarget) {
+            $scope.closeSSHActivityModal();
+        }
     };
 });
