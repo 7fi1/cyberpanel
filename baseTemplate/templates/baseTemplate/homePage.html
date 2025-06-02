@@ -523,7 +523,7 @@
                                     <td style="padding: 8px 8px; font-family: 'Menlo', 'Monaco', 'Consolas', monospace;">{$ login.date $}</td>
                                     <td style="padding: 8px 8px;">{$ login.session $}</td>
                                     <td style="padding: 8px 8px;">
-                                        <button class="btn btn-xs btn-outline-primary" style="padding: 4px 12px; font-size: 0.95rem; border-radius: 14px; font-weight: 600;" ng-click="viewSSHActivity(login)">View Activity</button>
+                                        <button class="view-activity-btn" ng-click="viewSSHActivity(login)">View Activity</button>
                                     </td>
                                 </tr>
                             </tbody>
@@ -1137,6 +1137,30 @@
             /* Add spin animation for refresh icon on hover */
             .refresh-btn:hover .refresh-icon {
                 transform: rotate(360deg);
+            }
+
+            .view-activity-btn {
+                border: 2px solid #4c5fad;
+                color: #4c5fad;
+                background: #fff;
+                border-radius: 999px;
+                font-size: 1rem;
+                font-weight: 700;
+                padding: 6px 22px;
+                transition: all 0.2s;
+                outline: none;
+                box-shadow: none;
+                cursor: pointer;
+                display: inline-block;
+                vertical-align: middle;
+                line-height: 1.2;
+            }
+            .view-activity-btn:hover, .view-activity-btn:focus {
+                background: #4c5fad;
+                color: #fff;
+                border-color: #4c5fad;
+                box-shadow: 0 2px 12px rgba(76,95,173,0.10);
+                text-decoration: none;
             }
         </style>
 

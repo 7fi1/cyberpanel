@@ -709,11 +709,14 @@ def getSSHUserActivity(request):
                 shell_history = []
         # Disk usage
         disk_usage = ''
-        try:
-            du_out = ProcessUtilities.outputExecutioner(f'du -sh {shell_home}')
-            disk_usage = du_out.strip().split('\t')[0] if du_out else ''
-        except Exception:
-            disk_usage = ''
+        if os.path.exists(shell_home):
+            try:
+                du_out = ProcessUtilities.outputExecutioner(f'du -sh {shell_home}')
+                disk_usage = du_out.strip().split('\t')[0] if du_out else ''
+            except Exception:
+                disk_usage = ''
+        else:
+            disk_usage = 'Home directory does not exist'
         # GeoIP details
         geoip = {}
         if login_ip and login_ip not in ['127.0.0.1', 'localhost']:
