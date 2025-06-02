@@ -7,16 +7,15 @@
     <!-- Current language: {{ LANGUAGE_CODE }} -->
 
     <!--
-      Note: We have added a max-width & auto-margin to center the content,
-      lightened box-shadows, and adjusted flex rules for better wrapping.
-      NOTHING was renamed or removed that the existing JS/selectors depend on.
+      Note: We have updated colors to match the CyberPanel theme and fixed the system resource cards
+      to display properly with horizontal layout. All existing JS/selectors are preserved.
     -->
     <div
         class="container"
         style="
             max-width: 1200px;
             margin: 0 auto;
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            background: #f8f9fa;
             min-height: 100vh;
             padding: 20px 20px 40px 20px;
         "
@@ -33,18 +32,15 @@
                 margin: 0 auto 40px auto;
                 text-align: center;
                 padding: 30px;
-                background: rgba(255, 255, 255, 0.9);
-                border-radius: 20px;
-                backdrop-filter: blur(10px);
-                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+                background: #fff;
+                border-radius: 10px;
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+                border: 1px solid #e9ecef;
             "
         >
             <h2
                 style="
-                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                    -webkit-background-clip: text;
-                    -webkit-text-fill-color: transparent;
-                    background-clip: text;
+                    color: #4c5fad;
                     font-size: 2.5rem;
                     font-weight: 700;
                     margin-bottom: 10px;
@@ -83,7 +79,7 @@
                         <div
                             class="rounded-card"
                             style="
-                                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                                background: #4c5fad;
                                 color: #fff;
                                 padding: 25px;
                                 position: relative;
@@ -92,22 +88,6 @@
                                 cursor: pointer;
                             "
                         >
-                            <!-- subtle radial overlay -->
-                            <div
-                                style="
-                                    position: absolute;
-                                    top: -40%;
-                                    right: -40%;
-                                    width: 180%;
-                                    height: 180%;
-                                    background: radial-gradient(
-                                        circle,
-                                        rgba(255, 255, 255, 0.08) 0%,
-                                        transparent 70%
-                                    );
-                                    pointer-events: none;
-                                "
-                            ></div>
                             <div
                                 style="
                                     display: flex;
@@ -121,7 +101,6 @@
                                         font-size: 3rem;
                                         margin-right: 20px;
                                         opacity: 0.85;
-                                        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
                                     "
                                 ></div>
                                 <div>
@@ -130,7 +109,6 @@
                                             font-size: 2.8rem;
                                             font-weight: 700;
                                             line-height: 1;
-                                            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
                                         "
                                     >
                                         {$ totalSites $}
@@ -160,7 +138,7 @@
                         <div
                             class="rounded-card"
                             style="
-                                background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+                                background: #6eb5ff;
                                 color: #fff;
                                 padding: 25px;
                                 position: relative;
@@ -169,21 +147,6 @@
                                 cursor: pointer;
                             "
                         >
-                            <div
-                                style="
-                                    position: absolute;
-                                    top: -40%;
-                                    right: -40%;
-                                    width: 180%;
-                                    height: 180%;
-                                    background: radial-gradient(
-                                        circle,
-                                        rgba(255, 255, 255, 0.08) 0%,
-                                        transparent 70%
-                                    );
-                                    pointer-events: none;
-                                "
-                            ></div>
                             <div
                                 style="
                                     display: flex;
@@ -197,7 +160,6 @@
                                         font-size: 3rem;
                                         margin-right: 20px;
                                         opacity: 0.85;
-                                        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
                                     "
                                 ></div>
                                 <div>
@@ -206,7 +168,6 @@
                                             font-size: 2.8rem;
                                             font-weight: 700;
                                             line-height: 1;
-                                            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
                                         "
                                     >
                                         {$ totalWPSites $}
@@ -236,7 +197,7 @@
                         <div
                             class="rounded-card"
                             style="
-                                background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+                                background: #ff6b9d;
                                 color: #fff;
                                 padding: 25px;
                                 position: relative;
@@ -245,21 +206,6 @@
                                 cursor: pointer;
                             "
                         >
-                            <div
-                                style="
-                                    position: absolute;
-                                    top: -40%;
-                                    right: -40%;
-                                    width: 180%;
-                                    height: 180%;
-                                    background: radial-gradient(
-                                        circle,
-                                        rgba(255, 255, 255, 0.08) 0%,
-                                        transparent 70%
-                                    );
-                                    pointer-events: none;
-                                "
-                            ></div>
                             <div
                                 style="
                                     display: flex;
@@ -273,7 +219,6 @@
                                         font-size: 3rem;
                                         margin-right: 20px;
                                         opacity: 0.85;
-                                        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
                                     "
                                 ></div>
                                 <div>
@@ -282,7 +227,6 @@
                                             font-size: 2.8rem;
                                             font-weight: 700;
                                             line-height: 1;
-                                            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
                                         "
                                     >
                                         {$ totalDBs $}
@@ -312,7 +256,7 @@
                         <div
                             class="rounded-card"
                             style="
-                                background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+                                background: #ffa726;
                                 color: #fff;
                                 padding: 25px;
                                 position: relative;
@@ -321,21 +265,6 @@
                                 cursor: pointer;
                             "
                         >
-                            <div
-                                style="
-                                    position: absolute;
-                                    top: -40%;
-                                    right: -40%;
-                                    width: 180%;
-                                    height: 180%;
-                                    background: radial-gradient(
-                                        circle,
-                                        rgba(255, 255, 255, 0.08) 0%,
-                                        transparent 70%
-                                    );
-                                    pointer-events: none;
-                                "
-                            ></div>
                             <div
                                 style="
                                     display: flex;
@@ -349,7 +278,6 @@
                                         font-size: 3rem;
                                         margin-right: 20px;
                                         opacity: 0.85;
-                                        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
                                     "
                                 ></div>
                                 <div>
@@ -358,7 +286,6 @@
                                             font-size: 2.8rem;
                                             font-weight: 700;
                                             line-height: 1;
-                                            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
                                         "
                                     >
                                         {$ totalEmails $}
@@ -383,7 +310,7 @@
             {% if admin %}
                 <!--
                 ===============================
-                  System Stat Cards (CPU / RAM / Disk)
+                  System Stat Cards (CPU / RAM / Disk) - Fixed to match image design
                 ===============================
                 -->
                 <div ng-controller="homePageStatus" style="margin-bottom: 40px;">
@@ -400,22 +327,21 @@
                         <div
                             class="system-stat-card rounded-card"
                             style="
-                                background: rgba(255, 255, 255, 0.95);
-                                border-radius: 20px;
-                                box-shadow: 0 4px 20px rgba(229, 57, 53, 0.12);
+                                background: #fff;
+                                border-radius: 10px;
+                                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
                                 padding: 30px 40px;
                                 min-width: 200px;
                                 text-align: center;
-                                backdrop-filter: blur(10px);
-                                border: 1px solid rgba(229, 57, 53, 0.1);
+                                border: 1px solid #e9ecef;
                                 transition: all 0.3s ease;
                             "
                         >
                             <div
                                 style="
-                                    font-size: 1.2rem;
+                                    font-size: 1rem;
                                     color: #e53935;
-                                    font-weight: 700;
+                                    font-weight: 600;
                                     margin-bottom: 15px;
                                     text-transform: uppercase;
                                     letter-spacing: 1px;
@@ -426,22 +352,20 @@
                             <div
                                 id="redcircle"
                                 class="c100 red cpu"
-                                style="
-                                    margin: 0 auto;
-                                    filter: drop-shadow(0 4px 8px rgba(229, 57, 53, 0.2));
-                                "
+                                style="margin: 0 auto;"
                             >
                                 <span
                                     style="
                                         font-weight: 700;
                                         font-size: 1.2rem;
+                                        color: #333;
                                     "
                                 >
                                     {$ cpuUsage $}%
                                 </span>
                                 <div class="slice">
-                                    <div class="bar"></div>
-                                    <div class="fill"></div>
+                                    <div class="bar" style="border-color: #e53935;"></div>
+                                    <div class="fill" style="border-color: #e53935;"></div>
                                 </div>
                             </div>
                         </div>
@@ -450,22 +374,21 @@
                         <div
                             class="system-stat-card rounded-card"
                             style="
-                                background: rgba(255, 255, 255, 0.95);
-                                border-radius: 20px;
-                                box-shadow: 0 4px 20px rgba(67, 160, 71, 0.12);
+                                background: #fff;
+                                border-radius: 10px;
+                                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
                                 padding: 30px 40px;
                                 min-width: 200px;
                                 text-align: center;
-                                backdrop-filter: blur(10px);
-                                border: 1px solid rgba(67, 160, 71, 0.1);
+                                border: 1px solid #e9ecef;
                                 transition: all 0.3s ease;
                             "
                         >
                             <div
                                 style="
-                                    font-size: 1.2rem;
+                                    font-size: 1rem;
                                     color: #43a047;
-                                    font-weight: 700;
+                                    font-weight: 600;
                                     margin-bottom: 15px;
                                     text-transform: uppercase;
                                     letter-spacing: 1px;
@@ -476,22 +399,20 @@
                             <div
                                 id="greencircle"
                                 class="c100 p0 green ram"
-                                style="
-                                    margin: 0 auto;
-                                    filter: drop-shadow(0 4px 8px rgba(67, 160, 71, 0.2));
-                                "
+                                style="margin: 0 auto;"
                             >
                                 <span
                                     style="
                                         font-weight: 700;
                                         font-size: 1.2rem;
+                                        color: #333;
                                     "
                                 >
                                     {$ ramUsage $}%
                                 </span>
                                 <div class="slice">
-                                    <div class="bar"></div>
-                                    <div class="fill"></div>
+                                    <div class="bar" style="border-color: #43a047;"></div>
+                                    <div class="fill" style="border-color: #43a047;"></div>
                                 </div>
                             </div>
                         </div>
@@ -500,22 +421,21 @@
                         <div
                             class="system-stat-card rounded-card"
                             style="
-                                background: rgba(255, 255, 255, 0.95);
-                                border-radius: 20px;
-                                box-shadow: 0 4px 20px rgba(216, 27, 96, 0.12);
+                                background: #fff;
+                                border-radius: 10px;
+                                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
                                 padding: 30px 40px;
                                 min-width: 200px;
                                 text-align: center;
-                                backdrop-filter: blur(10px);
-                                border: 1px solid rgba(216, 27, 96, 0.1);
+                                border: 1px solid #e9ecef;
                                 transition: all 0.3s ease;
                             "
                         >
                             <div
                                 style="
-                                    font-size: 1.2rem;
+                                    font-size: 1rem;
                                     color: #d81b60;
-                                    font-weight: 700;
+                                    font-weight: 600;
                                     margin-bottom: 15px;
                                     text-transform: uppercase;
                                     letter-spacing: 1px;
@@ -526,22 +446,20 @@
                             <div
                                 id="pinkcircle"
                                 class="c100 pink disk"
-                                style="
-                                    margin: 0 auto;
-                                    filter: drop-shadow(0 4px 8px rgba(216, 27, 96, 0.2));
-                                "
+                                style="margin: 0 auto;"
                             >
                                 <span
                                     style="
                                         font-weight: 700;
                                         font-size: 1.2rem;
+                                        color: #333;
                                     "
                                 >
                                     {$ diskUsage $}%
                                 </span>
                                 <div class="slice">
-                                    <div class="bar"></div>
-                                    <div class="fill"></div>
+                                    <div class="bar" style="border-color: #d81b60;"></div>
+                                    <div class="fill" style="border-color: #d81b60;"></div>
                                 </div>
                             </div>
                         </div>
@@ -556,12 +474,11 @@
             -->
             <div
                 style="
-                    background: rgba(255, 255, 255, 0.95);
-                    border-radius: 25px;
-                    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+                    background: #fff;
+                    border-radius: 10px;
+                    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
                     padding: 35px 25px 40px 25px;
-                    backdrop-filter: blur(15px);
-                    border: 1px solid rgba(255, 255, 255, 0.25);
+                    border: 1px solid #e9ecef;
                     margin-bottom: 40px;
                 "
             >
@@ -573,11 +490,11 @@
                             padding: 0;
                             margin: 0 auto;
                             display: inline-flex;
-                            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                            border-radius: 15px;
+                            background: #4c5fad;
+                            border-radius: 8px;
                             padding: 8px;
                             gap: 8px;
-                            box-shadow: 0 4px 20px rgba(102, 126, 234, 0.2);
+                            box-shadow: 0 2px 8px rgba(76, 95, 173, 0.2);
                         "
                     >
                         <li style="display: inline-block;">
@@ -589,9 +506,9 @@
                                 style="
                                     display: block;
                                     padding: 12px 25px;
-                                    background: rgba(255, 255, 255, 0.9);
-                                    color: #667eea;
-                                    border-radius: 12px;
+                                    background: #fff;
+                                    color: #4c5fad;
+                                    border-radius: 6px;
                                     text-decoration: none;
                                     font-weight: 600;
                                     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -614,7 +531,7 @@
                                     padding: 12px 25px;
                                     background: transparent;
                                     color: rgba(255, 255, 255, 0.8);
-                                    border-radius: 12px;
+                                    border-radius: 6px;
                                     text-decoration: none;
                                     font-weight: 600;
                                     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -637,7 +554,7 @@
                                     padding: 12px 25px;
                                     background: transparent;
                                     color: rgba(255, 255, 255, 0.8);
-                                    border-radius: 12px;
+                                    border-radius: 6px;
                                     text-decoration: none;
                                     font-weight: 600;
                                     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -656,12 +573,11 @@
                 <div
                     class="tab-content"
                     style="
-                        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-                        border-radius: 18px;
+                        background: #f8f9fa;
+                        border-radius: 8px;
                         padding: 30px;
                         min-height: 350px;
-                        border: 2px solid rgba(255, 255, 255, 0.5);
-                        box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.05);
+                        border: 1px solid #e9ecef;
                     "
                 >
                     <div
@@ -696,12 +612,13 @@
             <div style="margin-bottom: 40px;">
                 <div
                     style="
-                        background: rgba(255, 255, 255, 0.97);
-                        border-radius: 18px;
-                        box-shadow: 0 8px 32px rgba(102, 126, 234, 0.08);
+                        background: #fff;
+                        border-radius: 10px;
+                        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
                         padding: 25px 30px;
                         max-width: 900px;
                         margin: 0 auto;
+                        border: 1px solid #e9ecef;
                     "
                 >
                     <div
@@ -754,11 +671,7 @@
                             <thead>
                                 <tr
                                     style="
-                                        background: linear-gradient(
-                                            135deg,
-                                            #667eea 0%,
-                                            #764ba2 100%
-                                        );
+                                        background: #4c5fad;
                                         color: #fff;
                                     "
                                 >
@@ -876,8 +789,8 @@
         <style>
             /* Rounded Card Helper */
             .rounded-card {
-                border-radius: 20px;
-                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+                border-radius: 10px;
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
             }
 
             /* Hover effect for stat cards */
@@ -887,8 +800,8 @@
             }
 
             .stat-card-wrapper:hover > .rounded-card {
-                transform: translateY(-8px) scale(1.01);
-                box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12) !important;
+                transform: translateY(-5px);
+                box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15) !important;
             }
 
             /* SSH table hover */
@@ -898,8 +811,8 @@
 
             /* System stat cards hover */
             .system-stat-card:hover {
-                transform: translateY(-5px);
-                box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12) !important;
+                transform: translateY(-3px);
+                box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15) !important;
             }
 
             /* Tab styles tweaks */
@@ -908,31 +821,79 @@
             }
 
             .graph-tab:hover {
-                background: rgba(255, 255, 255, 0.9) !important;
-                color: #667eea !important;
+                background: #fff !important;
+                color: #4c5fad !important;
                 transform: translateY(-2px);
-                box-shadow: 0 6px 18px rgba(102, 126, 234, 0.2);
             }
 
             .graph-tab.active {
-                background: rgba(255, 255, 255, 0.9) !important;
-                color: #667eea !important;
-                box-shadow: 0 6px 18px rgba(102, 126, 234, 0.2);
+                background: #fff !important;
+                color: #4c5fad !important;
             }
 
-            /* Fix for webkit background‐clip on the H2 text */
-            h2 {
-                -webkit-background-clip: text !important;
-                -webkit-text-fill-color: transparent !important;
-                background-clip: text !important;
+            /* CSS for circular progress bars - ensuring they display correctly */
+            .c100 {
+                position: relative;
+                width: 100px;
+                height: 100px;
+                border-radius: 50%;
+                background: #f0f0f0;
+                margin: 0 auto;
+            }
+
+            .c100 .slice {
+                position: absolute;
+                width: 100px;
+                height: 100px;
+                clip: rect(0px, 100px, 100px, 50px);
+            }
+
+            .c100 .bar {
+                position: absolute;
+                border: 8px solid transparent;
+                width: 84px;
+                height: 84px;
+                border-radius: 50%;
+                clip: rect(0px, 50px, 100px, 0px);
+            }
+
+            .c100 .fill {
+                position: absolute;
+                border: 8px solid transparent;
+                width: 84px;
+                height: 84px;
+                border-radius: 50%;
+                clip: rect(0px, 50px, 100px, 0px);
+                transform: rotate(180deg);
+            }
+
+            .c100 span {
+                position: absolute;
+                width: 100px;
+                z-index: 1;
+                left: 0;
+                top: 0;
+                line-height: 100px;
+                text-align: center;
+                font-size: 20px;
+                color: #333;
+            }
+
+            /* Color variants for progress circles */
+            .c100.red .bar, .c100.red .fill {
+                border-color: #e53935;
+            }
+
+            .c100.green .bar, .c100.green .fill {
+                border-color: #43a047;
+            }
+
+            .c100.pink .bar, .c100.pink .fill {
+                border-color: #d81b60;
             }
 
             /* Disable transitions on chart elements so they render crisply */
-            canvas,
-            .c100,
-            .slice,
-            .bar,
-            .fill {
+            canvas {
                 transition: none !important;
             }
         </style>
@@ -969,11 +930,9 @@
 
                         // Add active to clicked tab
                         this.classList.add('active');
-                        this.style.background = 'rgba(255,255,255,0.9)';
-                        this.style.color = '#667eea';
+                        this.style.background = '#fff';
+                        this.style.color = '#4c5fad';
                         this.style.transform = 'translateY(-2px)';
-                        this.style.boxShadow =
-                            '0 4px 15px rgba(102,126,234,0.3)';
 
                         // Show corresponding pane
                         var target = this.getAttribute('href');
