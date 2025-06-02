@@ -630,7 +630,6 @@ def getRecentSSHLogs(request):
 @require_POST
 def getSSHUserActivity(request):
     import json
-    from plogical.ACLManager import ACLManager
     from plogical.processUtilities import ProcessUtilities
     try:
         user_id = request.session.get('userID')
