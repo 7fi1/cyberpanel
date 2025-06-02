@@ -1215,7 +1215,7 @@ app.controller('dashboardStatsController', function ($scope, $http, $timeout) {
             var match = login.raw.match(/(pts\/[0-9]+)/);
             if (match) tty = match[1];
         }
-        $http.post('/baseTemplate/getSSHUserActivity', { user: login.user, tty: tty }).then(function(response) {
+        $http.post('/base/getSSHUserActivity', { user: login.user, tty: tty }).then(function(response) {
             $scope.loadingSSHActivity = false;
             if (response.data) {
                 $scope.sshActivity = response.data;
