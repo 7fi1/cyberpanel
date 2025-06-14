@@ -1,246 +1,833 @@
 {% extends "baseTemplate/index.html" %}
 {% load i18n %}
 {% block title %}{% trans "Edit PHP Configurations - CyberPanel" %}{% endblock %}
+
+{% block header_scripts %}
+<style>
+    .modern-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+    
+    .page-header {
+        text-align: center;
+        margin-bottom: 3rem;
+        padding: 3rem 0;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 20px;
+        animation: fadeInDown 0.5s ease-out;
+        position: relative;
+        overflow: hidden;
+        color: white;
+    }
+    
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle at 70% 30%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+        animation: rotate 30s linear infinite;
+    }
+    
+    @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+    
+    @keyframes fadeInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .header-content {
+        position: relative;
+        z-index: 1;
+    }
+    
+    .page-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+    }
+    
+    .php-icon {
+        width: 60px;
+        height: 60px;
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    
+    .page-subtitle {
+        font-size: 1.125rem;
+        color: rgba(255, 255, 255, 0.9);
+        max-width: 600px;
+        margin: 0 auto;
+    }
+    
+    .apache-link {
+        margin-top: 1rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
+        padding: 0.5rem 1.5rem;
+        border-radius: 20px;
+        color: white;
+        text-decoration: none;
+        font-size: 0.875rem;
+        transition: all 0.3s ease;
+    }
+    
+    .apache-link:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: translateY(-2px);
+        color: white;
+        text-decoration: none;
+    }
+    
+    .config-panel {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 10px 40px rgba(0,0,0,0.08);
+        border: 1px solid #e8e9ff;
+        overflow: hidden;
+        animation: fadeInUp 0.5s ease-out;
+    }
+    
+    .modern-tabs {
+        display: flex;
+        background: #f8f9ff;
+        border-bottom: 1px solid #e8e9ff;
+        overflow-x: auto;
+    }
+    
+    .tab-item {
+        flex: 1;
+        padding: 1.25rem 2rem;
+        cursor: pointer;
+        border: none;
+        background: none;
+        font-weight: 500;
+        color: #64748b;
+        position: relative;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+        text-decoration: none;
+    }
+    
+    .tab-item:hover {
+        color: #667eea;
+        background: rgba(102, 126, 234, 0.05);
+        text-decoration: none;
+    }
+    
+    .tab-item.active {
+        color: #667eea;
+        background: white;
+    }
+    
+    .tab-item.active::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+    }
+    
+    .tab-icon {
+        font-size: 1.125rem;
+    }
+    
+    .tab-content {
+        padding: 2rem;
+    }
+    
+    .php-selector {
+        background: #f8f9ff;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    .selector-icon {
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        flex-shrink: 0;
+    }
+    
+    .selector-content {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    .form-label {
+        font-weight: 500;
+        color: #475569;
+        font-size: 0.875rem;
+        margin: 0;
+    }
+    
+    .form-control {
+        padding: 0.75rem 1rem;
+        border: 1px solid #e8e9ff;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        transition: all 0.3s ease;
+        background: #fff;
+    }
+    
+    .form-control:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    
+    .select-control {
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+        background-position: right 0.5rem center;
+        background-repeat: no-repeat;
+        background-size: 1.5em 1.5em;
+        padding-right: 2.5rem;
+        min-width: 200px;
+    }
+    
+    .settings-grid {
+        display: grid;
+        gap: 1.5rem;
+    }
+    
+    .setting-item {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        align-items: center;
+        padding: 1.5rem;
+        background: #f8f9ff;
+        border-radius: 12px;
+        transition: all 0.3s ease;
+    }
+    
+    .setting-item:hover {
+        background: #f3f4ff;
+        transform: translateX(5px);
+    }
+    
+    .setting-label {
+        font-weight: 500;
+        color: #1e293b;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .setting-label code {
+        background: #e8e9ff;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.875rem;
+        color: #667eea;
+    }
+    
+    .setting-control {
+        display: flex;
+        justify-content: flex-end;
+    }
+    
+    /* Modern Toggle Switch */
+    .switch-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    
+    .switch {
+        position: relative;
+        display: inline-block;
+        width: 44px;
+        height: 24px;
+    }
+    
+    .switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+    
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: #e2e8f0;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        border-radius: 24px;
+    }
+    
+    .slider:before {
+        position: absolute;
+        content: "";
+        height: 18px;
+        width: 18px;
+        left: 3px;
+        bottom: 3px;
+        background: white;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        border-radius: 50%;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+    }
+    
+    input:checked + .slider {
+        background: #667eea;
+    }
+    
+    input:checked + .slider:before {
+        transform: translateX(20px);
+    }
+    
+    .switch-label {
+        font-size: 0.75rem;
+        font-weight: 500;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.025em;
+        user-select: none;
+    }
+    
+    .switch-label.on {
+        color: #667eea;
+    }
+    
+    .switch-label.off {
+        color: #94a3b8;
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+        padding-top: 2rem;
+        border-top: 1px solid #e8e9ff;
+    }
+    
+    .btn {
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 500;
+        font-size: 0.875rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        flex: 1;
+    }
+    
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+    
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+    
+    .btn-restart {
+        background: #10b981;
+        color: white;
+    }
+    
+    .btn-restart:hover {
+        background: #059669;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    }
+    
+    .alert {
+        padding: 1rem 1.5rem;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        animation: fadeInUp 0.3s ease-out;
+    }
+    
+    .alert-danger {
+        background: #fee2e2;
+        color: #991b1b;
+        border: 1px solid #fecaca;
+    }
+    
+    .alert-success {
+        background: #d1fae5;
+        color: #065f46;
+        border: 1px solid #a7f3d0;
+    }
+    
+    .alert-icon {
+        font-size: 1.25rem;
+    }
+    
+    .config-editor {
+        background: #1e293b;
+        border-radius: 12px;
+        padding: 1.5rem;
+        position: relative;
+    }
+    
+    .editor-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 1rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid #334155;
+    }
+    
+    .editor-title {
+        color: #94a3b8;
+        font-size: 0.875rem;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .editor-actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+    
+    .editor-btn {
+        background: #334155;
+        color: #94a3b8;
+        border: none;
+        padding: 0.375rem 0.75rem;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    
+    .editor-btn:hover {
+        background: #475569;
+        color: white;
+    }
+    
+    .config-textarea {
+        width: 100%;
+        background: transparent;
+        color: #10b981;
+        font-family: 'Monaco', 'Consolas', monospace;
+        font-size: 0.875rem;
+        border: none;
+        outline: none;
+        resize: vertical;
+        min-height: 500px;
+        line-height: 1.6;
+    }
+    
+    .loading-spinner {
+        width: 20px;
+        height: 20px;
+        border: 2px solid #f3f3f3;
+        border-top: 2px solid #667eea;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        display: inline-block;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .modern-container {
+            padding: 1rem;
+        }
+        
+        .page-title {
+            font-size: 2rem;
+        }
+        
+        .setting-item {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+        
+        .setting-control {
+            justify-content: flex-start;
+        }
+        
+        .action-buttons {
+            flex-direction: column;
+        }
+        
+        .btn {
+            width: 100%;
+        }
+    }
+</style>
+
+{% endblock %}
+
 {% block content %}
+{% load static %}
+{% get_current_language as LANGUAGE_CODE %}
+<!-- Current language: {{ LANGUAGE_CODE }} -->
 
-
-    {% load static %}
-    {% get_current_language as LANGUAGE_CODE %}
-    <!-- Current language: {{ LANGUAGE_CODE }} -->
-
-
-    <div class="container">
-        <div id="page-title">
-            <h2>{% trans "Edit PHP Configurations" %}</h2>
-            <p>{% trans "Edit PHP Configurations on this page." %}</p>
+<div class="modern-container" ng-controller="editPHPConfig">
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="header-content">
+            <div class="page-title">
+                <div class="php-icon">
+                    <i class="fas fa-cog fa-2x"></i>
+                </div>
+                {% trans "Edit PHP Configurations" %}
+            </div>
+            <p class="page-subtitle">
+                {% trans "Configure PHP settings to optimize your web applications performance" %}
+            </p>
+            {% if apache %}
+            <a href="{% url 'editPHPConfigs' %}?apache=apache" class="apache-link">
+                <i class="fas fa-feather"></i>
+                {% trans "Edit Apache Configurations" %}
+            </a>
+            {% endif %}
         </div>
-
-        <div ng-controller="editPHPConfig" class="panel">
-            <div class="panel-body">
-                <h3 class="content-box-header">
-                    {% trans "Edit PHP Configurations" %} - {% if apache %}<a href="{% url 'editPHPConfigs' %}?apache=apache">Edit Apache Configurations</a>{% endif %}
-                </h3>
-                <div class="example-box-wrapper">
-                    <ul class="nav nav-tabs">
-
-                        <li class="col-md-2 nav-item tab-mod active" ng-click="fetchPHPDetails()">
-                            <a href="#tab-example-1" data-toggle="tab" class="h4 nav-link">
-                                    <i class="fa fa-cog btn-icon"></i>
-                                    <span>{% trans "Basic" %}</span>
-                            </a>
-
-                        </li>
-                        <li class="col-md-2 tab-mod nav-item" ng-click="fetchAdvancePHPDetails()">
-                            <a href="#tab-example-3" data-toggle="tab" class="h4 nav-link">
-                                <i class="fa fa-cogs btn-icon"></i>
-                                <span>{% trans "Advanced" %}</span>
-                            </a>
-                        </li>
-                    </ul>
-                    <div class="tab-content">
-                        <div class="tab-pane fade active in" id="tab-example-1">
-                            <div class="example-box-wrapper">
-
-
-                                <form action="/" class="form-horizontal bordered-row">
-
-
-                                    <div class="form-group">
-                                        <label class="col-sm-3 control-label">{% trans "Select PHP" %}</label>
-                                        <div class="col-sm-6">
-                                            <select ng-change="fetchPHPDetails()" ng-model="phpSelection"
-                                                    class="form-control">
-                                                {% for php in phps %}
-                                                    <option>{{ php }}</option>
-                                                {% endfor %}
-                                            </select>
-                                        </div>
-                                        <img ng-hide="loadingPHP" src="{% static 'images/loading.gif' %}">
-                                    </div>
-
-                                    <!------ PHP Basic Settings Box --------------->
-
-
-                                    <div ng-hide="phpDetailsBox" class="form-group">
-                                        <label class="col-sm-3 control-label">{% trans "display_errors" %}</label>
-                                        <div class="col-sm-6">
-                                            <input type="checkbox" id="display_errors" data-toggle="toggle">
-                                        </div>
-                                    </div>
-
-                                    <div ng-hide="phpDetailsBox" class="form-group">
-                                        <label class="col-sm-3 control-label">{% trans "file_uploads" %}</label>
-                                        <div class="col-sm-6">
-                                            <input type="checkbox" id="file_uploads" data-toggle="toggle">
-                                        </div>
-                                    </div>
-
-
-                                    <div ng-hide="phpDetailsBox" class="form-group">
-                                        <label class="col-sm-3 control-label">{% trans "allow_url_fopen" %}</label>
-                                        <div class="col-sm-6">
-                                            <input type="checkbox" id="allow_url_fopen" data-toggle="toggle">
-                                        </div>
-                                    </div>
-
-
-                                    <div ng-hide="phpDetailsBox" class="form-group">
-                                        <label class="col-sm-3 control-label">{% trans "allow_url_include" %}</label>
-                                        <div class="col-sm-6">
-                                            <input type="checkbox" id="allow_url_include" data-toggle="toggle">
-                                        </div>
-                                    </div>
-
-
-                                    <div ng-hide="phpDetailsBox" class="form-group">
-                                        <label class="col-sm-3 control-label">{% trans "memory_limit" %}</label>
-                                        <div class="col-sm-6">
-                                            <input ng-model="memory_limit" type="text" class="form-control" required>
-                                        </div>
-                                    </div>
-
-                                    <div ng-hide="phpDetailsBox" class="form-group">
-                                        <label class="col-sm-3 control-label">{% trans "max_execution_time" %}</label>
-                                        <div class="col-sm-6">
-                                            <input ng-model="max_execution_time" type="text" class="form-control"
-                                                   required>
-                                        </div>
-                                    </div>
-
-                                    <div ng-hide="phpDetailsBox" class="form-group">
-                                        <label class="col-sm-3 control-label">{% trans "upload_max_filesize" %}</label>
-                                        <div class="col-sm-6">
-                                            <input ng-model="upload_max_filesize" type="text" class="form-control"
-                                                   required>
-                                        </div>
-                                    </div>
-
-                                    <div ng-hide="phpDetailsBox" class="form-group">
-                                        <label class="col-sm-3 control-label">{% trans "post_max_size" %}</label>
-                                        <div class="col-sm-6">
-                                            <input ng-model="post_max_size" type="text" class="form-control" required>
-                                        </div>
-                                    </div>
-
-                                    <div ng-hide="phpDetailsBox" class="form-group">
-                                        <label class="col-sm-3 control-label">{% trans "max_input_time" %}</label>
-                                        <div class="col-sm-6">
-                                            <input ng-model="max_input_time" type="text" class="form-control" required>
-                                        </div>
-                                    </div>
-
-
-                                    <!------ PHP Basic Settings Box --------------->
-                                    <div ng-hide="savebtn" class="form-group">
-                                        <label class="col-sm-3 control-label"></label>
-                                        <div class="col-sm-4">
-                                            <button type="button" ng-click="saveChanges()"
-                                                    class="btn btn-primary btn-lg btn-block">{% trans "Save Changes" %}</button>
-                                            <button type="button" ng-click="restartPHP()"
-                                                    class="btn btn-primary btn-lg btn-block">{% trans "Restart PHP" %} <img ng-hide="cyberPanelLoading" src="{% static 'images/loading.gif' %}"></button>
-
-                                        </div>
-                                    </div>
-
-
-                                    <div class="form-group">
-                                        <label class="col-sm-3 control-label"></label>
-                                        <div class="col-sm-4">
-                                            <div ng-hide="canNotFetch" class="alert alert-danger">
-                                                <p>{% trans "Error message: " %}{$ errorMessage $}</p>
-                                            </div>
-
-                                            <div ng-hide="detailsSaved" class="alert alert-success">
-                                                <p>{% trans "PHP Configs Saved." %}</p>
-                                            </div>
-
-
-                                            <div ng-hide="couldNotConnect" class="alert alert-danger">
-                                                <p>{% trans "Could not connect. Please refresh this page." %}</p>
-                                            </div>
-                                        </div>
-
-
-                                    </div>
-
-
-                                </form>
-
-
+    </div>
+    
+    <!-- Configuration Panel -->
+    <div class="config-panel">
+        <!-- Tabs -->
+        <div class="modern-tabs">
+            <a href="#basic-tab" class="tab-item active" data-toggle="tab" ng-click="fetchPHPDetails()">
+                <i class="fas fa-sliders-h tab-icon"></i>
+                <span>{% trans "Basic Settings" %}</span>
+            </a>
+            <a href="#advanced-tab" class="tab-item" data-toggle="tab" ng-click="fetchAdvancePHPDetails()">
+                <i class="fas fa-code tab-icon"></i>
+                <span>{% trans "Advanced Editor" %}</span>
+            </a>
+        </div>
+        
+        <!-- Tab Content -->
+        <div class="tab-content">
+            <!-- Basic Settings Tab -->
+            <div class="tab-pane fade in active" id="basic-tab">
+                <!-- PHP Selector -->
+                <div class="php-selector">
+                    <div class="selector-icon">
+                        <i class="fas fa-code"></i>
+                    </div>
+                    <div class="selector-content">
+                        <label class="form-label">{% trans "Select PHP Version" %}</label>
+                        <select ng-change="fetchPHPDetails()" 
+                                ng-model="phpSelection"
+                                class="form-control select-control">
+                            {% for php in phps %}
+                                <option>{{ php }}</option>
+                            {% endfor %}
+                        </select>
+                        <span ng-show="!loadingPHP" class="loading-spinner"></span>
+                    </div>
+                </div>
+                
+                <!-- Settings Grid -->
+                <div ng-hide="phpDetailsBox" class="settings-grid">
+                    <!-- Boolean Settings -->
+                    <div class="setting-item">
+                        <div class="setting-label">
+                            <code>display_errors</code>
+                            <span>{% trans "Show PHP errors to visitors" %}</span>
+                        </div>
+                        <div class="setting-control">
+                            <div class="switch-wrapper">
+                                <span class="switch-label off">{% trans 'Off' %}</span>
+                                <label class="switch">
+                                    <input type="checkbox" id="display_errors">
+                                    <span class="slider"></span>
+                                </label>
+                                <span class="switch-label on">{% trans 'On' %}</span>
                             </div>
                         </div>
-
-
-                        <div class="tab-pane fade" id="tab-example-3">
-
-                            <form action="/" class="form-horizontal bordered-row">
-
-                                <div class="form-group">
-                                    <label class="col-sm-3 control-label">{% trans "Select PHP" %}</label>
-                                    <div class="col-sm-6">
-                                        <select ng-change="fetchAdvancePHPDetails()" ng-model="phpSelection"
-                                                class="form-control">
-                                            {% for php in phps %}
-                                                <option>{{ php }}</option>
-                                            {% endfor %}
-                                        </select>
-                                    </div>
-                                    <img ng-hide="loadingPHP" src="{% static 'images/loading.gif' %}">
-                                </div>
-
-
-                                <!------ Config box ----------------->
-
-                                <div ng-hide="configDataView" class="form-group">
-                                    <div class="col-sm-12">
-                                        <textarea ng-model="configData" rows="30" class="form-control"></textarea>
-                                    </div>
-                                </div>
-
-                                <!----- Config box ----------------->
-
-
-                                <div ng-hide="savebtnAdvance" class="form-group">
-                                    <label class="col-sm-3 control-label"></label>
-                                    <div class="col-sm-4">
-                                        <button type="button" ng-click="saveChangesAdvance()"
-                                                class="btn btn-primary btn-lg btn-block">{% trans "Save Changes" %}</button>
-                                        <button type="button" ng-click="restartPHP()"
-                                                    class="btn btn-primary btn-lg btn-block">{% trans "Restart PHP" %} <img ng-hide="cyberPanelLoading" src="{% static 'images/loading.gif' %}"></button>
-
-                                    </div>
-                                </div>
-
-                                <div class="form-group">
-                                    <label class="col-sm-3 control-label"></label>
-                                    <div class="col-sm-4">
-                                        <div ng-hide="canNotFetchAdvanced" class="alert alert-danger">
-                                            <p>{% trans "Error message:" %} {$ errorMessage $}</p>
-                                        </div>
-
-                                        <div ng-hide="detailsSavedAdvanced" class="alert alert-success">
-                                            <p>{% trans "PHP Configs Saved." %}</p>
-                                        </div>
-
-
-                                        <div ng-hide="couldNotConnect" class="alert alert-danger">
-                                            <p>{% trans "Could not connect. Please refresh this page." %}</p>
-                                        </div>
-                                    </div>
-                                </div>
-
-
-                            </form>
-
-
+                    </div>
+                    
+                    <div class="setting-item">
+                        <div class="setting-label">
+                            <code>file_uploads</code>
+                            <span>{% trans "Allow file uploads" %}</span>
                         </div>
+                        <div class="setting-control">
+                            <div class="switch-wrapper">
+                                <span class="switch-label off">{% trans 'Off' %}</span>
+                                <label class="switch">
+                                    <input type="checkbox" id="file_uploads">
+                                    <span class="slider"></span>
+                                </label>
+                                <span class="switch-label on">{% trans 'On' %}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="setting-item">
+                        <div class="setting-label">
+                            <code>allow_url_fopen</code>
+                            <span>{% trans "Allow opening URLs as files" %}</span>
+                        </div>
+                        <div class="setting-control">
+                            <div class="switch-wrapper">
+                                <span class="switch-label off">{% trans 'Off' %}</span>
+                                <label class="switch">
+                                    <input type="checkbox" id="allow_url_fopen">
+                                    <span class="slider"></span>
+                                </label>
+                                <span class="switch-label on">{% trans 'On' %}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="setting-item">
+                        <div class="setting-label">
+                            <code>allow_url_include</code>
+                            <span>{% trans "Allow including URLs" %}</span>
+                        </div>
+                        <div class="setting-control">
+                            <div class="switch-wrapper">
+                                <span class="switch-label off">{% trans 'Off' %}</span>
+                                <label class="switch">
+                                    <input type="checkbox" id="allow_url_include">
+                                    <span class="slider"></span>
+                                </label>
+                                <span class="switch-label on">{% trans 'On' %}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Value Settings -->
+                    <div class="setting-item">
+                        <div class="setting-label">
+                            <code>memory_limit</code>
+                            <span>{% trans "Maximum memory per script" %}</span>
+                        </div>
+                        <div class="setting-control">
+                            <input ng-model="memory_limit" type="text" class="form-control" 
+                                   placeholder="128M" style="max-width: 200px;">
+                        </div>
+                    </div>
+                    
+                    <div class="setting-item">
+                        <div class="setting-label">
+                            <code>max_execution_time</code>
+                            <span>{% trans "Maximum execution time (seconds)" %}</span>
+                        </div>
+                        <div class="setting-control">
+                            <input ng-model="max_execution_time" type="text" class="form-control" 
+                                   placeholder="30" style="max-width: 200px;">
+                        </div>
+                    </div>
+                    
+                    <div class="setting-item">
+                        <div class="setting-label">
+                            <code>upload_max_filesize</code>
+                            <span>{% trans "Maximum upload file size" %}</span>
+                        </div>
+                        <div class="setting-control">
+                            <input ng-model="upload_max_filesize" type="text" class="form-control" 
+                                   placeholder="2M" style="max-width: 200px;">
+                        </div>
+                    </div>
+                    
+                    <div class="setting-item">
+                        <div class="setting-label">
+                            <code>post_max_size</code>
+                            <span>{% trans "Maximum POST data size" %}</span>
+                        </div>
+                        <div class="setting-control">
+                            <input ng-model="post_max_size" type="text" class="form-control" 
+                                   placeholder="8M" style="max-width: 200px;">
+                        </div>
+                    </div>
+                    
+                    <div class="setting-item">
+                        <div class="setting-label">
+                            <code>max_input_time</code>
+                            <span>{% trans "Maximum input parsing time (seconds)" %}</span>
+                        </div>
+                        <div class="setting-control">
+                            <input ng-model="max_input_time" type="text" class="form-control" 
+                                   placeholder="60" style="max-width: 200px;">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div ng-hide="savebtn" class="action-buttons">
+                    <button type="button" ng-click="saveChanges()" class="btn btn-primary">
+                        <i class="fas fa-save"></i>
+                        {% trans "Save Changes" %}
+                    </button>
+                    <button type="button" ng-click="restartPHP()" class="btn btn-restart">
+                        <i class="fas fa-sync-alt"></i>
+                        {% trans "Restart PHP" %}
+                        <span ng-show="!cyberPanelLoading" class="loading-spinner"></span>
+                    </button>
+                </div>
+                
+                <!-- Alerts -->
+                <div ng-hide="canNotFetch" class="alert alert-danger">
+                    <i class="fas fa-exclamation-circle alert-icon"></i>
+                    <div>
+                        <strong>{% trans "Error" %}:</strong> {$ errorMessage $}
+                    </div>
+                </div>
+                
+                <div ng-hide="detailsSaved" class="alert alert-success">
+                    <i class="fas fa-check-circle alert-icon"></i>
+                    <div>
+                        <strong>{% trans "Success" %}:</strong> {% trans "PHP configurations saved successfully." %}
+                    </div>
+                </div>
+                
+                <div ng-hide="couldNotConnect" class="alert alert-danger">
+                    <i class="fas fa-exclamation-circle alert-icon"></i>
+                    <div>
+                        <strong>{% trans "Connection Error" %}:</strong> {% trans "Could not connect. Please refresh this page." %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Advanced Tab -->
+            <div class="tab-pane fade" id="advanced-tab">
+                <!-- PHP Selector -->
+                <div class="php-selector">
+                    <div class="selector-icon">
+                        <i class="fas fa-code"></i>
+                    </div>
+                    <div class="selector-content">
+                        <label class="form-label">{% trans "Select PHP Version" %}</label>
+                        <select ng-change="fetchAdvancePHPDetails()" 
+                                ng-model="phpSelection"
+                                class="form-control select-control">
+                            {% for php in phps %}
+                                <option>{{ php }}</option>
+                            {% endfor %}
+                        </select>
+                        <span ng-show="!loadingPHP" class="loading-spinner"></span>
+                    </div>
+                </div>
+                
+                <!-- Config Editor -->
+                <div ng-hide="configDataView" class="config-editor">
+                    <div class="editor-header">
+                        <div class="editor-title">
+                            <i class="fas fa-file-code"></i>
+                            php.ini
+                        </div>
+                        <div class="editor-actions">
+                            <button class="editor-btn" onclick="document.getElementById('config-textarea').select()">
+                                <i class="fas fa-copy"></i> Select All
+                            </button>
+                        </div>
+                    </div>
+                    <textarea ng-model="configData" 
+                              id="config-textarea"
+                              class="config-textarea"
+                              spellcheck="false"></textarea>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div ng-hide="savebtnAdvance" class="action-buttons">
+                    <button type="button" ng-click="saveChangesAdvance()" class="btn btn-primary">
+                        <i class="fas fa-save"></i>
+                        {% trans "Save Changes" %}
+                    </button>
+                    <button type="button" ng-click="restartPHP()" class="btn btn-restart">
+                        <i class="fas fa-sync-alt"></i>
+                        {% trans "Restart PHP" %}
+                        <span ng-show="!cyberPanelLoading" class="loading-spinner"></span>
+                    </button>
+                </div>
+                
+                <!-- Alerts -->
+                <div ng-hide="canNotFetchAdvanced" class="alert alert-danger">
+                    <i class="fas fa-exclamation-circle alert-icon"></i>
+                    <div>
+                        <strong>{% trans "Error" %}:</strong> {$ errorMessage $}
+                    </div>
+                </div>
+                
+                <div ng-hide="detailsSavedAdvanced" class="alert alert-success">
+                    <i class="fas fa-check-circle alert-icon"></i>
+                    <div>
+                        <strong>{% trans "Success" %}:</strong> {% trans "PHP configurations saved successfully." %}
+                    </div>
+                </div>
+                
+                <div ng-hide="couldNotConnect" class="alert alert-danger">
+                    <i class="fas fa-exclamation-circle alert-icon"></i>
+                    <div>
+                        <strong>{% trans "Connection Error" %}:</strong> {% trans "Could not connect. Please refresh this page." %}
                     </div>
                 </div>
             </div>
         </div>
-
-
     </div>
-
+</div>
 
 {% endblock %}

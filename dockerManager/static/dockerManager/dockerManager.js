@@ -110,7 +110,7 @@ app.controller('dockerImages', function ($scope) {
 /* Java script code to install Container */
 
 app.controller('runContainer', function ($scope, $http) {
-    $scope.containerCreationLoading = true;
+    $scope.containerCreationLoading = false;
     $scope.installationDetailsForm = false;
     $scope.installationProgress = true;
     $scope.errorMessageBox = true;
@@ -120,6 +120,10 @@ app.controller('runContainer', function ($scope, $http) {
 
     $scope.volList = {};
     $scope.volListNumber = 0;
+    $scope.eport = {};
+    $scope.iport = {};
+    $scope.portType = {};
+    $scope.envList = {};
     $scope.addVolField = function () {
         $scope.volList[$scope.volListNumber] = {'dest': '', 'src': ''};
         $scope.volListNumber = $scope.volListNumber + 1;
@@ -136,6 +140,37 @@ app.controller('runContainer', function ($scope, $http) {
     };
 
     var statusFile;
+
+    // Watch for changes to validate ports
+    $scope.$watchGroup(['name', 'dockerOwner', 'memory'], function() {
+        $scope.updateFormValidity();
+    });
+    
+    $scope.$watch('eport', function() {
+        $scope.updateFormValidity();
+    }, true);
+    
+    $scope.formIsValid = false;
+    
+    $scope.updateFormValidity = function() {
+        // Basic required fields
+        if (!$scope.name || !$scope.dockerOwner || !$scope.memory) {
+            $scope.formIsValid = false;
+            return;
+        }
+        
+        // Check if all port mappings are filled (if they exist)
+        if ($scope.portType && Object.keys($scope.portType).length > 0) {
+            for (var port in $scope.portType) {
+                if (!$scope.eport || !$scope.eport[port]) {
+                    $scope.formIsValid = false;
+                    return;
+                }
+            }
+        }
+        
+        $scope.formIsValid = true;
+    };
 
     $scope.createContainer = function () {
 
@@ -239,13 +274,43 @@ app.controller('runContainer', function ($scope, $http) {
 app.controller('listContainers', function ($scope, $http) {
     $scope.activeLog = "";
     $scope.assignActive = "";
+    $scope.dockerOwner = "";
 
     $scope.assignContainer = function (name) {
-        $("#assign").modal("show");
+        console.log('assignContainer called with:', name);
         $scope.assignActive = name;
+        console.log('assignActive set to:', $scope.assignActive);
+        $("#assign").modal("show");
+    };
+    
+    // Test function to verify scope is working
+    $scope.testScope = function() {
+        alert('Scope is working! assignActive: ' + $scope.assignActive + ', dockerOwner: ' + $scope.dockerOwner);
     };
 
     $scope.submitAssignContainer = function () {
+        console.log('submitAssignContainer called');
+        console.log('dockerOwner:', $scope.dockerOwner);
+        console.log('assignActive:', $scope.assignActive);
+        
+        if (!$scope.dockerOwner) {
+            new PNotify({
+                title: 'Error',
+                text: 'Please select an owner',
+                type: 'error'
+            });
+            return;
+        }
+        
+        if (!$scope.assignActive) {
+            new PNotify({
+                title: 'Error', 
+                text: 'No container selected',
+                type: 'error'
+            });
+            return;
+        }
+
         url = "/docker/assignContainer";
 
         var data = {name: $scope.assignActive, admin: $scope.dockerOwner};
@@ -507,11 +572,35 @@ app.controller('listContainers', function ($scope, $http) {
 
 /* Java script code for containerr home page */
 
-app.controller('viewContainer', function ($scope, $http) {
+app.controller('viewContainer', function ($scope, $http, $interval, $timeout) {
     $scope.cName = "";
     $scope.status = "";
     $scope.savingSettings = false;
     $scope.loadingTop = false;
+    $scope.statusInterval = null;
+    $scope.statsInterval = null;
+    
+    // Auto-refresh status every 5 seconds
+    $scope.startStatusMonitoring = function() {
+        $scope.statusInterval = $interval(function() {
+            $scope.refreshStatus(true); // Silent refresh
+        }, 5000);
+    };
+    
+    // Stop monitoring on scope destroy
+    $scope.$on('$destroy', function() {
+        if ($scope.statusInterval) {
+            $interval.cancel($scope.statusInterval);
+        }
+        if ($scope.statsInterval) {
+            $interval.cancel($scope.statsInterval);
+        }
+    });
+    
+    // Start monitoring when controller loads
+    $timeout(function() {
+        $scope.startStatusMonitoring();
+    }, 1000);
 
     $scope.recreate = function () {
         (new PNotify({
@@ -674,7 +763,7 @@ app.controller('viewContainer', function ($scope, $http) {
         })
     };
 
-    $scope.refreshStatus = function () {
+    $scope.refreshStatus = function (silent) {
         url = "/docker/getContainerStatus";
         var data = {name: $scope.cName};
         var config = {
@@ -686,26 +775,47 @@ app.controller('viewContainer', function ($scope, $http) {
         $http.post(url, data, config).then(ListInitialData, cantLoadInitialData);
         function ListInitialData(response) {
             if (response.data.containerStatus === 1) {
-                console.log(response.data.status);
+                var oldStatus = $scope.status;
                 $scope.status = response.data.status;
+                
+                // Animate status change
+                if (oldStatus !== $scope.status && !silent) {
+                    // Add animation class
+                    var statusBadge = document.querySelector('.status-badge');
+                    if (statusBadge) {
+                        statusBadge.classList.add('status-changed');
+                        setTimeout(function() {
+                            statusBadge.classList.remove('status-changed');
+                        }, 600);
+                    }
+                    
+                    new PNotify({
+                        title: 'Status Updated',
+                        text: 'Container is now ' + $scope.status,
+                        type: 'info',
+                        delay: 2000
+                    });
+                }
             }
             else {
-                new PNotify({
-                    title: 'Unable to complete request',
-                    text: response.data.error_message,
-                    type: 'error'
-                });
-
+                if (!silent) {
+                    new PNotify({
+                        title: 'Unable to complete request',
+                        text: response.data.error_message,
+                        type: 'error'
+                    });
+                }
             }
         }
 
         function cantLoadInitialData(response) {
-            PNotify.error({
-                title: 'Unable to complete request',
-                text: "Problem in connecting to server"
-            });
+            if (!silent) {
+                PNotify.error({
+                    title: 'Unable to complete request',
+                    text: "Problem in connecting to server"
+                });
+            }
         }
-
     };
 
     $scope.addVolField = function () {

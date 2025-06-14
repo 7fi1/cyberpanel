@@ -6,29 +6,53 @@
 /* Java script code to create account */
 app.controller('createFTPAccount', function ($scope, $http) {
 
-
+    // Initialize all ng-hide variables to hide alerts on page load
+    $scope.ftpLoading = false;
+    $scope.ftpDetails = true;
+    $scope.canNotCreateFTP = true;
+    $scope.successfullyCreatedFTP = true;
+    $scope.couldNotConnect = true;
+    $scope.generatedPasswordView = true;
 
     $(document).ready(function () {
         $( ".ftpDetails" ).hide();
         $( ".ftpPasswordView" ).hide();
-        $('.create-ftp-acct-select').select2();
+        
+        // Check if select2 is available
+        if ($.fn.select2) {
+            $('.create-ftp-acct-select').select2();
+            
+            $('.create-ftp-acct-select').on('select2:select', function (e) {
+                var data = e.params.data;
+                $scope.ftpDomain = data.text;
+                $( ".ftpDetails" ).show();
+            });
+        } else {
+            // Fallback for regular select
+            $('.create-ftp-acct-select').on('change', function (e) {
+                $scope.ftpDomain = $(this).val();
+                $scope.$apply();
+                $( ".ftpDetails" ).show();
+            });
+        }
     });
-
-    $('.create-ftp-acct-select').on('select2:select', function (e) {
-        var data = e.params.data;
-        $scope.ftpDomain = data.text;
-        $( ".ftpDetails" ).show();
-
-    });
-
-    $scope.ftpLoading = true;
+    
+    $scope.showFTPDetails = function() {
+        if ($scope.ftpDomain && $scope.ftpDomain !== "") {
+            $(".ftpDetails").show();
+            $scope.ftpDetails = false;
+        } else {
+            $(".ftpDetails").hide();
+            $scope.ftpDetails = true;
+        }
+    };
 
     $scope.createFTPAccount = function () {
 
-        $scope.ftpLoading = false;
+        $scope.ftpLoading = true;  // Show loading while creating
         $scope.ftpDetails = false;
-        $scope.canNotCreate = true;
-        $scope.successfullyCreated = true;
+        $scope.canNotCreateFTP = true;
+        $scope.successfullyCreatedFTP = true;
         $scope.couldNotConnect = true;
 
         var ftpDomain = $scope.ftpDomain;
@@ -60,60 +84,75 @@ app.controller('createFTPAccount', function ($scope, $http) {
 
 
         function ListInitialDatas(response) {
-
-
             if (response.data.creatFTPStatus === 1) {
-                $scope.ftpLoading = true;
-                new PNotify({
-                title: 'Success!',
-                text: 'FTP account successfully created.',
-                type: 'success'
-            });
-
-
+                $scope.ftpLoading = false;  // Hide loading on success
+                $scope.successfullyCreatedFTP = false;
+                $scope.canNotCreateFTP = true;
+                $scope.couldNotConnect = true;
+                $scope.createdFTPUsername = ftpDomain + "_" + ftpUserName;
+                
+                // Also show PNotify if available
+                if (typeof PNotify !== 'undefined') {
+                    new PNotify({
+                        title: 'Success!',
+                        text: 'FTP account successfully created.',
+                        type: 'success'
+                    });
+                }
             } else {
-                $scope.ftpLoading = true;
+                $scope.ftpLoading = false;  // Hide loading on error
+                $scope.canNotCreateFTP = false;
+                $scope.successfullyCreatedFTP = true;
+                $scope.couldNotConnect = true;
+                $scope.errorMessage = response.data.error_message;
+                
+                // Also show PNotify if available
+                if (typeof PNotify !== 'undefined') {
+                    new PNotify({
+                        title: 'Operation Failed!',
+                        text: response.data.error_message,
+                        type: 'error'
+                    });
+                }
+            }
+        }
+        
+        function cantLoadInitialDatas(response) {
+            $scope.ftpLoading = false;  // Hide loading on connection error
+            $scope.couldNotConnect = false;
+            $scope.canNotCreateFTP = true;
+            $scope.successfullyCreatedFTP = true;
+            
+            // Also show PNotify if available
+            if (typeof PNotify !== 'undefined') {
                 new PNotify({
                     title: 'Operation Failed!',
-                    text: response.data.error_message,
+                    text: 'Could not connect to server, please refresh this page',
                     type: 'error'
                 });
-
-
             }
-
-        }
-        function cantLoadInitialDatas(response) {
-
-            $scope.ftpLoading = true;
-            new PNotify({
-                title: 'Operation Failed!',
-                text: 'Could not connect to server, please refresh this page',
-                type: 'error'
-            });
-
-
         }
 
 
     };
 
     $scope.hideFewDetails = function () {
-
-        $scope.successfullyCreated = true;
-
-
+        $scope.successfullyCreatedFTP = true;
+        $scope.canNotCreateFTP = true;
+        $scope.couldNotConnect = true;
     };
 
     ///
 
     $scope.generatePassword = function () {
-        $( ".ftpPasswordView" ).show();
+        $(".ftpPasswordView").show();
+        $scope.generatedPasswordView = false;
         $scope.ftpPassword = randomPassword(16);
     };
 
     $scope.usePassword = function () {
-        $(".ftpPasswordView" ).hide();
+        $(".ftpPasswordView").hide();
+        $scope.generatedPasswordView = true;
     };
 
 });
@@ -291,7 +330,7 @@ app.controller('listFTPAccounts', function ($scope, $http, ) {
     $scope.passwordChanged = true;
     $scope.canNotChangePassword = true;
     $scope.couldNotConnect = true;
-    $scope.ftpLoading = true;
+    $scope.ftpLoading = false;
     $scope.ftpAccounts = true;
     $scope.changePasswordBox = true;
     $scope.notificationsBox = true;
@@ -307,7 +346,7 @@ app.controller('listFTPAccounts', function ($scope, $http, ) {
         $scope.passwordChanged = true;
         $scope.canNotChangePassword = true;
         $scope.couldNotConnect = true;
-        $scope.ftpLoading = true;
+        $scope.ftpLoading = false;  // Don't show loading when opening password dialog
         $scope.changePasswordBox = false;
         $scope.notificationsBox = true;
         $scope.ftpUsername = ftpUsername;
@@ -317,7 +356,7 @@ app.controller('listFTPAccounts', function ($scope, $http, ) {
 
     $scope.changePasswordBtn = function () {
 
-        $scope.ftpLoading = false;
+        $scope.ftpLoading = true;  // Show loading while changing password
 
 
         url = "/ftp/changePassword";
@@ -343,13 +382,13 @@ app.controller('listFTPAccounts', function ($scope, $http, ) {
             if (response.data.changePasswordStatus == 1) {
                 $scope.notificationsBox = false;
                 $scope.passwordChanged = false;
-                $scope.ftpLoading = true;
+                $scope.ftpLoading = false;  // Hide loading when done
                 $scope.domainFeteched = $scope.selectedDomain;
 
             } else {
                 $scope.notificationsBox = false;
                 $scope.canNotChangePassword = false;
-                $scope.ftpLoading = true;
+                $scope.ftpLoading = false;  // Hide loading on error
                 $scope.canNotChangePassword = false;
                 $scope.errorMessage = response.data.error_message;
             }
@@ -359,7 +398,7 @@ app.controller('listFTPAccounts', function ($scope, $http, ) {
         function cantLoadInitialDatas(response) {
             $scope.notificationsBox = false;
             $scope.couldNotConnect = false;
-            $scope.ftpLoading = true;
+            $scope.ftpLoading = false;  // Hide loading on connection error
 
         }
 
@@ -370,7 +409,7 @@ app.controller('listFTPAccounts', function ($scope, $http, ) {
         $scope.passwordChanged = true;
         $scope.canNotChangePassword = true;
         $scope.couldNotConnect = true;
-        $scope.ftpLoading = false;
+        $scope.ftpLoading = true;  // Show loading while fetching
         $scope.ftpAccounts = true;
         $scope.changePasswordBox = true;
 
@@ -405,7 +444,7 @@ app.controller('listFTPAccounts', function ($scope, $http, ) {
                 $scope.passwordChanged = true;
                 $scope.canNotChangePassword = true;
                 $scope.couldNotConnect = true;
-                $scope.ftpLoading = true;
+                $scope.ftpLoading = false;  // Hide loading when done
                 $scope.ftpAccounts = false;
                 $scope.changePasswordBox = true;
 
@@ -417,7 +456,7 @@ app.controller('listFTPAccounts', function ($scope, $http, ) {
                 $scope.passwordChanged = true;
                 $scope.canNotChangePassword = true;
                 $scope.couldNotConnect = true;
-                $scope.ftpLoading = true;
+                $scope.ftpLoading = false;  // Hide loading on error
                 $scope.ftpAccounts = true;
                 $scope.changePasswordBox = true;
 
@@ -432,7 +471,7 @@ app.controller('listFTPAccounts', function ($scope, $http, ) {
             $scope.passwordChanged = true;
             $scope.canNotChangePassword = true;
             $scope.couldNotConnect = false;
-            $scope.ftpLoading = true;
+            $scope.ftpLoading = false;  // Hide loading on connection error
             $scope.ftpAccounts = true;
             $scope.changePasswordBox = true;
 

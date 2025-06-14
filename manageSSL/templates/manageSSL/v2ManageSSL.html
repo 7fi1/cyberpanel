@@ -1,211 +1,462 @@
 {% extends "baseTemplate/index.html" %}
 {% load i18n %}
+{% load static %}
 {% block title %}{% trans "SSL v2 - CyberPanel" %}{% endblock %}
+
+{% block header_scripts %}
+<style>
+    /* SSL v2 Page Specific Styles */
+    .ssl-wrapper {
+        background: transparent;
+        padding: 20px;
+    }
+    
+    .ssl-container {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+    
+    .ssl-section {
+        background: white;
+        border-radius: 12px;
+        padding: 25px;
+        margin-bottom: 25px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        border: 1px solid #e8e9ff;
+    }
+    
+    .section-title {
+        font-size: 16px;
+        font-weight: 700;
+        color: #2f3640;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .section-title::before {
+        content: '';
+        width: 4px;
+        height: 24px;
+        background: #5b5fcf;
+        border-radius: 2px;
+    }
+    
+    .ssl-docs-link {
+        background: #f8f9ff;
+        border: 1px solid #e8e9ff;
+        color: #5b5fcf;
+        padding: 6px 14px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin-left: auto;
+    }
+    
+    .ssl-docs-link:hover {
+        background: #5b5fcf;
+        color: white;
+        border-color: #5b5fcf;
+        box-shadow: 0 2px 4px rgba(91,95,207,0.3);
+        text-decoration: none;
+    }
+    
+    .ssl-description {
+        color: #8893a7;
+        font-size: 14px;
+        margin-bottom: 25px;
+        line-height: 1.5;
+    }
+    
+    .video-container {
+        background: #fafbff;
+        border: 1px solid #e8e9ff;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 25px;
+        text-align: center;
+    }
+    
+    .video-container iframe {
+        max-width: 100%;
+        height: 443px;
+        border-radius: 8px;
+    }
+    
+    /* Tab Navigation */
+    .nav-tabs {
+        border: none;
+        margin-bottom: 25px;
+        display: flex;
+        gap: 10px;
+    }
+    
+    .nav-tabs li {
+        list-style: none;
+        flex: 1;
+    }
+    
+    .nav-tabs a {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        padding: 15px 20px;
+        background: #fafbff;
+        border: 1px solid #e8e9ff;
+        border-radius: 8px;
+        color: #2f3640;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.2s ease;
+    }
+    
+    .nav-tabs li.active a,
+    .nav-tabs a:hover {
+        background: #5b5fcf;
+        color: white;
+        border-color: #5b5fcf;
+        box-shadow: 0 2px 8px rgba(91,95,207,0.3);
+    }
+    
+    .tab-content {
+        background: #fafbff;
+        border: 1px solid #e8e9ff;
+        border-radius: 8px;
+        padding: 25px;
+    }
+    
+    /* Form Styles */
+    .form-group {
+        margin-bottom: 20px;
+    }
+    
+    .form-label {
+        font-size: 13px;
+        font-weight: 600;
+        color: #2f3640;
+        margin-bottom: 8px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        display: block;
+    }
+    
+    .form-control {
+        width: 100%;
+        padding: 12px 16px;
+        border: 1px solid #e8e9ff;
+        border-radius: 8px;
+        font-size: 14px;
+        color: #2f3640;
+        background: white;
+        transition: all 0.2s ease;
+    }
+    
+    .form-control:focus {
+        outline: none;
+        border-color: #5b5fcf;
+        box-shadow: 0 0 0 3px rgba(91,95,207,0.1);
+    }
+    
+    textarea.form-control {
+        resize: vertical;
+        font-family: 'Monaco', 'Consolas', 'Courier New', monospace;
+        font-size: 13px;
+        background: #f8f9ff;
+    }
+    
+    .btn-primary {
+        background: #5b5fcf;
+        border: 1px solid #5b5fcf;
+        color: white;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+    }
+    
+    .btn-primary:hover {
+        background: #4b4fbf;
+        border-color: #4b4fbf;
+        box-shadow: 0 3px 8px rgba(91,95,207,0.3);
+        transform: translateY(-1px);
+    }
+    
+    .btn-primary:disabled {
+        background: #94a3b8;
+        border-color: #94a3b8;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+    }
+    
+    /* SSL Details Panel */
+    .ssl-details-panel {
+        background: white;
+        border: 1px solid #e8e9ff;
+        border-radius: 8px;
+        padding: 20px;
+        margin-top: 20px;
+    }
+    
+    .ssl-details-header {
+        font-size: 14px;
+        font-weight: 700;
+        color: #2f3640;
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #e8e9ff;
+    }
+    
+    .ssl-details-panel p {
+        margin: 8px 0;
+        font-size: 14px;
+        color: #64748b;
+    }
+    
+    .ssl-details-panel strong {
+        color: #2f3640;
+        font-weight: 600;
+    }
+    
+    /* Alert Styles */
+    .alert {
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        font-size: 14px;
+        line-height: 1.5;
+    }
+    
+    .alert-success {
+        background: #f0f9ff;
+        border: 1px solid #bae6fd;
+        color: #0c4a6e;
+    }
+    
+    .alert-info {
+        background: #e3f2fd;
+        border: 1px solid #bbdefb;
+        color: #1976d2;
+    }
+    
+    .loading-spinner {
+        width: 16px;
+        height: 16px;
+        margin-left: 8px;
+        vertical-align: middle;
+    }
+    
+    /* Premium Feature Styles */
+    .premium-hero {
+        text-align: center;
+        padding: 40px 20px;
+    }
+    
+    .premium-hero h1 {
+        font-size: 32px;
+        font-weight: 800;
+        color: #2f3640;
+        margin-bottom: 20px;
+    }
+    
+    .premium-description {
+        font-size: 16px;
+        color: #64748b;
+        line-height: 1.7;
+        max-width: 800px;
+        margin: 0 auto 40px;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .ssl-wrapper {
+            padding: 15px;
+        }
+        
+        .ssl-section {
+            padding: 20px;
+        }
+        
+        .nav-tabs {
+            flex-direction: column;
+        }
+        
+        .video-container iframe {
+            height: 250px;
+        }
+        
+        .premium-hero h1 {
+            font-size: 24px;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-
-    {% load static %}
-    {% get_current_language as LANGUAGE_CODE %}
-    <!-- Current language: {{ LANGUAGE_CODE }} -->
-
+<div class="ssl-wrapper">
     {% if PremStat %}
-        <div class="container">
-            <div id="page-title">
-                <h2>{% trans "SSL v2" %} - <a target="_blank" href="https://youtu.be/kDUANNvtOwE"
-                                              style="height: 23px;line-height: 21px;"
-                                              class="btn btn-border btn-alt border-red btn-link font-red"
-                                              title=""><span>{% trans "DNS Docs" %}</span></a></h2>
-                <p>{% trans "On this page, you have the option to configure DNS providers that CyberPanel can utilize for issuing SSL certificates, providing enhanced flexibility and ease of renewal." %}</p>
-                <p align="center" style="margin-top: 2%; margin-bottom: 2%">
-                    <iframe width="788.54" height="443" src="https://www.youtube.com/embed/kDUANNvtOwE"
+        <div class="ssl-container" ng-controller="sslIssueCtrlV2">
+            <!-- Header Section -->
+            <div class="ssl-section">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; flex-wrap: wrap; gap: 15px;">
+                    <h2 class="section-title">SSL V2</h2>
+                    <a href="https://youtu.be/kDUANNvtOwE" target="_blank" class="ssl-docs-link">
+                        <i class="fas fa-play-circle"></i>
+                        {% trans "DNS Docs" %}
+                    </a>
+                </div>
+                <p class="ssl-description">{% trans "On this page, you have the option to configure DNS providers that CyberPanel can utilize for issuing SSL certificates, providing enhanced flexibility and ease of renewal." %}</p>
+                
+                <div class="video-container">
+                    <iframe width="788" height="443" src="https://www.youtube.com/embed/kDUANNvtOwE"
                             title="YouTube video player" frameborder="0"
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                             allowfullscreen></iframe>
-                </p>
-            </div>
-            <div ng-controller="sslIssueCtrlV2" class="panel">
-                <div class="panel-body">
-                    <h3 class="content-box-header">
-                        {% trans "SSL v2" %}
-                    </h3>
-                    <div class="example-box-wrapper">
-                        {% if SaveSuccess %}
-                            <div class="form-group">
-                                <label class="col-sm-3 control-label"></label>
-                                <div class="col-sm-6">
-                                    <div class="alert alert-success">
-                                        <p>{% trans "Changes saved succesfully." %}</p>
-                                    </div>
-                                </div>
-                            </div>
-                        {% endif %}
-                        <ul class="nav nav-tabs">
-
-                            <li class="col-md-4 nav-item tab-mod active">
-                                <a href="#tab-example-1" data-toggle="tab" class="h4 nav-link">
-                                    <i class="fa fa-cog btn-icon"></i>
-                                    <span>{% trans "Issue SSL" %}</span>
-                                </a>
-
-                            </li>
-                            <li class="col-md-4 tab-mod nav-item">
-                                <a href="#tab-example-3" data-toggle="tab" class="h4 nav-link">
-                                    <i class="fa fa-cogs btn-icon"></i>
-                                    <span>{% trans "API Settings" %}</span>
-                                </a>
-                            </li>
-                        </ul>
-                        <div class="tab-content">
-                            <div class="tab-pane fade active in" id="tab-example-1">
-                                <div class="example-box-wrapper">
-
-
-                                    <form action="/" class="form-horizontal bordered-row panel-body">
-
-
-                                        <div class="form-group">
-                                            <label class="col-sm-2 control-label">{% trans "Select Domain" %} </label>
-                                            <div class="col-sm-6">
-                                                <select ng-model="virtualHost"
-                                                        class="form-control" ng-change="showbtn()">
-                                                    {% for items in websiteList %}
-                                                        <option>{{ items }}</option>
-                                                    {% endfor %}
-                                                </select>
-                                            </div>
-                                            <div class="col-sm-4">
-                                                <button style="width: 100%;" type="button"
-                                                        ng-click="issueSSL()"
-                                                        class="btn btn-primary">{% trans "Issue SSL" %} <img
-                                                        ng-hide="manageSSLLoading"
-                                                        src="{% static 'images/loading.gif' %}">
-                                                </button>
-                                            </div>
-
-                                        </div>
-
-                                        <div class="form-group" ng-if="sslDetails">
-                                            <div class="col-sm-12">
-                                                <div class="panel panel-primary">
-                                                    <div class="panel-heading">
-                                                        <h3 class="panel-title">SSL Details</h3>
-                                                    </div>
-                                                    <div class="panel-body">
-                                                        <div ng-if="sslDetails.hasSSL">
-                                                            <p><strong>Status:</strong> Active</p>
-                                                            <p><strong>Issued By:</strong> {$ sslDetails.authority $}</p>
-                                                            <p><strong>Expiry Date:</strong> {$ sslDetails.expiryDate $}</p>
-                                                            <p><strong>Days Remaining:</strong> {$ sslDetails.days $}</p>
-                                                        </div>
-                                                        <div ng-if="!sslDetails.hasSSL">
-                                                            <p><strong>Status:</strong> No SSL Certificate</p>
-                                                            <p ng-if="sslDetails.error_message"><strong>Error:</strong> {$ sslDetails.error_message $}</p>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div class="form-group">
-                                            <div class="col-sm-12">
-                                                <h3 style="margin: 2%">SSL Status: {$ sslStatus $}</h3>
-                                                <div class="col-sm-12">
-                                                    <textarea ng-model="sslLogs" class="form-control"
-                                                              rows="20"></textarea>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                    </form>
-
-
-                                </div>
-                            </div>
-
-                            <div class="tab-pane fade" id="tab-example-3">
-
-                                <form method="post" action="{% url 'v2ManageSSL' %}"
-                                      class="form-horizontal bordered-row panel-body">
-                                    {% csrf_token %}
-
-                                    <h2 style="margin-bottom: 2%">{% trans "Cloudflare Settings" %}</h2>
-
-                                    <div class="form-group">
-                                        <label class="col-sm-3 control-label">{% trans "CloudFlare Email" %}</label>
-                                        <div class="col-sm-6">
-                                            <input name="SAVED_CF_Email" type="text" class="form-control"
-                                                   value="{{ SAVED_CF_Email }}" required>
-                                        </div>
-                                    </div>
-
-                                    <div class="form-group">
-                                        <label class="col-sm-3 control-label">{% trans "API Token" %}</label>
-                                        <div class="col-sm-6">
-                                            <input name="SAVED_CF_Key" type="text" class="form-control"
-                                                   value="{{ SAVED_CF_Key }}" required>
-                                        </div>
-                                    </div>
-
-
-                                    <div class="form-group">
-                                        <label class="col-sm-3 control-label"></label>
-                                        <div class="col-sm-4">
-                                            <button type="submit"
-                                                    class="btn btn-primary btn-lg">{% trans "Save" %}</button>
-
-                                        </div>
-                                    </div>
-                                </form>
-
-                            </div>
-                        </div>
-
-
-                    </div>
                 </div>
             </div>
 
+            <!-- Main Content Section -->
+            <div class="ssl-section">
+                <h3 class="section-title">SSL MANAGEMENT</h3>
+                
+                {% if SaveSuccess %}
+                    <div class="alert alert-success">
+                        <i class="fas fa-check-circle" style="margin-right: 8px;"></i>
+                        {% trans "Changes saved successfully." %}
+                    </div>
+                {% endif %}
+                
+                <ul class="nav nav-tabs">
+                    <li class="active">
+                        <a href="#tab-example-1" data-toggle="tab">
+                            <i class="fas fa-certificate"></i>
+                            <span>{% trans "Issue SSL" %}</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#tab-example-3" data-toggle="tab">
+                            <i class="fas fa-cogs"></i>
+                            <span>{% trans "API Settings" %}</span>
+                        </a>
+                    </li>
+                </ul>
+                
+                <div class="tab-content">
+                    <div class="tab-pane fade active in" id="tab-example-1">
+                        <form action="/">
+                            <div class="form-group">
+                                <label class="form-label">{% trans "Select Domain" %}</label>
+                                <div style="display: flex; gap: 15px; align-items: stretch;">
+                                    <select ng-model="virtualHost" class="form-control" ng-change="showbtn()" style="flex: 1;">
+                                        <option value="">-- Select a domain --</option>
+                                        {% for items in websiteList %}
+                                            <option>{{ items }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <button type="button" ng-click="issueSSL()" class="btn-primary">
+                                        {% trans "Issue SSL" %}
+                                        <img ng-hide="manageSSLLoading" src="{% static 'images/loading.gif' %}" class="loading-spinner">
+                                    </button>
+                                </div>
+                            </div>
 
+                            <div ng-if="sslDetails" class="ssl-details-panel">
+                                <h4 class="ssl-details-header">{% trans "SSL Details" %}</h4>
+                                <div ng-if="sslDetails.hasSSL">
+                                    <p><strong>{% trans "Status:" %}</strong> <span style="color: #10b981;">Active</span></p>
+                                    <p><strong>{% trans "Issued By:" %}</strong> {$ sslDetails.authority $}</p>
+                                    <p><strong>{% trans "Expiry Date:" %}</strong> {$ sslDetails.expiryDate $}</p>
+                                    <p><strong>{% trans "Days Remaining:" %}</strong> {$ sslDetails.days $}</p>
+                                </div>
+                                <div ng-if="!sslDetails.hasSSL">
+                                    <p><strong>{% trans "Status:" %}</strong> <span style="color: #ef4444;">No SSL Certificate</span></p>
+                                    <p ng-if="sslDetails.error_message"><strong>{% trans "Error:" %}</strong> {$ sslDetails.error_message $}</p>
+                                </div>
+                            </div>
+
+                            <div class="form-group" style="margin-top: 25px;">
+                                <label class="form-label">{% trans "SSL Status:" %} {$ sslStatus $}</label>
+                                <textarea ng-model="sslLogs" class="form-control" rows="15" readonly></textarea>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="tab-pane fade" id="tab-example-3">
+                        <form method="post" action="{% url 'v2ManageSSL' %}">
+                            {% csrf_token %}
+                            
+                            <h4 class="section-title" style="font-size: 14px;">CLOUDFLARE SETTINGS</h4>
+                            
+                            <div class="form-group">
+                                <label class="form-label">{% trans "CloudFlare Email" %}</label>
+                                <input name="SAVED_CF_Email" type="text" class="form-control"
+                                       value="{{ SAVED_CF_Email }}" placeholder="your-email@example.com" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">{% trans "API Token" %}</label>
+                                <input name="SAVED_CF_Key" type="text" class="form-control"
+                                       value="{{ SAVED_CF_Key }}" placeholder="Your CloudFlare API Token" required>
+                            </div>
+
+                            <div class="form-group">
+                                <button type="submit" class="btn-primary">
+                                    <i class="fas fa-save"></i>
+                                    {% trans "Save Settings" %}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
         </div>
     {% else %}
-        <style>
-            .feturecard {
-                width: 30%;
-                padding: 46px;
-                margin: 15px
-            }
-        </style>
-        <div class="container">
-            <div id="page-title" align="center">
-                <h1 style="color: black"><strong>SSLv2 Comes with Full Automation + Wildcard SSLs! </strong></h1>
-                <p style="font-size: 15px; color: black; margin-top: 1%">Are you tired of the hassle that comes with
-                    setting up SSL certificates for your website? Do you want a faster and easier way to secure your
-                    website without the need for manual verification? <br><br>
-
-                    Introducing CyberPanel's new feature, SSL v2! With SSL v2, you can automatically issue SSL
-                    certificates using the ACME DNS verification method. This means that you no longer have to worry
-                    about going through the manual process of verifying ownership of your domain. <br><br>
-
-                    What's even better is that we've integrated two of the most popular domain registrars, Cloudflare
-                    and Namecheap, so you can easily issue SSL certificates with just a few clicks. No more fiddling
-                    around with complicated settings and DNS configurations! <br><br>
-
-                    With SSL v2, you can rest easy knowing that your website is secure and your visitors' data is
-                    protected. Don't wait any longer to upgrade your website's security - get SSL v2 today!<br></p>
+        <div class="ssl-container">
+            <div class="ssl-section premium-hero">
+                <h1>SSLv2 Comes with Full Automation + Wildcard SSLs!</h1>
+                <p class="premium-description">
+                    Are you tired of the hassle that comes with setting up SSL certificates for your website? Do you want a faster and easier way to secure your website without the need for manual verification?
+                    <br><br>
+                    Introducing CyberPanel's new feature, SSL v2! With SSL v2, you can automatically issue SSL certificates using the ACME DNS verification method. This means that you no longer have to worry about going through the manual process of verifying ownership of your domain.
+                    <br><br>
+                    What's even better is that we've integrated two of the most popular domain registrars, Cloudflare and Namecheap, so you can easily issue SSL certificates with just a few clicks. No more fiddling around with complicated settings and DNS configurations!
+                    <br><br>
+                    With SSL v2, you can rest easy knowing that your website is secure and your visitors' data is protected. Don't wait any longer to upgrade your website's security - get SSL v2 today!
+                </p>
+                
+                <div class="video-container">
+                    <iframe width="788" height="443" src="https://www.youtube.com/embed/kDUANNvtOwE"
+                            title="YouTube video player" frameborder="0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                            allowfullscreen></iframe>
+                </div>
+                
+                <div style="margin-top: 40px;">
+                    <stripe-pricing-table pricing-table-id="prctbl_1PhTRPRs6rG0dTDlJZMzTw0k"
+                                          publishable-key="pk_live_51PgodkRs6rG0dTDl3jCUgxjyjI983GmCdHjzuLfZIsssmDLgKgnXnwQghVCctKMNFIC5K4oMcviTFrHf1ytsYZGa00AGySiWlF">
+                    </stripe-pricing-table>
+                </div>
             </div>
-            <p align="center">
-                <iframe width="788.54" height="443" src="https://www.youtube.com/embed/kDUANNvtOwE"
-                        title="YouTube video player" frameborder="0"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                        allowfullscreen></iframe>
-            </p>
-            <div style="margin-top: 2%">
-                <stripe-pricing-table pricing-table-id="prctbl_1PhTRPRs6rG0dTDlJZMzTw0k"
-                                      publishable-key="pk_live_51PgodkRs6rG0dTDl3jCUgxjyjI983GmCdHjzuLfZIsssmDLgKgnXnwQghVCctKMNFIC5K4oMcviTFrHf1ytsYZGa00AGySiWlF">
-                </stripe-pricing-table>
-            </div>
-
         </div>
     {% endif %}
+</div>
+{% endblock %}
 
-
+{% block footer_scripts %}
+<script src="{% static 'manageSSL/manageSSL.js' %}"></script>
 {% endblock %}

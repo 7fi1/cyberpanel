@@ -632,13 +632,13 @@ app.controller('phpMyAdmin', function ($scope, $http, $window) {
 
 
 app.controller('Mysqlmanager', function ($scope, $http, $compile, $window, $timeout) {
-    $scope.cyberPanelLoading = true;
+    $scope.cyberPanelLoading = false;
     $scope.mysql_status = 'test'
 
 
     $scope.getstatus = function () {
 
-        $scope.cyberPanelLoading = false;
+        $scope.cyberPanelLoading = true;
 
         url = "/dataBases/getMysqlstatus";
 
@@ -655,7 +655,7 @@ app.controller('Mysqlmanager', function ($scope, $http, $compile, $window, $time
 
 
         function ListInitialDatas(response) {
-            $scope.cyberPanelLoading = true;
+            $scope.cyberPanelLoading = false;
             if (response.data.status === 1) {
                 $scope.uptime = response.data.uptime;
                 $scope.connections = response.data.connections;
@@ -679,7 +679,7 @@ app.controller('Mysqlmanager', function ($scope, $http, $compile, $window, $time
         }
 
         function cantLoadInitialDatas(response) {
-            $scope.cyberPanelLoading = true;
+            $scope.cyberPanelLoading = false;
             new PNotify({
                 title: 'Error!',
                 text: "cannot load",

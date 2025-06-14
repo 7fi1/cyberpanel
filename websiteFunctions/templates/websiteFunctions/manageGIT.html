@@ -7,27 +7,558 @@
     {% get_current_language as LANGUAGE_CODE %}
     <!-- Current language: {{ LANGUAGE_CODE }} -->
 
+    <style>
+        /* Ultra-Modern CyberPanel Design System */
+        :root {
+            --primary-color: #6366f1;
+            --primary-hover: #5558e3;
+            --primary-light: #eef2ff;
+            --secondary-color: #8b5cf6;
+            --accent-color: #ec4899;
+            --success-color: #10b981;
+            --danger-color: #ef4444;
+            --warning-color: #f59e0b;
+            --info-color: #3b82f6;
+            
+            --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --bg-gradient-alt: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --bg-gradient-success: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            
+            --bg-light: #f8fafc;
+            --bg-card: #ffffff;
+            --bg-hover: #f1f5f9;
+            --border-color: #e2e8f0;
+            --border-light: #f1f5f9;
+            
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --text-muted: #94a3b8;
+            
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.06);
+            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+            --shadow-xl: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
+            
+            --radius-sm: 6px;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            --radius-xl: 16px;
+            --radius-full: 9999px;
+            
+            --transition-base: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        /* Container Styling */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 100vh;
+            background: linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%);
+        }
+        
+        /* Page Title Section */
+        #page-title {
+            background: var(--bg-gradient);
+            color: white;
+            padding: 40px;
+            border-radius: var(--radius-xl);
+            margin-bottom: 30px;
+            box-shadow: var(--shadow-xl);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        #page-title::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: pulse 4s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.1); opacity: 0.3; }
+        }
+        
+        #page-title h2 {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            letter-spacing: -0.5px;
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        #page-title p {
+            font-size: 16px;
+            opacity: 0.95;
+            margin: 0;
+            position: relative;
+            z-index: 1;
+            line-height: 1.6;
+        }
+        
+        /* Main Panel */
+        .panel {
+            background: var(--bg-card);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .panel-body {
+            padding: 0;
+        }
+        
+        /* Content Box Header */
+        .title-hero {
+            background: linear-gradient(135deg, var(--primary-light) 0%, var(--bg-light) 100%);
+            padding: 25px 30px;
+            margin: 0;
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-primary);
+            border-bottom: 1px solid var(--border-color);
+            letter-spacing: -0.3px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .title-hero img {
+            width: 24px;
+            height: 24px;
+        }
+        
+        /* Form Wrapper */
+        .example-box-wrapper {
+            padding: 30px;
+        }
+        
+        /* Form Styling */
+        .form-horizontal {
+            background: var(--bg-light);
+            padding: 25px;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-color);
+            margin-bottom: 25px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+            transition: var(--transition-base);
+        }
+        
+        .form-group:hover {
+            transform: translateX(5px);
+        }
+        
+        .control-label {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+            font-size: 14px;
+            letter-spacing: 0.3px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .form-control {
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 12px 16px;
+            font-size: 15px;
+            transition: var(--transition-base);
+            background: white;
+        }
+        
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+            outline: none;
+        }
+        
+        select.form-control {
+            cursor: pointer;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 0.5rem center;
+            background-repeat: no-repeat;
+            background-size: 1.5em 1.5em;
+            padding-right: 2.5rem;
+        }
+        
+        textarea.form-control {
+            resize: vertical;
+            min-height: 80px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+        }
+        
+        /* Enhanced Buttons */
+        .btn {
+            padding: 10px 20px;
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            transition: var(--transition-base);
+            border: none;
+            font-size: 14px;
+            letter-spacing: 0.3px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+        
+        .btn:active::before {
+            width: 300px;
+            height: 300px;
+        }
+        
+        .btn-primary {
+            background: var(--bg-gradient);
+            color: white;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+            color: white;
+        }
+        
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .btn-info {
+            background: linear-gradient(135deg, var(--info-color) 0%, #2563eb 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+        }
+        
+        .btn-info:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+            color: white;
+        }
+        
+        .btn-info:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .btn-default {
+            background: white;
+            border: 2px solid var(--border-color);
+            color: var(--text-primary);
+        }
+        
+        .btn-default:hover {
+            background: var(--bg-light);
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+        
+        .btn-link {
+            background: transparent;
+            color: white;
+            box-shadow: none;
+            padding: 8px 16px;
+            font-size: 14px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .btn-link:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: white;
+            text-decoration: none;
+        }
+        
+        /* Button Group */
+        .btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .btn-group .btn {
+            flex: 0 0 auto;
+        }
+        
+        /* Tables */
+        .table {
+            background: white;
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+            margin-top: 20px;
+            width: 100%;
+            border: 1px solid var(--border-color);
+        }
+        
+        .table thead {
+            background: var(--bg-gradient);
+        }
+        
+        .table thead th {
+            border: none;
+            color: white;
+            font-weight: 600;
+            padding: 16px;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+        }
+        
+        .table tbody tr {
+            transition: all var(--transition-base);
+            border-bottom: 1px solid var(--border-light);
+        }
+        
+        .table tbody tr:last-child {
+            border-bottom: none;
+        }
+        
+        .table tbody tr:hover {
+            background: var(--bg-hover);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+        }
+        
+        .table tbody td {
+            padding: 16px;
+            border: none;
+            vertical-align: middle;
+            color: var(--text-primary);
+        }
+        
+        /* Labels */
+        .label-success {
+            background: linear-gradient(135deg, var(--success-color) 0%, #059669 100%);
+            color: white;
+            padding: 6px 12px;
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            font-size: 12px;
+            display: inline-block;
+        }
+        
+        /* Modal Styling */
+        .modal-content {
+            border-radius: var(--radius-xl);
+            border: none;
+            box-shadow: var(--shadow-xl);
+        }
+        
+        .modal-header {
+            background: var(--bg-gradient);
+            color: white;
+            border-bottom: none;
+            padding: 20px 25px;
+            border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+        }
+        
+        .modal-title {
+            font-weight: 600;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .modal-body {
+            padding: 25px;
+        }
+        
+        .modal-footer {
+            background: var(--bg-light);
+            border-top: 1px solid var(--border-color);
+            padding: 15px 20px;
+            border-radius: 0 0 var(--radius-xl) var(--radius-xl);
+        }
+        
+        .modal-header .close {
+            color: white;
+            opacity: 0.8;
+            font-size: 24px;
+        }
+        
+        .modal-header .close:hover {
+            opacity: 1;
+        }
+        
+        /* Checkbox Styling */
+        .checkbox label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: var(--text-primary);
+            cursor: pointer;
+        }
+        
+        .checkbox input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+        
+        /* Current Pack */
+        .current-pack {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 5px;
+            font-style: italic;
+        }
+        
+        /* Info Message */
+        .info-message {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            border: 1px solid #90caf9;
+            color: #1976d2;
+            padding: 15px 20px;
+            border-radius: var(--radius-md);
+            margin: 20px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .info-message i {
+            font-size: 18px;
+        }
+        
+        /* Loading Animation */
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        img[src*="loading.gif"] {
+            animation: spin 1s linear infinite;
+        }
+        
+        /* File Changes Content */
+        #fileChangedContent {
+            background: var(--bg-light);
+        }
+        
+        .content-box {
+            background: white;
+            border-radius: var(--radius-md);
+            padding: 20px;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        /* HR Styling */
+        hr {
+            border: none;
+            border-top: 1px solid var(--border-color);
+            margin: 20px 0;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            #page-title {
+                padding: 25px;
+            }
+            
+            #page-title h2 {
+                font-size: 24px;
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .form-horizontal {
+                padding: 20px;
+            }
+            
+            .control-label {
+                margin-bottom: 10px;
+            }
+            
+            .btn-group {
+                flex-direction: column;
+                width: 100%;
+            }
+            
+            .btn-group .btn {
+                width: 100%;
+            }
+            
+            .table {
+                font-size: 14px;
+            }
+            
+            .table th,
+            .table td {
+                padding: 12px 8px;
+            }
+        }
+    </style>
+
     <div class="container">
         <div id="page-title">
-            <h2>{% trans "Manage GIT" %} - <a target="_blank"
-                                              href="https://go.cyberpanel.net/manageGit"
-                                              style="height: 23px;line-height: 21px;"
-                                              class="btn btn-border btn-alt border-red btn-link font-red"
-                                              title=""><span>{% trans "Git Docs" %}</span></a></h2>
-            <p>{% trans "Manage and track folders via Git for " %} {{ domainName }}.</p>
+            <h2>
+                <i class="fab fa-git-alt" style="margin-right: 10px;"></i>
+                {% trans "Manage GIT" %}
+                <a target="_blank" href="https://go.cyberpanel.net/manageGit" class="btn btn-link">
+                    <i class="fas fa-book"></i>
+                    {% trans "Git Docs" %}
+                </a>
+            </h2>
+            <p>{% trans "Manage and track folders via Git for" %} {{ domainName }}.</p>
         </div>
-
 
         <div ng-controller="manageGIT" class="panel">
             <div class="panel-body">
                 <h3 class="title-hero">
-                    {% trans "Manage and track folders via Git for " %} <span id="domain">{{ domainName }}</span>. <img
-                        ng-hide="cyberpanelLoading" src="{% static 'images/loading.gif' %}">
+                    <i class="fab fa-git-square" style="color: var(--primary-color);"></i>
+                    {% trans "Git Repository Management for" %} <span id="domain">{{ domainName }}</span>
+                    <img ng-hide="cyberpanelLoading" src="{% static 'images/loading.gif' %}">
                 </h3>
                 <div class="example-box-wrapper">
                     <form action="/" class="form-horizontal bordered-row">
                         <div class="form-group">
-                            <label class="col-sm-3 control-label">{% trans "Select Folder to Track" %} </label>
+                            <label class="col-sm-3 control-label">
+                                <i class="fas fa-folder"></i>
+                                {% trans "Select Folder to Track" %}
+                            </label>
                             <div class="col-sm-6">
                                 <select ng-change="fetchFolderDetails()" ng-model="folder" class="form-control">
                                     {% for item in folders %}
@@ -37,28 +568,36 @@
                             </div>
                         </div>
                     </form>
-                    <p style="margin: 2%"
-                       ng-hide="gitTracking">{% trans "This folder does not have Git tracking, click below to initiate a repository and start tracking files." %}</p>
-                    <button ng-hide="gitTracking" style="margin-left: 2%" type="button" class="btn btn-primary"
-                            ng-click="initRepo()">
-                        Init Repo
-                    </button>
+                    
+                    <div ng-hide="gitTracking" class="info-message">
+                        <i class="fas fa-info-circle"></i>
+                        <p>{% trans "This folder does not have Git tracking, click below to initiate a repository and start tracking files." %}</p>
+                    </div>
+                    
+                    <div ng-hide="gitTracking" style="display: flex; gap: 15px; margin-top: 20px;">
+                        <button type="button" class="btn btn-primary" ng-click="initRepo()">
+                            <i class="fas fa-play"></i>
+                            Init Repo
+                        </button>
 
-                    <button data-toggle="modal" data-target="#attachExistingRepo" ng-disabled="home==0"
-                            ng-hide="gitTracking" style="margin-left: 2%" type="button" class="btn btn-primary">
-                        Attach Existing Repo <img
-                            ng-hide="cyberpanelLoading" src="{% static 'images/loading.gif' %}">
-                    </button>
+                        <button data-toggle="modal" data-target="#attachExistingRepo" ng-disabled="home==0"
+                                type="button" class="btn btn-primary">
+                            <i class="fas fa-link"></i>
+                            Attach Existing Repo
+                            <img ng-hide="cyberpanelLoading" src="{% static 'images/loading.gif' %}">
+                        </button>
+                    </div>
 
                     <div id="attachExistingRepo" class="modal fade" role="dialog">
                         <div class="modal-dialog">
-
                             <!-- Modal content-->
                             <div class="modal-content">
                                 <div class="modal-header">
-                                    <button type="button" class="close" data-dismiss="modal">&times;
-                                    </button>
-                                    <h4 class="modal-title">{% trans "Attach Existing Repo" %}</h4>
+                                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                    <h4 class="modal-title">
+                                        <i class="fas fa-link"></i>
+                                        {% trans "Attach Existing Repo" %}
+                                    </h4>
                                 </div>
                                 <div class="modal-body">
 
@@ -103,9 +642,7 @@
                                         <hr>
 
                                         <div class="form-group">
-
                                             <div class="col-sm-12">
-
                                                 <table class="table">
                                                     <thead>
                                                     <tr>
@@ -142,8 +679,10 @@
                                 </div>
                                 <div class="modal-footer">
                                     <button type="button" class="btn btn-primary"
-                                            ng-click="attachRepoGIT()">Attach <img
-                                            ng-hide="cyberpanelLoading" src="{% static 'images/loading.gif' %}">
+                                            ng-click="attachRepoGIT()">
+                                        <i class="fas fa-link"></i>
+                                        Attach
+                                        <img ng-hide="cyberpanelLoading" src="{% static 'images/loading.gif' %}">
                                     </button>
                                     <button type="button" ng-disabled="savingSettings"
                                             class="btn btn-default" data-dismiss="modal">
@@ -159,23 +698,26 @@
                         <a ng-disabled="home==0" data-toggle="modal" data-target="#attachExistingRepo" href="#"
                            class="btn btn-info">
                             <input name="radio-toggle-1" type="radio">
+                            <i class="fas fa-link"></i>
                             Attach Existing Repo
                         </a>
 
                         <a data-toggle="modal" data-target="#configureModal" href="#" class="btn btn-info">
                             <input name="radio-toggle-1" type="radio">
+                            <i class="fas fa-cog"></i>
                             Configure
                         </a>
 
                         <div id="configureModal" class="modal fade" role="dialog">
                             <div class="modal-dialog">
-
                                 <!-- Modal content-->
                                 <div class="modal-content">
                                     <div class="modal-header">
-                                        <button type="button" class="close" data-dismiss="modal">&times;
-                                        </button>
-                                        <h4 class="modal-title">{% trans "Repo Settings" %}</h4>
+                                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                        <h4 class="modal-title">
+                                            <i class="fas fa-cog"></i>
+                                            {% trans "Repo Settings" %}
+                                        </h4>
                                     </div>
                                     <div class="modal-body">
 
@@ -189,8 +731,7 @@
                                                         <option>Weekly</option>
                                                     </select>
                                                 </div>
-                                                <div class="current-pack ng-binding">Currently: {$ autoCommitCurrent $}
-                                                </div>
+                                                <div class="current-pack ng-binding">Currently: {$ autoCommitCurrent $}</div>
                                             </div>
 
                                             <div class="form-group">
@@ -203,8 +744,7 @@
                                                         <option>Weekly</option>
                                                     </select>
                                                 </div>
-                                                <div class="current-pack ng-binding">Currently: {$ autoPushCurrent $}
-                                                </div>
+                                                <div class="current-pack ng-binding">Currently: {$ autoPushCurrent $}</div>
                                             </div>
 
                                             <div class="form-group">
@@ -218,8 +758,7 @@
                                                         </label>
                                                     </div>
                                                 </div>
-                                                <div class="current-pack ng-binding">Currently: {$ emailLogsCurrent $}
-                                                </div>
+                                                <div class="current-pack ng-binding">Currently: {$ emailLogsCurrent $}</div>
                                             </div>
 
                                             <div ng-hide="installationDetailsForm" class="form-group">
@@ -250,9 +789,7 @@
                                                         </label>
                                                     </div>
                                                 </div>
-                                                <div class="current-pack ng-binding">Currently: {$ webhookCommandCurrent
-                                                    $}
-                                                </div>
+                                                <div class="current-pack ng-binding">Currently: {$ webhookCommandCurrent $}</div>
                                             </div>
 
                                         </form>
@@ -261,9 +798,10 @@
                                     <div class="modal-footer">
                                         <button type="button" ng-disabled="savingSettings"
                                                 class="btn btn-primary"
-                                                ng-click="saveGitConfigurations()">Save <img
-                                                ng-hide="cyberpanelLoading"
-                                                src="{% static 'images/loading.gif' %}">
+                                                ng-click="saveGitConfigurations()">
+                                            <i class="fas fa-save"></i>
+                                            Save
+                                            <img ng-hide="cyberpanelLoading" src="{% static 'images/loading.gif' %}">
                                         </button>
                                         <button type="button" ng-disabled="savingSettings"
                                                 class="btn btn-default" data-dismiss="modal">
@@ -276,13 +814,14 @@
 
                         <div id="attachExistingRepo" class="modal fade" role="dialog">
                             <div class="modal-dialog">
-
                                 <!-- Modal content-->
                                 <div class="modal-content">
                                     <div class="modal-header">
-                                        <button type="button" class="close" data-dismiss="modal">&times;
-                                        </button>
-                                        <h4 class="modal-title">{% trans "Attach Existing Repo" %}</h4>
+                                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                        <h4 class="modal-title">
+                                            <i class="fas fa-link"></i>
+                                            {% trans "Attach Existing Repo" %}
+                                        </h4>
                                     </div>
                                     <div class="modal-body">
 
@@ -328,9 +867,7 @@
                                             <hr>
 
                                             <div class="form-group">
-
                                                 <div class="col-sm-12">
-
                                                     <table class="table">
                                                         <thead>
                                                         <tr>
@@ -367,8 +904,10 @@
                                     </div>
                                     <div class="modal-footer">
                                         <button type="button" class="btn btn-primary"
-                                                ng-click="attachRepoGIT()">Attach <img
-                                                ng-hide="cyberpanelLoading" src="{% static 'images/loading.gif' %}">
+                                                ng-click="attachRepoGIT()">
+                                            <i class="fas fa-link"></i>
+                                            Attach
+                                            <img ng-hide="cyberpanelLoading" src="{% static 'images/loading.gif' %}">
                                         </button>
                                         <button type="button" ng-disabled="savingSettings"
                                                 class="btn btn-default" data-dismiss="modal">
@@ -381,6 +920,7 @@
 
                         <a data-toggle="modal" data-target="#createNewBranch" href="#" class="btn btn-info">
                             <input name="radio-toggle-1" type="radio">
+                            <i class="fas fa-code-branch"></i>
                             Create New Branch
                         </a>
 
@@ -389,9 +929,11 @@
                                 <!-- Modal content-->
                                 <div class="modal-content">
                                     <div class="modal-header">
-                                        <button type="button" class="close" data-dismiss="modal">&times;
-                                        </button>
-                                        <h4 class="modal-title">{% trans "Create New Branch" %}</h4>
+                                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                        <h4 class="modal-title">
+                                            <i class="fas fa-code-branch"></i>
+                                            {% trans "Create New Branch" %}
+                                        </h4>
                                     </div>
                                     <div class="modal-body">
 
@@ -408,7 +950,6 @@
                                             <hr>
 
                                             <div ng-hide="statusBox" class="form-group">
-
                                                 <div class="col-sm-12">
                                                             <textarea rows="3"
                                                                       class="form-control">{$ commandStatus $}</textarea>
@@ -421,8 +962,10 @@
                                     <div class="modal-footer">
                                         <button type="button"
                                                 class="btn btn-primary"
-                                                ng-click="createNewBranch()">Create New Branch <img
-                                                ng-hide="cyberpanelLoading" src="{% static 'images/loading.gif' %}">
+                                                ng-click="createNewBranch()">
+                                            <i class="fas fa-code-branch"></i>
+                                            Create New Branch
+                                            <img ng-hide="cyberpanelLoading" src="{% static 'images/loading.gif' %}">
                                         </button>
                                         <button type="button"
                                                 class="btn btn-default" data-dismiss="modal">
@@ -435,6 +978,7 @@
 
                         <a data-toggle="modal" data-target="#commitChanges" href="#" class="btn btn-info">
                             <input name="radio-toggle-1" type="radio">
+                            <i class="fas fa-check-circle"></i>
                             Commit
                         </a>
 
@@ -443,9 +987,11 @@
                                 <!-- Modal content-->
                                 <div class="modal-content">
                                     <div class="modal-header">
-                                        <button type="button" class="close" data-dismiss="modal">&times;
-                                        </button>
-                                        <h4 class="modal-title">{% trans "Commit Changes" %}</h4>
+                                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                        <h4 class="modal-title">
+                                            <i class="fas fa-check-circle"></i>
+                                            {% trans "Commit Changes" %}
+                                        </h4>
                                     </div>
                                     <div class="modal-body">
 
@@ -462,7 +1008,6 @@
                                             <hr>
 
                                             <div ng-hide="statusBox" class="form-group">
-
                                                 <div class="col-sm-12">
                                                             <textarea rows="3"
                                                                       class="form-control">{$ commandStatus $}</textarea>
@@ -475,8 +1020,10 @@
                                     <div class="modal-footer">
                                         <button type="button"
                                                 class="btn btn-primary"
-                                                ng-click="commitChanges()">Commit <img
-                                                ng-hide="cyberpanelLoading" src="{% static 'images/loading.gif' %}">
+                                                ng-click="commitChanges()">
+                                            <i class="fas fa-check-circle"></i>
+                                            Commit
+                                            <img ng-hide="cyberpanelLoading" src="{% static 'images/loading.gif' %}">
                                         </button>
                                         <button type="button"
                                                 class="btn btn-default" data-dismiss="modal">
@@ -489,16 +1036,19 @@
 
                         <a ng-click="gitPull()" ng-disabled="remote==0" href="#" class="btn btn-info">
                             <input name="radio-toggle-1" type="radio">
+                            <i class="fas fa-download"></i>
                             Pull
                         </a>
                         <a ng-click="gitPush()" ng-disabled="remote==0" href="#" class="btn btn-info">
                             <input name="radio-toggle-1" type="radio">
+                            <i class="fas fa-upload"></i>
                             Push
                         </a>
 
                         <a ng-click="fetchGitignore()" data-toggle="modal" data-target="#gitignore" href="#"
                            class="btn btn-info">
                             <input name="radio-toggle-1" type="radio">
+                            <i class="fas fa-file-alt"></i>
                             Edit .gitignore
                         </a>
 
@@ -507,9 +1057,11 @@
                                 <!-- Modal content-->
                                 <div class="modal-content">
                                     <div class="modal-header">
-                                        <button type="button" class="close" data-dismiss="modal">&times;
-                                        </button>
-                                        <h4 class="modal-title">{% trans "Edit .gitignore" %}</h4>
+                                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                        <h4 class="modal-title">
+                                            <i class="fas fa-file-alt"></i>
+                                            {% trans "Edit .gitignore" %}
+                                        </h4>
                                     </div>
                                     <div class="modal-body">
 
@@ -523,7 +1075,6 @@
                                             <hr>
 
                                             <div class="form-group">
-
                                                 <div class="col-sm-12">
                                                     <textarea ng-model="gitIgnoreContent" rows="3"
                                                               class="form-control"></textarea>
@@ -536,8 +1087,10 @@
                                     <div class="modal-footer">
                                         <button type="button"
                                                 class="btn btn-primary"
-                                                ng-click="saveGitIgnore()">Save <img
-                                                ng-hide="cyberpanelLoading" src="{% static 'images/loading.gif' %}">
+                                                ng-click="saveGitIgnore()">
+                                            <i class="fas fa-save"></i>
+                                            Save
+                                            <img ng-hide="cyberpanelLoading" src="{% static 'images/loading.gif' %}">
                                         </button>
                                         <button type="button"
                                                 class="btn btn-default" data-dismiss="modal">
@@ -551,6 +1104,7 @@
                         <a ng-click="fetchGitLogs()" data-toggle="modal" data-target="#gitLogs" href="#"
                            class="btn btn-info">
                             <input name="radio-toggle-1" type="radio">
+                            <i class="fas fa-history"></i>
                             Git Logs
                         </a>
 
@@ -559,10 +1113,11 @@
                                 <!-- Modal content-->
                                 <div class="modal-content">
                                     <div class="modal-header">
-                                        <button type="button" class="close" data-dismiss="modal">&times;
-                                        </button>
-                                        <h4 class="modal-title">{% trans "Git Logs" %} <img
-                                                ng-hide="cyberpanelLoading" src="{% static 'images/loading.gif' %}">
+                                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                        <h4 class="modal-title">
+                                            <i class="fas fa-history"></i>
+                                            {% trans "Git Logs" %}
+                                            <img ng-hide="cyberpanelLoading" src="{% static 'images/loading.gif' %}">
                                         </h4>
                                     </div>
                                     <div class="modal-body">
@@ -609,9 +1164,7 @@
                                                         <div class="form-group">
                                                             <select ng-model="currentPage" class="form-control"
                                                                     ng-change="fetchGitLogs()">
-                                                                <option ng-repeat="page in pagination">{$ $index + 1
-                                                                    $}
-                                                                </option>
+                                                                <option ng-repeat="page in pagination">{$ $index + 1 $}</option>
                                                             </select>
                                                         </div>
                                                     </div>
@@ -626,6 +1179,7 @@
 
                         <a data-toggle="modal" data-target="#removeGit" href="#" class="btn btn-info">
                             <input name="radio-toggle-1" type="radio">
+                            <i class="fas fa-trash"></i>
                             Remove
                         </a>
 
@@ -634,9 +1188,11 @@
                                 <!-- Modal content-->
                                 <div class="modal-content">
                                     <div class="modal-header">
-                                        <button type="button" class="close" data-dismiss="modal">&times;
-                                        </button>
-                                        <h4 class="modal-title">{% trans "Remove Git Tracking?" %}</h4>
+                                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                        <h4 class="modal-title">
+                                            <i class="fas fa-trash"></i>
+                                            {% trans "Remove Git Tracking?" %}
+                                        </h4>
                                     </div>
                                     <div class="modal-body">
 
@@ -651,8 +1207,10 @@
                                     <div class="modal-footer">
                                         <button type="button"
                                                 class="btn btn-primary"
-                                                ng-click="removeTracking()">Remove <img
-                                                ng-hide="cyberpanelLoading" src="{% static 'images/loading.gif' %}">
+                                                ng-click="removeTracking()">
+                                            <i class="fas fa-trash"></i>
+                                            Remove
+                                            <img ng-hide="cyberpanelLoading" src="{% static 'images/loading.gif' %}">
                                         </button>
                                         <button type="button"
                                                 class="btn btn-default" data-dismiss="modal">
@@ -687,18 +1245,20 @@
 
                                 <button data-toggle="modal" data-target="#settings" style="margin-left: 2%"
                                         type="button" class="btn btn-primary">
+                                    <i class="fas fa-cloud"></i>
                                     {% trans "View/Setup Remote" %}
                                 </button>
 
                                 <div id="settings" class="modal fade" role="dialog">
                                     <div class="modal-dialog">
-
                                         <!-- Modal content-->
                                         <div class="modal-content">
                                             <div class="modal-header">
-                                                <button type="button" class="close" data-dismiss="modal">&times;
-                                                </button>
-                                                <h4 class="modal-title">{% trans "Setup Remote" %}</h4>
+                                                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                                <h4 class="modal-title">
+                                                    <i class="fas fa-cloud"></i>
+                                                    {% trans "Setup Remote" %}
+                                                </h4>
                                             </div>
                                             <div class="modal-body">
 
@@ -731,9 +1291,7 @@
                                                     <hr>
 
                                                     <div class="form-group">
-
                                                         <div class="col-sm-12">
-
                                                             <table class="table">
                                                                 <thead>
                                                                 <tr>
@@ -759,9 +1317,7 @@
                                                     <hr>
 
                                                     <div class="form-group">
-
                                                         <div class="col-sm-12">
-
                                                             <table class="table">
                                                                 <thead>
                                                                 <tr>
@@ -790,9 +1346,10 @@
                                             <div class="modal-footer">
                                                 <button type="button" ng-disabled="savingSettings"
                                                         class="btn btn-primary"
-                                                        ng-click="setupRemote()">Save <img
-                                                        ng-hide="cyberpanelLoading"
-                                                        src="{% static 'images/loading.gif' %}">
+                                                        ng-click="setupRemote()">
+                                                    <i class="fas fa-save"></i>
+                                                    Save
+                                                    <img ng-hide="cyberpanelLoading" src="{% static 'images/loading.gif' %}">
                                                 </button>
                                                 <button type="button" ng-disabled="savingSettings"
                                                         class="btn btn-default" data-dismiss="modal">
@@ -807,6 +1364,7 @@
                             <td>
                                 <button ng-click="fetchCommits()" style="margin-left: 2%"
                                         type="button" class="btn btn-primary">
+                                    <i class="fas fa-eye"></i>
                                     {% trans "View Commits" %}
                                 </button>
                             </td>
@@ -839,6 +1397,7 @@
                                 <button ng-click="fetchFiles(commit.commit)" data-toggle="modal"
                                         data-target="#viewChanges" style="margin-left: 2%"
                                         type="button" class="btn btn-primary">
+                                    <i class="fas fa-code"></i>
                                     {% trans "View Changes" %}
                                 </button>
 
@@ -847,10 +1406,12 @@
                                         <!-- Modal content-->
                                         <div class="modal-content">
                                             <div class="modal-header">
-                                                <button type="button" class="close" data-dismiss="modal">&times;
-                                                </button>
-                                                <h4 class="modal-title">{% trans "View Changes" %}</h4> <img
-                                                    ng-hide="cyberpanelLoading" src="{% static 'images/loading.gif' %}">
+                                                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                                <h4 class="modal-title">
+                                                    <i class="fas fa-code"></i>
+                                                    {% trans "View Changes" %}
+                                                </h4>
+                                                <img ng-hide="cyberpanelLoading" src="{% static 'images/loading.gif' %}">
                                             </div>
                                             <div class="modal-body">
 
@@ -903,7 +1464,6 @@
 
                     <div id="showStatus" class="modal fade" role="dialog">
                         <div class="modal-dialog">
-
                             <!-- Modal content-->
                             <div class="modal-content">
                                 <div class="modal-body">
@@ -930,7 +1490,6 @@
                                         <hr>
 
                                         <div class="form-group">
-
                                             <div class="col-sm-12">
                                                             <textarea rows="3"
                                                                       class="form-control">{$ commandStatus $}</textarea>
@@ -947,8 +1506,6 @@
             </div>
         </div>
 
-
     </div>
-
 
 {% endblock %}

@@ -4,7 +4,7 @@ app.controller('createIncrementalBackups', function ($scope, $http, $timeout) {
 
     $scope.destination = true;
     $scope.backupButton = true;
-    $scope.cyberpanelLoading = true;
+    $scope.cyberpanelLoading = false;
     $scope.runningBackup = true;
     $scope.restoreSt = true;
 
@@ -48,7 +48,7 @@ app.controller('createIncrementalBackups', function ($scope, $http, $timeout) {
                     $scope.destination = false;
                     $scope.runningBackup = false;
                     $scope.backupButton = false;
-                    $scope.cyberpanelLoading = true;
+                    $scope.cyberpanelLoading = false;
                     $scope.fileName = response.data.fileName;
                     $scope.status = response.data.status;
                     $scope.populateCurrentRecords();
@@ -66,7 +66,7 @@ app.controller('createIncrementalBackups', function ($scope, $http, $timeout) {
             } else {
                 $timeout.cancel();
                 $scope.cyberpanelLoadingBottom = true;
-                $scope.cyberpanelLoading = true;
+                $scope.cyberpanelLoading = false;
                 $scope.backupButton = false;
             }
 
@@ -157,7 +157,7 @@ app.controller('createIncrementalBackups', function ($scope, $http, $timeout) {
                 $scope.tempPath = response.data.tempPath;
                 getBackupStatus();
             } else {
-                $scope.cyberpanelLoading = true;
+                $scope.cyberpanelLoading = false;
                 new PNotify({
                     title: 'Operation Failed!',
                     text: response.data.error_message,
@@ -295,7 +295,7 @@ app.controller('createIncrementalBackups', function ($scope, $http, $timeout) {
 
 
         function ListInitialDatas(response) {
-            $scope.cyberpanelLoading = true;
+            $scope.cyberpanelLoading = false;
             if (response.data.status === 1) {
                 $scope.jobs = response.data.data;
             } else {
@@ -367,7 +367,7 @@ app.controller('createIncrementalBackups', function ($scope, $http, $timeout) {
 
 
 app.controller('incrementalDestinations', function ($scope, $http) {
-    $scope.cyberpanelLoading = true;
+    $scope.cyberpanelLoading = false;
     $scope.sftpHide = true;
     $scope.awsHide = true;
 
@@ -386,7 +386,7 @@ app.controller('incrementalDestinations', function ($scope, $http) {
 
     $scope.populateCurrentRecords = function () {
 
-        $scope.cyberpanelLoading = false;
+        $scope.cyberpanelLoading = true;
 
 
         url = "/IncrementalBackups/populateCurrentRecords";
@@ -413,7 +413,7 @@ app.controller('incrementalDestinations', function ($scope, $http) {
 
 
         function ListInitialDatas(response) {
-            $scope.cyberpanelLoading = true;
+            $scope.cyberpanelLoading = false;
             if (response.data.status === 1) {
                 $scope.records = response.data.data;
             } else {
@@ -427,7 +427,7 @@ app.controller('incrementalDestinations', function ($scope, $http) {
         }
 
         function cantLoadInitialDatas(response) {
-            $scope.cyberpanelLoading = true;
+            $scope.cyberpanelLoading = false;
             new PNotify({
                 title: 'Operation Failed!',
                 text: 'Could not connect to server, please refresh this page',
@@ -438,7 +438,7 @@ app.controller('incrementalDestinations', function ($scope, $http) {
     };
 
     $scope.addDestination = function (type) {
-        $scope.cyberpanelLoading = false;
+        $scope.cyberpanelLoading = true;
 
 
         url = "/IncrementalBackups/addDestination";
@@ -469,7 +469,7 @@ app.controller('incrementalDestinations', function ($scope, $http) {
 
 
         function ListInitialDatas(response) {
-            $scope.cyberpanelLoading = true;
+            $scope.cyberpanelLoading = false;
             $scope.populateCurrentRecords();
             if (response.data.status === 1) {
                 new PNotify({
@@ -488,7 +488,7 @@ app.controller('incrementalDestinations', function ($scope, $http) {
         }
 
         function cantLoadInitialDatas(response) {
-            $scope.cyberpanelLoading = true;
+            $scope.cyberpanelLoading = false;
             new PNotify({
                 title: 'Operation Failed!',
                 text: 'Could not connect to server, please refresh this page',
@@ -499,7 +499,7 @@ app.controller('incrementalDestinations', function ($scope, $http) {
     };
 
     $scope.removeDestination = function (type, ipAddress) {
-        $scope.cyberpanelLoading = false;
+        $scope.cyberpanelLoading = true;
 
 
         url = "/IncrementalBackups/removeDestination";
@@ -520,7 +520,7 @@ app.controller('incrementalDestinations', function ($scope, $http) {
 
 
         function ListInitialDatas(response) {
-            $scope.cyberpanelLoading = true;
+            $scope.cyberpanelLoading = false;
             $scope.populateCurrentRecords();
             if (response.data.status === 1) {
                 new PNotify({
@@ -539,7 +539,7 @@ app.controller('incrementalDestinations', function ($scope, $http) {
         }
 
         function cantLoadInitialDatas(response) {
-            $scope.cyberpanelLoading = true;
+            $scope.cyberpanelLoading = false;
             new PNotify({
                 title: 'Operation Failed!',
                 text: 'Could not connect to server, please refresh this page',
@@ -1073,7 +1073,7 @@ app.controller('restoreRemoteBackupsInc', function ($scope, $http, $timeout) {
                     $scope.destination = false;
                     $scope.runningBackup = false;
                     $scope.backupButton = false;
-                    $scope.cyberpanelLoading = true;
+                    $scope.cyberpanelLoading = false;
                     $scope.fileName = response.data.fileName;
                     $scope.status = response.data.status;
                     $scope.populateCurrentRecords();
@@ -1096,7 +1096,7 @@ app.controller('restoreRemoteBackupsInc', function ($scope, $http, $timeout) {
             } else {
                 $timeout.cancel();
                 $scope.cyberpanelLoadingBottom = true;
-                $scope.cyberpanelLoading = true;
+                $scope.cyberpanelLoading = false;
                 $scope.backupButton = false;
             }
 

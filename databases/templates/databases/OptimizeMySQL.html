@@ -1,70 +1,528 @@
 {% extends "baseTemplate/index.html" %}
 {% load i18n %}
-{% block title %}{% trans "Mysql Manager - CyberPanel" %}{% endblock %}
+{% block title %}{% trans "Optimize MySQL - CyberPanel" %}{% endblock %}
 {% block content %}
 
-    {% load static %}
-    {% get_current_language as LANGUAGE_CODE %}
-    <!-- Current language: {{ LANGUAGE_CODE }} -->
+{% load static %}
+{% get_current_language as LANGUAGE_CODE %}
+<!-- Current language: {{ LANGUAGE_CODE }} -->
 
-    <div class="container" ng-controller="OptimizeMysql">
-        <div id="page-title">
-            <h2>{% trans "Optimize MySQL" %} <img ng-hide="cyberPanelLoading"
-                                                  src="{% static 'images/loading.gif' %}"></h2>
-        </div>
+<style>
+    .modern-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+    
+    .page-header {
+        text-align: center;
+        margin-bottom: 3rem;
+        padding: 3rem 0;
+        background: linear-gradient(135deg, #f8f9ff 0%, #f0f1ff 100%);
+        border-radius: 20px;
+        animation: fadeInDown 0.5s ease-out;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle at 30% 70%, rgba(91, 95, 207, 0.1) 0%, transparent 50%);
+        animation: float 20s ease-in-out infinite;
+    }
+    
+    .page-title {
+        font-size: 3rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+        position: relative;
+        z-index: 1;
+    }
+    
+    .mysql-icon {
+        width: 60px;
+        height: 60px;
+        background: white;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    
+    .page-subtitle {
+        font-size: 1.25rem;
+        color: #64748b;
+        margin-bottom: 1.5rem;
+        position: relative;
+        z-index: 1;
+    }
+    
+    .header-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+        position: relative;
+        z-index: 1;
+    }
+    
+    .btn-primary {
+        background: #5b5fcf;
+        color: white;
+        border: none;
+        padding: 0.75rem 2rem;
+        border-radius: 10px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-decoration: none;
+        font-size: 0.875rem;
+    }
+    
+    .btn-primary:hover {
+        background: #4547a9;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(91, 95, 207, 0.4);
+        color: white;
+    }
+    
+    .btn-secondary {
+        background: #fff;
+        color: #5b5fcf;
+        border: 1px solid #e8e9ff;
+        padding: 0.75rem 2rem;
+        border-radius: 10px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-decoration: none;
+        font-size: 0.875rem;
+    }
+    
+    .btn-secondary:hover {
+        background: #f8f9ff;
+        border-color: #5b5fcf;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(91, 95, 207, 0.2);
+    }
+    
+    .btn-success {
+        background: #10b981;
+        color: white;
+        border: none;
+        padding: 0.75rem 2rem;
+        border-radius: 10px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.875rem;
+    }
+    
+    .btn-success:hover {
+        background: #059669;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
+    }
+    
+    .btn-danger {
+        background: #ef4444;
+        color: white;
+        border: none;
+        padding: 0.75rem 2rem;
+        border-radius: 10px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.875rem;
+    }
+    
+    .btn-danger:hover {
+        background: #dc2626;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(239, 68, 68, 0.4);
+    }
+    
+    .btn-info {
+        background: #3b82f6;
+        color: white;
+        border: none;
+        padding: 0.75rem 2rem;
+        border-radius: 10px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.875rem;
+    }
+    
+    .btn-info:hover {
+        background: #2563eb;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
+    }
+    
+    .ram-info-card {
+        background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+        border: 1px solid #fcd34d;
+        border-radius: 12px;
+        padding: 1.25rem 2rem;
+        margin-bottom: 2rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 1rem;
+        box-shadow: 0 2px 8px rgba(252, 211, 77, 0.3);
+        animation: fadeInUp 0.5s ease-out;
+    }
+    
+    .ram-icon {
+        width: 48px;
+        height: 48px;
+        background: white;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .ram-label {
+        font-size: 0.875rem;
+        color: #92400e;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin: 0;
+    }
+    
+    .ram-value {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: #78350f;
+        margin: 0;
+        line-height: 1;
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        margin-bottom: 2rem;
+        justify-content: center;
+    }
+    
+    .main-card {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 10px 40px rgba(0,0,0,0.08);
+        border: 1px solid #e8e9ff;
+        overflow: hidden;
+        margin-bottom: 2rem;
+        animation: fadeInUp 0.5s ease-out;
+    }
+    
+    .card-header {
+        background: linear-gradient(135deg, #f8f9ff 0%, #f0f1ff 100%);
+        padding: 1.5rem 2rem;
+        border-bottom: 1px solid #e8e9ff;
+    }
+    
+    .card-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #1e293b;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    
+    .card-body {
+        padding: 2rem;
+    }
+    
+    .config-editor {
+        background: #1e293b;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        animation: fadeInUp 0.5s ease-out;
+    }
+    
+    .editor-header {
+        background: #334155;
+        padding: 1rem 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .editor-title {
+        color: #e2e8f0;
+        font-size: 0.875rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .editor-status {
+        display: flex;
+        gap: 0.5rem;
+    }
+    
+    .editor-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+    }
+    
+    .editor-dot.red {
+        background: #ef4444;
+    }
+    
+    .editor-dot.yellow {
+        background: #f59e0b;
+    }
+    
+    .editor-dot.green {
+        background: #10b981;
+    }
+    
+    .editor-textarea {
+        width: 100%;
+        min-height: 500px;
+        background: #1e293b;
+        color: #e2e8f0;
+        border: none;
+        padding: 1.5rem;
+        font-family: 'Monaco', 'Consolas', monospace;
+        font-size: 0.875rem;
+        line-height: 1.6;
+        resize: vertical;
+    }
+    
+    .editor-textarea:focus {
+        outline: none;
+        background: #1a202c;
+    }
+    
+    .editor-textarea.readonly {
+        background: #1a202c;
+        color: #94a3b8;
+    }
+    
+    .loading-spinner {
+        width: 20px;
+        height: 20px;
+        border: 3px solid #e8e9ff;
+        border-top-color: #5b5fcf;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        display: inline-block;
+        margin-left: 1rem;
+    }
+    
+    .recommendation-info {
+        background: #f0f4f8;
+        border: 1px solid #cbd5e1;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: flex-start;
+        gap: 1rem;
+        animation: fadeInUp 0.5s ease-out;
+    }
+    
+    .recommendation-info i {
+        color: #3b82f6;
+        font-size: 1.25rem;
+        margin-top: 0.125rem;
+    }
+    
+    .recommendation-info p {
+        margin: 0;
+        color: #475569;
+        font-size: 0.875rem;
+        line-height: 1.6;
+    }
+    
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+    
+    @keyframes fadeInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    @keyframes float {
+        0%, 100% { transform: translate(0, 0) rotate(0deg); }
+        33% { transform: translate(30px, -30px) rotate(120deg); }
+        66% { transform: translate(-20px, 20px) rotate(240deg); }
+    }
+    
+    @media (max-width: 768px) {
+        .page-title {
+            font-size: 2rem;
+        }
+        
+        .action-buttons {
+            flex-direction: column;
+        }
+        
+        .action-buttons button {
+            width: 100%;
+        }
+        
+        .ram-info-card {
+            flex-direction: column;
+            text-align: center;
+        }
+        
+        .editor-textarea {
+            min-height: 300px;
+        }
+    }
+</style>
 
-        <div class="panel">
-            <div class="panel-body">
-
-
-                <button style="margin-bottom: 2%;  display: inline" ng-click="generateRecommendations()" type="button"
-                        class="btn btn-success"><i
-                        class="mdi mdi-dns mr-1"></i>
-                    <span>Generate Recommendations</span>
-                </button>
-
-                <button style="margin-bottom: 2%;  display: inline" ng-click="applyMySQLChanges()" type="button"
-                        class="btn btn-danger"><i
-                        class="mdi mdi-dns mr-1"></i>
-                    <span>Apply Changes</span>
-                </button>
-
-                <button style="margin-bottom: 2%; display: inline" ng-click="restartMySQL()" type="button"
-                        class="btn btn-info"><i
-                        class="mdi mdi-dns mr-1"></i>
-                    <span>Restart MySQL</span>
-                </button>
-
-                <div class="right" style="float: right; display: inline">
-                    <strong> Detected Ram: <b id="detectedRam">{{ ramInGB }}</b></strong>
-                </div>
-
-                <form>
-
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group mb-3">
-                                <label for="billing-town-city">Current contents of my.cnf</label>
-                                <textarea placeholder="{{ conf }}" rows="25"
-                                          class="form-control">{{ conf }}</textarea>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group mb-3">
-                                <label for="billing-town-city">Suggested Content</label>
-                                <textarea placeholder="Click Generate Recommendations to generate recommentations."
-                                          ng-model="suggestedContent" rows="25"
-                                          class="form-control"></textarea>
-                            </div>
-                        </div>
-                    </div> <!-- end row -->
-                </form>
+<div class="modern-container" ng-controller="OptimizeMysql">
+    <div class="page-header">
+        <h1 class="page-title">
+            <div class="mysql-icon">
+                <i class="fas fa-database" style="color: #5b5fcf; font-size: 1.75rem;"></i>
             </div>
-
+            {% trans "Optimize MySQL" %}
+        </h1>
+        <p class="page-subtitle">{% trans "Generate optimized MySQL configurations based on your server resources" %}</p>
+        <div class="header-actions">
+            <div class="ram-info-card">
+                <div class="ram-icon">
+                    <i class="fas fa-memory" style="color: #f59e0b; font-size: 1.5rem;"></i>
+                </div>
+                <div>
+                    <p class="ram-label">{% trans "Detected RAM" %}</p>
+                    <p class="ram-value" id="detectedRam">{{ ramInGB }}</p>
+                </div>
+            </div>
         </div>
-
-
     </div>
 
+    <!-- Action Buttons -->
+    <div class="action-buttons">
+        <button ng-click="generateRecommendations()" type="button" class="btn-success">
+            <i class="fas fa-magic"></i>
+            {% trans "Generate Recommendations" %}
+        </button>
+        <button ng-click="applyMySQLChanges()" type="button" class="btn-danger">
+            <i class="fas fa-save"></i>
+            {% trans "Apply Changes" %}
+        </button>
+        <button ng-click="restartMySQL()" type="button" class="btn-info">
+            <i class="fas fa-sync-alt"></i>
+            {% trans "Restart MySQL" %}
+        </button>
+    </div>
+
+    <!-- Recommendation Info -->
+    <div class="recommendation-info">
+        <i class="fas fa-info-circle"></i>
+        <p>{% trans "Generate recommendations based on your server's RAM to optimize MySQL performance. Review the suggested configuration carefully before applying changes. Always backup your current configuration before making modifications." %}</p>
+    </div>
+
+    <!-- Configuration Editor -->
+    <div class="main-card">
+        <div class="card-header">
+            <h2 class="card-title">
+                <i class="fas fa-file-code"></i>
+                {% trans "Configuration Editor" %}
+                <span ng-hide="cyberPanelLoading" class="loading-spinner"></span>
+            </h2>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="config-editor">
+                        <div class="editor-header">
+                            <h3 class="editor-title">
+                                <i class="fas fa-file-alt"></i>
+                                {% trans "Current my.cnf" %}
+                            </h3>
+                            <div class="editor-status">
+                                <div class="editor-dot red"></div>
+                                <div class="editor-dot yellow"></div>
+                                <div class="editor-dot green"></div>
+                            </div>
+                        </div>
+                        <textarea class="editor-textarea readonly" readonly>{{ conf }}</textarea>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="config-editor">
+                        <div class="editor-header">
+                            <h3 class="editor-title">
+                                <i class="fas fa-lightbulb"></i>
+                                {% trans "Suggested Configuration" %}
+                            </h3>
+                            <div class="editor-status">
+                                <div class="editor-dot red"></div>
+                                <div class="editor-dot yellow"></div>
+                                <div class="editor-dot green"></div>
+                            </div>
+                        </div>
+                        <textarea class="editor-textarea" 
+                                  ng-model="suggestedContent"
+                                  placeholder="{% trans 'Click Generate Recommendations to generate optimized configuration...' %}"></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 {% endblock %}

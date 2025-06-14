@@ -520,6 +520,7 @@ app.controller('secureSSHCTRL', function ($scope, $http) {
     $scope.keyBox = true;
     $scope.showKeyBox = false;
     $scope.saveKeyBtn = true;
+    $scope.sshPort = "22"; // Initialize with default SSH port as string
 
     $scope.addKey = function () {
         $scope.saveKeyBtn = false;
@@ -568,7 +569,8 @@ app.controller('secureSSHCTRL', function ($scope, $http) {
             $scope.sshPort = response.data.sshPort;
 
             if (response.data.permitRootLogin == 1) {
-                $('#rootLogin').bootstrapToggle('on');
+                $('#rootLogin').prop('checked', true);
+                rootLogin = true;
                 $scope.couldNotSave = true;
                 $scope.detailsSaved = true;
                 $scope.couldNotConnect = true;
@@ -941,32 +943,36 @@ app.controller('modSec', function ($scope, $http, $timeout, $window) {
 
     ///// ModSec configs
 
-    var modsecurity_status = false;
-    var SecAuditEngine = false;
-    var SecRuleEngine = false;
+    $scope.modsecurity_status = false;
+    $scope.SecAuditEngine = false;
+    $scope.SecRuleEngine = false;
 
+    // Initialize change handlers after DOM is ready
+    $timeout(function() {
+        $('#modsecurity_status').change(function () {
+            $scope.modsecurity_status = $(this).prop('checked');
+            $scope.$apply();
+        });
 
-    $('#modsecurity_status').change(function () {
-        modsecurity_status = $(this).prop('checked');
-    });
+        $('#SecAuditEngine').change(function () {
+            $scope.SecAuditEngine = $(this).prop('checked');
+            $scope.$apply();
+        });
 
-    $('#SecAuditEngine').change(function () {
-        SecAuditEngine = $(this).prop('checked');
-    });
-
-
-    $('#SecRuleEngine').change(function () {
-        SecRuleEngine = $(this).prop('checked');
-    });
+        $('#SecRuleEngine').change(function () {
+            $scope.SecRuleEngine = $(this).prop('checked');
+            $scope.$apply();
+        });
+    }, 100);
 
     fetchModSecSettings();
     function fetchModSecSettings() {
 
         $scope.modsecLoading = false;
 
-        $('#modsecurity_status').bootstrapToggle('off');
-        $('#SecAuditEngine').bootstrapToggle('off');
-        $('#SecRuleEngine').bootstrapToggle('off');
+        $('#modsecurity_status').prop('checked', false);
+        $('#SecAuditEngine').prop('checked', false);
+        $('#SecRuleEngine').prop('checked', false);
 
         url = "/firewall/fetchModSecSettings";
 
@@ -993,13 +999,16 @@ app.controller('modSec', function ($scope, $http, $timeout, $window) {
                 if (response.data.installed === 1) {
 
                     if (response.data.modsecurity === 1) {
-                        $('#modsecurity_status').bootstrapToggle('on');
+                        $('#modsecurity_status').prop('checked', true);
+                        $scope.modsecurity_status = true;
                     }
                     if (response.data.SecAuditEngine === 1) {
-                        $('#SecAuditEngine').bootstrapToggle('on');
+                        $('#SecAuditEngine').prop('checked', true);
+                        $scope.SecAuditEngine = true;
                     }
                     if (response.data.SecRuleEngine === 1) {
-                        $('#SecRuleEngine').bootstrapToggle('on');
+                        $('#SecRuleEngine').prop('checked', true);
+                        $scope.SecRuleEngine = true;
                     }
 
                     $scope.SecDebugLogLevel = response.data.SecDebugLogLevel;
@@ -1038,9 +1047,9 @@ app.controller('modSec', function ($scope, $http, $timeout, $window) {
         url = "/firewall/saveModSecConfigurations";
 
         var data = {
-            modsecurity_status: modsecurity_status,
-            SecAuditEngine: SecAuditEngine,
-            SecRuleEngine: SecRuleEngine,
+            modsecurity_status: $scope.modsecurity_status,
+            SecAuditEngine: $scope.SecAuditEngine,
+            SecRuleEngine: $scope.SecRuleEngine,
             SecDebugLogLevel: $scope.SecDebugLogLevel,
             SecAuditLogParts: $scope.SecAuditLogParts,
             SecAuditLogRelevantStatus: $scope.SecAuditLogRelevantStatus,
@@ -1283,17 +1292,17 @@ app.controller('modSecRulesPack', function ($scope, $http, $timeout, $window) {
                 if (updateToggle === true) {
 
                     if (response.data.owaspInstalled === 1) {
-                        $('#owaspInstalled').bootstrapToggle('on');
+                        $('#owaspInstalled').prop('checked', true);
                         $scope.owaspDisable = false;
                     } else {
-                        $('#owaspInstalled').bootstrapToggle('off');
+                        $('#owaspInstalled').prop('checked', false);
                         $scope.owaspDisable = true;
                     }
                     if (response.data.comodoInstalled === 1) {
-                        $('#comodoInstalled').bootstrapToggle('on');
+                        $('#comodoInstalled').prop('checked', true);
                         $scope.comodoDisable = false;
                     } else {
-                        $('#comodoInstalled').bootstrapToggle('off');
+                        $('#comodoInstalled').prop('checked', false);
                         $scope.comodoDisable = true;
                     }
                 } else {
@@ -1688,15 +1697,18 @@ app.controller('csf', function ($scope, $http, $timeout, $window) {
     var currentChild = "general";
 
     $scope.activateTab = function (newMain, newChild) {
-        $("#" + currentMain).removeClass("ui-tabs-active");
-        $("#" + currentMain).removeClass("ui-state-active");
-
-        $("#" + newMain).addClass("ui-tabs-active");
-        $("#" + newMain).addClass("ui-state-active");
-
-        $('#' + currentChild).hide();
-        $('#' + newChild).show();
-
+        // Remove active class from all tabs
+        $('.tab-button').removeClass('active');
+        
+        // Add active class to clicked tab
+        $('#' + newMain).addClass('active');
+        
+        // Hide all tab contents
+        $('.tab-content').removeClass('active');
+        
+        // Show selected tab content
+        $('#' + newChild).addClass('active');
+        
         currentMain = newMain;
         currentChild = newChild;
     };
@@ -1810,8 +1822,8 @@ app.controller('csf', function ($scope, $http, $timeout, $window) {
 
         $scope.csfLoading = false;
 
-        $('#testingMode').bootstrapToggle('off');
-        $('#firewallStatus').bootstrapToggle('off');
+        $('#testingMode').prop('checked', false);
+        $('#firewallStatus').prop('checked', false);
 
         url = "/firewall/fetchCSFSettings";
 
@@ -1841,10 +1853,10 @@ app.controller('csf', function ($scope, $http, $timeout, $window) {
                 });
 
                 if (response.data.testingMode === 1) {
-                    $('#testingMode').bootstrapToggle('on');
+                    $('#testingMode').prop('checked', true);
                 }
                 if (response.data.firewallStatus === 1) {
-                    $('#firewallStatus').bootstrapToggle('on');
+                    $('#firewallStatus').prop('checked', true);
                 }
 
                 $scope.tcpIN = response.data.tcpIN;

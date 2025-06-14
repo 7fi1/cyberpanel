@@ -1407,15 +1407,22 @@ def fetchRspamdSettings(request):
                                 tempData = items.split(' ')
                                 # logging.CyberCPLogFileWriter.writeToFile(str(tempData) + "action")
                                 try:
-                                    a = tempData[4]
+                                    if len(tempData) > 4:
+                                        a = tempData[4]
+                                    elif len(tempData) > 2:
+                                        a = tempData[2]
+                                    else:
+                                        continue
+                                    ac = a.split('"')
+                                    if len(ac) > 1:
+                                        action = ac[1]
                                 except:
-                                    a = tempData[2]
-                                ac = a.split('"')
-                                action = ac[1]
+                                    pass
                             if items.find('max_size') > -1:
                                 tempData = items.split(' ')
-                                max = tempData[4]
-                                max_Size = max.rstrip(";")
+                                if len(tempData) > 4:
+                                    max = tempData[4]
+                                    max_Size = max.rstrip(";")
 
                             if items.find('scan_mime_parts ') > -1:
                                 if items.find('scan_mime_parts = true') < 0:
@@ -1431,16 +1438,20 @@ def fetchRspamdSettings(request):
                                     log_clean = True
                             if items.find('servers =') > -1:
                                 tempData = items.split(' ')
-                                Ser = tempData[4]
-                                x = Ser.rstrip(";")
-                                y = x.split('"')
-                                Server = y[1]
+                                if len(tempData) > 4:
+                                    Ser = tempData[4]
+                                    x = Ser.rstrip(";")
+                                    y = x.split('"')
+                                    if len(y) > 1:
+                                        Server = y[1]
                             if items.find('CLAMAV_VIRUS =') > -1:
                                 tempData = items.split(' ')
-                                CLAMAV = tempData[6]
-                                i = CLAMAV.rstrip(";")
-                                j = i.split('"')
-                                CLAMAV_VIRUS = j[1]
+                                if len(tempData) > 6:
+                                    CLAMAV = tempData[6]
+                                    i = CLAMAV.rstrip(";")
+                                    j = i.split('"')
+                                    if len(j) > 1:
+                                        CLAMAV_VIRUS = j[1]
 
                         ###postfix
                         smtpd_milters = ""
@@ -1451,17 +1462,26 @@ def fetchRspamdSettings(request):
                         for i in postdata:
                             if (i.find('smtpd_milters=') > -1 or i.find('smtpd_milters =') > -1) and i.find('non_smtpd_milters') < 0:
                                 ### non_smtpd_milters = inet:127.0.0.1:8891, inet:127.0.0.1:11332
-                                tempData = i.split(',')[1]
-                                if os.path.exists(ProcessUtilities.debugPath):
-                                    logging.CyberCPLogFileWriter.writeToFile(f'smtpd_milters: {tempData}')
-                                smtpd_milters = tempData.lstrip(' ')
+                                split_data = i.split(',')
+                                if len(split_data) > 1:
+                                    tempData = split_data[1]
+                                    if os.path.exists(ProcessUtilities.debugPath):
+                                        logging.CyberCPLogFileWriter.writeToFile(f'smtpd_milters: {tempData}')
+                                    smtpd_milters = tempData.lstrip(' ')
+                                else:
+                                    # If no comma, try to get the value after the equals sign
+                                    eq_split = i.split('=')
+                                    if len(eq_split) > 1:
+                                        smtpd_milters = eq_split[1].strip()
                             if i.find('non_smtpd_milters=') > -1 or i.find('non_smtpd_milters =') > -1:
-                                tempData = i.split('=')[1]
+                                eq_split = i.split('=')
+                                if len(eq_split) > 1:
+                                    tempData = eq_split[1]
 
-                                if os.path.exists(ProcessUtilities.debugPath):
-                                    logging.CyberCPLogFileWriter.writeToFile(f'non_smtpd_milters: {tempData}')
+                                    if os.path.exists(ProcessUtilities.debugPath):
+                                        logging.CyberCPLogFileWriter.writeToFile(f'non_smtpd_milters: {tempData}')
 
-                                non_smtpd_milters = tempData.lstrip(' ')
+                                    non_smtpd_milters = tempData.lstrip(' ')
 
 
                         ###Redis
@@ -1476,20 +1496,24 @@ def fetchRspamdSettings(request):
                             if i.find('write_servers =') > -1:
                                 tempData = i.split(' ')
                                 # logging.CyberCPLogFileWriter.writeToFile(str(tempData) + "redis")
-                                write = tempData[2]
-                                i = write.rstrip(";")
-                                j = i.split('"')
-                                write_servers = j[1]
-                                # logging.CyberCPLogFileWriter.writeToFile(str(write_servers) + "write_servers")
+                                if len(tempData) > 2:
+                                    write = tempData[2]
+                                    i = write.rstrip(";")
+                                    j = i.split('"')
+                                    if len(j) > 1:
+                                        write_servers = j[1]
+                                    # logging.CyberCPLogFileWriter.writeToFile(str(write_servers) + "write_servers")
 
                             if i.find('read_servers =') > -1:
                                 tempData = i.split(' ')
                                 # logging.CyberCPLogFileWriter.writeToFile(str(tempData) + "redis2")
-                                read = tempData[2]
-                                i = read.rstrip(";")
-                                j = i.split('"')
-                                read_servers = j[1]
-                                # logging.CyberCPLogFileWriter.writeToFile(str(read_servers) + "read_servers")
+                                if len(tempData) > 2:
+                                    read = tempData[2]
+                                    i = read.rstrip(";")
+                                    j = i.split('"')
+                                    if len(j) > 1:
+                                        read_servers = j[1]
+                                    # logging.CyberCPLogFileWriter.writeToFile(str(read_servers) + "read_servers")
 
                         #ClamAV configs
 
@@ -1508,13 +1532,16 @@ def fetchRspamdSettings(request):
                         for items in data:
                             if items.find('TCPSocket') > -1:
                                 tempData = items.split(' ')
-                                TCPSocket = tempData[1]
+                                if len(tempData) > 1:
+                                    TCPSocket = tempData[1]
                             if items.find('TCPAddr') > -1:
                                 tempData = items.split(' ')
-                                TCPAddr = tempData[1]
+                                if len(tempData) > 1:
+                                    TCPAddr = tempData[1]
                             if items.find('LogFile') > -1:
                                 tempData = items.split(' ')
-                                LogFile = tempData[1]
+                                if len(tempData) > 1:
+                                    LogFile = tempData[1]
                             if items.find('Debug') > -1:
                                 if items.find('Debug true') < 0:
                                     clamav_Debug = False

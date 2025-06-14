@@ -1122,6 +1122,7 @@ app.controller('Rspamd', function ($scope, $http, $timeout, $window) {
     var antivirus_status = false;
     var scan_mime_parts = false;
     var log_clean = false;
+    var clamav_Debug = false;
 
 
     $('#antivirus_status').change(function () {
@@ -1137,9 +1138,11 @@ app.controller('Rspamd', function ($scope, $http, $timeout, $window) {
         clamav_Debug = $(this).prop('checked');
     });
 
-    fetchRspamdSettings();
+    // Only fetch settings if Rspamd is installed
+    // This will be called from the template when needed
+    // fetchRspamdSettings();
 
-    function fetchRspamdSettings() {
+    $scope.fetchRspamdSettings = function() {
 
         $scope.RspamdLoading = false;
 
@@ -1168,25 +1171,34 @@ app.controller('Rspamd', function ($scope, $http, $timeout, $window) {
                 if (response.data.installed === 1) {
                     $scope.uninstallbutton = false;
 
-                    if (response.data.enabled === true) {
-                        $('#antivirus_status').bootstrapToggle('on');
-                    } else if (response.data.enabled === false) {
-                        $('#antivirus_status').bootstrapToggle('off');
+                    // Initialize toggles only if elements exist
+                    if ($('#antivirus_status').length) {
+                        if (response.data.enabled === true) {
+                            $('#antivirus_status').bootstrapToggle('on');
+                        } else if (response.data.enabled === false) {
+                            $('#antivirus_status').bootstrapToggle('off');
+                        }
                     }
-                    if (response.data.scan_mime_parts === true) {
-                        $('#scan_mime_parts').bootstrapToggle('on');
-                    } else if (response.data.scan_mime_parts === false) {
-                        $('#scan_mime_parts').bootstrapToggle('off');
+                    if ($('#scan_mime_parts').length) {
+                        if (response.data.scan_mime_parts === true) {
+                            $('#scan_mime_parts').bootstrapToggle('on');
+                        } else if (response.data.scan_mime_parts === false) {
+                            $('#scan_mime_parts').bootstrapToggle('off');
+                        }
                     }
-                    if (response.data.log_clean === true) {
-                        $('#log_clean').bootstrapToggle('on');
-                    } else if (response.data.log_clean === false) {
-                        $('#log_clean').bootstrapToggle('off');
+                    if ($('#log_clean').length) {
+                        if (response.data.log_clean === true) {
+                            $('#log_clean').bootstrapToggle('on');
+                        } else if (response.data.log_clean === false) {
+                            $('#log_clean').bootstrapToggle('off');
+                        }
                     }
-                    if (response.data.clamav_Debug === true) {
-                        $('#clamav_Debug').bootstrapToggle('on');
-                    } else if (response.data.clamav_Debug === false) {
-                        $('#clamav_Debug').bootstrapToggle('off');
+                    if ($('#clamav_Debug').length) {
+                        if (response.data.clamav_Debug === true) {
+                            $('#clamav_Debug').bootstrapToggle('on');
+                        } else if (response.data.clamav_Debug === false) {
+                            $('#clamav_Debug').bootstrapToggle('off');
+                        }
                     }
 
                     $scope.max_size = response.data.max_Size;
@@ -1212,7 +1224,7 @@ app.controller('Rspamd', function ($scope, $http, $timeout, $window) {
             $scope.RspamdLoading = true;
         }
 
-    }
+    };
 
 
     $scope.saveRspamdConfigurations = function () {

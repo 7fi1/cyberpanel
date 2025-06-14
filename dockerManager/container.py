@@ -137,8 +137,13 @@ class ContainerManager(multi.Thread):
         try:
             name = self.name
 
-            if ACLManager.checkContainerOwnership(name, userID) != 1:
-                return ACLManager.loadError()
+            # Check if user is admin or has container access
+            currentACL = ACLManager.loadedACL(userID)
+            if currentACL['admin'] != 1:
+                # For non-admin users, check container ownership
+                if ACLManager.checkContainerOwnership(name, userID) != 1:
+                    return ACLManager.loadError()
+            # Admin users can access any container, including ones not in database
 
             client = docker.from_env()
             dockerAPI = docker.APIClient()
@@ -149,25 +154,37 @@ class ContainerManager(multi.Thread):
                 return HttpResponse("Container not found")
 
             data = {}
-            con = Containers.objects.get(name=name)
-            data['name'] = name
-            data['image'] = con.image + ":" + con.tag
-            data['ports'] = json.loads(con.ports)
-            data['cid'] = con.cid
-            data['envList'] = json.loads(con.env)
-            data['volList'] = json.loads(con.volumes)
+            try:
+                con = Containers.objects.get(name=name)
+                data['name'] = name
+                data['image'] = con.image + ":" + con.tag
+                data['ports'] = json.loads(con.ports)
+                data['cid'] = con.cid
+                data['envList'] = json.loads(con.env)
+                data['volList'] = json.loads(con.volumes)
+                data['memoryLimit'] = con.memory
+                if con.startOnReboot == 1:
+                    data['startOnReboot'] = 'true'
+                    data['restartPolicy'] = "Yes"
+                else:
+                    data['startOnReboot'] = 'false'
+                    data['restartPolicy'] = "No"
+            except Containers.DoesNotExist:
+                # Container exists in Docker but not in database
+                data['name'] = name
+                data['image'] = container.image.tags[0] if container.image.tags else "Unknown"
+                data['ports'] = {}
+                data['cid'] = container.id
+                data['envList'] = {}
+                data['volList'] = {}
+                data['memoryLimit'] = 512
+                data['startOnReboot'] = 'false'
+                data['restartPolicy'] = "No"
 
             stats = container.stats(decode=False, stream=False)
             logs = container.logs(stream=True)
 
             data['status'] = container.status
-            data['memoryLimit'] = con.memory
-            if con.startOnReboot == 1:
-                data['startOnReboot'] = 'true'
-                data['restartPolicy'] = "Yes"
-            else:
-                data['startOnReboot'] = 'false'
-                data['restartPolicy'] = "No"
 
             if 'usage' in stats['memory_stats']:
                 # Calculate Usage

@@ -7,109 +7,329 @@
     {% load static %}
 
     <style>
-        /* Add these styles for the buttons and select dropdown */
-        .button-style,
-        #branchSelect {
-            background-color: rgb(62, 72, 85);
-            color: #fff;
+        /* Modern page styles matching new design */
+        .page-wrapper {
+            background: transparent;
+            padding: 20px;
+        }
+        
+        .page-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .page-header {
+            margin-bottom: 30px;
+        }
+        
+        .page-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #2f3640;
+            margin-bottom: 8px;
+        }
+        
+        .page-subtitle {
+            font-size: 14px;
+            color: #8893a7;
+        }
+        
+        /* Card styles */
+        .content-card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            border: 1px solid #e8e9ff;
+            margin-bottom: 25px;
+        }
+        
+        .card-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #2f3640;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .card-title::before {
+            content: '';
+            width: 4px;
+            height: 24px;
+            background: #5b5fcf;
+            border-radius: 2px;
+        }
+        
+        /* Form styles */
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #64748b;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .form-select,
+        .form-control {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid #e8e9ff;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #2f3640;
+            background: white;
+            transition: all 0.2s ease;
+        }
+        
+        .form-select:hover,
+        .form-control:hover {
+            border-color: #5b5fcf;
+        }
+        
+        .form-select:focus,
+        .form-control:focus {
+            outline: none;
+            border-color: #5b5fcf;
+            box-shadow: 0 0 0 3px rgba(91,95,207,0.1);
+        }
+        
+        /* Button styles */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
             padding: 10px 20px;
             border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
             cursor: pointer;
-            transition: background-color 0.3s ease;
+            transition: all 0.2s ease;
+            text-decoration: none;
         }
-
-        /* Apply these styles when hovering over the buttons or select dropdown */
-        .button-style:hover,
-        #branchSelect:hover {
-            background-color: darken(rgb(62, 72, 85), 10%);
+        
+        .btn-primary {
+            background: #5b5fcf;
+            color: white;
         }
-
-        /* Add these styles for the textarea */
-        textarea {
-            background-color: rgb(62, 72, 85);
-            color: #fff;
+        
+        .btn-primary:hover {
+            background: #4a4fc4;
+            box-shadow: 0 4px 12px rgba(91,95,207,0.3);
+            transform: translateY(-1px);
+        }
+        
+        .btn-secondary {
+            background: #f8f9ff;
+            color: #5b5fcf;
+            border: 1px solid #e8e9ff;
+        }
+        
+        .btn-secondary:hover {
+            background: #eef0ff;
+            border-color: #5b5fcf;
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        
+        /* Alert styles */
+        .alert {
+            padding: 16px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .alert-warning {
+            background: #fef3e9;
+            border: 1px solid #fddfb9;
+            color: #b95e00;
+        }
+        
+        .alert-warning a {
+            color: #b95e00;
+            font-weight: 600;
+        }
+        
+        /* Info grid */
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+        
+        .info-item {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .info-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #8893a7;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .info-value {
+            font-size: 14px;
+            color: #2f3640;
+            font-weight: 500;
+            font-family: 'SF Mono', Monaco, monospace;
+            background: #f8f9ff;
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid #e8e9ff;
+            word-break: break-all;
+        }
+        
+        /* Progress log */
+        .log-container {
+            background: #1e1e1e;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .log-textarea {
+            width: 100%;
+            min-height: 300px;
+            background: transparent;
+            border: none;
+            color: #f0f0f0;
+            font-family: 'SF Mono', Monaco, monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            resize: vertical;
+        }
+        
+        .log-textarea:focus {
+            outline: none;
+        }
+        
+        /* Loading spinner */
+        .loading-spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #5b5fcf;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .content-card {
+                padding: 20px;
+            }
+            
+            .btn-group {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
         }
     </style>
 
-    <div class="container" ng-controller="versionManagment">
-        <div id="page-title">
-            <h2>{% trans "Version Management" %}</h2>
-            <p>{% trans "Here you can manage versions and check for updates to CyberPanel" %}</p>
-        </div>
-        {% if Notecheck %}
-            <div class="alert alert-info">
-                <p style="color:red; font-weight: bold;">{% trans "Note: Latest commit does not match, please upgrade CyberPanel." %}. <a href="https://cyberpanel.net/KnowledgeBase/home/upgrading-cyberpanel/">Learn how to upgrade CyberPanel.</a> </p>
+    <div class="page-wrapper" ng-controller="versionManagment">
+        <div class="page-container">
+            <div class="page-header">
+                <h1 class="page-title">{% trans "Version Management" %}</h1>
+                <p class="page-subtitle">{% trans "Here you can manage versions and check for updates to CyberPanel" %}</p>
             </div>
-        {% endif %}
+            {% if Notecheck %}
+            <div class="alert alert-warning">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span>{% trans "Note: Latest commit does not match, please upgrade CyberPanel." %} <a href="https://cyberpanel.net/KnowledgeBase/home/upgrading-cyberpanel/">Learn how to upgrade CyberPanel.</a></span>
+            </div>
+            {% endif %}
 
-        <div class="panel">
-            <div class="panel-body">
-                <h3 class="title-hero">
-                    CyberPanel
-                </h3>
-                <div class="example-box-wrapper">
-                    <div class="form-group">
-                        <label for="branchSelect">{% trans "Select Branch:" %}</label>
-                        <select ng-model="branchSelect" id="branchSelect" class="button-style"></select>
+            <div class="content-card">
+                <h2 class="card-title">CyberPanel Version Control</h2>
+                
+                <div class="form-group">
+                    <label for="branchSelect" class="form-label">{% trans "Select Branch" %}</label>
+                    <select ng-model="branchSelect" id="branchSelect" class="form-select"></select>
+                </div>
+                
+                <div class="btn-group">
+                    <button type="button" ng-click="upgrade()" class="btn btn-primary">
+                        <i class="fas fa-arrow-up"></i>
+                        {% trans "Upgrade CyberPanel to selected branch (Beta)" %}
+                    </button>
+                    <button type="button" onclick="refreshPage()" class="btn btn-secondary">
+                        <i class="fas fa-sync-alt"></i>
+                        {% trans "Refresh page" %}
+                    </button>
+                </div>
+            </div>
+
+            <div class="content-card">
+                <h2 class="card-title">Version Information</h2>
+                
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="info-label">{% trans "Current Version" %}</span>
+                        <span class="info-value">{{ currentVersion }}</span>
                     </div>
-                    <div class="form-group">
-                        <button type="submit" ng-click="upgrade()"
-                                class="button-style">{% trans "Upgrade CyberPanel to selected branch (Beta)" %}</button>
-                        <button type="submit" onclick="refreshPage()"
-                                class="button-style line-over">{% trans "Refresh page" %}</button>
+                    <div class="info-item">
+                        <span class="info-label">{% trans "Build" %}</span>
+                        <span class="info-value">{{ build }}</span>
                     </div>
-
-                    <form action="/" class="form-horizontal bordered-row">
-                        <!-- Existing Commit Information -->
-                        <div class="form-group">
-                            <label class="col-sm-3 control-label"
-                                   style="margin: 0px!important; padding: 0px!important;">{% trans "Current Version:" %}&nbsp&nbsp</label>
-                            <div class="current-pack col-sm-9"
-                                 style="margin: 0px!important; padding: 0px!important;">{{ currentVersion }}</div>
-                        </div>
-                        <div class="form-group">
-                            <label class="col-sm-3 control-label"
-                                   style="margin: 0px!important; padding: 0px!important;">{% trans "Build:" %}&nbsp&nbsp</label>
-                            <div class="current-pack col-sm-9"
-                                 style="margin: 0px!important; padding: 0px!important;">{{ build }}</div>
-                            <label class="col-sm-3 control-label"
-                                   style="margin: 0px!important; padding: 0px!important;">{% trans "Current Commit:" %}&nbsp&nbsp</label>
-                            <div class="current-pack col-sm-9"
-                                 style="margin: 0px!important; padding: 0px!important;">{{ Currentcomt }}</div>
-                        </div>
-                        <div class="form-group">
-                            <label class="col-sm-3 control-label"
-                                   style="margin: 0px!important; padding: 0px!important;">{% trans "Latest Version:" %}&nbsp&nbsp</label>
-                            <div class="current-pack col-sm-9"
-                                 style="margin: 0px!important; padding: 0px!important;">{{ latestVersion }}</div>
-                        </div>
-                        <div class="form-group">
-                            <label class="col-sm-3 control-label"
-                                   style="margin: 0px!important; padding: 0px!important;">{% trans "Latest Build:" %}&nbsp&nbsp</label>
-                            <div class="current-pack col-sm-9"
-                                 style="margin: 0px!important; padding: 0px!important;">{{ latestBuild }}</div>
-                            <label class="col-sm-3 control-label"
-                                   style="margin: 0px!important; padding: 0px!important;">{% trans "Latest Commit:" %}&nbsp&nbsp</label>
-                            <div class="current-pack col-sm-9"
-                                 style="margin: 0px!important; padding: 0px!important;">{{ latestcomit }}</div>
-                        </div>
-
-                        <!-- New Upgrade Progress Log Section -->
-                        <div class="form-group">
-                            <label class="col-sm-3 control-label"
-                                   style="margin: 0px!important; padding: 0px!important;">{% trans "Upgrade Progress Log:" %}
-                                <img ng-hide="upgradeLoading"
-                                     src="{% static 'images/loading.gif' %}"></label>
-                            <div id="upgradeProgressLog" class="current-pack col-sm-9"
-                                 style="margin: 0px!important; padding: 0px!important;"></div>
-                        </div>
-                    </form>
-
-                    <div ng-hide="upgradelogBox" class="form-group">
-                        <div class="col-sm-12">
-                            <textarea ng-model="upgradeLog" rows="30" class="form-control">{{ logs }}</textarea>
-                        </div>
+                    <div class="info-item">
+                        <span class="info-label">{% trans "Current Commit" %}</span>
+                        <span class="info-value">{{ Currentcomt }}</span>
                     </div>
+                    <div class="info-item">
+                        <span class="info-label">{% trans "Latest Version" %}</span>
+                        <span class="info-value">{{ latestVersion }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">{% trans "Latest Build" %}</span>
+                        <span class="info-value">{{ latestBuild }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">{% trans "Latest Commit" %}</span>
+                        <span class="info-value">{{ latestcomit }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="content-card" ng-hide="upgradelogBox">
+                <h2 class="card-title">
+                    {% trans "Upgrade Progress Log" %}
+                    <span ng-hide="upgradeLoading" class="loading-spinner"></span>
+                </h2>
+                <div id="upgradeProgressLog"></div>
+                <div class="log-container">
+                    <textarea ng-model="upgradeLog" class="log-textarea" readonly>{{ logs }}</textarea>
                 </div>
             </div>
         </div>

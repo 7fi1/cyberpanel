@@ -7,132 +7,438 @@
     {% get_current_language as LANGUAGE_CODE %}
     <!-- Current language: {{ LANGUAGE_CODE }} -->
 
-    <div class="container">
-        <div id="page-title">
-            <h2>{% trans "Create Email Account" %}</h2>
-            <p>{% trans "Select a website from the list, to create an email account." %}</p>
+    <style>
+        .modern-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .page-header {
+            text-align: center;
+            margin-bottom: 3rem;
+            animation: fadeInDown 0.5s ease-out;
+        }
+        
+        .page-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+        }
+        
+        .page-subtitle {
+            font-size: 1.125rem;
+            color: #64748b;
+            margin-bottom: 0;
+        }
+        
+        .main-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 10px 40px rgba(0,0,0,0.08);
+            border: 1px solid #e8e9ff;
+            overflow: hidden;
+            animation: fadeInUp 0.5s ease-out;
+        }
+        
+        .card-header {
+            background: linear-gradient(135deg, #f8f9ff 0%, #f0f1ff 100%);
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid #e8e9ff;
+        }
+        
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .card-body {
+            padding: 2rem;
+        }
+        
+        .test-email-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: #fff;
+            border: 1px solid #e8e9ff;
+            border-radius: 8px;
+            color: #5b5fcf;
+            text-decoration: none;
+            font-size: 0.875rem;
+            transition: all 0.3s ease;
+            margin-left: auto;
+        }
+        
+        .test-email-link:hover {
+            background: #5b5fcf;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(91, 95, 207, 0.3);
+        }
+        
+        .form-section {
+            margin-bottom: 2rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #1e293b;
+            font-size: 0.875rem;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid #e8e9ff;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            transition: all 0.3s ease;
+            background: #fff;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: #5b5fcf;
+            box-shadow: 0 0 0 3px rgba(91, 95, 207, 0.1);
+        }
+        
+        .input-group {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+        
+        .domain-suffix {
+            font-size: 1rem;
+            color: #64748b;
+            font-weight: 500;
+            padding: 0.75rem;
+            background: #f8f9ff;
+            border: 1px solid #e8e9ff;
+            border-radius: 8px;
+            min-width: fit-content;
+        }
+        
+        .btn-primary {
+            background: #5b5fcf;
+            color: white;
+            border: none;
+            padding: 0.75rem 2rem;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-primary:hover {
+            background: #4547a9;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(91, 95, 207, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #fff;
+            color: #5b5fcf;
+            border: 1px solid #e8e9ff;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-secondary:hover {
+            background: #f8f9ff;
+            border-color: #5b5fcf;
+        }
+        
+        .alert {
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            animation: slideInRight 0.3s ease-out;
+        }
+        
+        .alert-success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+        
+        .alert-danger {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+        
+        .alert-warning {
+            background: #fef3c7;
+            color: #92400e;
+            border: 1px solid #fde68a;
+        }
+        
+        .disabled-notice {
+            background: #fef3c7;
+            border: 1px solid #fde68a;
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .disabled-notice h3 {
+            color: #92400e;
+            margin-bottom: 1rem;
+        }
+        
+        .loading-spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #e8e9ff;
+            border-top-color: #5b5fcf;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        .password-controls {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        
+        .password-strength {
+            margin-top: 0.5rem;
+            height: 4px;
+            background: #e5e7eb;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        
+        .password-strength-bar {
+            height: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        .strength-weak {
+            width: 33%;
+            background: #ef4444;
+        }
+        
+        .strength-medium {
+            width: 66%;
+            background: #ffa000;
+        }
+        
+        .strength-strong {
+            width: 100%;
+            background: #10b981;
+        }
+    </style>
+
+    <div class="modern-container" ng-controller="createEmailAccount">
+        <div class="page-header">
+            <h1 class="page-title">
+                <i class="fas fa-envelope"></i>
+                {% trans "Create Email Account" %}
+            </h1>
+            <p class="page-subtitle">{% trans "Select a website from the list to create an email account" %}</p>
         </div>
 
-        <div ng-controller="createEmailAccount" class="panel">
-            <div class="panel-body">
-                <h3 class="content-box-header">
-                    {% trans "Create Email Account" %} - <a style="font-size: large; color: red" target="_blank"
-                        href="https://platform.cyberpersons.com/MailTester/MailTester?utm_source=from-cyberpanel-inside&utm_medium=from-cyberpanel-inside&utm_campaign=from-cyberpanel-inside&utm_id=from-cyberpanel-inside&utm_term=from-cyberpanel-inside">
-                    <u>Test Email Delivery</u></a> <img ng-hide="emailLoading"
-                                                 src="{% static 'images/loading.gif' %}">
-                </h3>
-                <div class="example-box-wrapper">
-
-                    {% if not status %}
-
-                        <div class="col-md-12 text-center" style="margin-bottom: 2%;">
-                            <h3>{% trans "Postfix is disabled." %}
-                                <a href="{% url 'managePostfix' %}">
-                                    <button class="btn btn-alt btn-hover btn-blue-alt">
-                                        <span>{% trans "Enable Now" %}</span>
-                                        <i class="glyph-icon icon-arrow-right"></i>
-                                    </button>
-                                </a></h3>
+        <div class="main-card">
+            <div class="card-header">
+                <h2 class="card-title">
+                    <i class="fas fa-user-plus"></i>
+                    {% trans "New Email Account" %}
+                    <a target="_blank" href="https://platform.cyberpersons.com/MailTester/MailTester?utm_source=from-cyberpanel-inside&utm_medium=from-cyberpanel-inside&utm_campaign=from-cyberpanel-inside&utm_id=from-cyberpanel-inside&utm_term=from-cyberpanel-inside" 
+                       class="test-email-link">
+                        <i class="fas fa-vial"></i>
+                        {% trans "Test Email Delivery" %}
+                    </a>
+                    <span ng-show="emailLoading" class="loading-spinner"></span>
+                </h2>
+            </div>
+            <div class="card-body">
+                {% if not status %}
+                    <div class="disabled-notice">
+                        <i class="fas fa-exclamation-triangle fa-3x mb-3" style="color: #ffa000;"></i>
+                        <h3>{% trans "Postfix is disabled" %}</h3>
+                        <p class="mb-3">{% trans "You need to enable Postfix to create email accounts" %}</p>
+                        <a href="{% url 'managePostfix' %}" class="btn-primary">
+                            <i class="fas fa-power-off"></i>
+                            {% trans "Enable Postfix Now" %}
+                        </a>
+                    </div>
+                {% else %}
+                    <form action="/" method="post">
+                        <div class="form-section">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <div class="form-group">
+                                        <label class="form-label">{% trans "Select Website" %}</label>
+                                        <select ng-change="showEmailDetails()" ng-model="emailDomain" class="form-control">
+                                            <option value="">{% trans "Choose a website..." %}</option>
+                                            {% for items in websiteList %}
+                                                <option value="{{ items }}">{{ items }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
-
-                    {% else %}
-
-
-                        <form action="/" class="form-horizontal bordered-row panel-body">
-
-
-                            <div class="form-group">
-                                <label class="col-sm-3 control-label">{% trans "Select Website" %} </label>
-                                <div class="col-sm-6">
-                                    <select ng-change="showEmailDetails()" ng-model="emailDomain" class="form-control">
-                                        {% for items in websiteList %}
-                                            <option>{{ items }}</option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
-                            </div>
-
-
-                            <!------ Modification form that appears after a click --------------->
-
-
-                            <div ng-hide="emailDetails" class="form-group">
-                                <label class="col-sm-3 control-label">{% trans "User Name" %}</label>
-                                <div class="col-sm-6">
-                                    <input ng-change="hideFewDetails" type="text" class="form-control"
-                                           ng-model="emailUsername" required>
-                                </div>
-                                <div class="current-pack">@{$ selectedDomain $}</div>
-                            </div>
-
-                            <div ng-hide="emailDetails" class="form-group">
-                                <label class="col-sm-3 control-label">{% trans "Password" %}</label>
-                                <div class="col-sm-6">
-                                    <input type="password" class="form-control" ng-model="emailPassword" required>
-                                </div>
-                                <div class="col-sm-3">
-                                    <button type="button" ng-click="generatePassword()"
-                                            class="btn btn-primary">{% trans "Generate" %}</button>
-                                </div>
-                            </div>
-
-                            <div ng-hide="generatedPasswordView" class="form-group">
-                                <label class="col-sm-3 control-label">{% trans "Generated Password" %}</label>
-                                <div class="col-sm-6">
-                                    <input type="text" name="email" class="form-control" ng-model="emailPassword"
-                                           required>
-                                </div>
-                                <div class="col-sm-3">
-                                    <button type="button" ng-click="usePassword()"
-                                            class="btn btn-primary">{% trans "Use" %}</button>
-                                </div>
-                            </div>
-
-
-                            <!------ Modification form that appears after a click --------------->
-
-
-                            <div ng-hide="emailDetails" class="form-group">
-                                <label class="col-sm-3 control-label"></label>
-                                <div class="col-sm-4">
-                                    <button type="button" ng-click="createEmailAccount()"
-                                            class="btn btn-primary btn-lg">{% trans "Create Email" %}</button>
-                                </div>
-                            </div>
-
-                            <div class="form-group">
-                                <label class="col-sm-3 control-label"></label>
-                                <div class="col-sm-6">
-                                    <div ng-hide="canNotCreate" class="alert alert-danger">
-                                        <p>{% trans "Cannot create email account. Error message:" %} {$ errorMessage
-                                            $}</p>
+                        <div ng-hide="emailDetails" class="form-section">
+                            <h3 class="mb-4" style="color: #1e293b; font-weight: 600; font-size: 1.125rem;">
+                                <i class="fas fa-envelope-open-text"></i>
+                                {% trans "Email Account Details" %}
+                            </h3>
+                            
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <div class="form-group">
+                                        <label class="form-label">{% trans "Email Username" %}</label>
+                                        <div class="input-group">
+                                            <input ng-change="hideFewDetails" type="text" class="form-control" 
+                                                   ng-model="emailUsername" placeholder="john.doe" required>
+                                            <span class="domain-suffix">@{$ selectedDomain $}</span>
+                                        </div>
                                     </div>
 
-                                    <div ng-hide="successfullyCreated" class="alert alert-success">
-                                        <p>{% trans "Mailbox with username:" %} {$ createdID
-                                            $}{% trans " has been successfully created." %}</p>
-                                    </div>
-                                    <div ng-hide="couldNotConnect" class="alert alert-danger">
-                                        <p>{% trans "Could not connect to server. Please refresh this page." %}</p>
+                                    <div class="form-group">
+                                        <label class="form-label">{% trans "Password" %}</label>
+                                        <div class="input-group">
+                                            <input type="password" class="form-control" ng-model="emailPassword" 
+                                                   placeholder="Enter a strong password" required>
+                                            <button type="button" ng-click="generatePassword()" class="btn-secondary">
+                                                <i class="fas fa-dice"></i>
+                                                {% trans "Generate" %}
+                                            </button>
+                                        </div>
+                                        <div class="password-strength" ng-show="emailPassword">
+                                            <div class="password-strength-bar" 
+                                                 ng-class="{'strength-weak': emailPassword.length < 8, 
+                                                            'strength-medium': emailPassword.length >= 8 && emailPassword.length < 12,
+                                                            'strength-strong': emailPassword.length >= 12}">
+                                            </div>
+                                        </div>
                                     </div>
 
+                                    <div ng-hide="generatedPasswordView" class="form-group">
+                                        <label class="form-label">{% trans "Generated Password" %}</label>
+                                        <div class="input-group">
+                                            <input type="text" name="email" class="form-control" 
+                                                   ng-model="emailPassword" readonly>
+                                            <button type="button" ng-click="usePassword()" class="btn-secondary">
+                                                <i class="fas fa-check"></i>
+                                                {% trans "Use This Password" %}
+                                            </button>
+                                        </div>
+                                        <small style="color: #64748b; margin-top: 0.5rem; display: block;">
+                                            <i class="fas fa-info-circle"></i>
+                                            {% trans "Make sure to save this password in a secure location" %}
+                                        </small>
+                                    </div>
+
+                                    <div style="margin-top: 2rem;">
+                                        <button type="button" ng-click="createEmailAccount()" class="btn-primary">
+                                            <i class="fas fa-plus-circle"></i>
+                                            {% trans "Create Email Account" %}
+                                        </button>
+                                    </div>
                                 </div>
+                            </div>
+                        </div>
 
-
+                        <!-- Alert Messages -->
+                        <div class="form-section">
+                            <div ng-hide="canNotCreate" class="alert alert-danger">
+                                <i class="fas fa-exclamation-circle"></i>
+                                {% trans "Cannot create email account. Error message:" %} {$ errorMessage $}
                             </div>
 
-
-                        </form>
-
-                    {% endif %}
-
-
-                </div>
+                            <div ng-hide="successfullyCreated" class="alert alert-success">
+                                <i class="fas fa-check-circle"></i>
+                                {% trans "Mailbox with username:" %} <strong>{$ createdID $}</strong> {% trans "has been successfully created." %}
+                            </div>
+                            
+                            <div ng-hide="couldNotConnect" class="alert alert-danger">
+                                <i class="fas fa-times-circle"></i>
+                                {% trans "Could not connect to server. Please refresh this page." %}
+                            </div>
+                        </div>
+                    </form>
+                {% endif %}
             </div>
         </div>
-
-
     </div>
 
 

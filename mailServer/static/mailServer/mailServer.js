@@ -125,7 +125,7 @@ app.controller('createEmailAccount', function ($scope, $http) {
 app.controller('deleteEmailAccount', function ($scope, $http) {
 
     $scope.emailDetails = true;
-    $scope.emailLoading = true;
+    $scope.emailLoading = false;
     $scope.canNotDelete = true;
     $scope.successfullyDeleted = true;
     $scope.couldNotConnect = true;
@@ -135,7 +135,7 @@ app.controller('deleteEmailAccount', function ($scope, $http) {
     $scope.showEmailDetails = function () {
 
         $scope.emailDetails = true;
-        $scope.emailLoading = false;
+        $scope.emailLoading = true;
         $scope.canNotDelete = true;
         $scope.successfullyDeleted = true;
         $scope.couldNotConnect = true;
@@ -170,7 +170,7 @@ app.controller('deleteEmailAccount', function ($scope, $http) {
 
 
                 $scope.emailDetails = false;
-                $scope.emailLoading = true;
+                $scope.emailLoading = false;
                 $scope.canNotDelete = true;
                 $scope.successfullyDeleted = true;
                 $scope.couldNotConnect = true;
@@ -180,7 +180,7 @@ app.controller('deleteEmailAccount', function ($scope, $http) {
 
             } else {
                 $scope.emailDetails = true;
-                $scope.emailLoading = true;
+                $scope.emailLoading = false;
                 $scope.canNotDelete = true;
                 $scope.successfullyDeleted = true;
                 $scope.couldNotConnect = true;
@@ -195,7 +195,7 @@ app.controller('deleteEmailAccount', function ($scope, $http) {
         function cantLoadInitialDatas(response) {
 
             $scope.emailDetails = true;
-            $scope.emailLoading = true;
+            $scope.emailLoading = false;
             $scope.canNotDelete = true;
             $scope.successfullyDeleted = true;
             $scope.couldNotConnect = false;
@@ -211,7 +211,7 @@ app.controller('deleteEmailAccount', function ($scope, $http) {
 
     $scope.deleteEmailAccountFinal = function () {
 
-        $scope.emailLoading = false;
+        $scope.emailLoading = true;
 
 
         var url = "/email/submitEmailDeletion";
@@ -239,7 +239,7 @@ app.controller('deleteEmailAccount', function ($scope, $http) {
 
 
                 $scope.emailDetails = true;
-                $scope.emailLoading = true;
+                $scope.emailLoading = false;
                 $scope.canNotDelete = true;
                 $scope.successfullyDeleted = false;
                 $scope.couldNotConnect = true;
@@ -250,7 +250,7 @@ app.controller('deleteEmailAccount', function ($scope, $http) {
 
             } else {
                 $scope.emailDetails = true;
-                $scope.emailLoading = true;
+                $scope.emailLoading = false;
                 $scope.canNotDelete = false;
                 $scope.successfullyDeleted = true;
                 $scope.couldNotConnect = true;
@@ -267,7 +267,7 @@ app.controller('deleteEmailAccount', function ($scope, $http) {
         function cantLoadInitialDatas(response) {
 
             $scope.emailDetails = true;
-            $scope.emailLoading = true;
+            $scope.emailLoading = false;
             $scope.canNotDelete = true;
             $scope.successfullyDeleted = true;
             $scope.couldNotConnect = false;
@@ -298,7 +298,7 @@ app.controller('deleteEmailAccount', function ($scope, $http) {
 /* Java script code to create account */
 app.controller('changeEmailPassword', function ($scope, $http) {
 
-    $scope.emailLoading = true;
+    $scope.emailLoading = false;
     $scope.emailDetails = true;
     $scope.canNotChangePassword = true;
     $scope.passwordChanged = true;
@@ -307,7 +307,7 @@ app.controller('changeEmailPassword', function ($scope, $http) {
 
     $scope.showEmailDetails = function () {
 
-        $scope.emailLoading = false;
+        $scope.emailLoading = true;  // Show loading while fetching
         $scope.emailDetails = true;
         $scope.canNotChangePassword = true;
         $scope.passwordChanged = true;
@@ -341,7 +341,7 @@ app.controller('changeEmailPassword', function ($scope, $http) {
                 $scope.emails = JSON.parse(response.data.data);
 
 
-                $scope.emailLoading = true;
+                $scope.emailLoading = false;  // Hide loading on success
                 $scope.emailDetails = false;
                 $scope.canNotChangePassword = true;
                 $scope.passwordChanged = true;
@@ -350,7 +350,7 @@ app.controller('changeEmailPassword', function ($scope, $http) {
 
 
             } else {
-                $scope.emailLoading = true;
+                $scope.emailLoading = false;  // Hide loading on error
                 $scope.emailDetails = true;
                 $scope.canNotChangePassword = true;
                 $scope.passwordChanged = true;
@@ -364,7 +364,7 @@ app.controller('changeEmailPassword', function ($scope, $http) {
 
         function cantLoadInitialDatas(response) {
 
-            $scope.emailLoading = true;
+            $scope.emailLoading = false;  // Hide loading on connection error
             $scope.emailDetails = true;
             $scope.canNotChangePassword = true;
             $scope.passwordChanged = true;
@@ -378,7 +378,7 @@ app.controller('changeEmailPassword', function ($scope, $http) {
 
     $scope.changePassword = function () {
 
-        $scope.emailLoading = false;
+        $scope.emailLoading = true;  // Show loading while changing password
 
 
         var url = "/email/submitPasswordChange";
@@ -409,7 +409,7 @@ app.controller('changeEmailPassword', function ($scope, $http) {
             if (response.data.passChangeStatus == 1) {
 
 
-                $scope.emailLoading = true;
+                $scope.emailLoading = false;  // Hide loading on success
                 $scope.emailDetails = true;
                 $scope.canNotChangePassword = true;
                 $scope.passwordChanged = false;
@@ -419,7 +419,7 @@ app.controller('changeEmailPassword', function ($scope, $http) {
                 $scope.passEmail = email;
 
             } else {
-                $scope.emailLoading = true;
+                $scope.emailLoading = false;  // Hide loading on error
                 $scope.emailDetails = false;
                 $scope.canNotChangePassword = false;
                 $scope.passwordChanged = true;
@@ -436,7 +436,7 @@ app.controller('changeEmailPassword', function ($scope, $http) {
 
         function cantLoadInitialDatas(response) {
 
-            $scope.emailLoading = true;
+            $scope.emailLoading = false;  // Hide loading on connection error
             $scope.emailDetails = false;
             $scope.canNotChangePassword = true;
             $scope.passwordChanged = true;
@@ -482,7 +482,7 @@ app.controller('changeEmailPassword', function ($scope, $http) {
 app.controller('dkimManager', function ($scope, $http, $timeout, $window) {
 
 
-    $scope.manageDKIMLoading = true;
+    $scope.manageDKIMLoading = false;
     $scope.dkimError = true;
     $scope.dkimSuccess = true;
     $scope.couldNotConnect = true;
@@ -492,7 +492,7 @@ app.controller('dkimManager', function ($scope, $http, $timeout, $window) {
 
     $scope.fetchKeys = function () {
 
-        $scope.manageDKIMLoading = false;
+        $scope.manageDKIMLoading = true;
         $scope.dkimError = true;
         $scope.dkimSuccess = true;
         $scope.couldNotConnect = true;
@@ -522,7 +522,7 @@ app.controller('dkimManager', function ($scope, $http, $timeout, $window) {
 
                 if (response.data.keysAvailable === 1) {
 
-                    $scope.manageDKIMLoading = true;
+                    $scope.manageDKIMLoading = false;
                     $scope.dkimError = true;
                     $scope.dkimSuccess = false;
                     $scope.couldNotConnect = true;
@@ -535,7 +535,7 @@ app.controller('dkimManager', function ($scope, $http, $timeout, $window) {
 
 
                 } else {
-                    $scope.manageDKIMLoading = true;
+                    $scope.manageDKIMLoading = false;
                     $scope.dkimError = true;
                     $scope.dkimSuccess = true;
                     $scope.couldNotConnect = true;
@@ -547,7 +547,7 @@ app.controller('dkimManager', function ($scope, $http, $timeout, $window) {
             } else {
                 $scope.errorMessage = response.data.error_message;
 
-                $scope.manageDKIMLoading = true;
+                $scope.manageDKIMLoading = false;
                 $scope.dkimError = false;
                 $scope.dkimSuccess = true;
                 $scope.couldNotConnect = true;
@@ -559,7 +559,7 @@ app.controller('dkimManager', function ($scope, $http, $timeout, $window) {
 
         function cantLoadInitialDatas(response) {
 
-            $scope.manageDKIMLoading = true;
+            $scope.manageDKIMLoading = false;
             $scope.dkimError = true;
             $scope.dkimSuccess = true;
             $scope.couldNotConnect = false;
@@ -573,7 +573,7 @@ app.controller('dkimManager', function ($scope, $http, $timeout, $window) {
 
     $scope.createDomainDKIMKeys = function () {
 
-        $scope.manageDKIMLoading = false;
+        $scope.manageDKIMLoading = true;
         $scope.dkimError = true;
         $scope.dkimSuccess = true;
         $scope.couldNotConnect = true;
@@ -600,7 +600,7 @@ app.controller('dkimManager', function ($scope, $http, $timeout, $window) {
 
             if (response.data.generateStatus === 1) {
 
-                $scope.manageDKIMLoading = true;
+                $scope.manageDKIMLoading = false;
                 $scope.dkimError = true;
                 $scope.dkimSuccess = true;
                 $scope.couldNotConnect = true;
@@ -613,7 +613,7 @@ app.controller('dkimManager', function ($scope, $http, $timeout, $window) {
             } else {
                 $scope.errorMessage = response.data.error_message;
 
-                $scope.manageDKIMLoading = true;
+                $scope.manageDKIMLoading = false;
                 $scope.dkimError = false;
                 $scope.dkimSuccess = true;
                 $scope.couldNotConnect = true;
@@ -625,7 +625,7 @@ app.controller('dkimManager', function ($scope, $http, $timeout, $window) {
 
         function cantLoadInitialDatas(response) {
 
-            $scope.manageDKIMLoading = true;
+            $scope.manageDKIMLoading = false;
             $scope.dkimError = true;
             $scope.dkimSuccess = true;
             $scope.couldNotConnect = false;
@@ -646,7 +646,7 @@ app.controller('dkimManager', function ($scope, $http, $timeout, $window) {
     $scope.couldNotConnect = true;
     $scope.openDKIMSuccessfullyInstalled = true;
     $scope.openDKIMInstallBox = true;
-    $scope.manageDKIMLoading = true;
+    $scope.manageDKIMLoading = false;
 
 
     $scope.installOpenDKIM = function () {
@@ -656,7 +656,7 @@ app.controller('dkimManager', function ($scope, $http, $timeout, $window) {
         $scope.couldNotConnect = true;
         $scope.openDKIMSuccessfullyInstalled = true;
         $scope.openDKIMInstallBox = true;
-        $scope.manageDKIMLoading = false;
+        $scope.manageDKIMLoading = true;
 
         url = "/email/installOpenDKIM";
 
@@ -682,7 +682,7 @@ app.controller('dkimManager', function ($scope, $http, $timeout, $window) {
                 $scope.couldNotConnect = true;
                 $scope.openDKIMSuccessfullyInstalled = true;
                 $scope.openDKIMInstallBox = false;
-                $scope.manageDKIMLoading = true;
+                $scope.manageDKIMLoading = false;
 
                 getRequestStatus();
 
@@ -694,7 +694,7 @@ app.controller('dkimManager', function ($scope, $http, $timeout, $window) {
                 $scope.couldNotConnect = true;
                 $scope.openDKIMSuccessfullyInstalled = true;
                 $scope.openDKIMInstallBox = true;
-                $scope.manageDKIMLoading = true;
+                $scope.manageDKIMLoading = false;
             }
 
         }
@@ -792,7 +792,7 @@ app.controller('emailForwarding', function ($scope, $http) {
 
     $scope.creationBox = true;
     $scope.emailDetails = true;
-    $scope.forwardLoading = true;
+    $scope.forwardLoading = false;
     $scope.forwardError = true;
     $scope.forwardSuccess = true;
     $scope.couldNotConnect = true;
@@ -803,7 +803,7 @@ app.controller('emailForwarding', function ($scope, $http) {
 
         $scope.creationBox = true;
         $scope.emailDetails = true;
-        $scope.forwardLoading = false;
+        $scope.forwardLoading = true;
         $scope.forwardError = true;
         $scope.forwardSuccess = true;
         $scope.couldNotConnect = true;
@@ -834,7 +834,7 @@ app.controller('emailForwarding', function ($scope, $http) {
 
                 $scope.creationBox = true;
                 $scope.emailDetails = false;
-                $scope.forwardLoading = true;
+                $scope.forwardLoading = false;
                 $scope.forwardError = true;
                 $scope.forwardSuccess = true;
                 $scope.couldNotConnect = true;
@@ -843,7 +843,7 @@ app.controller('emailForwarding', function ($scope, $http) {
             } else {
                 $scope.creationBox = true;
                 $scope.emailDetails = true;
-                $scope.forwardLoading = true;
+                $scope.forwardLoading = false;
                 $scope.forwardError = false;
                 $scope.forwardSuccess = true;
                 $scope.couldNotConnect = true;
@@ -860,7 +860,7 @@ app.controller('emailForwarding', function ($scope, $http) {
 
             $scope.creationBox = true;
             $scope.emailDetails = true;
-            $scope.forwardLoading = true;
+            $scope.forwardLoading = false;
             $scope.forwardError = true;
             $scope.forwardSuccess = true;
             $scope.couldNotConnect = false;
@@ -934,7 +934,7 @@ app.controller('emailForwarding', function ($scope, $http) {
             } else {
                 $scope.creationBox = true;
                 $scope.emailDetails = true;
-                $scope.forwardLoading = true;
+                $scope.forwardLoading = false;
                 $scope.forwardError = false;
                 $scope.forwardSuccess = true;
                 $scope.couldNotConnect = true;
@@ -951,7 +951,7 @@ app.controller('emailForwarding', function ($scope, $http) {
 
             $scope.creationBox = true;
             $scope.emailDetails = true;
-            $scope.forwardLoading = true;
+            $scope.forwardLoading = false;
             $scope.forwardError = true;
             $scope.forwardSuccess = true;
             $scope.couldNotConnect = false;
@@ -1026,7 +1026,7 @@ app.controller('emailForwarding', function ($scope, $http) {
 
             $scope.creationBox = true;
             $scope.emailDetails = true;
-            $scope.forwardLoading = true;
+            $scope.forwardLoading = false;
             $scope.forwardError = true;
             $scope.forwardSuccess = true;
             $scope.couldNotConnect = false;
@@ -1042,7 +1042,7 @@ app.controller('emailForwarding', function ($scope, $http) {
 
         $scope.creationBox = false;
         $scope.emailDetails = false;
-        $scope.forwardLoading = false;
+        $scope.forwardLoading = true;
         $scope.forwardError = true;
         $scope.forwardSuccess = true;
         $scope.couldNotConnect = true;
@@ -1073,7 +1073,7 @@ app.controller('emailForwarding', function ($scope, $http) {
 
                 $scope.creationBox = false;
                 $scope.emailDetails = false;
-                $scope.forwardLoading = true;
+                $scope.forwardLoading = false;
                 $scope.forwardError = true;
                 $scope.forwardSuccess = true;
                 $scope.couldNotConnect = true;
@@ -1084,7 +1084,7 @@ app.controller('emailForwarding', function ($scope, $http) {
             } else {
                 $scope.creationBox = false;
                 $scope.emailDetails = false;
-                $scope.forwardLoading = true;
+                $scope.forwardLoading = false;
                 $scope.forwardError = false;
                 $scope.forwardSuccess = true;
                 $scope.couldNotConnect = true;
@@ -1101,7 +1101,7 @@ app.controller('emailForwarding', function ($scope, $http) {
 
             $scope.creationBox = true;
             $scope.emailDetails = true;
-            $scope.forwardLoading = true;
+            $scope.forwardLoading = false;
             $scope.forwardError = true;
             $scope.forwardSuccess = true;
             $scope.couldNotConnect = false;
@@ -1122,12 +1122,12 @@ app.controller('emailForwarding', function ($scope, $http) {
 
 app.controller('listEmails', function ($scope, $http) {
 
-    $scope.cyberpanelLoading = true;
+    $scope.cyberpanelLoading = false;
     $scope.emailsAccounts = true;
     $scope.mailConfigured = 1;
 
     $scope.populateCurrentRecords = function () {
-        $scope.cyberpanelLoading = false;
+        $scope.cyberpanelLoading = true;  // Show loading while fetching
         $scope.emailsAccounts = true;
 
         url = "/email/fetchEmails";
@@ -1147,7 +1147,7 @@ app.controller('listEmails', function ($scope, $http) {
 
 
         function ListInitialDatas(response) {
-            $scope.cyberpanelLoading = true;
+            $scope.cyberpanelLoading = false;  // Hide loading when done
 
             if (response.data.status === 1) {
                 $scope.emailsAccounts = false;
@@ -1175,7 +1175,7 @@ app.controller('listEmails', function ($scope, $http) {
         }
 
         function cantLoadInitialDatas(response) {
-            $scope.cyberpanelLoading = true;
+            $scope.cyberpanelLoading = false;  // Hide loading on error
             $scope.emailsAccounts = true;
             new PNotify({
                 title: 'Error!',
@@ -1188,7 +1188,7 @@ app.controller('listEmails', function ($scope, $http) {
 
     $scope.deleteEmailAccountFinal = function (email) {
 
-        $scope.cyberpanelLoading = false;
+        $scope.cyberpanelLoading = true;  // Show loading while deleting
 
         var url = "/email/submitEmailDeletion";
 
@@ -1237,7 +1237,7 @@ app.controller('listEmails', function ($scope, $http) {
 
     $scope.fixMailSSL = function (email) {
 
-        $scope.cyberpanelLoading = false;
+        $scope.cyberpanelLoading = true;  // Show loading while fixing SSL
 
         var url = "/email/fixMailSSL";
 
@@ -1352,7 +1352,7 @@ app.controller('EmailLimitsNew', function ($scope, $http) {
 
     $scope.creationBox = true;
     $scope.emailDetails = true;
-    $scope.forwardLoading = true;
+    $scope.forwardLoading = false;
     $scope.forwardError = true;
     $scope.forwardSuccess = true;
     $scope.couldNotConnect = true;
@@ -1363,7 +1363,7 @@ app.controller('EmailLimitsNew', function ($scope, $http) {
 
         $scope.creationBox = true;
         $scope.emailDetails = true;
-        $scope.forwardLoading = false;
+        $scope.forwardLoading = true;
         $scope.forwardError = true;
         $scope.forwardSuccess = true;
         $scope.couldNotConnect = true;
@@ -1394,7 +1394,7 @@ app.controller('EmailLimitsNew', function ($scope, $http) {
 
                 $scope.creationBox = true;
                 $scope.emailDetails = false;
-                $scope.forwardLoading = true;
+                $scope.forwardLoading = false;
                 $scope.forwardError = true;
                 $scope.forwardSuccess = true;
                 $scope.couldNotConnect = true;
@@ -1403,7 +1403,7 @@ app.controller('EmailLimitsNew', function ($scope, $http) {
             } else {
                 $scope.creationBox = true;
                 $scope.emailDetails = true;
-                $scope.forwardLoading = true;
+                $scope.forwardLoading = false;
                 $scope.forwardError = false;
                 $scope.forwardSuccess = true;
                 $scope.couldNotConnect = true;
@@ -1420,7 +1420,7 @@ app.controller('EmailLimitsNew', function ($scope, $http) {
 
             $scope.creationBox = true;
             $scope.emailDetails = true;
-            $scope.forwardLoading = true;
+            $scope.forwardLoading = false;
             $scope.forwardError = true;
             $scope.forwardSuccess = true;
             $scope.couldNotConnect = false;
@@ -1469,7 +1469,7 @@ app.controller('EmailLimitsNew', function ($scope, $http) {
 
         $scope.creationBox = false;
         $scope.emailDetails = false;
-        $scope.forwardLoading = false;
+        $scope.forwardLoading = true;
         $scope.forwardError = true;
         $scope.forwardSuccess = true;
         $scope.couldNotConnect = true;
@@ -1500,7 +1500,7 @@ app.controller('EmailLimitsNew', function ($scope, $http) {
 
                 $scope.creationBox = false;
                 $scope.emailDetails = false;
-                $scope.forwardLoading = true;
+                $scope.forwardLoading = false;
                 $scope.forwardError = true;
                 $scope.forwardSuccess = true;
                 $scope.couldNotConnect = true;
@@ -1516,7 +1516,7 @@ app.controller('EmailLimitsNew', function ($scope, $http) {
             } else {
                 $scope.creationBox = false;
                 $scope.emailDetails = false;
-                $scope.forwardLoading = true;
+                $scope.forwardLoading = false;
                 $scope.forwardError = false;
                 $scope.forwardSuccess = true;
                 $scope.couldNotConnect = true;
@@ -1537,7 +1537,7 @@ app.controller('EmailLimitsNew', function ($scope, $http) {
 
             $scope.creationBox = true;
             $scope.emailDetails = true;
-            $scope.forwardLoading = true;
+            $scope.forwardLoading = false;
             $scope.forwardError = true;
             $scope.forwardSuccess = true;
             $scope.couldNotConnect = false;

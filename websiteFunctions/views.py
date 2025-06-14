@@ -2045,3 +2045,23 @@ def get_terminal_jwt(request):
     except Exception as e:
         logger.error(f"Exception in get_terminal_jwt: {str(e)}")
         return JsonResponse({'status': 0, 'error_message': str(e)})
+
+def fetchWPBackups(request):
+    try:
+        userID = request.session['userID']
+
+        result = pluginManager.preWebsiteCreation(request)
+        if result != 200:
+            return result
+
+        wm = WebsiteManager()
+        coreResult = wm.fetchWPBackups(userID, json.loads(request.body))
+
+        result = pluginManager.postWebsiteCreation(request, coreResult)
+        if result != 200:
+            return result
+
+        return coreResult
+
+    except KeyError:
+        return redirect(loadLoginPage)

@@ -1,212 +1,629 @@
 {% extends "baseTemplate/index.html" %}
 {% load i18n %}
-{% block title %}{% trans "List Databases  - CyberPanel" %}{% endblock %}
+{% block title %}{% trans "List Databases - CyberPanel" %}{% endblock %}
+
+{% block header_scripts %}
+<style>
+    /* Modern page styles matching new design */
+    .page-wrapper {
+        background: transparent;
+        padding: 20px;
+    }
+    
+    .page-container {
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+    
+    .page-header {
+        margin-bottom: 30px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .page-header-content {
+        flex: 1;
+    }
+    
+    .page-title {
+        font-size: 28px;
+        font-weight: 700;
+        color: #2f3640;
+        margin-bottom: 8px;
+    }
+    
+    .page-subtitle {
+        font-size: 14px;
+        color: #8893a7;
+    }
+    
+    /* Card styles */
+    .content-card {
+        background: white;
+        border-radius: 12px;
+        padding: 30px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        border: 1px solid #e8e9ff;
+        margin-bottom: 25px;
+    }
+    
+    .card-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: #2f3640;
+        margin-bottom: 25px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .card-title::before {
+        content: '';
+        width: 4px;
+        height: 24px;
+        background: #5b5fcf;
+        border-radius: 2px;
+    }
+    
+    /* Form styles */
+    .form-group {
+        margin-bottom: 24px;
+    }
+    
+    .form-label {
+        display: block;
+        font-size: 13px;
+        font-weight: 600;
+        color: #64748b;
+        margin-bottom: 8px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .form-control {
+        width: 100%;
+        padding: 10px 14px;
+        border: 1px solid #e8e9ff;
+        border-radius: 8px;
+        font-size: 14px;
+        color: #2f3640;
+        background: white;
+        transition: all 0.2s ease;
+    }
+    
+    .form-control:hover {
+        border-color: #5b5fcf;
+    }
+    
+    .form-control:focus {
+        outline: none;
+        border-color: #5b5fcf;
+        box-shadow: 0 0 0 3px rgba(91,95,207,0.1);
+    }
+    
+    /* Website selector card */
+    .website-selector-card {
+        background: #f8f9ff;
+        border: 1px solid #e8e9ff;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 25px;
+    }
+    
+    /* Table styles */
+    .modern-table {
+        width: 100%;
+        background: white;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        border: 1px solid #e8e9ff;
+    }
+    
+    .modern-table thead {
+        background: #f8f9ff;
+    }
+    
+    .modern-table th {
+        padding: 16px 20px;
+        font-size: 13px;
+        font-weight: 600;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-bottom: 1px solid #e8e9ff;
+        text-align: left;
+    }
+    
+    .modern-table td {
+        padding: 16px 20px;
+        font-size: 14px;
+        color: #2f3640;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    
+    .modern-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+    
+    .modern-table tbody tr:hover {
+        background: #fafbff;
+    }
+    
+    /* Database name styles */
+    .db-name {
+        font-family: 'Courier New', monospace;
+        font-weight: 600;
+        color: #5b5fcf;
+    }
+    
+    /* Button styles */
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-decoration: none;
+    }
+    
+    .btn-primary {
+        background: #5b5fcf;
+        color: white;
+    }
+    
+    .btn-primary:hover {
+        background: #4a4fc4;
+        box-shadow: 0 4px 12px rgba(91,95,207,0.3);
+        transform: translateY(-1px);
+    }
+    
+    .btn-secondary {
+        background: #f8f9ff;
+        color: #5b5fcf;
+        border: 1px solid #e8e9ff;
+    }
+    
+    .btn-secondary:hover {
+        background: #eef0ff;
+        border-color: #5b5fcf;
+    }
+    
+    .btn-sm {
+        padding: 6px 14px;
+        font-size: 13px;
+    }
+    
+    .btn-lg {
+        padding: 12px 24px;
+        font-size: 16px;
+    }
+    
+    /* Action buttons */
+    .action-buttons {
+        display: flex;
+        gap: 8px;
+    }
+    
+    .btn-action {
+        padding: 6px 14px;
+        font-size: 13px;
+    }
+    
+    /* Password change section */
+    .password-change-section {
+        background: #f8f9ff;
+        border: 1px solid #e8e9ff;
+        border-radius: 10px;
+        padding: 25px;
+        margin-bottom: 25px;
+        display: none;
+    }
+    
+    .password-change-title {
+        font-size: 16px;
+        font-weight: 700;
+        color: #2f3640;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .password-change-title i {
+        color: #5b5fcf;
+    }
+    
+    /* Password input group */
+    .password-group {
+        display: flex;
+        gap: 10px;
+        align-items: start;
+        margin-bottom: 20px;
+    }
+    
+    .password-input-wrapper {
+        flex: 1;
+    }
+    
+    /* Generated password box */
+    .generated-password-box {
+        background: #e8f5e9;
+        border: 1px solid #c8e6c9;
+        border-radius: 8px;
+        padding: 16px;
+        margin-bottom: 20px;
+        display: none;
+    }
+    
+    .generated-password-label {
+        font-size: 12px;
+        font-weight: 600;
+        color: #2e7d32;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 8px;
+    }
+    
+    .generated-password-value {
+        font-family: 'Courier New', monospace;
+        font-size: 14px;
+        color: #1b5e20;
+        font-weight: 600;
+        word-break: break-all;
+    }
+    
+    /* Modal styles */
+    .modal-content {
+        border-radius: 12px;
+        border: none;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+    }
+    
+    .modal-header {
+        background: #f8f9ff;
+        border-bottom: 1px solid #e8e9ff;
+        border-radius: 12px 12px 0 0;
+        padding: 20px 25px;
+    }
+    
+    .modal-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: #2f3640;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .modal-body {
+        padding: 25px;
+    }
+    
+    .modal-footer {
+        background: #f8f9ff;
+        border-top: 1px solid #e8e9ff;
+        border-radius: 0 0 12px 12px;
+        padding: 15px 25px;
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+    }
+    
+    /* IP Access table in modal */
+    .ip-access-table {
+        margin-top: 20px;
+    }
+    
+    /* Alert styles */
+    .alert {
+        padding: 16px 20px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        animation: fadeIn 0.3s ease-out;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .alert-danger {
+        background: #ffebee;
+        border: 1px solid #ffcdd2;
+        color: #c62828;
+    }
+    
+    .alert-success {
+        background: #e8f5e9;
+        border: 1px solid #c8e6c9;
+        color: #2e7d32;
+    }
+    
+    /* Loading spinner */
+    .loading-spinner {
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        border: 2px solid #f3f3f3;
+        border-top: 2px solid #5b5fcf;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-left: 10px;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    /* Hide elements by default */
+    #notificationsBox {
+        display: none;
+    }
+    
+    #changePasswordBox {
+        display: none;
+    }
+    
+    #dbAccounts {
+        display: none;
+    }
+    
+    #generatedPasswordView {
+        display: none;
+    }
+    
+    @media (max-width: 768px) {
+        .page-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 16px;
+        }
+        
+        .modern-table {
+            display: block;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+        
+        .action-buttons {
+            flex-direction: column;
+        }
+        
+        .password-group {
+            flex-direction: column;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
+{% load static %}
+{% get_current_language as LANGUAGE_CODE %}
 
-    {% load static %}
-    {% get_current_language as LANGUAGE_CODE %}
-    <!-- Current language: {{ LANGUAGE_CODE }} -->
-
-
-    <div class="container">
-        <div id="page-title">
-            <h2>{% trans "List Databases" %}
-                <a class="pull-right btn btn-primary" href="{% url "createDatabase" %}">{% trans "Create Database" %}</a>
-            </h2>
-            <p>{% trans "List Databases or change their passwords." %}</p>
+<div class="page-wrapper" ng-controller="listDBs">
+    <div class="page-container">
+        <div class="page-header">
+            <div class="page-header-content">
+                <h1 class="page-title">{% trans "List Databases" %}</h1>
+                <p class="page-subtitle">{% trans "Manage databases and their access credentials" %}</p>
+            </div>
+            <a href="{% url 'createDatabase' %}" class="btn btn-primary">
+                <i class="fas fa-plus"></i>
+                {% trans "Create Database" %}
+            </a>
         </div>
-        <div ng-controller="listDBs" class="panel">
-            <div class="panel-body">
-                <h3 class="content-box-header">
-                    {% trans "List Databases" %} <img ng-hide="dbLoading" src="{% static 'images/loading.gif' %}">
-                </h3>
-                <div class="example-box-wrapper">
 
-                    <form action="/" class="form-horizontal bordered-row panel-body">
+        <div class="content-card">
+            <h2 class="card-title">
+                {% trans "Select Website" %}
+                <span ng-hide="dbLoading" class="loading-spinner"></span>
+            </h2>
+            
+            <div class="website-selector-card">
+                <div class="form-group">
+                    <label class="form-label">{% trans "Select Domain" %}</label>
+                    <select ng-change="fetchDBs()" ng-model="selectedDomain" class="form-control">
+                        <option value="">-- {% trans "Select a domain" %} --</option>
+                        {% for items in AllWebsites %}
+                            <option>{{ items }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
 
-                        <div class="form-group">
-                            <label class="col-sm-3 control-label">{% trans "Select Domain" %}</label>
-                            <div class="col-sm-6">
-                                <select ng-change="fetchDBs()" ng-model="selectedDomain" class="form-control">
-                                    {% for items in AllWebsites %}
-                                        <option>{{ items }}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                        </div>
+            <!-- Notifications -->
+            <div ng-show="!notificationsBox">
+                <div ng-hide="recordsFetched" class="alert alert-success">
+                    <i class="fas fa-check-circle"></i>
+                    <span>{% trans "Records successfully fetched for" %} <strong>{$ domainFeteched $}</strong></span>
+                </div>
 
+                <div ng-hide="passwordChanged" class="alert alert-success">
+                    <i class="fas fa-check-circle"></i>
+                    <span>{% trans "Password changed for:" %} <strong>{$ dbUsername $}</strong></span>
+                </div>
 
-                        <div ng-hide="notificationsBox" class="form-group">
+                <div ng-hide="canNotChangePassword" class="alert alert-danger">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span>{% trans "Cannot change password for" %} <strong>{$ dbUsername $}</strong>, {% trans "Error message:" %} {$ errorMessage $}</span>
+                </div>
 
-
-                            <label class="col-sm-3 control-label"></label>
-                            <div class="col-sm-6">
-
-                                <div ng-hide="recordsFetched" class="alert alert-success">
-                                    <p>{% trans "Records successfully fetched for" %} <strong>{$ domainFeteched
-                                        $}</strong></p>
-                                </div>
-
-                                <div ng-hide="passwordChanged" class="alert alert-success">
-                                    {% trans "Password changed for: " %} <strong>{$ dbUsername $}</strong>
-                                </div>
-
-                                <div ng-hide="canNotChangePassword" class="alert alert-danger">
-                                    <p>{% trans "Cannot change password for " %}<strong>{$ dbUsername
-                                        $}</strong>, {% trans "Error message:" %} {$ errorMessage $}</p>
-                                </div>
-
-
-                                <div ng-hide="couldNotConnect" class="alert alert-danger">
-                                    <p>{% trans "Could Not Connect to server. Please refresh this page" %}</p>
-                                </div>
-
-                            </div>
-                        </div>
-
-
-                        <div ng-hide="changePasswordBox" class="form-group">
-                            <label class="col-sm-3 control-label">{$ dbUsername $}</label>
-                            <div class="col-sm-6">
-                                <input name="dom" type="password" class="form-control" ng-model="dbPassword" required>
-                            </div>
-
-                            <div class="col-sm-3">
-                                <button type="button" ng-click="generatePassword()"
-                                        class="btn btn-primary">{% trans "Generate" %}</button>
-                            </div>
-
-                            <label ng-hide="generatedPasswordView" style="margin-top: 1%"
-                                   class="col-sm-3 control-label">{% trans "Generated Password" %}</label>
-                            <div ng-hide="generatedPasswordView" style="margin-top: 1%" class="col-sm-6">
-                                <input name="dom" type="text" class="form-control" ng-model="dbPassword" required>
-                            </div>
-
-                            <div ng-hide="generatedPasswordView" style="margin-top: 1%" class="col-sm-3">
-                                <button type="button" ng-click="usePassword()"
-                                        class="btn btn-primary">{% trans "Use" %}</button>
-                            </div>
-
-
-                            <div style="margin-top: 1%" class="col-sm-6 col-md-offset-3">
-                                <button type="button" ng-click="changePasswordBtn()"
-                                        class="btn btn-primary btn-lg">{% trans "Change Password" %}</button>
-                            </div>
-                        </div>
-
-
-                        <!------ List of records --------------->
-
-                        <div ng-hide="dbAccounts" class="form-group">
-
-                            <div class="col-sm-12">
-
-                                <table class="table">
-                                    <thead>
-                                    <tr>
-                                        <th>{% trans "ID" %}</th>
-                                        <th>{% trans "Database Name" %}</th>
-                                        <th>{% trans "Database User" %}</th>
-                                        <th>{% trans "Password" %}</th>
-                                        <th>{% trans "Remote Access" %}</th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-                                    <tr ng-repeat="record in records track by $index">
-                                        <td ng-bind="record.id"></td>
-                                        <td ng-bind="record.dbName"></td>
-                                        <td ng-bind="record.dbUser"></td>
-                                        <td>
-                                            <button type="button" ng-click="changePassword(record.dbUser)"
-                                                    class="btn ra-100 btn-purple">{% trans "Change" %}</button>
-                                        </td>
-                                        <td>
-                                            <button ng-click="remoteAccess(record.dbUser)" data-toggle="modal"
-                                                    data-target="#remoteAccess" type="button"
-                                                    class="btn ra-100 btn-purple">{% trans "Manage" %}</button>
-                                            <div id="remoteAccess" class="modal fade" role="dialog">
-                                                <div class="modal-dialog modal-lg">
-                                                    <!-- Modal content-->
-                                                    <div class="modal-content">
-                                                        <div class="modal-header">
-                                                            <button type="button" class="close" data-dismiss="modal">
-                                                                &times;
-                                                            </button>
-                                                            <h4 class="modal-title">{% trans "Remote Access" %} <img
-                                                                    ng-hide="dbLoading"
-                                                                    src="{% static 'images/loading.gif' %}">
-                                                            </h4>
-                                                        </div>
-                                                        <div class="modal-body">
-
-                                                            <form name="containerSettingsForm" action="/"
-                                                                  class="form-horizontal">
-                                                                <div ng-hide="installationDetailsForm"
-                                                                     class="form-group">
-                                                                    <label class="col-sm-5 control-label">{% trans "Allow Remote Access on following IP" %}</label>
-                                                                    <div class="col-sm-6">
-                                                                        <input placeholder="IP Address"
-                                                                               name="remoteIP" type="text"
-                                                                               class="form-control"
-                                                                               ng-model="$parent.remoteIP"
-                                                                               required>
-                                                                    </div>
-                                                                </div>
-
-                                                                <hr>
-
-                                                                <div class="form-group">
-
-                                                                    <label class="col-sm-5 control-label"></label>
-                                                                    <div class="col-sm-4">
-                                                                        <button type="button" ng-click="allowRemoteIP()"
-                                                                                class="btn btn-primary btn-lg">{% trans "Save Changes" %}</button>
-
-                                                                    </div>
-                                                                </div>
-
-                                                            </form>
-
-                                                            <hr>
-
-                                                            <table style="margin-top: 2%" class="table">
-                                                                <thead>
-                                                                <tr>
-                                                                    <th>Username</th>
-                                                                    <th>Host</th>
-                                                                </tr>
-                                                                </thead>
-                                                                <tbody>
-                                                                <tr>
-                                                                    <td>{$ dbUsername $}</td>
-                                                                    <td>{$ dbHost $}</td>
-                                                                </tr>
-                                                                </tbody>
-                                                            </table>
-
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-
-                        <!------ List of records --------------->
-
-
-                    </form>
-
-
+                <div ng-hide="couldNotConnect" class="alert alert-danger">
+                    <i class="fas fa-network-wired"></i>
+                    <span>{% trans "Could not connect to server. Please refresh this page" %}</span>
                 </div>
             </div>
         </div>
 
+        <!-- Password Change Section -->
+        <div class="password-change-section" ng-show="!changePasswordBox">
+            <div class="password-change-title">
+                <i class="fas fa-key"></i>
+                {% trans "Change Password for" %} {$ dbUsername $}
+            </div>
+            
+            <div class="password-group">
+                <div class="password-input-wrapper">
+                    <label class="form-label">{% trans "New Password" %}</label>
+                    <input type="password" class="form-control" ng-model="dbPassword" 
+                           placeholder="{% trans 'Enter new password' %}" required>
+                </div>
+                <div style="margin-top: 28px;">
+                    <button type="button" ng-click="generatePassword()" class="btn btn-secondary">
+                        <i class="fas fa-sync"></i>
+                        {% trans "Generate" %}
+                    </button>
+                </div>
+            </div>
 
+            <div class="generated-password-box" ng-show="!generatedPasswordView">
+                <div class="generated-password-label">{% trans "Generated Password" %}</div>
+                <div class="generated-password-value">{$ dbPassword $}</div>
+                <button type="button" ng-click="usePassword()" class="btn btn-success btn-sm" style="margin-top: 10px;">
+                    <i class="fas fa-check"></i>
+                    {% trans "Use This Password" %}
+                </button>
+            </div>
+
+            <button type="button" ng-click="changePasswordBtn()" class="btn btn-primary btn-lg">
+                <i class="fas fa-save"></i>
+                {% trans "Change Password" %}
+            </button>
+        </div>
+
+        <!-- Database List -->
+        <div class="content-card" ng-show="!dbAccounts">
+            <h2 class="card-title">{% trans "Database Accounts" %}</h2>
+            
+            <div class="table-responsive">
+                <table class="modern-table">
+                    <thead>
+                        <tr>
+                            <th>{% trans "ID" %}</th>
+                            <th>{% trans "Database Name" %}</th>
+                            <th>{% trans "Database User" %}</th>
+                            <th>{% trans "Password" %}</th>
+                            <th>{% trans "Remote Access" %}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr ng-repeat="record in records track by $index">
+                            <td ng-bind="record.id"></td>
+                            <td class="db-name" ng-bind="record.dbName"></td>
+                            <td class="db-name" ng-bind="record.dbUser"></td>
+                            <td>
+                                <button type="button" ng-click="changePassword(record.dbUser)" 
+                                        class="btn btn-secondary btn-action">
+                                    <i class="fas fa-key"></i>
+                                    {% trans "Change" %}
+                                </button>
+                            </td>
+                            <td>
+                                <button ng-click="remoteAccess(record.dbUser)" 
+                                        data-toggle="modal" 
+                                        data-target="#remoteAccess{$ $index $}" 
+                                        type="button" 
+                                        class="btn btn-primary btn-action">
+                                    <i class="fas fa-network-wired"></i>
+                                    {% trans "Manage" %}
+                                </button>
+                                
+                                <!-- Remote Access Modal - Unique ID for each row -->
+                                <div id="remoteAccess{$ $index $}" class="modal fade" role="dialog">
+                                    <div class="modal-dialog modal-lg">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                                <h4 class="modal-title">
+                                                    {% trans "Remote Access" %}
+                                                    <span ng-hide="dbLoading" class="loading-spinner"></span>
+                                                </h4>
+                                            </div>
+                                            <div class="modal-body">
+                                                <form name="remoteAccessForm" class="form-horizontal">
+                                                    <div class="form-group">
+                                                        <label class="form-label">{% trans "Allow Remote Access from IP" %}</label>
+                                                        <input placeholder="{% trans 'Enter IP Address' %}" 
+                                                               name="remoteIP" 
+                                                               type="text" 
+                                                               class="form-control" 
+                                                               ng-model="$parent.remoteIP" 
+                                                               required>
+                                                        <div class="help-text" style="margin-top: 6px;">
+                                                            {% trans "Use % for wildcard (e.g., 192.168.1.% for subnet)" %}
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <button type="button" ng-click="allowRemoteIP()" class="btn btn-primary">
+                                                        <i class="fas fa-save"></i>
+                                                        {% trans "Save Changes" %}
+                                                    </button>
+                                                </form>
+                                                
+                                                <hr style="margin: 25px 0;">
+                                                
+                                                <h5 style="font-weight: 600; margin-bottom: 15px;">{% trans "Current Access" %}</h5>
+                                                <table class="modern-table ip-access-table">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>{% trans "Username" %}</th>
+                                                            <th>{% trans "Host" %}</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr>
+                                                            <td class="db-name">{$ dbUsername $}</td>
+                                                            <td>{$ dbHost $}</td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
+</div>
 
+{% endblock %}
 
+{% block footer_scripts %}
+<script>
+// Hide password change section when change password is successful
+$(document).ready(function() {
+    var scope = angular.element($('[ng-controller="listDBs"]')).scope();
+    if (scope) {
+        // Override changePasswordBtn to hide the section after success
+        var originalChangePasswordBtn = scope.changePasswordBtn;
+        scope.changePasswordBtn = function() {
+            if (originalChangePasswordBtn) {
+                originalChangePasswordBtn();
+            }
+            // Hide the password change section after a delay
+            setTimeout(function() {
+                if (!scope.changePasswordBox) {
+                    scope.changePasswordBox = true;
+                    scope.$apply();
+                }
+            }, 2000);
+        };
+    }
+});
+</script>
 {% endblock %}

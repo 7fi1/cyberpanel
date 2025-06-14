@@ -2,24 +2,81 @@
 {% load i18n %}
 {% block title %}{% trans "Docker Sites - CyberPanel" %}{% endblock %}
 {% block content %}
+    <style>
+        /* FORCE PADDING ON MAIN CONTENT - HIGHEST PRIORITY */
+        body > div#main-content {
+            padding: 80px 50px 30px 50px !important;
+            overflow-x: hidden !important;
+        }
+        
+        @media (max-width: 768px) {
+            body > div#main-content {
+                padding: 70px 30px 20px 30px !important;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            body > div#main-content {
+                padding: 60px 20px 15px 20px !important;
+            }
+        }
+    </style>
 
     {% load static %}
     {% get_current_language as LANGUAGE_CODE %}
     <!-- Current language: {{ LANGUAGE_CODE }} -->
 
     <style>
+        /* Global overflow fix and box-sizing */
+        * {
+            box-sizing: border-box;
+        }
+        
+        #main-content {
+            overflow-x: hidden !important;
+            padding: 0 !important;
+        }
+        
+        body {
+            overflow-x: hidden;
+        }
+        
+        html, body {
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+        
+        /* Docker page specific wrapper */
+        .docker-page-wrapper {
+            width: 100%;
+            padding: 0;
+            padding-top: 20px;
+            box-sizing: border-box;
+        }
+        
+        .docker-content-container {
+            max-width: 100%;
+            margin: 0;
+            width: 100%;
+        }
+        
         :root {
-            --primary-color: #3498db;
-            --secondary-color: #2ecc71;
-            --danger-color: #e74c3c;
-            --warning-color: #f39c12;
-            --info-color: #2980b9;
-            --dark-color: #34495e;
-            --light-color: #ecf0f1;
-            --border-color: #e0e0e0;
-            --box-shadow: 0 2px 5px rgba(0,0,0,0.08);
-            --box-shadow-hover: 0 4px 8px rgba(0,0,0,0.15);
-            --transition: all 0.25s ease;
+            /* Docker-themed colors */
+            --docker-blue: #0db7ed;
+            --docker-dark: #384d54;
+            --primary-color: #2496ed;
+            --secondary-color: #10b981;
+            --danger-color: #ef4444;
+            --warning-color: #f59e0b;
+            --info-color: #3b82f6;
+            --dark-color: #1e293b;
+            --light-color: #f8fafc;
+            --border-color: #e2e8f0;
+            --box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.06);
+            --box-shadow-hover: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+            --transition: all 0.2s ease;
+            --gradient-blue: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-docker: linear-gradient(135deg, #2496ed 0%, #0db7ed 100%);
         }
 
         .info-box {
@@ -30,6 +87,8 @@
             margin-bottom: 24px;
             box-shadow: var(--box-shadow);
             transition: var(--transition);
+            max-width: 100%;
+            overflow: hidden;
         }
 
         .info-box:hover {
@@ -112,6 +171,13 @@
             background-color: white;
             width: 100%;
             border-collapse: collapse;
+            table-layout: fixed;
+            word-wrap: break-word;
+        }
+        
+        .table td, .table th {
+            word-break: break-word;
+            overflow-wrap: break-word;
         }
 
         .table > thead > tr > th {
@@ -134,23 +200,64 @@
             overflow-x: auto;
         }
 
-        /* Container card */
+        /* Container card - Enhanced Design */
         .container-card {
-            border-radius: 8px;
+            border-radius: 16px;
             overflow: hidden;
             margin-bottom: 30px;
             box-shadow: var(--box-shadow);
             border: 1px solid var(--border-color);
             background: white;
+            max-width: 100%;
+            width: 100%;
+            transition: var(--transition);
+            position: relative;
+        }
+        
+        .container-card:hover {
+            box-shadow: var(--box-shadow-hover);
+            transform: translateY(-2px);
+        }
+        
+        .container-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 5px;
+            height: 100%;
+            background: var(--gradient-docker);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .container-card:hover::before {
+            opacity: 1;
         }
 
         .container-header {
-            padding: 16px 20px;
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 20px 24px;
+            background: #f8fafc;
             display: flex;
             justify-content: space-between;
             align-items: center;
             border-bottom: 1px solid var(--border-color);
+            position: relative;
+        }
+        
+        .container-header h3 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--dark-color);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .container-header h3 .fa-cube {
+            color: var(--docker-blue);
+            font-size: 20px;
         }
 
         .container-body {
@@ -265,24 +372,33 @@
             background-color: var(--danger-color);
         }
         
-        /* Workflow status badge */
+        /* Workflow status badge - Enhanced */
         .workflow-status {
-            display: inline-block;
-            padding: 4px 10px;
-            border-radius: 30px;
-            font-size: 12px;
-            font-weight: 500;
-            margin-left: 8px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            margin-left: 12px;
+            transition: var(--transition);
         }
         
         .workflow-status.active {
-            background: #e3fcef;
-            color: #00a854;
+            background: #d1fae5;
+            color: #059669;
+            border: 1px solid #a7f3d0;
         }
         
         .workflow-status.error {
-            background: #fff1f0;
-            color: #f5222d;
+            background: #fee2e2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+        }
+        
+        .workflow-status i {
+            font-size: 12px;
         }
 
         /* Log textarea */
@@ -317,6 +433,15 @@
             margin-right: auto;
             margin-left: auto;
         }
+        
+        /* Fix container padding to prevent right edge touching */
+        .container {
+            padding-right: 30px !important;
+            padding-left: 30px !important;
+            margin-right: auto;
+            margin-left: auto;
+        }
+        
 
         .row {
             display: flex;
@@ -347,6 +472,8 @@
             padding: 20px;
             margin-bottom: 30px;
             box-shadow: var(--box-shadow);
+            max-width: 100%;
+            overflow: hidden;
         }
 
         /* Modal styling */
@@ -414,10 +541,14 @@
         }
 
         .page-title {
+            margin-top: 20px;
             margin-bottom: 25px;
-            display: flex;
+            display: flex !important;
             justify-content: space-between;
             align-items: center;
+            min-height: 60px;
+            visibility: visible !important;
+            opacity: 1 !important;
         }
 
         .page-title h2 {
@@ -441,23 +572,306 @@
         }
 
         .create-btn {
-            background-color: var(--primary-color);
-            color: white;
+            background-color: var(--primary-color) !important;
+            color: white !important;
             padding: 8px 16px;
             border-radius: 4px;
             box-shadow: var(--box-shadow);
             transition: var(--transition);
-            display: inline-flex;
+            display: inline-flex !important;
             align-items: center;
             text-decoration: none;
+            border: none;
         }
 
         .create-btn:hover {
-            background-color: #2980b9;
+            background-color: #1976d2 !important;
             color: white;
             transform: translateY(-2px);
             box-shadow: var(--box-shadow-hover);
             text-decoration: none;
+        }
+        
+        /* Statistics Dashboard */
+        .stats-dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+            animation: fadeIn 0.3s ease-out;
+        }
+        
+        .stats-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            box-shadow: var(--box-shadow);
+            transition: var(--transition);
+            border: 1px solid var(--border-color);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .stats-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--gradient-docker);
+        }
+        
+        .stats-card.running::before {
+            background: linear-gradient(90deg, #10b981, #34d399);
+        }
+        
+        .stats-card.stopped::before {
+            background: linear-gradient(90deg, #ef4444, #f87171);
+        }
+        
+        .stats-card.total::before {
+            background: var(--gradient-docker);
+        }
+        
+        .stats-card.memory::before {
+            background: linear-gradient(90deg, #8b5cf6, #a78bfa);
+        }
+        
+        .stats-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--box-shadow-hover);
+        }
+        
+        .stats-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+        
+        .stats-card.running .stats-icon {
+            background: #d1fae5;
+            color: #10b981;
+        }
+        
+        .stats-card.stopped .stats-icon {
+            background: #fee2e2;
+            color: #ef4444;
+        }
+        
+        .stats-card.total .stats-icon {
+            background: #e0f2fe;
+            color: var(--docker-blue);
+        }
+        
+        .stats-card.memory .stats-icon {
+            background: #ede9fe;
+            color: #8b5cf6;
+        }
+        
+        .stats-content {
+            flex: 1;
+        }
+        
+        .stats-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--dark-color);
+            line-height: 1;
+        }
+        
+        .stats-label {
+            font-size: 14px;
+            color: #64748b;
+            margin-top: 5px;
+            font-weight: 500;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Search and Filter Section */
+        .search-filter-section {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: var(--box-shadow);
+            border: 1px solid var(--border-color);
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .search-box {
+            flex: 1;
+            min-width: 300px;
+            position: relative;
+        }
+        
+        .search-box i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+            font-size: 16px;
+        }
+        
+        .search-box input {
+            width: 100%;
+            padding: 10px 15px 10px 45px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 14px;
+            transition: var(--transition);
+        }
+        
+        .search-box input:focus {
+            border-color: var(--docker-blue);
+            box-shadow: 0 0 0 3px rgba(36, 150, 237, 0.1);
+            outline: none;
+        }
+        
+        .filter-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .filter-btn {
+            padding: 8px 16px;
+            border: 1px solid var(--border-color);
+            background: white;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #64748b;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .filter-btn:hover {
+            border-color: var(--docker-blue);
+            color: var(--docker-blue);
+            background: #f0f9ff;
+        }
+        
+        .filter-btn.active {
+            background: var(--docker-blue);
+            color: white;
+            border-color: var(--docker-blue);
+        }
+        
+        .filter-btn i {
+            font-size: 14px;
+        }
+        
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: var(--box-shadow);
+            border: 1px solid var(--border-color);
+        }
+        
+        .empty-state-icon {
+            width: 100px;
+            height: 100px;
+            background: #f0f9ff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+        }
+        
+        .empty-state-icon i {
+            font-size: 48px;
+            color: var(--docker-blue);
+        }
+        
+        .empty-state h3 {
+            font-size: 24px;
+            color: var(--dark-color);
+            margin-bottom: 10px;
+        }
+        
+        .empty-state p {
+            color: #64748b;
+            font-size: 16px;
+            margin-bottom: 30px;
+        }
+        
+        /* Enhanced button styles */
+        .btn-success {
+            background: #10b981 !important;
+            border-color: #10b981 !important;
+        }
+        
+        .btn-success:hover {
+            background: #059669 !important;
+            border-color: #059669 !important;
+        }
+        
+        .btn-warning {
+            background: #f59e0b !important;
+            border-color: #f59e0b !important;
+        }
+        
+        .btn-warning:hover {
+            background: #d97706 !important;
+            border-color: #d97706 !important;
+        }
+        
+        .btn-danger {
+            background: #ef4444 !important;
+            border-color: #ef4444 !important;
+        }
+        
+        .btn-danger:hover {
+            background: #dc2626 !important;
+            border-color: #dc2626 !important;
+        }
+        
+        .btn-info {
+            background: #3b82f6 !important;
+            border-color: #3b82f6 !important;
+        }
+        
+        .btn-info:hover {
+            background: #2563eb !important;
+            border-color: #2563eb !important;
+        }
+        
+        .btn-primary {
+            background: var(--docker-blue) !important;
+            border-color: var(--docker-blue) !important;
+        }
+        
+        .btn-primary:hover {
+            background: #0284c7 !important;
+            border-color: #0284c7 !important;
         }
 
         .create-btn i {
@@ -935,128 +1349,50 @@
     </style>
 
     <script>
-        // Define controller in the CyberCP module
-        angular.module('CyberCP').controller('ListDockersitecontainer', function($scope, $http, $window, $location) {
-            $scope.ContainerList = [];
-            $scope.conatinerview = false;
-            $scope.cyberpanelLoading = true;
-            
-            // Function to extract n8n version from environment variables
-            $scope.getN8nVersion = function(container) {
-                console.log('getN8nVersion called with:', container);
-                
-                if (!container) {
-                    console.log('Container is null/undefined');
-                    return 'unknown';
-                }
-                
-                if (!container.environment) {
-                    console.log('No environment in container');
-                    return 'unknown';
-                }
-                
-                if (!Array.isArray(container.environment)) {
-                    console.log('Environment is not an array:', container.environment);
-                    return 'unknown';
-                }
-                
-                console.log('Searching through environment:', container.environment);
-                
-                var version = container.environment.find(function(env) {
-                    return typeof env === 'string' && env.startsWith('N8N_VERSION=');
-                });
-                
-                if (version) {
-                    var versionNumber = version.split('=')[1];
-                    console.log('Found version:', versionNumber);
-                    return versionNumber;
-                }
-                
-                console.log('No N8N_VERSION found in environment');
-                return 'unknown';
-            };
-
-            // Function to check if updates are available
-            $scope.checkN8nUpdates = function(currentVersion) {
-                // This is a placeholder. You'll need to implement the actual version check
-                // For now, we'll assume an update is available if version is not 'latest'
-                return currentVersion !== 'latest';
-            };
-            
-            // Add custom icon rendering for container actions
-            $scope.renderIcon = function(iconName) {
-                return '<i class="fa fa-' + iconName + '" aria-hidden="true"></i>';
-            };
-            
-            // Handle container actions
-            $scope.handleAction = function(action, container) {
-                switch(action) {
-                    case 'start':
-                        if (typeof $scope.startContainer === 'function') {
-                            $scope.startContainer(container.id, container.name);
-                        }
-                        break;
-                    case 'stop':
-                        if (typeof $scope.stopContainer === 'function') {
-                            $scope.stopContainer(container.id, container.name);
-                        }
-                        break;
-                    case 'restart':
-                        if (typeof $scope.restartContainer === 'function') {
-                            $scope.restartContainer(container.id, container.name);
-                        }
-                        break;
-                    case 'update':
-                        if (typeof $scope.updateContainer === 'function') {
-                            $scope.updateContainer(container.id, container.name);
-                        }
-                        break;
-                }
-            };
-        });
-
         $(document).ready(function () {
             $('[data-toggle="tooltip"]').tooltip();
             
             // Add smooth fade-in animation to containers
             $('.container-card, .n8n-container, .info-box').css('opacity', 0).animate({opacity: 1}, 500);
             
-            // Add animated loading indicators
-            $(document).on('click', '.btn', function() {
-                const originalText = $(this).html();
-                const button = $(this);
-                
-                if (!button.hasClass('loading') && !button.hasClass('no-loading')) {
-                    button.addClass('loading');
-                    button.html('<i class="fa fa-spinner fa-spin"></i> <span>Loading...</span>');
-                    
-                    // Reset button after a timeout (for demo purposes)
-                    setTimeout(function() {
-                        button.html(originalText);
-                        button.removeClass('loading');
-                    }, 1000);
-                }
-            });
+            // Initialize filter status and helper functions
+            var scope = angular.element($('[ng-controller="ListDockersitecontainer"]')).scope();
+            if (scope) {
+                scope.$apply(function() {
+                    scope.filterStatus = '';
+                });
+            }
         });
+        
+        // Helper function to open settings modal
+        function openSettings(container) {
+            var scope = angular.element($('[ng-controller="ListDockersitecontainer"]')).scope();
+            if (scope) {
+                scope.$apply(function() {
+                    scope.web = container;
+                    $('#settings').modal('show');
+                });
+            }
+        }
     </script>
 
 
-    <div class="container icon-fixes" ng-controller="ListDockersitecontainer">
-
-        <div class="page-title">
+    <div class="docker-page-wrapper" ng-controller="ListDockersitecontainer">
+        <div class="docker-content-container">
+        <div class="page-title" style="display: flex !important; visibility: visible !important;">
             <div>
-                <h2 id="domainNamePage">
+                <h2 id="domainNamePage" style="display: block !important;">
                     <i class="fa fa-cube" aria-hidden="true"></i> {% trans "Containers" %} 
-                    <span class="loading-spinner" ng-hide="cyberpanelLoading">
-                        <img src="{% static 'images/loading.gif' %}" alt="Loading">
+                    <span class="loading-spinner" ng-show="cyberpanelLoading" style="display: inline-block;">
+                        <img src="{% static 'images/loading.gif' %}" alt="Loading" style="width: 20px; height: 20px;">
                     </span>
                 </h2>
                 <p>{% trans "Manage containers on server" %}</p>
             </div>
-            <a class="create-btn btn btn-primary" href="{% url "CreateDockersite" %}">
-                <i class="fa fa-plus-circle" aria-hidden="true"></i> {% trans "Create Container" %}
-            </a>
         </div>
+
+        
+        
 
         <div class="panel" ng-hide="true">
             <div class="panel-body">
@@ -1202,10 +1538,12 @@
         <div ng-hide="conatinerview">
             <div>
 
+                
+                
                 <div ng-show="ContainerList.length > 0">
-                    <div ng-repeat="web in ContainerList">
+                    <div ng-repeat="web in ContainerList | filter:searchContainer" ng-show="!filterStatus || (filterStatus === 'running' && web.status === 'running') || (filterStatus === 'stopped' && web.status !== 'running')">
                         <!-- n8n Container Section -->
-                        <div ng-if="web.environment && (web.environment | filter:'n8n').length > 0" class="container-card">
+                        <div ng-if="web.environment && web.environment.toString().indexOf('n8n') !== -1" class="container-card">
                             <div class="container-header">
                                 <h3>
                                     <i class="fa fa-cube"></i>
@@ -1221,15 +1559,19 @@
                                     </span>
                                 </h3>
                                 <div class="btn-group">
-                                    <button class="btn btn-success" ng-click="handleAction('start', web)" ng-if="web.status !== 'running'">
+                                    <button class="btn btn-success" ng-click="handleAction('start', web)" ng-if="web.status !== 'running'" title="Start Container">
                                         <i class="fa fa-play"></i><span>Start</span>
                                     </button>
-                                    <button class="btn btn-warning" ng-click="handleAction('restart', web)" ng-if="web.status === 'running'">
-                                        <i class="fa fa-refresh"></i><span>Restart</span>
+                                    <button class="btn btn-warning" ng-click="handleAction('restart', web)" ng-if="web.status === 'running'" title="Restart Container">
+                                        <i class="fa fa-sync"></i><span>Restart</span>
                                     </button>
-                                    <button class="btn btn-danger" ng-click="handleAction('stop', web)" ng-if="web.status === 'running'">
+                                    <button class="btn btn-danger" ng-click="handleAction('stop', web)" ng-if="web.status === 'running'" title="Stop Container">
                                         <i class="fa fa-stop"></i><span>Stop</span>
                                     </button>
+                                    <button class="btn btn-info" data-toggle="modal" data-target="#settings" ng-click="web = web" title="Container Settings">
+                                        <i class="fa fa-cog"></i><span>Settings</span>
+                                    </button>
+                                    
                                 </div>
                             </div>
                             
@@ -1363,7 +1705,7 @@
                         </div>
                         
                         <!-- Regular Container Section -->
-                        <div ng-if="!web.environment || (web.environment | filter:'n8n').length === 0" class="container-card">
+                        <div ng-if="!web.environment || web.environment.toString().indexOf('n8n') === -1" class="container-card">
                             <div class="container-header">
                                 <h3>
                                     <i class="fa fa-cube"></i> <span>{% trans "Container: " %} {$ web.name $}</span>
@@ -1374,15 +1716,19 @@
                                     </span>
                                 </h3>
                                 <div class="btn-group">
-                                    <button class="btn btn-success" ng-click="handleAction('start', web)" ng-if="web.status !== 'running'">
+                                    <button class="btn btn-success" ng-click="handleAction('start', web)" ng-if="web.status !== 'running'" title="Start Container">
                                         <i class="fa fa-play"></i><span>Start</span>
                                     </button>
-                                    <button class="btn btn-warning" ng-click="handleAction('restart', web)" ng-if="web.status === 'running'">
-                                        <i class="fa fa-refresh"></i><span>Restart</span>
+                                    <button class="btn btn-warning" ng-click="handleAction('restart', web)" ng-if="web.status === 'running'" title="Restart Container">
+                                        <i class="fa fa-sync"></i><span>Restart</span>
                                     </button>
-                                    <button class="btn btn-danger" ng-click="handleAction('stop', web)" ng-if="web.status === 'running'">
+                                    <button class="btn btn-danger" ng-click="handleAction('stop', web)" ng-if="web.status === 'running'" title="Stop Container">
                                         <i class="fa fa-stop"></i><span>Stop</span>
                                     </button>
+                                    <button class="btn btn-info" data-toggle="modal" data-target="#settings" ng-click="web = web" title="Container Settings">
+                                        <i class="fa fa-cog"></i><span>Settings</span>
+                                    </button>
+                                    
                                 </div>
                             </div>
                             
@@ -1715,6 +2061,12 @@
         </div>
     </div>
     </div>
+    </div>
 
 
+{% endblock %}
+
+{% block footer_scripts %}
+<script src="{% static 'websiteFunctions/DockerContainers.js' %}"></script>
+<script src="{% static 'websiteFunctions/docker-init.js' %}"></script>
 {% endblock %}

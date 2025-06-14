@@ -65,39 +65,39 @@ class tuningManager:
                 return HttpResponse(final_json)
 
             else:
-                if not data['maxConn']:
+                if data.get('maxConn') is None:
                     data_ret = {'fetch_status': 1, 'error_message': "Provide Max Connections", 'tuneStatus': 0}
                     final_json = json.dumps(data_ret)
                     return HttpResponse(final_json)
 
-                if not data['maxSSLConn']:
+                if data.get('maxSSLConn') is None:
                     data_ret = {'fetch_status': 1, 'error_message': "Provide Max SSL Connections",
                                 'tuneStatus': 0}
                     final_json = json.dumps(data_ret)
                     return HttpResponse(final_json)
 
-                if not data['keepAlive']:
+                if data.get('keepAlive') is None:
                     data_ret = {'fetch_status': 1, 'error_message': "Provide Keep Alive", 'tuneStatus': 0}
                     final_json = json.dumps(data_ret)
                     return HttpResponse(final_json)
 
-                if not data['inMemCache']:
+                if data.get('inMemCache') is None:
                     data_ret = {'fetch_status': 1, 'error_message': "Provide Cache Size in memory",
                                 'tuneStatus': 0}
                     final_json = json.dumps(data_ret)
                     return HttpResponse(final_json)
 
-                if not data['gzipCompression']:
+                if not data.get('gzipCompression'):
                     data_ret = {'fetch_status': 1, 'error_message': "Provide Enable GZIP Compression",
                                 'tuneStatus': 0}
                     final_json = json.dumps(data_ret)
                     return HttpResponse(final_json)
 
-                maxConn = data['maxConn']
-                maxSSLConn = data['maxSSLConn']
-                connTime = data['connTime']
-                keepAlive = data['keepAlive']
-                inMemCache = data['inMemCache']
+                maxConn = str(data['maxConn'])
+                maxSSLConn = str(data['maxSSLConn'])
+                connTime = str(data['connTime'])
+                keepAlive = str(data['keepAlive'])
+                inMemCache = str(data['inMemCache'])
                 gzipCompression = data['gzipCompression']
 
                 execPath = "/usr/local/CyberCP/bin/python " + virtualHostUtilities.cyberPanel + "/plogical/tuning.py"
@@ -129,7 +129,15 @@ class tuningManager:
                 return ACLManager.loadError()
 
             status = data['status']
-            domainSelection = str(data['domainSelection'])
+            domainSelection = data.get('domainSelection')
+            
+            # Check if domainSelection is None or 'null' string
+            if domainSelection is None or domainSelection == 'null' or domainSelection == '':
+                data_ret = {'fetch_status': 0, 'error_message': "Please select a domain/PHP version first", 'tuneStatus': 0}
+                final_json = json.dumps(data_ret)
+                return HttpResponse(final_json)
+            
+            domainSelection = str(domainSelection)
 
             if status == "fetch":
 

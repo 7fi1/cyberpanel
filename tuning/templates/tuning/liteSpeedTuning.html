@@ -7,121 +7,656 @@
 {% get_current_language as LANGUAGE_CODE %}
 <!-- Current language: {{ LANGUAGE_CODE }} -->
 
-<div class="container">
-<div id="page-title">
-   <h2>{% trans "LiteSpeed Tuning" %}</h2>
-   <p>{% trans "You can use this page to tweak your server according to your website requirments." %}</p>
-</div>
-<div class="panel">
-    <div class="panel-body">
-        <h3 class="title-hero">
-            {% trans "Tuning Details" %} <img id="tuningLoading" src="{% static 'images/loading.gif' %}">
-        </h3>
-        <div ng-controller="litespeedTuning" class="example-box-wrapper">
+<style>
+    .modern-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+    
+    .page-header {
+        text-align: center;
+        margin-bottom: 3rem;
+        padding: 3rem 0;
+        background: linear-gradient(135deg, #f8f9ff 0%, #f0f1ff 100%);
+        border-radius: 20px;
+        animation: fadeInDown 0.5s ease-out;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle at 70% 30%, rgba(91, 95, 207, 0.1) 0%, transparent 50%);
+        animation: rotate 30s linear infinite;
+    }
+    
+    .header-content {
+        position: relative;
+        z-index: 1;
+    }
+    
+    .page-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+    }
+    
+    .server-icon {
+        width: 60px;
+        height: 60px;
+        background: white;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    
+    .page-subtitle {
+        font-size: 1.125rem;
+        color: #64748b;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+    
+    .tuning-panel {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 10px 40px rgba(0,0,0,0.08);
+        border: 1px solid #e8e9ff;
+        overflow: hidden;
+        animation: fadeInUp 0.5s ease-out;
+    }
+    
+    .panel-header {
+        background: linear-gradient(135deg, #f8f9ff 0%, #f0f1ff 100%);
+        padding: 1.5rem 2rem;
+        border-bottom: 1px solid #e8e9ff;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    
+    .panel-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #1e293b;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    
+    .status-indicator {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.875rem;
+        padding: 0.5rem 1rem;
+        background: #fff;
+        border: 1px solid #e8e9ff;
+        border-radius: 8px;
+        color: #64748b;
+    }
+    
+    .status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #5b5fcf;
+        animation: pulse 2s infinite;
+    }
+    
+    .tuning-form {
+        padding: 2rem;
+    }
+    
+    .form-section {
+        margin-bottom: 3rem;
+    }
+    
+    .section-title {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: #1e293b;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .section-icon {
+        width: 32px;
+        height: 32px;
+        background: #f0f1ff;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #5b5fcf;
+    }
+    
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.5rem;
+    }
+    
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .form-label {
+        font-weight: 500;
+        color: #475569;
+        font-size: 0.875rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .tooltip-icon {
+        color: #94a3b8;
+        font-size: 0.875rem;
+        cursor: help;
+        position: relative;
+    }
+    
+    .tooltip-icon:hover .tooltip-content {
+        display: block;
+    }
+    
+    .tooltip-content {
+        display: none;
+        position: absolute;
+        bottom: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #1e293b;
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        white-space: nowrap;
+        margin-bottom: 0.5rem;
+        z-index: 10;
+    }
+    
+    .tooltip-content::after {
+        content: '';
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        border: 5px solid transparent;
+        border-top-color: #1e293b;
+    }
+    
+    .form-control {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 1px solid #e8e9ff;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        transition: all 0.3s ease;
+        background: #fff;
+    }
+    
+    .form-control:focus {
+        outline: none;
+        border-color: #5b5fcf;
+        box-shadow: 0 0 0 3px rgba(91, 95, 207, 0.1);
+    }
+    
+    .select-control {
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+        background-position: right 0.5rem center;
+        background-repeat: no-repeat;
+        background-size: 1.5em 1.5em;
+        padding-right: 2.5rem;
+    }
+    
+    .input-group {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .input-addon {
+        font-size: 0.875rem;
+        color: #64748b;
+        font-weight: 500;
+    }
+    
+    .current-value {
+        font-size: 0.75rem;
+        color: #64748b;
+        margin-top: 0.25rem;
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+        padding-top: 2rem;
+        border-top: 1px solid #e8e9ff;
+    }
+    
+    .btn {
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 500;
+        font-size: 0.875rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .btn-primary {
+        background: #5b5fcf;
+        color: white;
+    }
+    
+    .btn-primary:hover {
+        background: #4547a9;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(91, 95, 207, 0.4);
+    }
+    
+    .btn-secondary {
+        background: white;
+        color: #64748b;
+        border: 1px solid #e8e9ff;
+    }
+    
+    .btn-secondary:hover {
+        background: #f8f9ff;
+        border-color: #cbd5e1;
+    }
+    
+    .loading-spinner {
+        width: 20px;
+        height: 20px;
+        border: 2px solid #e8e9ff;
+        border-top: 2px solid #5b5fcf;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+    
+    .alert {
+        padding: 1rem 1.5rem;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-top: 1rem;
+        animation: slideIn 0.3s ease-out;
+    }
+    
+    .alert-icon {
+        font-size: 1.25rem;
+    }
+    
+    .alert-content {
+        flex: 1;
+    }
+    
+    .alert-title {
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+    }
+    
+    .alert-message {
+        font-size: 0.875rem;
+        color: #475569;
+    }
+    
+    .alert-success {
+        background: #d1fae5;
+        border: 1px solid #a7f3d0;
+        color: #065f46;
+    }
+    
+    .alert-error {
+        background: #fee2e2;
+        border: 1px solid #fecaca;
+        color: #991b1b;
+    }
+    
+    .alert-warning {
+        background: #fef3c7;
+        border: 1px solid #fde68a;
+        color: #92400e;
+    }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+    
+    .stat-card {
+        background: #f8f9ff;
+        border: 1px solid #e8e9ff;
+        border-radius: 12px;
+        padding: 1.5rem;
+        text-align: center;
+    }
+    
+    .stat-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: 0.25rem;
+    }
+    
+    .stat-label {
+        font-size: 0.75rem;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+    }
+    
+    @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+    
+    @keyframes fadeInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        
+        .page-title {
+            font-size: 2rem;
+        }
+    }
+</style>
 
-
-            <form  action="/"  class="form-horizontal bordered-row">
-
-
-
-                <div class="form-group">
-                    <label class="col-sm-3 control-label">{% trans "Max Connections" %}</label>
-                    <div class="col-sm-6">
-                        <input  type="text" class="form-control" ng-model="maxConnections" required>
-                    </div>
+<div class="modern-container" ng-controller="litespeedTuning">
+    <div class="page-header">
+        <div class="header-content">
+            <h1 class="page-title">
+                <div class="server-icon">
+                    <i class="fas fa-server" style="color: #5b5fcf; font-size: 1.75rem;"></i>
                 </div>
-
-
-                <div class="form-group">
-                    <label class="col-sm-3 control-label">{% trans "Max SSL Connections" %}</label>
-                    <div class="col-sm-6">
-                        <input  type="text" class="form-control" ng-model="maxSSLConnections" required>
-                    </div>
-                </div>
-
-
-                <div class="form-group">
-                    <label class="col-sm-3 control-label">{% trans "Connection Timeout" %}</label>
-                    <div class="col-sm-6">
-                        <input  type="text" class="form-control" ng-model="connectionTimeOut" required>
-                    </div>
-                </div>
-
-
-                <div class="form-group">
-                    <label class="col-sm-3 control-label">{% trans "Keep Alive Timeout" %}</label>
-                    <div class="col-sm-6">
-                        <input  type="text" class="form-control" ng-model="keepAliveTimeOut" required>
-                    </div>
-                </div>
-
-
-                <div class="form-group">
-                    <label class="col-sm-3 control-label">{% trans "Cache Size in memory" %}</label>
-                    <div class="col-sm-6">
-                        <input  type="text" class="form-control" ng-model="cacheSizeInMemory" required>
-                    </div>
-                </div>
-
-                 <div class="form-group">
-                    <label class="col-sm-3 control-label">{% trans "Enable GZIP Compression" %}</label>
-                    <div class="col-sm-6">
-                        <select ng-model="gzipCompression" class="form-control">
-                                <option>Enable</option>
-                                <option>Disable</option>
-                        </select>
-                    </div>
-                     <div class="current-pack">{% trans "Currently:" %} {$ gzipStatus $}</div>
-                 </div>
-
-
-
-                <div class="form-group">
-                    <label class="col-sm-3 control-label"></label>
-                    <div class="col-sm-4">
-                         <button type="button" ng-click="saveTuningSettings()" class="btn btn-primary btn-lg btn-block">{% trans "Tune Web Server" %}</button>
-                    </div>
-                </div>
-
-
-
-                <div class="form-group">
-                    <label class="col-sm-3 control-label"></label>
-                    <div class="col-sm-4">
-                            <div id="canNotFetchTuning" class="alert alert-danger">
-                                        <p>{% trans "Cannot fetch Current Value, but you can still submit new changes, error reported from server:" %} {$ errMessage $}</p>
-                            </div>
-
-                            <div id="notTuned" class="alert alert-danger">
-                                <p>{% trans "Cannot save details, Error Message: " %}{$ errMessage $} </p>
-                            </div>
-
-
-                            <div id="tuned" class="alert alert-success">
-                                <p>{% trans "Web Server Successfully tuned." %} </p>
-                            </div>
-
-
-
-                    </div>
-
-
-
-                </div>
-
-
-            </form>
-
-
-
-
+                {% trans "LiteSpeed Tuning" %}
+            </h1>
+            <p class="page-subtitle">
+                {% trans "Optimize your LiteSpeed web server performance by adjusting key parameters to match your website requirements" %}
+            </p>
         </div>
+    </div>
+
+    <!-- Stats Overview -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-value">{$ maxConnections || '-' $}</div>
+            <div class="stat-label">{% trans "Max Connections" %}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">
+                <span ng-if="connectionTimeOut">{$ connectionTimeOut $}<span style="font-size: 1rem;">s</span></span>
+                <span ng-if="!connectionTimeOut">-</span>
+            </div>
+            <div class="stat-label">{% trans "Connection Timeout" %}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">
+                <span ng-if="cacheSizeInMemory !== undefined">{$ cacheSizeInMemory $}<span style="font-size: 1rem;">M</span></span>
+                <span ng-if="cacheSizeInMemory === undefined">-</span>
+            </div>
+            <div class="stat-label">{% trans "Cache Size" %}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{$ gzipStatus || '-' $}</div>
+            <div class="stat-label">{% trans "GZIP Status" %}</div>
+        </div>
+    </div>
+
+    <div class="tuning-panel">
+        <div class="panel-header">
+            <h2 class="panel-title">
+                <i class="fas fa-sliders-h"></i>
+                {% trans "Server Configuration" %}
+            </h2>
+            <div class="status-indicator">
+                <span class="status-dot"></span>
+                {% trans "LiteSpeed Running" %}
+            </div>
+        </div>
+
+        <form class="tuning-form">
+            <!-- Connection Settings -->
+            <div class="form-section">
+                <h3 class="section-title">
+                    <div class="section-icon">
+                        <i class="fas fa-network-wired"></i>
+                    </div>
+                    {% trans "Connection Settings" %}
+                </h3>
+                
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">
+                            {% trans "Max Connections" %}
+                            <span class="tooltip-icon">
+                                <i class="fas fa-question-circle"></i>
+                                <div class="tooltip-content">
+                                    {% trans "Maximum number of concurrent connections" %}
+                                </div>
+                            </span>
+                        </label>
+                        <input type="number" class="form-control" ng-model="maxConnections" min="1" required>
+                        <span class="current-value">{% trans "Recommended: 10000-20000 for most servers" %}</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            {% trans "Max SSL Connections" %}
+                            <span class="tooltip-icon">
+                                <i class="fas fa-question-circle"></i>
+                                <div class="tooltip-content">
+                                    {% trans "Maximum number of SSL connections" %}
+                                </div>
+                            </span>
+                        </label>
+                        <input type="number" class="form-control" ng-model="maxSSLConnections" min="1" required>
+                        <span class="current-value">{% trans "Usually 50% of max connections" %}</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            {% trans "Connection Timeout" %}
+                            <span class="tooltip-icon">
+                                <i class="fas fa-question-circle"></i>
+                                <div class="tooltip-content">
+                                    {% trans "Time in seconds before closing idle connections" %}
+                                </div>
+                            </span>
+                        </label>
+                        <div class="input-group">
+                            <input type="number" class="form-control" ng-model="connectionTimeOut" min="1" required>
+                            <span class="input-addon">{% trans "seconds" %}</span>
+                        </div>
+                        <span class="current-value">{% trans "Default: 300 seconds" %}</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            {% trans "Keep-Alive Timeout" %}
+                            <span class="tooltip-icon">
+                                <i class="fas fa-question-circle"></i>
+                                <div class="tooltip-content">
+                                    {% trans "Time to keep connections alive" %}
+                                </div>
+                            </span>
+                        </label>
+                        <div class="input-group">
+                            <input type="number" class="form-control" ng-model="keepAliveTimeOut" min="1" required>
+                            <span class="input-addon">{% trans "seconds" %}</span>
+                        </div>
+                        <span class="current-value">{% trans "Default: 5 seconds" %}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Performance Settings -->
+            <div class="form-section">
+                <h3 class="section-title">
+                    <div class="section-icon">
+                        <i class="fas fa-tachometer-alt"></i>
+                    </div>
+                    {% trans "Performance Settings" %}
+                </h3>
+                
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">
+                            {% trans "Cache Size in Memory" %}
+                            <span class="tooltip-icon">
+                                <i class="fas fa-question-circle"></i>
+                                <div class="tooltip-content">
+                                    {% trans "Amount of RAM allocated for caching" %}
+                                </div>
+                            </span>
+                        </label>
+                        <div class="input-group">
+                            <input type="number" class="form-control" ng-model="cacheSizeInMemory" min="0" required>
+                            <span class="input-addon">MB</span>
+                        </div>
+                        <span class="current-value">{% trans "0 = Auto (recommended)" %}</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            {% trans "GZIP Compression" %}
+                            <span class="tooltip-icon">
+                                <i class="fas fa-question-circle"></i>
+                                <div class="tooltip-content">
+                                    {% trans "Compress responses to reduce bandwidth" %}
+                                </div>
+                            </span>
+                        </label>
+                        <select ng-model="gzipCompression" class="form-control select-control">
+                            <option value="Enable">{% trans "Enable" %}</option>
+                            <option value="Disable">{% trans "Disable" %}</option>
+                        </select>
+                        <span class="current-value">{% trans "Currently:" %} {$ gzipStatus $}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Alerts -->
+            <div id="canNotFetchTuning" class="alert alert-warning" style="display: none;">
+                <i class="fas fa-exclamation-triangle alert-icon"></i>
+                <div class="alert-content">
+                    <div class="alert-title">{% trans "Cannot Fetch Current Values" %}</div>
+                    <div class="alert-message">
+                        {% trans "Unable to retrieve current settings, but you can still submit new changes." %}
+                        <span ng-if="errMessage"> Error: {$ errMessage $}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div id="notTuned" class="alert alert-error" style="display: none;">
+                <i class="fas fa-times-circle alert-icon"></i>
+                <div class="alert-content">
+                    <div class="alert-title">{% trans "Configuration Failed" %}</div>
+                    <div class="alert-message">{$ errMessage $}</div>
+                </div>
+            </div>
+
+            <div id="tuned" class="alert alert-success" style="display: none;">
+                <i class="fas fa-check-circle alert-icon"></i>
+                <div class="alert-content">
+                    <div class="alert-title">{% trans "Success!" %}</div>
+                    <div class="alert-message">{% trans "LiteSpeed server has been successfully tuned with your new settings." %}</div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="action-buttons">
+                <button type="button" ng-click="saveTuningSettings()" class="btn btn-primary">
+                    <i class="fas fa-save"></i>
+                    {% trans "Apply Settings" %}
+                    <span id="tuningLoading" class="loading-spinner" style="display: none;"></span>
+                </button>
+                <button type="button" class="btn btn-secondary" onclick="window.location.reload()">
+                    <i class="fas fa-undo"></i>
+                    {% trans "Reset Form" %}
+                </button>
+            </div>
+        </form>
     </div>
 </div>
 
+{% endblock %}
 
-
-</div>
-
-
+{% block footer_scripts %}
+<script src="{% static 'tuning/tuning.js' %}"></script>
 {% endblock %}

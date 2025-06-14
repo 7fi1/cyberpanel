@@ -20,6 +20,8 @@ from plogical.httpProc import httpProc
 from websiteFunctions.models import Websites, WPSites
 from databases.models import Databases
 from mailServer.models import EUsers
+from ftp.models import Users as FTPUsers
+from loginSystem.models import Administrator
 from django.views.decorators.http import require_GET, require_POST
 import pwd
 
@@ -430,15 +432,22 @@ def getDashboardStats(request):
     try:
         val = request.session['userID']
         currentACL = ACLManager.loadedACL(val)
+        
+        # Get counts for all resources
+        total_users = Administrator.objects.count()
         total_sites = Websites.objects.count()
         total_wp_sites = WPSites.objects.count()
         total_dbs = Databases.objects.count()
         total_emails = EUsers.objects.count()
+        total_ftp_users = FTPUsers.objects.count()
+        
         data = {
+            'total_users': total_users,
             'total_sites': total_sites,
             'total_wp_sites': total_wp_sites,
             'total_dbs': total_dbs,
             'total_emails': total_emails,
+            'total_ftp_users': total_ftp_users,
             'status': 1
         }
         return HttpResponse(json.dumps(data), content_type='application/json')
@@ -629,6 +638,331 @@ def getRecentSSHLogs(request):
 
 @csrf_exempt
 @require_POST
+def analyzeSSHSecurity(request):
+    try:
+        user_id = request.session.get('userID')
+        if not user_id:
+            return HttpResponse(json.dumps({'error': 'Not logged in'}), content_type='application/json', status=403)
+        currentACL = ACLManager.loadedACL(user_id)
+        if not currentACL.get('admin', 0):
+            return HttpResponse(json.dumps({'error': 'Admin only'}), content_type='application/json', status=403)
+        
+        # Check if user has CyberPanel addons
+        if not ACLManager.CheckForPremFeature('all'):
+            return HttpResponse(json.dumps({
+                'status': 0,
+                'addon_required': True,
+                'feature_title': 'SSH Security Analysis',
+                'feature_description': 'Advanced SSH security monitoring and threat detection that helps protect your server from brute force attacks, port scanning, and unauthorized access attempts.',
+                'features': [
+                    'Real-time detection of brute force attacks',
+                    'Identification of dictionary attacks and invalid login attempts',
+                    'Port scanning detection',
+                    'Root login attempt monitoring',
+                    'Automatic security recommendations',
+                    'Integration with CSF and Firewalld',
+                    'Detailed threat analysis and reporting'
+                ],
+                'addon_url': 'https://cyberpanel.net/cyberpanel-addons'
+            }), content_type='application/json')
+        
+        from plogical.processUtilities import ProcessUtilities
+        import re
+        from collections import defaultdict
+        from datetime import datetime, timedelta
+        
+        alerts = []
+        
+        # Detect which firewall is in use
+        firewall_cmd = ''
+        try:
+            # Check for CSF
+            csf_check = ProcessUtilities.outputExecutioner('which csf')
+            if csf_check and '/csf' in csf_check:
+                firewall_cmd = 'csf'
+        except:
+            pass
+        
+        if not firewall_cmd:
+            try:
+                # Check for firewalld
+                firewalld_check = ProcessUtilities.outputExecutioner('systemctl is-active firewalld')
+                if firewalld_check and 'active' in firewalld_check:
+                    firewall_cmd = 'firewalld'
+            except:
+                firewall_cmd = 'firewalld'  # Default to firewalld
+        
+        # Determine log path
+        distro = ProcessUtilities.decideDistro()
+        if distro in [ProcessUtilities.ubuntu, ProcessUtilities.ubuntu20]:
+            log_path = '/var/log/auth.log'
+        else:
+            log_path = '/var/log/secure'
+        
+        try:
+            # Get last 500 lines for better analysis
+            output = ProcessUtilities.outputExecutioner(f'tail -n 500 {log_path}')
+        except Exception as e:
+            return HttpResponse(json.dumps({'error': f'Failed to read log: {str(e)}'}), content_type='application/json', status=500)
+        
+        lines = output.split('\n')
+        
+        # Analysis patterns
+        failed_logins = defaultdict(int)
+        failed_passwords = defaultdict(int)
+        invalid_users = defaultdict(int)
+        port_scan_attempts = defaultdict(int)
+        suspicious_commands = []
+        root_login_attempts = []
+        successful_after_failures = defaultdict(list)
+        connection_closed = defaultdict(int)
+        repeated_connections = defaultdict(int)
+        
+        # Track IPs with failures for brute force detection
+        ip_failures = defaultdict(list)
+        
+        # Track time-based patterns
+        recent_attempts = defaultdict(list)
+        
+        for line in lines:
+            if not line.strip():
+                continue
+            
+            # Failed password attempts
+            if 'Failed password' in line:
+                match = re.search(r'Failed password for (?:invalid user )?(\S+) from (\S+)', line)
+                if match:
+                    user, ip = match.groups()
+                    failed_passwords[ip] += 1
+                    ip_failures[ip].append(('password', user, line))
+                    
+                    # Check for root login attempts
+                    if user == 'root':
+                        root_login_attempts.append({
+                            'ip': ip,
+                            'line': line
+                        })
+            
+            # Invalid user attempts
+            elif 'Invalid user' in line or 'invalid user' in line:
+                match = re.search(r'[Ii]nvalid user (\S+) from (\S+)', line)
+                if match:
+                    user, ip = match.groups()
+                    invalid_users[ip] += 1
+                    ip_failures[ip].append(('invalid', user, line))
+            
+            # Port scan detection
+            elif 'Did not receive identification string' in line or 'Bad protocol version identification' in line:
+                match = re.search(r'from (\S+)', line)
+                if match:
+                    ip = match.group(1)
+                    port_scan_attempts[ip] += 1
+            
+            # Successful login after failures
+            elif 'Accepted' in line and 'for' in line:
+                match = re.search(r'Accepted \S+ for (\S+) from (\S+)', line)
+                if match:
+                    user, ip = match.groups()
+                    if ip in ip_failures:
+                        successful_after_failures[ip].append({
+                            'user': user,
+                            'failures': len(ip_failures[ip]),
+                            'line': line
+                        })
+            
+            # Suspicious commands or activities
+            elif any(pattern in line for pattern in ['COMMAND=', 'sudo:', 'su[', 'authentication failure']):
+                if any(cmd in line for cmd in ['/etc/passwd', '/etc/shadow', 'chmod 777', 'rm -rf /', 'wget', 'curl', 'base64']):
+                    suspicious_commands.append(line)
+            
+            # Connection closed by authenticating user
+            elif 'Connection closed by authenticating user' in line:
+                match = re.search(r'Connection closed by authenticating user \S+ (\S+)', line)
+                if match:
+                    ip = match.group(1)
+                    connection_closed[ip] += 1
+            
+            # Repeated connection attempts
+            elif 'Connection from' in line or 'Connection closed by' in line:
+                match = re.search(r'from (\S+)', line)
+                if match:
+                    ip = match.group(1)
+                    repeated_connections[ip] += 1
+        
+        # Generate alerts based on analysis
+        
+        # High severity: Brute force attacks
+        for ip, count in failed_passwords.items():
+            if count >= 10:
+                if firewall_cmd == 'csf':
+                    recommendation = f'Block this IP immediately:\ncsf -d {ip} "Brute force attack - {count} failed attempts"'
+                else:
+                    recommendation = f'Block this IP immediately:\nfirewall-cmd --permanent --add-rich-rule="rule family=ipv4 source address={ip} drop" && firewall-cmd --reload'
+                
+                alerts.append({
+                    'title': 'Brute Force Attack Detected',
+                    'description': f'IP address {ip} has made {count} failed password attempts. This indicates a potential brute force attack.',
+                    'severity': 'high',
+                    'details': {
+                        'IP Address': ip,
+                        'Failed Attempts': count,
+                        'Attack Type': 'Brute Force'
+                    },
+                    'recommendation': recommendation
+                })
+        
+        # High severity: Root login attempts
+        if root_login_attempts:
+            alerts.append({
+                'title': 'Root Login Attempts Detected',
+                'description': f'Direct root login attempts detected from {len(set(r["ip"] for r in root_login_attempts))} IP addresses. Root SSH access should be disabled.',
+                'severity': 'high',
+                'details': {
+                    'Unique IPs': len(set(r["ip"] for r in root_login_attempts)),
+                    'Total Attempts': len(root_login_attempts),
+                    'Top IP': max(set(r["ip"] for r in root_login_attempts), key=lambda x: sum(1 for r in root_login_attempts if r["ip"] == x))
+                },
+                'recommendation': 'Disable root SSH login by setting "PermitRootLogin no" in /etc/ssh/sshd_config'
+            })
+        
+        # Medium severity: Dictionary attacks
+        for ip, count in invalid_users.items():
+            if count >= 5:
+                if firewall_cmd == 'csf':
+                    recommendation = f'Consider blocking this IP:\ncsf -d {ip} "Dictionary attack - {count} invalid users"\n\nAlso configure CSF Login Failure Daemon (lfd) for automatic blocking.'
+                else:
+                    recommendation = f'Consider blocking this IP:\nfirewall-cmd --permanent --add-rich-rule="rule family=ipv4 source address={ip} drop" && firewall-cmd --reload\n\nAlso consider implementing fail2ban for automatic blocking.'
+                
+                alerts.append({
+                    'title': 'Dictionary Attack Detected',
+                    'description': f'IP address {ip} attempted to login with {count} non-existent usernames. This indicates a dictionary attack.',
+                    'severity': 'medium',
+                    'details': {
+                        'IP Address': ip,
+                        'Invalid User Attempts': count,
+                        'Attack Type': 'Dictionary Attack'
+                    },
+                    'recommendation': recommendation
+                })
+        
+        # Medium severity: Port scanning
+        for ip, count in port_scan_attempts.items():
+            if count >= 3:
+                alerts.append({
+                    'title': 'Port Scan Detected',
+                    'description': f'IP address {ip} appears to be scanning SSH port with {count} connection attempts without proper identification.',
+                    'severity': 'medium',
+                    'details': {
+                        'IP Address': ip,
+                        'Scan Attempts': count,
+                        'Attack Type': 'Port Scan'
+                    },
+                    'recommendation': 'Monitor this IP for further suspicious activity. Consider using port knocking or changing SSH port.'
+                })
+        
+        # Low severity: Successful login after failures
+        for ip, successes in successful_after_failures.items():
+            if successes:
+                max_failures = max(s['failures'] for s in successes)
+                if max_failures >= 3:
+                    alerts.append({
+                        'title': 'Successful Login After Multiple Failures',
+                        'description': f'IP address {ip} successfully logged in after {max_failures} failed attempts. This could be legitimate or a successful breach.',
+                        'severity': 'low',
+                        'details': {
+                            'IP Address': ip,
+                            'Failed Attempts Before Success': max_failures,
+                            'Successful User': successes[0]['user']
+                        },
+                        'recommendation': 'Verify if this login is legitimate. Check user activity and consider enforcing stronger passwords.'
+                    })
+        
+        # High severity: Rapid connection attempts (DDoS/flooding)
+        for ip, count in repeated_connections.items():
+            if count >= 50:
+                if firewall_cmd == 'csf':
+                    recommendation = f'Block this IP immediately to prevent resource exhaustion:\ncsf -d {ip} "SSH flooding - {count} connections"'
+                else:
+                    recommendation = f'Block this IP immediately to prevent resource exhaustion:\nfirewall-cmd --permanent --add-rich-rule="rule family=ipv4 source address={ip} drop" && firewall-cmd --reload'
+                
+                alerts.append({
+                    'title': 'SSH Connection Flooding Detected',
+                    'description': f'IP address {ip} has made {count} rapid connection attempts. This may be a DDoS attack or connection flooding.',
+                    'severity': 'high',
+                    'details': {
+                        'IP Address': ip,
+                        'Connection Attempts': count,
+                        'Attack Type': 'Connection Flooding'
+                    },
+                    'recommendation': recommendation
+                })
+        
+        # Medium severity: Suspicious command execution
+        if suspicious_commands:
+            alerts.append({
+                'title': 'Suspicious Command Execution Detected',
+                'description': f'Detected {len(suspicious_commands)} suspicious command executions that may indicate system compromise.',
+                'severity': 'medium',
+                'details': {
+                    'Suspicious Commands': len(suspicious_commands),
+                    'Command Types': 'System file access, downloads, or dangerous operations',
+                    'Sample': suspicious_commands[0] if suspicious_commands else ''
+                },
+                'recommendation': 'Review these commands immediately. If unauthorized, investigate the affected user accounts and consider:\n• Changing all passwords\n• Reviewing sudo access\n• Checking for backdoors or rootkits'
+            })
+        
+        # Add general recommendations if no specific alerts
+        if not alerts:
+            # Check for best practices
+            ssh_config_recommendations = []
+            try:
+                sshd_config = ProcessUtilities.outputExecutioner('grep -E "^(PermitRootLogin|PasswordAuthentication|Port)" /etc/ssh/sshd_config')
+                if 'PermitRootLogin yes' in sshd_config:
+                    ssh_config_recommendations.append('• Disable root login: Set "PermitRootLogin no" in /etc/ssh/sshd_config')
+                if 'Port 22' in sshd_config:
+                    ssh_config_recommendations.append('• Change default SSH port from 22 to reduce automated attacks')
+            except:
+                pass
+            
+            if ssh_config_recommendations:
+                alerts.append({
+                    'title': 'SSH Security Best Practices',
+                    'description': 'While no immediate threats were detected, consider implementing these security enhancements.',
+                    'severity': 'info',
+                    'details': {
+                        'Status': 'No Active Threats',
+                        'Logs Analyzed': len(lines),
+                        'Firewall': firewall_cmd.upper() if firewall_cmd else 'Unknown'
+                    },
+                    'recommendation': '\n'.join(ssh_config_recommendations)
+                })
+            else:
+                alerts.append({
+                    'title': 'No Immediate Threats Detected',
+                    'description': 'No significant security threats were detected in recent SSH logs. Your SSH configuration follows security best practices.',
+                    'severity': 'info',
+                    'details': {
+                        'Status': 'Secure',
+                        'Logs Analyzed': len(lines),
+                        'Firewall': firewall_cmd.upper() if firewall_cmd else 'Unknown'
+                    },
+                    'recommendation': 'Keep your system updated and continue regular security monitoring.'
+                })
+        
+        # Sort alerts by severity
+        severity_order = {'high': 0, 'medium': 1, 'low': 2, 'info': 3}
+        alerts.sort(key=lambda x: severity_order.get(x['severity'], 3))
+        
+        return HttpResponse(json.dumps({
+            'status': 1,
+            'alerts': alerts
+        }), content_type='application/json')
+        
+    except Exception as e:
+        return HttpResponse(json.dumps({'error': str(e)}), content_type='application/json', status=500)
+
+@csrf_exempt
+@require_POST
 def getSSHUserActivity(request):
     import json, os
     from plogical.processUtilities import ProcessUtilities
@@ -756,5 +1090,71 @@ def getSSHUserActivity(request):
             'geoip': geoip,
             'w': w_lines
         }), content_type='application/json')
+    except Exception as e:
+        return HttpResponse(json.dumps({'error': str(e)}), content_type='application/json', status=500)
+
+@csrf_exempt
+@require_GET
+def getTopProcesses(request):
+    try:
+        user_id = request.session.get('userID')
+        if not user_id:
+            return HttpResponse(json.dumps({'error': 'Not logged in'}), content_type='application/json', status=403)
+        
+        currentACL = ACLManager.loadedACL(user_id)
+        if not currentACL.get('admin', 0):
+            return HttpResponse(json.dumps({'error': 'Admin only'}), content_type='application/json', status=403)
+        
+        import subprocess
+        import tempfile
+        
+        # Create a temporary file to capture top output
+        with tempfile.NamedTemporaryFile(mode='w+', delete=False) as temp_file:
+            temp_path = temp_file.name
+        
+        try:
+            # Get top processes data
+            with open(temp_path, "w") as outfile:
+                subprocess.call("top -n1 -b", shell=True, stdout=outfile)
+            
+            with open(temp_path, 'r') as infile:
+                data = infile.readlines()
+            
+            processes = []
+            counter = 0
+            
+            for line in data:
+                counter += 1
+                if counter <= 7:  # Skip header lines
+                    continue
+                
+                if len(processes) >= 10:  # Limit to top 10 processes
+                    break
+                
+                points = line.split()
+                points = [a for a in points if a != '']
+                
+                if len(points) >= 12:
+                    process = {
+                        'pid': points[0],
+                        'user': points[1],
+                        'cpu': points[8],
+                        'memory': points[9],
+                        'command': points[11]
+                    }
+                    processes.append(process)
+            
+            return HttpResponse(json.dumps({
+                'status': 1,
+                'processes': processes
+            }), content_type='application/json')
+            
+        finally:
+            # Clean up temporary file
+            try:
+                os.unlink(temp_path)
+            except:
+                pass
+                
     except Exception as e:
         return HttpResponse(json.dumps({'error': str(e)}), content_type='application/json', status=500)

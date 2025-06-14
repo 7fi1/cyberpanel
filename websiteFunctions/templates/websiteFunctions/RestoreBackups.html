@@ -1,196 +1,436 @@
 {% extends "baseTemplate/index.html" %}
 {% load i18n %}
-{% block title %}{% trans "Restore Backpus - CyberPanel" %}{% endblock %}
+{% load static %}
+{% block title %}{% trans "Restore Backups - CyberPanel" %}{% endblock %}
+
+{% block header_scripts %}
+<style>
+    /* Restore Backups Page Specific Styles */
+    .restore-wrapper {
+        background: transparent;
+        padding: 20px;
+    }
+    
+    .restore-container {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+    
+    .restore-section {
+        background: white;
+        border-radius: 12px;
+        padding: 25px;
+        margin-bottom: 25px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        border: 1px solid #e8e9ff;
+    }
+    
+    .section-title {
+        font-size: 16px;
+        font-weight: 700;
+        color: #2f3640;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .section-title::before {
+        content: '';
+        width: 4px;
+        height: 24px;
+        background: #5b5fcf;
+        border-radius: 2px;
+    }
+    
+    .restore-description {
+        color: #8893a7;
+        font-size: 14px;
+        margin-bottom: 25px;
+        line-height: 1.5;
+    }
+    
+    /* Table Styles */
+    .table-container {
+        background: #fafbff;
+        border: 1px solid #e8e9ff;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+    
+    .table {
+        width: 100%;
+        margin-bottom: 0;
+        background: white;
+    }
+    
+    .table thead {
+        background: #fafbff;
+    }
+    
+    .table th {
+        border: none;
+        padding: 15px;
+        font-size: 13px;
+        font-weight: 700;
+        color: #8893a7;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-bottom: 1px solid #e8e9ff;
+    }
+    
+    .table td {
+        border: none;
+        padding: 15px;
+        font-size: 14px;
+        color: #2f3640;
+        border-bottom: 1px solid #f1f3f5;
+        vertical-align: middle;
+    }
+    
+    .table tbody tr:hover {
+        background: #fafbff;
+    }
+    
+    .table tbody tr:last-child td {
+        border-bottom: none;
+    }
+    
+    /* Backup Type Badge */
+    .backup-type {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+    
+    .backup-type.full {
+        background: #e0f2fe;
+        color: #0369a1;
+    }
+    
+    .backup-type.data {
+        background: #d1fae5;
+        color: #065f46;
+    }
+    
+    .backup-type.database {
+        background: #fef3c7;
+        color: #92400e;
+    }
+    
+    /* Destination Badge */
+    .destination-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 12px;
+        border-radius: 6px;
+        font-size: 13px;
+        font-weight: 600;
+        background: #f0f4ff;
+        color: #5b5fcf;
+    }
+    
+    /* Action Buttons */
+    .action-buttons {
+        display: flex;
+        gap: 10px;
+    }
+    
+    .btn-action {
+        padding: 6px 16px;
+        border-radius: 6px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        border: 1px solid transparent;
+        background: transparent;
+    }
+    
+    .btn-restore {
+        color: #10b981;
+        border-color: #d1fae5;
+        background: #f0fdf4;
+    }
+    
+    .btn-restore:hover {
+        background: #10b981;
+        color: white;
+        border-color: #10b981;
+        text-decoration: none;
+    }
+    
+    .btn-delete {
+        color: #ef4444;
+        border-color: #fee2e2;
+        background: #fef2f2;
+    }
+    
+    .btn-delete:hover {
+        background: #ef4444;
+        color: white;
+        border-color: #ef4444;
+    }
+    
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #8893a7;
+    }
+    
+    .empty-state svg {
+        width: 80px;
+        height: 80px;
+        margin-bottom: 20px;
+        opacity: 0.3;
+    }
+    
+    .empty-state h3 {
+        font-size: 18px;
+        font-weight: 600;
+        color: #2f3640;
+        margin-bottom: 10px;
+    }
+    
+    .empty-state p {
+        font-size: 14px;
+        margin-bottom: 20px;
+    }
+    
+    /* Modal Styles */
+    .modal-content {
+        border-radius: 12px;
+        border: 1px solid #e8e9ff;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+    }
+    
+    .modal-header {
+        background: #fafbff;
+        border-bottom: 1px solid #e8e9ff;
+        padding: 20px;
+        border-radius: 12px 12px 0 0;
+    }
+    
+    .modal-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: #2f3640;
+        margin: 0;
+    }
+    
+    .modal-body {
+        padding: 25px;
+    }
+    
+    .modal-footer {
+        background: #fafbff;
+        border-top: 1px solid #e8e9ff;
+        padding: 15px 20px;
+        border-radius: 0 0 12px 12px;
+    }
+    
+    .btn-default {
+        background: white;
+        border: 1px solid #e8e9ff;
+        color: #2f3640;
+        padding: 8px 20px;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    
+    .btn-default:hover {
+        background: #f8f9ff;
+        border-color: #5b5fcf;
+        color: #5b5fcf;
+    }
+    
+    .btn-danger {
+        background: #ef4444;
+        border: 1px solid #ef4444;
+        color: white;
+        padding: 8px 20px;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    
+    .btn-danger:hover {
+        background: #dc2626;
+        border-color: #dc2626;
+        box-shadow: 0 3px 8px rgba(239,68,68,0.3);
+    }
+    
+    .loading-spinner {
+        width: 16px;
+        height: 16px;
+        margin-left: 8px;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .restore-wrapper {
+            padding: 15px;
+        }
+        
+        .restore-section {
+            padding: 20px;
+        }
+        
+        .table-container {
+            overflow-x: auto;
+        }
+        
+        .action-buttons {
+            flex-direction: column;
+        }
+        
+        .btn-action {
+            width: 100%;
+            text-align: center;
+        }
+    }
+</style>
+
+<script>
+    var deleteUrl = '';
+    
+    // Ensure modal is hidden on page load
+    $(document).ready(function() {
+        $('#DeleteMember').modal('hide');
+    });
+    
+    function DeleteWPNow(url) {
+        deleteUrl = url;
+        $('#DeleteMember').modal('show');
+    }
+    
+    function FinalDeleteWPNow() {
+        window.location.href = deleteUrl;
+    }
+    
+    // Helper function to format backup type
+    function getBackupTypeClass(type) {
+        if (type.toLowerCase().includes('full')) return 'full';
+        if (type.toLowerCase().includes('data')) return 'data';
+        if (type.toLowerCase().includes('database')) return 'database';
+        return '';
+    }
+</script>
+{% endblock %}
+
 {% block content %}
-
-    {% load static %}
-    {% get_current_language as LANGUAGE_CODE %}
-    <!-- Current language: {{ LANGUAGE_CODE }} -->
-
-    <script>
-        $(document).ready(function () {
-            $('[data-toggle="tooltip"]').tooltip();
-        });
-    </script>
-
-    <style>
-        table { /* tables still need 'cellspacing="0"' in the markup */
-            border-collapse: separate;
-            border-spacing: 0;
-        }
-
-        .table-spacing {
-            border-spacing: 0em .9em;
-        }
-
-        table th:nth-child(1) {
-
-            /* Safari 3-4, iOS 1-3.2, Android 1.6- */
-            -webkit-border-radius: 3px 0px 0px 3px;
-
-            /* Firefox 1-3.6 */
-            -moz-border-radius: 3px 0px 0px 3px;
-
-            /* Opera 10.5, IE 9, Safari 5, Chrome, Firefox 4, iOS 4, Android 2.1+ */
-            border-radius: 3px 0px 0px 3px;
-        }
-
-        table th:nth-child(1) {
-
-            /* Safari 3-4, iOS 1-3.2, Android 1.6- */
-            -webkit-border-radius: 20px 0px 0px 20px;
-
-            /* Firefox 1-3.6 */
-            -moz-border-radius: 20px 0px 0px 20px;
-
-            /* Opera 10.5, IE 9, Safari 5, Chrome, Firefox 4, iOS 4, Android 2.1+ */
-            border-radius: 20px 0px 0px 20px;
-        }
-
-        table th:nth-last-child(1) {
-            /* Safari 3-4, iOS 1-3.2, Android 1.6- */
-            -webkit-border-radius: 0px 20px 20px 0px;
-
-            /* Firefox 1-3.6 */
-            -moz-border-radius: 0px 20px 20px 0px;
-
-            /* Opera 10.5, IE 9, Safari 5, Chrome, Firefox 4, iOS 4, Android 2.1+ */
-            border-radius: 0px 20px 20px 0px;
-        }
-
-        table td:nth-child(1) {
-
-            /* Safari 3-4, iOS 1-3.2, Android 1.6- */
-            -webkit-border-radius: 20px 0px 0px 20px;
-
-            /* Firefox 1-3.6 */
-            -moz-border-radius: 20px 0px 0px 20px;
-
-            /* Opera 10.5, IE 9, Safari 5, Chrome, Firefox 4, iOS 4, Android 2.1+ */
-            border-radius: 20px 0px 0px 20px;
-        }
-
-        table td:nth-last-child(1) {
-            /* Safari 3-4, iOS 1-3.2, Android 1.6- */
-            -webkit-border-radius: 0px 20px 20px 0px;
-
-            /* Firefox 1-3.6 */
-            -moz-border-radius: 0px 20px 20px 0px;
-
-            /* Opera 10.5, IE 9, Safari 5, Chrome, Firefox 4, iOS 4, Android 2.1+ */
-            border-radius: 0px 20px 20px 0px;
-        }
-
-    </style>
-
-
-    <div ng-controller="listWebsites" class="container">
-
-        <div id="page-title">
-            <h2 id="domainNamePage">{% trans "List Backups " %}
+<div class="restore-wrapper" ng-controller="listWebsites">
+    <div class="restore-container">
+        <!-- Header Section -->
+        <div class="restore-section">
+            <h2 class="section-title">
+                RESTORE BACKUPS
+                <img ng-hide="cyberPanelLoading" src="{% static 'images/loading.gif' %}" class="loading-spinner">
             </h2>
-            <img ng-hide="cyberPanelLoading" src="{% static 'images/loading.gif' %}">
-            <p>{% trans "On this page you can Restore, list, modify and delete Backups Wordpress Sites from your server." %}</p>
+            <p class="restore-description">{% trans "On this page you can restore, list, and delete backups of WordPress sites from your server." %}</p>
         </div>
 
-
-        <table class="table-spacing" style="width: 100%">
-            <thead style="color: white; background-color: #0a6ebd">
-            <tr>
-                <th style="padding: 18px; color: white; width: 161px; font-size: 12px;">ID
-                </th>
-                <th style="padding: 18px; color: white; width: 161px; font-size: 12px;">Website
-                </th>
-                <th style="padding: 18px; color: white; width: 161px; font-size: 12px;">Type
-                </th>
-                 <th style="padding: 18px; color: white; width: 161px; font-size: 12px;">Backup Destination
-                </th>
-                <th style="padding: 18px; color: white; width: 161px; font-size: 12px;">Action
-                </th>
-
-
-            </tr>
-            </thead>
-                <tbody style="background-color: #d9eefa">
-            {% for sub in job %}
-
-                <tr>
-                    <td style="padding: 13px;">
-
-                            <p style="font-weight: bold; text-transform: uppercase; ">{{ sub.id }}</p>
-
-                    </td>
-                    <td style="padding: 13px;">
-                        {{ sub.title }}
-                    </td>
-                    <td style="padding: 13px;">
-                        {{ sub.Backuptype }}
-                    </td>
-                    <td style="padding: 13px;">
-                        {{ sub.BackupDestination }}
-                    </td>
-
-                    <td style="padding: 13px;">
-                        <a href="{% url 'RestoreHome' %}?BackupID={{ sub.id }}"
-                                aria-label=""
-
-                                type="button" class="btn btn-border btn-alt border-green btn-link font-green">
-                            Restore
-                        </a>
-
-                        <button
-                                data-toggle="modal"
-                                data-target="#DeleteMember" aria-label=""
-                                onclick="DeleteWPNow('{% url 'RestoreBackups' %}?DeleteID={{ sub.id }}')"
-                                type="button" class="btn btn-border btn-alt border-red btn-link font-red">
-                            Delete
-                        </button>
-
-                        <div id="DeleteMember" class="modal fade" role="dialog">
-                            <div class="modal-dialog">
-                                <!-- Modal content-->
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <button type="button" class="close" data-dismiss="modal">&times;
-                                        </button>
-                                        <h4 class="modal-title">Delete WordPress Site
-                                            <img ng-hide="$parent.cyberPanelLoading"
-                                                 src="/static/images/loading.gif"
-                                                 style="display: none;">
-                                        </h4>
-                                    </div>
-                                    <div class="modal-body">
-                                        <form name="DeleteDocumentRootForm" action="/"
-                                              class="form-horizontal">
-
-                                            <span>Do you want to delete the site?</span>
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-primary"
-                                                onclick="FinalDeleteWPNow()">Yes
-                                        </button>
-                                        <button type="button" ng-disabled="savingSettings"
-                                                class="btn btn-default" data-dismiss="modal">
-                                            Cancel
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-
-                    </td>
-
-
-                </tr>
-            {% endfor %}
-
-            </tbody>
-
-
-        </table>
-
-
+        <!-- Backups List -->
+        <div class="restore-section">
+            <h3 class="section-title">AVAILABLE BACKUPS</h3>
+            
+            {% if job %}
+                <div class="table-container">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Website</th>
+                                <th>Type</th>
+                                <th>Backup Destination</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for sub in job %}
+                                <tr>
+                                    <td>
+                                        <strong>#{{ sub.id }}</strong>
+                                    </td>
+                                    <td>
+                                        <strong>{{ sub.title }}</strong>
+                                    </td>
+                                    <td>
+                                        <span class="backup-type {{ sub.Backuptype|lower }}">
+                                            {{ sub.Backuptype }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="destination-badge">
+                                            <i class="fas fa-server"></i>
+                                            {{ sub.BackupDestination }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="action-buttons">
+                                            <a href="{% url 'RestoreHome' %}?BackupID={{ sub.id }}" 
+                                               class="btn-action btn-restore">
+                                                <i class="fas fa-undo"></i>
+                                                Restore
+                                            </a>
+                                            <button onclick="DeleteWPNow('{% url 'RestoreBackups' %}?DeleteID={{ sub.id }}')"
+                                                    class="btn-action btn-delete">
+                                                <i class="fas fa-trash"></i>
+                                                Delete
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+                    </svg>
+                    <h3>No Backups Found</h3>
+                    <p>You don't have any backups available to restore.</p>
+                </div>
+            {% endif %}
+        </div>
     </div>
+</div>
 
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="DeleteMember" tabindex="-1" role="dialog" aria-hidden="true" style="display: none;">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Delete Backup</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete this backup? This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                <button type="button" onclick="FinalDeleteWPNow()" class="btn btn-danger">
+                    <i class="fas fa-trash"></i>
+                    Delete
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

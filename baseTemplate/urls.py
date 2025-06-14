@@ -22,4 +22,6 @@ urlpatterns = [
     re_path(r'^getRecentSSHLogins$', views.getRecentSSHLogins, name='getRecentSSHLogins'),
     re_path(r'^getRecentSSHLogs$', views.getRecentSSHLogs, name='getRecentSSHLogs'),
     re_path(r'^getSSHUserActivity$', views.getSSHUserActivity, name='getSSHUserActivity'),
+    re_path(r'^getTopProcesses$', views.getTopProcesses, name='getTopProcesses'),
+    re_path(r'^analyzeSSHSecurity$', views.analyzeSSHSecurity, name='analyzeSSHSecurity'),
 ]

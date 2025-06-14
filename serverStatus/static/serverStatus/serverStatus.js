@@ -1153,10 +1153,10 @@ app.controller('listOSPackages', function ($scope, $http, $timeout) {
 
 app.controller('changePort', function ($scope, $http, $timeout) {
 
-    $scope.cyberpanelLoading = true;
+    $scope.cyberpanelLoading = false;
 
     $scope.changeCPPort = function () {
-        $scope.cyberpanelLoading = false;
+        $scope.cyberpanelLoading = true;
 
         var config = {
             headers: {
@@ -1173,7 +1173,7 @@ app.controller('changePort', function ($scope, $http, $timeout) {
         $http.post(dataurl, data, config).then(ListInitialData, cantLoadInitialData);
 
         function ListInitialData(response) {
-            $scope.cyberpanelLoading = true;
+            $scope.cyberpanelLoading = false;
             if (response.data.status === 1) {
                 new PNotify({
                     title: 'Success!',
@@ -1190,11 +1190,11 @@ app.controller('changePort', function ($scope, $http, $timeout) {
         }
 
         function cantLoadInitialData(response) {
-            $scope.cyberpanelLoading = true;
+            $scope.cyberpanelLoading = false;
             new PNotify({
-                title: 'Success!',
-                text: 'Port changed, open CyberPanel on new port.',
-                type: 'success'
+                title: 'Error!',
+                text: 'Could not connect to server, please try again.',
+                type: 'error'
             });
         }
 

@@ -3,287 +3,832 @@
 {% block title %}{% trans "PHP Tuning - CyberPanel" %}{% endblock %}
 {% block content %}
 
-    {% load static %}
-    {% get_current_language as LANGUAGE_CODE %}
-    <!-- Current language: {{ LANGUAGE_CODE }} -->
+{% load static %}
+{% get_current_language as LANGUAGE_CODE %}
+<!-- Current language: {{ LANGUAGE_CODE }} -->
 
-    {% if OLS %}
-        <div class="container">
-            <div id="page-title">
-                <h2>{% trans "PHP Tuning" %}</h2>
-                <p>{% trans "Set how each version of PHP behaves in your server here." %}</p>
+<style>
+    .modern-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+    
+    .page-header {
+        text-align: center;
+        margin-bottom: 3rem;
+        padding: 3rem 0;
+        background: linear-gradient(135deg, #f8f9ff 0%, #f0f1ff 100%);
+        border-radius: 20px;
+        animation: fadeInDown 0.5s ease-out;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle at 70% 30%, rgba(91, 95, 207, 0.1) 0%, transparent 50%);
+        animation: rotate 30s linear infinite;
+    }
+    
+    .header-content {
+        position: relative;
+        z-index: 1;
+    }
+    
+    .page-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+    }
+    
+    .php-icon {
+        width: 60px;
+        height: 60px;
+        background: white;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    
+    .page-subtitle {
+        font-size: 1.125rem;
+        color: #64748b;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+    
+    .selector-panel {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 10px 40px rgba(0,0,0,0.08);
+        border: 1px solid #e8e9ff;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        animation: fadeInUp 0.5s ease-out;
+    }
+    
+    .selector-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .selector-icon {
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(135deg, #5b5fcf 0%, #4547a9 100%);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+    }
+    
+    .selector-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #1e293b;
+    }
+    
+    .selector-form {
+        display: flex;
+        gap: 1rem;
+        align-items: flex-end;
+    }
+    
+    .form-group {
+        flex: 1;
+    }
+    
+    .form-label {
+        font-weight: 500;
+        color: #475569;
+        font-size: 0.875rem;
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+    
+    .form-control {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 1px solid #e8e9ff;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        transition: all 0.3s ease;
+        background: #fff;
+    }
+    
+    .form-control:focus {
+        outline: none;
+        border-color: #5b5fcf;
+        box-shadow: 0 0 0 3px rgba(91, 95, 207, 0.1);
+    }
+    
+    .select-control {
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+        background-position: right 0.5rem center;
+        background-repeat: no-repeat;
+        background-size: 1.5em 1.5em;
+        padding-right: 2.5rem;
+    }
+    
+    .btn {
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 500;
+        font-size: 0.875rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .btn-primary {
+        background: #5b5fcf;
+        color: white;
+    }
+    
+    .btn-primary:hover {
+        background: #4547a9;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(91, 95, 207, 0.3);
+    }
+    
+    .tuning-panel {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 10px 40px rgba(0,0,0,0.08);
+        border: 1px solid #e8e9ff;
+        overflow: hidden;
+        animation: fadeInUp 0.5s ease-out 0.2s;
+        animation-fill-mode: both;
+    }
+    
+    .panel-header {
+        background: linear-gradient(135deg, #f8f9ff 0%, #f0f1ff 100%);
+        color: #1e293b;
+        padding: 1.5rem 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 1px solid #e8e9ff;
+    }
+    
+    .panel-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    
+    .php-version-badge {
+        background: #fff;
+        padding: 0.25rem 0.75rem;
+        border-radius: 6px;
+        font-size: 0.875rem;
+        color: #64748b;
+        border: 1px solid #e8e9ff;
+    }
+    
+    .form-section {
+        padding: 2rem;
+    }
+    
+    .section-header {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid #e8e9ff;
+    }
+    
+    .section-icon {
+        width: 32px;
+        height: 32px;
+        background: #f3e8ff;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #5b5fcf;
+    }
+    
+    .section-title {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: #1e293b;
+    }
+    
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.5rem;
+    }
+    
+    .form-field {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .field-label {
+        font-weight: 500;
+        color: #475569;
+        font-size: 0.875rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .tooltip-icon {
+        color: #94a3b8;
+        font-size: 0.875rem;
+        cursor: help;
+        position: relative;
+    }
+    
+    .tooltip-icon:hover .tooltip-content {
+        display: block;
+    }
+    
+    .tooltip-content {
+        display: none;
+        position: absolute;
+        bottom: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #1e293b;
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        white-space: nowrap;
+        margin-bottom: 0.5rem;
+        z-index: 10;
+        min-width: 200px;
+    }
+    
+    .tooltip-content::after {
+        content: '';
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        border: 5px solid transparent;
+        border-top-color: #1e293b;
+    }
+    
+    .input-group {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .input-addon {
+        font-size: 0.875rem;
+        color: #64748b;
+        font-weight: 500;
+    }
+    
+    .current-value {
+        font-size: 0.75rem;
+        color: #64748b;
+        margin-top: 0.25rem;
+    }
+    
+    .toggle-switch {
+        position: relative;
+        width: 50px;
+        height: 24px;
+        margin-right: 0.5rem;
+    }
+    
+    .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+    
+    .toggle-slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #cbd5e1;
+        transition: .4s;
+        border-radius: 24px;
+    }
+    
+    .toggle-slider:before {
+        position: absolute;
+        content: "";
+        height: 18px;
+        width: 18px;
+        left: 3px;
+        bottom: 3px;
+        background-color: white;
+        transition: .4s;
+        border-radius: 50%;
+    }
+    
+    input:checked + .toggle-slider {
+        background-color: #5b5fcf;
+    }
+    
+    input:checked + .toggle-slider:before {
+        transform: translateX(26px);
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+        padding: 2rem;
+        background: #f8f9ff;
+        border-top: 1px solid #e8e9ff;
+    }
+    
+    .btn-secondary {
+        background: white;
+        color: #64748b;
+        border: 1px solid #e8e9ff;
+    }
+    
+    .btn-secondary:hover {
+        background: #f8f9ff;
+        border-color: #cbd5e1;
+    }
+    
+    .loading-spinner {
+        width: 20px;
+        height: 20px;
+        border: 2px solid #f3f3f3;
+        border-top: 2px solid #5b5fcf;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        display: inline-block;
+    }
+    
+    .alert {
+        padding: 1rem 1.5rem;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+        animation: slideIn 0.3s ease-out;
+    }
+    
+    .alert-icon {
+        font-size: 1.25rem;
+        flex-shrink: 0;
+    }
+    
+    .alert-content {
+        flex: 1;
+    }
+    
+    .alert-title {
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+    }
+    
+    .alert-message {
+        font-size: 0.875rem;
+        color: #475569;
+    }
+    
+    .alert-success {
+        background: #d1fae5;
+        border: 1px solid #a7f3d0;
+        color: #065f46;
+    }
+    
+    .alert-error {
+        background: #fee2e2;
+        border: 1px solid #fecaca;
+        color: #991b1b;
+    }
+    
+    .alert-info {
+        background: #dbeafe;
+        border: 1px solid #bfdbfe;
+        color: #1e40af;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+        color: #64748b;
+    }
+    
+    .empty-icon {
+        width: 80px;
+        height: 80px;
+        background: #f3f4f6;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1rem;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+    
+    @keyframes fadeInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .selector-form {
+            flex-direction: column;
+        }
+        
+        .page-title {
+            font-size: 2rem;
+        }
+    }
+</style>
+
+<div class="modern-container" ng-controller="tunePHP">
+    <div class="page-header">
+        <div class="header-content">
+            <h1 class="page-title">
+                <div class="php-icon">
+                    <i class="fab fa-php" style="color: #5b5fcf; font-size: 1.75rem;"></i>
+                </div>
+                {% trans "PHP Tuning" %}
+            </h1>
+            <p class="page-subtitle">
+                {% trans "Optimize PHP performance by configuring memory limits, process limits, and connection settings for each PHP version" %}
+            </p>
+        </div>
+    </div>
+
+    <!-- PHP Selector -->
+    <div class="selector-panel">
+        <div class="selector-header">
+            <div class="selector-icon">
+                <i class="fas fa-code"></i>
             </div>
-            <div class="panel">
-                <div class="panel-body">
-                    <h3 class="title-hero">
-                        {% trans "Select PHP Version" %} <img id="tunePHPLoading"
-                                                              src="{% static 'images/loading.gif' %}">
-                    </h3>
-                    <div class="example-box-wrapper">
+            <h2 class="selector-title">
+                {% if OLS %}
+                    {% trans "Select Domain" %}
+                {% else %}
+                    {% trans "Select PHP Version" %}
+                {% endif %}
+            </h2>
+        </div>
+        
+        <form class="selector-form">
+            <div class="form-group">
+                <label class="form-label">
+                    {% if OLS %}
+                        {% trans "Choose a domain to configure its PHP settings" %}
+                    {% else %}
+                        {% trans "Choose PHP version to configure" %}
+                    {% endif %}
+                </label>
+                <select ng-change="fetchPHPDetails()" ng-model="domainSelection" class="form-control select-control">
+                    <option value="" disabled selected>
+                        {% if OLS %}
+                            {% trans "Select a domain..." %}
+                        {% else %}
+                            {% trans "Select PHP version..." %}
+                        {% endif %}
+                    </option>
+                    {% if OLS %}
+                        {% for items in websiteList %}
+                            <option>{{ items }}</option>
+                        {% endfor %}
+                    {% else %}
+                        <option>lsphp53</option>
+                        <option>lsphp54</option>
+                        <option>lsphp55</option>
+                        <option>lsphp56</option>
+                        <option>lsphp70</option>
+                        <option>lsphp71</option>
+                        <option>lsphp72</option>
+                        <option>lsphp73</option>
+                        <option>lsphp74</option>
+                        <option>lsphp80</option>
+                        <option>lsphp81</option>
+                        <option>lsphp82</option>
+                    {% endif %}
+                </select>
+            </div>
+            <button type="button" class="btn btn-primary" ng-click="fetchPHPDetails()" ng-show="domainSelection">
+                <i class="fas fa-sync-alt"></i>
+                {% trans "Load Settings" %}
+            </button>
+        </form>
+    </div>
 
+    <!-- Loading Spinner -->
+    <div ng-show="false" id="tunePHPLoading" style="text-align: center; padding: 2rem;">
+        <div class="loading-spinner"></div>
+    </div>
 
-                        <form ng-controller="tunePHP" action="/" id="modifyPackageForm"
-                              class="form-horizontal bordered-row">
+    <!-- Alerts -->
+    <div id="canNotFetch" class="alert alert-error" style="display: none;">
+        <i class="fas fa-times-circle alert-icon"></i>
+        <div class="alert-content">
+            <div class="alert-title">{% trans "Failed to Fetch Settings" %}</div>
+            <div class="alert-message">{$ errorMessage $}</div>
+        </div>
+    </div>
 
+    <div id="successfullyFetched" class="alert alert-info" style="display: none;">
+        <i class="fas fa-info-circle alert-icon"></i>
+        <div class="alert-content">
+            <div class="alert-title">{% trans "Settings Loaded" %}</div>
+            <div class="alert-message">{% trans "PHP configuration has been loaded successfully" %}</div>
+        </div>
+    </div>
 
-                            <div class="form-group">
-                                <label class="col-sm-3 control-label">{% trans "Select Domain" %}</label>
-                                <div class="col-sm-6">
-                                    <select ng-change="fetchPHPDetails()" ng-model="domainSelection"
-                                            class="form-control">
-                                        {% for items in websiteList %}
-                                            <option>{{ items }}</option>
-                                        {% endfor %}
-                                    </select>
+    <div id="canNotTune" class="alert alert-error" style="display: none;">
+        <i class="fas fa-times-circle alert-icon"></i>
+        <div class="alert-content">
+            <div class="alert-title">{% trans "Configuration Failed" %}</div>
+            <div class="alert-message">{$ errorMessage $}</div>
+        </div>
+    </div>
+
+    <div id="successfullyTuned" class="alert alert-success" style="display: none;">
+        <i class="fas fa-check-circle alert-icon"></i>
+        <div class="alert-content">
+            <div class="alert-title">{% trans "Success!" %}</div>
+            <div class="alert-message">
+                {% trans "PHP settings for" %} <strong>{$ phpVersionTuned $}</strong> {% trans "have been updated successfully" %}
+            </div>
+        </div>
+    </div>
+
+    <!-- PHP Configuration Panel -->
+    <div class="tuning-panel" ng-hide="hideDetails">
+        <div class="panel-header">
+            <h2 class="panel-title">
+                <i class="fas fa-cog"></i>
+                {% trans "PHP Configuration" %}
+            </h2>
+            <div class="php-version-badge" ng-show="domainSelection">
+                {$ domainSelection $}
+            </div>
+        </div>
+
+        <form class="php-form">
+            <!-- Connection Settings -->
+            <div class="form-section">
+                <div class="section-header">
+                    <div class="section-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <h3 class="section-title">{% trans "Connection & Timeout Settings" %}</h3>
+                </div>
+                
+                <div class="form-grid">
+                    <div class="form-field">
+                        <label class="field-label">
+                            {% trans "Initial Request Timeout" %}
+                            <span class="tooltip-icon">
+                                <i class="fas fa-question-circle"></i>
+                                <div class="tooltip-content">
+                                    {% trans "Maximum time in seconds for the initial request" %}
                                 </div>
-                            </div>
+                            </span>
+                        </label>
+                        <div class="input-group">
+                            <input type="number" class="form-control" ng-model="initTimeout" min="1" required>
+                            <span class="input-addon">{% trans "seconds" %}</span>
+                        </div>
+                        <span class="current-value">{% trans "Default: 60 seconds" %}</span>
+                    </div>
 
-
-                            <!------ Modification form that appears after a click --------------->
-
-                            <div ng-hide="hideDetails" class="form-group">
-                                <label class="col-sm-3 control-label">{% trans "Initial Request Timeout (secs)" %}</label>
-                                <div class="col-sm-6">
-                                    <input type="number" class="form-control" ng-model="initTimeout" required>
+                    <div class="form-field">
+                        <label class="field-label">
+                            {% trans "Max Connections" %}
+                            <span class="tooltip-icon">
+                                <i class="fas fa-question-circle"></i>
+                                <div class="tooltip-content">
+                                    {% trans "Maximum number of concurrent PHP connections" %}
                                 </div>
-                            </div>
-
-                            <div ng-hide="hideDetails" class="form-group">
-                                <label class="col-sm-3 control-label">{% trans "Max Connections" %}</label>
-                                <div class="col-sm-6">
-                                    <input type="number" class="form-control" ng-model="maxConns" required>
-                                </div>
-                            </div>
-
-
-                            <div ng-hide="hideDetails" class="form-group">
-                                <label class="col-sm-3 control-label">{% trans "Memory Soft Limit" %}</label>
-                                <div class="col-sm-6">
-                                    <input type="text" class="form-control" ng-model="memSoftLimit" required>
-                                </div>
-                            </div>
-
-                            <div ng-hide="hideDetails" class="form-group">
-                                <label class="col-sm-3 control-label">{% trans "Memory Hard Limit" %}</label>
-                                <div class="col-sm-6">
-                                    <input type="text" class="form-control" ng-model="memHardLimit" required>
-                                </div>
-                            </div>
-
-
-                            <div ng-hide="hideDetails" class="form-group">
-                                <label class="col-sm-3 control-label">{% trans "Process Soft Limit" %}</label>
-                                <div class="col-sm-6">
-                                    <input type="number" class="form-control" ng-model="procSoftLimit" required>
-                                </div>
-                            </div>
-
-                            <div ng-hide="hideDetails" class="form-group">
-                                <label class="col-sm-3 control-label">{% trans "Process Hard Limit" %}</label>
-                                <div class="col-sm-6">
-                                    <input type="number" class="form-control" ng-model="procHardLimit" required>
-                                </div>
-                            </div>
-
-
-                            <div ng-hide="hideDetails" class="form-group">
-                                <label class="col-sm-3 control-label">{% trans "Persistent Connection" %}</label>
-                                <div class="col-sm-6">
-                                    <select ng-model="persistConn" class="form-control">
-                                        <option>{% trans "Enable" %}</option>
-                                        <option>{% trans "Disable" %}</option>
-                                    </select>
-                                </div>
-                                <div class="current-pack">{% trans "Currently:" %} {$ persistStatus $}</div>
-                            </div>
-                            <!------ Modification form that appears after a click --------------->
-
-
-                            <div ng-hide="hideDetails" class="form-group">
-                                <label class="col-sm-3 control-label"></label>
-                                <div class="col-sm-4">
-                                    <button type="button" ng-click="tunePHPFunc()"
-                                            class="btn btn-primary btn-lg btn-block">{% trans "Tune PHP" %}</button>
-
-                                </div>
-                            </div>
-
-                            <div class="form-group">
-                                <label class="col-sm-3 control-label"></label>
-                                <div class="col-sm-4">
-                                    <div id="canNotFetch" class="alert alert-danger">
-                                        <p>{% trans "Cannot fetch details. Error message:" %} {$ errorMessage $}</p>
-                                    </div>
-
-                                    <div id="canNotTune" class="alert alert-danger">
-                                        <p>{% trans "Cannot tune. Error message:" %} {$ errorMessage $}</p>
-                                    </div>
-
-
-                                    <div id="successfullyFetched" class="alert alert-success">
-                                        <p>{% trans "Details Successfully fetched." %}</p>
-                                    </div>
-
-                                    <div id="successfullyTuned" class="alert alert-success">
-                                        <p>{% trans "PHP for " %}<strong>{$ phpVersionTuned
-                                            $}</strong> {% trans "Successfully tuned." %}</p>
-                                    </div>
-                                </div>
-
-
-                            </div>
-
-
-                        </form>
-
-
+                            </span>
+                        </label>
+                        <input type="number" class="form-control" ng-model="maxConns" min="1" required>
+                        <span class="current-value">{% trans "Recommended: 35-50" %}</span>
                     </div>
                 </div>
             </div>
 
-
-        </div>
-    {% else %}
-        <div class="container">
-            <div id="page-title">
-                <h2>{% trans "PHP Tuning" %}</h2>
-                <p>{% trans "Set how each version of PHP behaves in your server here." %}</p>
-            </div>
-            <div class="panel">
-                <div class="panel-body">
-                    <h3 class="title-hero">
-                        {% trans "Select PHP Version" %} <img id="tunePHPLoading"
-                                                              src="{% static 'images/loading.gif' %}">
-                    </h3>
-                    <div class="example-box-wrapper">
-
-
-                        <form ng-controller="tunePHP" action="/" id="modifyPackageForm"
-                              class="form-horizontal bordered-row">
-
-
-                            <div class="form-group">
-                                <label class="col-sm-3 control-label">{% trans "Select PHP" %}</label>
-                                <div class="col-sm-6">
-                                    <select ng-change="fetchPHPDetails()" ng-model="domainSelection"
-                                            class="form-control">
-                                        <option>lsphp53</option>
-                                        <option>lsphp54</option>
-                                        <option>lsphp55</option>
-                                        <option>lsphp56</option>
-                                        <option>lsphp71</option>
-                                        <option>lsphp72</option>
-                                        <option>lsphp73</option>
-                                        <option>lsphp74</option>
-                                    </select>
+            <!-- Memory Settings -->
+            <div class="form-section">
+                <div class="section-header">
+                    <div class="section-icon">
+                        <i class="fas fa-memory"></i>
+                    </div>
+                    <h3 class="section-title">{% trans "Memory Limits" %}</h3>
+                </div>
+                
+                <div class="form-grid">
+                    <div class="form-field">
+                        <label class="field-label">
+                            {% trans "Memory Soft Limit" %}
+                            <span class="tooltip-icon">
+                                <i class="fas fa-question-circle"></i>
+                                <div class="tooltip-content">
+                                    {% trans "Soft memory limit (can be exceeded temporarily)" %}
                                 </div>
-                            </div>
+                            </span>
+                        </label>
+                        <input type="text" class="form-control" ng-model="memSoftLimit" placeholder="e.g., 512M" required>
+                        <span class="current-value">{% trans "Format: 512M, 1G, etc." %}</span>
+                    </div>
 
-
-                            <!------ Modification form that appears after a click --------------->
-
-                            <div ng-hide="hideDetails" class="form-group">
-                                <label class="col-sm-3 control-label">{% trans "Initial Request Timeout (secs)" %}</label>
-                                <div class="col-sm-6">
-                                    <input type="number" class="form-control" ng-model="initTimeout" required>
+                    <div class="form-field">
+                        <label class="field-label">
+                            {% trans "Memory Hard Limit" %}
+                            <span class="tooltip-icon">
+                                <i class="fas fa-question-circle"></i>
+                                <div class="tooltip-content">
+                                    {% trans "Hard memory limit (cannot be exceeded)" %}
                                 </div>
-                            </div>
-
-                            <div ng-hide="hideDetails" class="form-group">
-                                <label class="col-sm-3 control-label">{% trans "Max Connections" %}</label>
-                                <div class="col-sm-6">
-                                    <input type="number" class="form-control" ng-model="maxConns" required>
-                                </div>
-                            </div>
-
-
-                            <div ng-hide="hideDetails" class="form-group">
-                                <label class="col-sm-3 control-label">{% trans "Memory Soft Limit" %}</label>
-                                <div class="col-sm-6">
-                                    <input type="text" class="form-control" ng-model="memSoftLimit" required>
-                                </div>
-                            </div>
-
-                            <div ng-hide="hideDetails" class="form-group">
-                                <label class="col-sm-3 control-label">{% trans "Memory Hard Limit" %}</label>
-                                <div class="col-sm-6">
-                                    <input type="text" class="form-control" ng-model="memHardLimit" required>
-                                </div>
-                            </div>
-
-
-                            <div ng-hide="hideDetails" class="form-group">
-                                <label class="col-sm-3 control-label">{% trans "Process Soft Limit" %}</label>
-                                <div class="col-sm-6">
-                                    <input type="number" class="form-control" ng-model="procSoftLimit" required>
-                                </div>
-                            </div>
-
-                            <div ng-hide="hideDetails" class="form-group">
-                                <label class="col-sm-3 control-label">{% trans "Process Hard Limit" %}</label>
-                                <div class="col-sm-6">
-                                    <input type="number" class="form-control" ng-model="procHardLimit" required>
-                                </div>
-                            </div>
-
-
-                            <div ng-hide="hideDetails" class="form-group">
-                                <label class="col-sm-3 control-label">{% trans "Persistent Connection" %}</label>
-                                <div class="col-sm-6">
-                                    <select ng-model="persistConn" class="form-control">
-                                        <option>{% trans "Enable" %}</option>
-                                        <option>{% trans "Disable" %}</option>
-                                    </select>
-                                </div>
-                                <div class="current-pack">{% trans "Currently:" %} {$ persistStatus $}</div>
-                            </div>
-                            <!------ Modification form that appears after a click --------------->
-
-
-                            <div ng-hide="hideDetails" class="form-group">
-                                <label class="col-sm-3 control-label"></label>
-                                <div class="col-sm-4">
-                                    <button type="button" ng-click="tunePHPFunc()"
-                                            class="btn btn-primary btn-lg btn-block">{% trans "Tune PHP" %}</button>
-
-                                </div>
-                            </div>
-
-                            <div class="form-group">
-                                <label class="col-sm-3 control-label"></label>
-                                <div class="col-sm-4">
-                                    <div id="canNotFetch" class="alert alert-danger">
-                                        <p>{% trans "Cannot fetch details. Error message:" %} {$ errorMessage $}</p>
-                                    </div>
-
-                                    <div id="canNotTune" class="alert alert-danger">
-                                        <p>{% trans "Cannot tune. Error message:" %} {$ errorMessage $}</p>
-                                    </div>
-
-
-                                    <div id="successfullyFetched" class="alert alert-success">
-                                        <p>{% trans "Details Successfully fetched." %}</p>
-                                    </div>
-
-                                    <div id="successfullyTuned" class="alert alert-success">
-                                        <p>{% trans "PHP for " %}<strong>{$ phpVersionTuned
-                                            $}</strong> {% trans "Successfully tuned." %}</p>
-                                    </div>
-                                </div>
-
-
-                            </div>
-
-
-                        </form>
-
-
+                            </span>
+                        </label>
+                        <input type="text" class="form-control" ng-model="memHardLimit" placeholder="e.g., 1G" required>
+                        <span class="current-value">{% trans "Should be higher than soft limit" %}</span>
                     </div>
                 </div>
             </div>
 
+            <!-- Process Settings -->
+            <div class="form-section">
+                <div class="section-header">
+                    <div class="section-icon">
+                        <i class="fas fa-microchip"></i>
+                    </div>
+                    <h3 class="section-title">{% trans "Process Limits" %}</h3>
+                </div>
+                
+                <div class="form-grid">
+                    <div class="form-field">
+                        <label class="field-label">
+                            {% trans "Process Soft Limit" %}
+                            <span class="tooltip-icon">
+                                <i class="fas fa-question-circle"></i>
+                                <div class="tooltip-content">
+                                    {% trans "Soft limit for number of PHP processes" %}
+                                </div>
+                            </span>
+                        </label>
+                        <input type="number" class="form-control" ng-model="procSoftLimit" min="1" required>
+                        <span class="current-value">{% trans "Default: 400" %}</span>
+                    </div>
 
+                    <div class="form-field">
+                        <label class="field-label">
+                            {% trans "Process Hard Limit" %}
+                            <span class="tooltip-icon">
+                                <i class="fas fa-question-circle"></i>
+                                <div class="tooltip-content">
+                                    {% trans "Hard limit for number of PHP processes" %}
+                                </div>
+                            </span>
+                        </label>
+                        <input type="number" class="form-control" ng-model="procHardLimit" min="1" required>
+                        <span class="current-value">{% trans "Default: 500" %}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Other Settings -->
+            <div class="form-section">
+                <div class="section-header">
+                    <div class="section-icon">
+                        <i class="fas fa-sliders-h"></i>
+                    </div>
+                    <h3 class="section-title">{% trans "Additional Settings" %}</h3>
+                </div>
+                
+                <div class="form-grid">
+                    <div class="form-field">
+                        <label class="field-label">
+                            {% trans "Persistent Connections" %}
+                            <span class="tooltip-icon">
+                                <i class="fas fa-question-circle"></i>
+                                <div class="tooltip-content">
+                                    {% trans "Keep database connections open between requests" %}
+                                </div>
+                            </span>
+                        </label>
+                        <div style="display: flex; align-items: center;">
+                            <label class="toggle-switch">
+                                <input type="checkbox" ng-model="persistConn" ng-true-value="'Enable'" ng-false-value="'Disable'">
+                                <span class="toggle-slider"></span>
+                            </label>
+                            <span ng-if="persistConn === 'Enable'">{% trans "Enabled" %}</span>
+                            <span ng-if="persistConn !== 'Enable'">{% trans "Disabled" %}</span>
+                        </div>
+                        <span class="current-value">{% trans "Currently:" %} {$ persistStatus $}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="action-buttons">
+                <button type="button" ng-click="tunePHPFunc()" class="btn btn-primary">
+                    <i class="fas fa-save"></i>
+                    {% trans "Apply PHP Settings" %}
+                </button>
+                <button type="button" class="btn btn-secondary" ng-click="fetchPHPDetails()">
+                    <i class="fas fa-undo"></i>
+                    {% trans "Reset Form" %}
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Empty State -->
+    <div class="tuning-panel" ng-show="hideDetails">
+        <div class="empty-state">
+            <div class="empty-icon">
+                <i class="fas fa-code" style="font-size: 2rem; color: #5b5fcf;"></i>
+            </div>
+            <h3 style="color: #1e293b; margin-bottom: 0.5rem;">{% trans "No PHP Version Selected" %}</h3>
+            <p>
+                {% if OLS %}
+                    {% trans "Select a domain from the dropdown above to configure its PHP settings" %}
+                {% else %}
+                    {% trans "Select a PHP version from the dropdown above to configure its settings" %}
+                {% endif %}
+            </p>
         </div>
-    {% endif %}
+    </div>
+</div>
 
+{% endblock %}
+
+{% block footer_scripts %}
+<script src="{% static 'tuning/tuning.js' %}"></script>
 {% endblock %}

@@ -1,124 +1,361 @@
 {% extends "baseTemplate/index.html" %}
 {% load i18n %}
+{% load static %}
 {% block title %}{% trans "Create Docker App - CyberPanel" %}{% endblock %}
+
+{% block header_scripts %}
+<style>
+    /* Create Docker Site Page Specific Styles */
+    .docker-wrapper {
+        background: transparent;
+        padding: 20px;
+    }
+    
+    .docker-container {
+        max-width: 1000px;
+        margin: 0 auto;
+    }
+    
+    .docker-section {
+        background: white;
+        border-radius: 12px;
+        padding: 25px;
+        margin-bottom: 25px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        border: 1px solid #e8e9ff;
+    }
+    
+    .section-title {
+        font-size: 16px;
+        font-weight: 700;
+        color: #2f3640;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .section-title::before {
+        content: '';
+        width: 4px;
+        height: 24px;
+        background: #5b5fcf;
+        border-radius: 2px;
+    }
+    
+    .docker-description {
+        color: #8893a7;
+        font-size: 14px;
+        margin-bottom: 25px;
+        line-height: 1.5;
+    }
+    
+    /* Form Styles */
+    .form-container {
+        background: #fafbff;
+        border: 1px solid #e8e9ff;
+        border-radius: 8px;
+        padding: 30px;
+    }
+    
+    .form-group {
+        margin-bottom: 20px;
+    }
+    
+    .form-row {
+        display: grid;
+        grid-template-columns: 200px 1fr;
+        gap: 20px;
+        align-items: center;
+    }
+    
+    .form-label {
+        font-size: 13px;
+        font-weight: 600;
+        color: #2f3640;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        text-align: right;
+    }
+    
+    .form-control {
+        width: 100%;
+        max-width: 400px;
+        padding: 12px 16px;
+        border: 1px solid #e8e9ff;
+        border-radius: 8px;
+        font-size: 14px;
+        color: #2f3640;
+        background: white;
+        transition: all 0.2s ease;
+    }
+    
+    .form-control:focus {
+        outline: none;
+        border-color: #5b5fcf;
+        box-shadow: 0 0 0 3px rgba(91,95,207,0.1);
+    }
+    
+    .form-control::placeholder {
+        color: #94a3b8;
+        font-size: 13px;
+    }
+    
+    select.form-control {
+        cursor: pointer;
+    }
+    
+    /* Resource Configuration Section */
+    .resource-section {
+        background: white;
+        border: 1px solid #e8e9ff;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    
+    .resource-header {
+        font-size: 14px;
+        font-weight: 700;
+        color: #2f3640;
+        margin-bottom: 15px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .resource-icon {
+        width: 32px;
+        height: 32px;
+        background: #e8e9ff;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #5b5fcf;
+    }
+    
+    .resource-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+    
+    /* Buttons */
+    .btn-primary {
+        background: #5b5fcf;
+        border: 1px solid #5b5fcf;
+        color: white;
+        padding: 12px 32px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+    }
+    
+    .btn-primary:hover {
+        background: #4b4fbf;
+        border-color: #4b4fbf;
+        box-shadow: 0 3px 8px rgba(91,95,207,0.3);
+        transform: translateY(-1px);
+    }
+    
+    .btn-primary:disabled {
+        background: #94a3b8;
+        border-color: #94a3b8;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+    }
+    
+    .btn-secondary {
+        background: #64748b;
+        border: 1px solid #64748b;
+        color: white;
+        padding: 12px 32px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+    }
+    
+    .btn-secondary:hover {
+        background: #475569;
+        border-color: #475569;
+        box-shadow: 0 3px 8px rgba(100,116,139,0.3);
+        transform: translateY(-1px);
+    }
+    
+    /* Progress Section */
+    .progress-section {
+        background: #fafbff;
+        border: 1px solid #e8e9ff;
+        border-radius: 8px;
+        padding: 30px;
+        text-align: center;
+    }
+    
+    .status-message {
+        background: #f0f9ff;
+        border: 1px solid #bae6fd;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 25px;
+    }
+    
+    .status-message h2 {
+        font-size: 20px;
+        font-weight: 700;
+        color: #0369a1;
+        margin: 0;
+    }
+    
+    .progress {
+        background: #e2e8f0;
+        border-radius: 8px;
+        height: 24px;
+        overflow: hidden;
+        margin-bottom: 25px;
+    }
+    
+    .progress-bar {
+        background: #5b5fcf;
+        height: 100%;
+        transition: width 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 12px;
+        font-weight: 600;
+    }
+    
+    .alert {
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        font-size: 14px;
+        line-height: 1.5;
+    }
+    
+    .alert-success {
+        background: #f0f9ff;
+        border: 1px solid #bae6fd;
+        color: #0c4a6e;
+    }
+    
+    .alert-danger {
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        color: #991b1b;
+    }
+    
+    .loading-spinner {
+        width: 16px;
+        height: 16px;
+        margin-left: 8px;
+    }
+    
+    .error-text {
+        color: #ef4444;
+        font-size: 13px;
+        margin-top: 5px;
+    }
+    
+    /* Info Boxes */
+    .info-box {
+        background: #f0f9ff;
+        border: 1px solid #bae6fd;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 20px;
+        color: #0c4a6e;
+        font-size: 14px;
+    }
+    
+    .info-box i {
+        color: #0284c7;
+        margin-right: 8px;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .docker-wrapper {
+            padding: 15px;
+        }
+        
+        .docker-section {
+            padding: 20px;
+        }
+        
+        .form-container {
+            padding: 20px;
+        }
+        
+        .form-row {
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+        
+        .form-label {
+            text-align: left;
+        }
+        
+        .form-control {
+            max-width: 100%;
+        }
+        
+        .resource-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-
-    {% load static %}
-    {% get_current_language as LANGUAGE_CODE %}
-    <!-- Current language: {{ LANGUAGE_CODE }} -->
-    <style>
-        .switch {
-            margin-top: 7px;
-            margin-left: 12px;
-            position: relative;
-            display: inline-block;
-            width: 32px;
-            height: 19px;
-            border-radius: 10%;
-        }
-
-        .switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #ccc;
-            -webkit-transition: .4s;
-            transition: .4s;
-            border-radius: 10%;
-        }
-
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 11px;
-            width: 12px;
-            left: 4px;
-            bottom: 4px;
-            background-color: white;
-            -webkit-transition: .4s;
-            transition: .4s;
-            border-radius: 20%;
-        }
-
-
-        input:checked + .slider {
-            background-color: #2196F3;
-        }
-
-        input:focus + .slider {
-            box-shadow: 0 0 2px #2196F3;
-        }
-
-        input:checked + .slider:before {
-            -webkit-transform: translateX(12px);
-            -ms-transform: translateX(12px);
-            transform: translateX(12px);
-        }
-
-        .help_test_domain {
-            background-color: black;
-            padding: 10px;
-            display: none;
-            opacity: 0.7;
-            position: absolute;
-            z-index: 9;
-            text-align: justify;
-
-
-        }
-
-        #help:hover + .help_test_domain {
-            display: block;
-            display: inline-block;
-            color: white;
-            font-weight: lighter;
-            font-size: small;
-            border-radius: 5px;
-            width: 200px;
-
-        {#height: auto;#}
-        }
-
-    </style>
-
-    <div class="container">
-        <div id="page-title">
-            <h2>{% trans "Create Docker App" %}</h2>
-            <p>{% trans "On this page you can create docker apps on your server." %}</p>
+<div class="docker-wrapper" ng-controller="createDockerSite">
+    <div class="docker-container">
+        <!-- Header Section -->
+        <div class="docker-section">
+            <h2 class="section-title">CREATE DOCKER APP</h2>
+            <p class="docker-description">{% trans "Deploy containerized applications with custom resource allocation and domain configuration." %}</p>
         </div>
 
-
-        <div ng-controller="createDockerSite" class="panel">
-            <div class="panel-body">
-                <h3 class="content-box-header">
-                    {% trans "Docker App Details" %} <img ng-hide="cyberpanelLoading"
-                                                           src="{% static 'images/loading.gif' %}">
-                </h3>
-
-
-                <form name="websiteCreationForm" action="/" id="createPackages"
-                      class="form-horizontal bordered-row panel-body">
-
-
-                    <div ng-hide="installationDetailsForm" class="form-group">
-                        <label class="col-sm-3 control-label">{% trans "Site Name" %}</label>
-                        <div class="col-sm-6">
-                            <input type="text" name="email" class="form-control" ng-model="siteName" required>
+        <!-- Form Section -->
+        <div class="docker-section">
+            <h3 class="section-title">
+                DOCKER APP DETAILS
+                <img ng-hide="cyberpanelLoading" src="{% static 'images/loading.gif' %}" class="loading-spinner">
+            </h3>
+            
+            <form name="websiteCreationForm" ng-hide="installationDetailsForm">
+                <div class="form-container">
+                    <!-- Basic Details -->
+                    <div class="form-group">
+                        <div class="form-row">
+                            <label class="form-label">{% trans "Site Name" %}</label>
+                            <input type="text" class="form-control" ng-model="siteName" 
+                                   placeholder="My Docker App" required>
                         </div>
                     </div>
 
-                    <div ng-hide="installationDetailsForm" class="form-group">
-                        <label class="col-sm-3 control-label">{% trans "Select Owner" %}</label>
-                        <div class="col-sm-6">
+                    <div class="form-group">
+                        <div class="form-row">
+                            <label class="form-label">{% trans "Select Owner" %}</label>
                             <select ng-model="userSelection" class="form-control">
                                 {% for admin in adminNames %}
                                     <option>{{ admin }}</option>
@@ -127,135 +364,162 @@
                         </div>
                     </div>
 
-
-                    <div ng-hide="installationDetailsForm" class="form-group">
-                        <label class="col-sm-3 control-label">{% trans "Domain Name" %}</label>
-                        <div class="col-sm-6">
-                            <input name="dom" type="text" class="form-control" ng-model="domainNameCreate"
-                                   placeholder="{% trans "Do not enter WWW, it will be auto created!" %}" required>
-                        </div>
-                        <div ng-show="websiteCreationForm.dom.$error.pattern"
-                             class="current-pack">{% trans "Invalid Domain (Note: You don't need to add 'http' or 'https')" %}</div>
-                    </div>
-                    <div ng-hide="installationDetailsForm" class="form-group">
-                        <label class="col-sm-3 control-label">{% trans "MySQL CPU" %}</label>
-                        <div class="col-sm-6">
-                            <input type="number" name="email" class="form-control" ng-model="CPUMysql" value="1" required>
-                        </div>
-
-                    </div>
-                    <div ng-hide="installationDetailsForm" class="form-group">
-                        <label class="col-sm-3 control-label">{% trans "MySQL Ram" %}</label>
-                        <div class="col-sm-6">
-                            <input type="number" name="email" class="form-control" ng-model="rammysql" value="512" required>
-                        </div>
-                    </div>
-                    <div ng-hide="installationDetailsForm" class="form-group">
-                        <label class="col-sm-3 control-label">{% trans "CPU Site" %}</label>
-                        <div class="col-sm-6">
-                            <input type="number" name="email" class="form-control" ng-model="CPUSite"  value="1" required>
-                        </div>
-
-                    </div>
-                    <div ng-hide="installationDetailsForm" class="form-group">
-                        <label class="col-sm-3 control-label">{% trans "Ram Site" %}</label>
-                        <div class="col-sm-6">
-                            <input type="number" name="email" class="form-control" ng-model="RamSite" value="512" required>
+                    <div class="form-group">
+                        <div class="form-row">
+                            <label class="form-label">{% trans "Domain Name" %}</label>
+                            <div>
+                                <input name="dom" type="text" class="form-control" ng-model="domainNameCreate"
+                                       placeholder="example.com (without www)" required>
+                                <div ng-show="websiteCreationForm.dom.$error.pattern" class="error-text">
+                                    {% trans "Invalid Domain (Note: You don't need to add 'http' or 'https')" %}
+                                </div>
+                            </div>
                         </div>
                     </div>
 
+                    <!-- Resource Configuration -->
+                    <div style="margin: 30px 0;">
+                        <div class="resource-section">
+                            <div class="resource-header">
+                                <div class="resource-icon">
+                                    <i class="fas fa-database"></i>
+                                </div>
+                                MySQL Resources
+                            </div>
+                            <div class="resource-grid">
+                                <div class="form-group">
+                                    <label class="form-label" style="text-align: left;">{% trans "CPU Cores" %}</label>
+                                    <input type="number" class="form-control" ng-model="CPUMysql" 
+                                           placeholder="1" value="1" min="1" required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" style="text-align: left;">{% trans "RAM (MB)" %}</label>
+                                    <input type="number" class="form-control" ng-model="rammysql" 
+                                           placeholder="512" value="512" min="128" required>
+                                </div>
+                            </div>
+                        </div>
 
-                    <div ng-hide="installationDetailsForm" class="form-group">
-                        <label class="col-sm-3 control-label">{% trans "Select App" %}</label>
-                        <div class="col-sm-6">
+                        <div class="resource-section">
+                            <div class="resource-header">
+                                <div class="resource-icon">
+                                    <i class="fas fa-server"></i>
+                                </div>
+                                Application Resources
+                            </div>
+                            <div class="resource-grid">
+                                <div class="form-group">
+                                    <label class="form-label" style="text-align: left;">{% trans "CPU Cores" %}</label>
+                                    <input type="number" class="form-control" ng-model="CPUSite" 
+                                           placeholder="1" value="1" min="1" required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" style="text-align: left;">{% trans "RAM (MB)" %}</label>
+                                    <input type="number" class="form-control" ng-model="RamSite" 
+                                           placeholder="512" value="512" min="128" required>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Application Configuration -->
+                    <div class="form-group">
+                        <div class="form-row">
+                            <label class="form-label">{% trans "Select App" %}</label>
                             <select ng-model="App" class="form-control">
                                 <option>n8n</option>
                             </select>
                         </div>
                     </div>
 
-                    <div ng-hide="installationDetailsForm" class="form-group">
-                        <label class="col-sm-3 control-label">{% trans "Admin Username" %}</label>
-                        <div class="col-sm-6">
-                            <input type="text" name="email" class="form-control" ng-model="WPUsername" value="cyberpanel" required>
+                    <div class="form-group">
+                        <div class="form-row">
+                            <label class="form-label">{% trans "Admin Username" %}</label>
+                            <input type="text" class="form-control" ng-model="WPUsername" 
+                                   placeholder="cyberpanel" value="cyberpanel" required>
                         </div>
                     </div>
 
-                    <div ng-hide="installationDetailsForm" class="form-group">
-                        <label class="col-sm-3 control-label">{% trans "Admin Email" %}</label>
-                        <div class="col-sm-6">
-                            <input type="email" name="email" class="form-control" ng-model="wpEmail" value="example@example.org" required>
-                        </div>
-                        <div ng-show="websiteCreationForm.email.$error.email"
-                             class="current-pack">{% trans "Invalid Email" %}</div>
-                    </div>
-
-                    <div ng-hide="installationDetailsForm" class="form-group">
-                        <label class="col-sm-3 control-label">{% trans "Admin Password" %}</label>
-                        <div class="col-sm-6">
-                            <input type="password" name="email" class="form-control" ng-model="WPpassword" required>
-                        </div>
-                    </div>
-
-
-                    <div ng-hide="installationDetailsForm" class="form-group">
-                        <label class="col-sm-3 control-label"></label>
-                        <div class="col-sm-4">
-                            <button ng-disabled="websiteCreationForm.dom.$error.required || websiteCreationForm.email.$invalid"
-                                    type="button" ng-click="createdockersite()"
-                                    class="btn btn-primary btn-lg">{% trans "Create Docker Site" %}</button>
-
-                        </div>
-                    </div>
-
-                    <div ng-hide="installationProgress" class="form-group">
-                        <label class="col-sm-2 control-label"></label>
-                        <div class="col-sm-7">
-
-                            <div class="alert alert-success text-center">
-                                <h2>{$ currentStatus $}</h2>
-                            </div>
-
-                            <div class="progress">
-                                <div id="installProgress" class="progress-bar" role="progressbar" aria-valuenow="70"
-                                     aria-valuemin="0" aria-valuemax="100" style="width:0%">
-                                    <span class="sr-only">70% Complete</span>
+                    <div class="form-group">
+                        <div class="form-row">
+                            <label class="form-label">{% trans "Admin Email" %}</label>
+                            <div>
+                                <input type="email" name="email" class="form-control" ng-model="wpEmail" 
+                                       placeholder="admin@example.com" value="example@example.org" required>
+                                <div ng-show="websiteCreationForm.email.$error.email" class="error-text">
+                                    {% trans "Invalid Email" %}
                                 </div>
                             </div>
-
-                            <div ng-hide="errorMessageBox" class="alert alert-danger">
-                                <p>{% trans "Error message:" %} {$ errorMessage $}</p>
-                            </div>
-
-                            <div ng-hide="success" class="alert alert-success">
-                                <p>{% trans "Website succesfully created." %}</p>
-                            </div>
-
-
-                            <div ng-hide="couldNotConnect" class="alert alert-danger">
-                                <p>{% trans "Could not connect to server. Please refresh this page." %}</p>
-                            </div>
-
-
                         </div>
                     </div>
 
-                    <div ng-hide="installationProgress" class="form-group">
-                        <label class="col-sm-3 control-label"></label>
-                        <div class="col-sm-4">
-                            <button type="button" ng-disabled="goBackDisable" ng-click="goBack()"
-                                    class="btn btn-primary btn-lg">{% trans "Go Back" %}</button>
+                    <div class="form-group">
+                        <div class="form-row">
+                            <label class="form-label">{% trans "Admin Password" %}</label>
+                            <input type="password" class="form-control" ng-model="WPpassword" 
+                                   placeholder="Strong password" required>
                         </div>
                     </div>
 
+                    <!-- Submit Button -->
+                    <div class="form-group" style="margin-top: 30px;">
+                        <div class="form-row">
+                            <label class="form-label"></label>
+                            <button ng-disabled="websiteCreationForm.dom.$error.required || websiteCreationForm.email.$invalid"
+                                    type="button" ng-click="createdockersite()"
+                                    class="btn-primary">
+                                <i class="fas fa-rocket"></i>
+                                {% trans "Create Docker Site" %}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
 
-                </form>
+            <!-- Progress Section -->
+            <div ng-hide="installationProgress" class="progress-section">
+                <div class="status-message">
+                    <h2>{$ currentStatus $}</h2>
+                </div>
 
+                <div class="progress">
+                    <div id="installProgress" class="progress-bar" role="progressbar" 
+                         aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width:0%">
+                        <span>0%</span>
+                    </div>
+                </div>
+
+                <div ng-hide="errorMessageBox" class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle" style="margin-right: 8px;"></i>
+                    <strong>{% trans "Error:" %}</strong> {$ errorMessage $}
+                </div>
+
+                <div ng-hide="success" class="alert alert-success">
+                    <i class="fas fa-check-circle" style="margin-right: 8px;"></i>
+                    <strong>{% trans "Success!" %}</strong> {% trans "Docker site successfully created." %}
+                </div>
+
+                <div ng-hide="couldNotConnect" class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle" style="margin-right: 8px;"></i>
+                    <strong>{% trans "Connection Error" %}</strong> {% trans "Could not connect to server. Please refresh this page." %}
+                </div>
+
+                <div style="margin-top: 30px;">
+                    <button type="button" ng-disabled="goBackDisable" ng-click="goBack()" class="btn-secondary">
+                        <i class="fas fa-arrow-left"></i>
+                        {% trans "Go Back" %}
+                    </button>
+                </div>
             </div>
         </div>
 
-
+        <!-- Info Section -->
+        <div class="docker-section">
+            <div class="info-box">
+                <i class="fas fa-info-circle"></i>
+                <strong>Resource Allocation:</strong> The CPU and RAM values you specify will be allocated to your Docker containers. Ensure your server has sufficient resources available.
+            </div>
+        </div>
     </div>
-
-
+</div>
 {% endblock %}

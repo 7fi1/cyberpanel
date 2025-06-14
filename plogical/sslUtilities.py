@@ -17,6 +17,34 @@ class sslUtilities:
 
     Server_root = "/usr/local/lsws"
     redisConf = '/usr/local/lsws/conf/dvhost_redis.conf'
+    
+    @staticmethod
+    def checkDNSRecords(domain):
+        """Check if domain has valid DNS records using external DNS query"""
+        try:
+            # Use dig command to check DNS records from authoritative servers
+            command = f"dig +short {domain} A @8.8.8.8"
+            result = subprocess.run(command, shell=True, capture_output=True, text=True)
+            
+            # If there's any output, the domain has A records
+            if result.stdout.strip():
+                return True
+            
+            # Also check AAAA records
+            command = f"dig +short {domain} AAAA @8.8.8.8"
+            result = subprocess.run(command, shell=True, capture_output=True, text=True)
+            
+            if result.stdout.strip():
+                return True
+                
+            return False
+        except:
+            # Fallback to socket method if dig fails
+            try:
+                socket.gethostbyname(domain)
+                return True
+            except:
+                return False
 
     DONT_ISSUE = 0
     ISSUE_SELFSIGNED = 1
@@ -578,9 +606,24 @@ context /.well-known/acme-challenge {
 
         # Try Let's Encrypt first
         try:
-            domains = [virtualHostName, f'www.{virtualHostName}']
+            # Start with just the main domain
+            domains = [virtualHostName]
+            
+            # Check if www subdomain has DNS records before adding it
+            if sslUtilities.checkDNSRecords(f'www.{virtualHostName}'):
+                domains.append(f'www.{virtualHostName}')
+                logging.CyberCPLogFileWriter.writeToFile(f"www.{virtualHostName} has DNS records, including in SSL request")
+            else:
+                logging.CyberCPLogFileWriter.writeToFile(f"www.{virtualHostName} has no DNS records, excluding from SSL request")
+            
             if aliasDomain:
-                domains.extend([aliasDomain, f'www.{aliasDomain}'])
+                domains.append(aliasDomain)
+                # Check if www.aliasDomain has DNS records
+                if sslUtilities.checkDNSRecords(f'www.{aliasDomain}'):
+                    domains.append(f'www.{aliasDomain}')
+                    logging.CyberCPLogFileWriter.writeToFile(f"www.{aliasDomain} has DNS records, including in SSL request")
+                else:
+                    logging.CyberCPLogFileWriter.writeToFile(f"www.{aliasDomain} has no DNS records, excluding from SSL request")
             
             # Check if Cloudflare is used
             use_dns = False
@@ -602,9 +645,24 @@ context /.well-known/acme-challenge {
 
         # Try ZeroSSL if Let's Encrypt fails
         try:
-            domains = [virtualHostName, f'www.{virtualHostName}']
+            # Start with just the main domain
+            domains = [virtualHostName]
+            
+            # Check if www subdomain has DNS records before adding it
+            if sslUtilities.checkDNSRecords(f'www.{virtualHostName}'):
+                domains.append(f'www.{virtualHostName}')
+                logging.CyberCPLogFileWriter.writeToFile(f"www.{virtualHostName} has DNS records, including in SSL request")
+            else:
+                logging.CyberCPLogFileWriter.writeToFile(f"www.{virtualHostName} has no DNS records, excluding from SSL request")
+            
             if aliasDomain:
-                domains.extend([aliasDomain, f'www.{aliasDomain}'])
+                domains.append(aliasDomain)
+                # Check if www.aliasDomain has DNS records
+                if sslUtilities.checkDNSRecords(f'www.{aliasDomain}'):
+                    domains.append(f'www.{aliasDomain}')
+                    logging.CyberCPLogFileWriter.writeToFile(f"www.{aliasDomain} has DNS records, including in SSL request")
+                else:
+                    logging.CyberCPLogFileWriter.writeToFile(f"www.{aliasDomain} has no DNS records, excluding from SSL request")
             
             acme = CustomACME(virtualHostName, adminEmail, staging=False, provider='zerossl')
             if acme.issue_certificate(domains, use_dns=use_dns):
@@ -631,7 +689,17 @@ context /.well-known/acme-challenge {
                     subprocess.call(shlex.split(command))
 
                 try:
-                    command = acmePath + " --issue -d " + virtualHostName + " -d www." + virtualHostName \
+                    # Build domain list for acme.sh
+                    domain_list = " -d " + virtualHostName
+                    
+                    # Check if www subdomain has DNS records
+                    if sslUtilities.checkDNSRecords(f'www.{virtualHostName}'):
+                        domain_list += " -d www." + virtualHostName
+                        logging.CyberCPLogFileWriter.writeToFile(f"www.{virtualHostName} has DNS records, including in acme.sh SSL request")
+                    else:
+                        logging.CyberCPLogFileWriter.writeToFile(f"www.{virtualHostName} has no DNS records, excluding from acme.sh SSL request")
+                    
+                    command = acmePath + " --issue" + domain_list \
                               + ' --cert-file ' + existingCertPath + '/cert.pem' + ' --key-file ' + existingCertPath + '/privkey.pem' \
                               + ' --fullchain-file ' + existingCertPath + '/fullchain.pem' + ' -w /usr/local/lsws/Example/html -k ec-256 --force --staging'
                     
@@ -641,7 +709,7 @@ context /.well-known/acme-challenge {
                         result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True, shell=True)
 
                     if result.returncode == 0:
-                        command = acmePath + " --issue -d " + virtualHostName + " -d www." + virtualHostName \
+                        command = acmePath + " --issue" + domain_list \
                                   + ' --cert-file ' + existingCertPath + '/cert.pem' + ' --key-file ' + existingCertPath + '/privkey.pem' \
                                   + ' --fullchain-file ' + existingCertPath + '/fullchain.pem' + ' -w /usr/local/lsws/Example/html -k ec-256 --force --server letsencrypt'
                         
@@ -664,8 +732,21 @@ context /.well-known/acme-challenge {
                     subprocess.call(shlex.split(command))
 
                 try:
-                    command = acmePath + " --issue -d " + virtualHostName + " -d www." + virtualHostName \
-                              + ' -d ' + aliasDomain + ' -d www.' + aliasDomain\
+                    # Build domain list for acme.sh with alias domains
+                    domain_list = " -d " + virtualHostName
+                    
+                    # Check if www subdomain has DNS records
+                    if sslUtilities.checkDNSRecords(f'www.{virtualHostName}'):
+                        domain_list += " -d www." + virtualHostName
+                    
+                    # Add alias domain
+                    domain_list += " -d " + aliasDomain
+                    
+                    # Check if www.aliasDomain has DNS records
+                    if sslUtilities.checkDNSRecords(f'www.{aliasDomain}'):
+                        domain_list += " -d www." + aliasDomain
+                    
+                    command = acmePath + " --issue" + domain_list \
                               + ' --cert-file ' + existingCertPath + '/cert.pem' + ' --key-file ' + existingCertPath + '/privkey.pem' \
                               + ' --fullchain-file ' + existingCertPath + '/fullchain.pem' + ' -w /usr/local/lsws/Example/html -k ec-256 --force --server letsencrypt'
 

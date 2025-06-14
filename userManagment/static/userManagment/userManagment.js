@@ -461,6 +461,10 @@ app.controller('deleteUser', function ($scope, $http) {
 
 app.controller('createACLCTRL', function ($scope, $http) {
 
+    $scope.aclCreated = true;
+    $scope.aclCreationFailed = true;
+    $scope.couldNotConnect = true;
+
     $scope.aclLoading = true;
     $scope.makeAdmin = false;
 
@@ -781,7 +785,7 @@ app.controller('createACLCTRL', function ($scope, $http) {
             // Email Management
 
             $scope.createEmail = true;
-            $scope.listEmails = True;
+            $scope.listEmails = true;
             $scope.deleteEmail = true;
             $scope.emailForwarding = true;
             $scope.changeEmailPassword = true;
@@ -1260,7 +1264,7 @@ app.controller('modifyACLCtrl', function ($scope, $http) {
             // Email Management
 
             $scope.createEmail = true;
-            $scope.listEmails = True;
+            $scope.listEmails = true;
             $scope.deleteEmail = true;
             $scope.emailForwarding = true;
             $scope.changeEmailPassword = true;
@@ -1552,6 +1556,7 @@ app.controller('listTableUsers', function ($scope, $http) {
     $scope.deleteUserInitial = function (name){
         UserToDelete = name;
         $scope.UserToDelete = name;
+        $('#deleteModal').modal('show');
     };
 
     $scope.deleteUserFinal = function () {
@@ -1576,6 +1581,7 @@ app.controller('listTableUsers', function ($scope, $http) {
             $scope.cyberpanelLoading = true;
             if (response.data.deleteStatus === 1) {
                 $scope.populateCurrentRecords();
+                $('#deleteModal').modal('hide');
                 new PNotify({
                     title: 'Success!',
                     text: 'Users successfully deleted!',
@@ -1611,9 +1617,8 @@ app.controller('listTableUsers', function ($scope, $http) {
     };
 
     $scope.editInitial = function (name) {
-
         $scope.name = name;
-
+        $('#editModal').modal('show');
     };
 
     $scope.saveResellerChanges = function () {
@@ -1640,6 +1645,7 @@ app.controller('listTableUsers', function ($scope, $http) {
 
             if (response.data.status === 1) {
                 $scope.populateCurrentRecords();
+                $('#editModal').modal('hide');
                 new PNotify({
                     title: 'Success!',
                     text: 'Changes successfully applied!',
@@ -1693,6 +1699,7 @@ app.controller('listTableUsers', function ($scope, $http) {
 
             if (response.data.status === 1) {
                 $scope.populateCurrentRecords();
+                $('#editModal').modal('hide');
                 new PNotify({
                     title: 'Success!',
                     text: 'ACL Successfully changed.',

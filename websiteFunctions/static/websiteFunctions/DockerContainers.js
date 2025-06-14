@@ -1,6 +1,10 @@
+var app = angular.module('CyberCP');
+
 app.controller('ListDockersitecontainer', function ($scope, $http) {
     $scope.cyberPanelLoading = true;
+    $scope.cyberpanelLoading = true;
     $scope.conatinerview = true;
+    $scope.ContainerList = [];
     $('#cyberpanelLoading').hide();
 
     // Format bytes to human readable
@@ -293,6 +297,22 @@ app.controller('ListDockersitecontainer', function ($scope, $http) {
     $scope.handleAction = function(action, container) {
         $scope.setSelectedContainer(container);
         $scope.cAction(action);
+    };
+    
+    // Add specific action functions that are referenced in the template
+    $scope.startContainer = function(containerId, containerName) {
+        $scope.selectedContainer = { id: containerId, name: containerName };
+        $scope.cAction('start');
+    };
+    
+    $scope.stopContainer = function(containerId, containerName) {
+        $scope.selectedContainer = { id: containerId, name: containerName };
+        $scope.cAction('stop');
+    };
+    
+    $scope.restartContainer = function(containerId, containerName) {
+        $scope.selectedContainer = { id: containerId, name: containerName };
+        $scope.cAction('restart');
     };
 
     $scope.openSettings = function(container) {

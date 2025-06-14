@@ -27,7 +27,7 @@ urlpatterns = [
     re_path(r'^recreateContainer$', views.recreateContainer, name='recreateContainer'),
     re_path(r'^installDocker$', views.installDocker, name='installDocker'),
     re_path(r'^images$', views.images, name='containerImage'),
-    re_path(r'^view/(?P<n>.+)$', views.viewContainer, name='viewContainer'),
+    re_path(r'^view/(?P<name>.+)$', views.viewContainer, name='viewContainer'),
 
     path('manage/<int:dockerapp>/app', Dockersitehome, name='Dockersitehome'),
     path('getDockersiteList', views.getDockersiteList, name='getDockersiteList'),

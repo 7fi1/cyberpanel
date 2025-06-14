@@ -1,211 +1,662 @@
 {% extends "baseTemplate/index.html" %}
 {% load i18n %}
-{% block title %}{% trans "List Packages  - CyberPanel" %}{% endblock %}
+{% block title %}{% trans "List Packages - CyberPanel" %}{% endblock %}
+
+{% block header_scripts %}
+<style>
+    /* Modern page styles matching new design */
+    .page-wrapper {
+        background: transparent;
+        padding: 20px;
+    }
+    
+    .page-container {
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+    
+    .page-header {
+        margin-bottom: 30px;
+    }
+    
+    .page-title {
+        font-size: 28px;
+        font-weight: 700;
+        color: #2f3640;
+        margin-bottom: 8px;
+    }
+    
+    .page-subtitle {
+        font-size: 14px;
+        color: #8893a7;
+    }
+    
+    /* Card styles */
+    .content-card {
+        background: white;
+        border-radius: 12px;
+        padding: 30px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        border: 1px solid #e8e9ff;
+        margin-bottom: 25px;
+    }
+    
+    .card-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: #2f3640;
+        margin-bottom: 25px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .card-title::before {
+        content: '';
+        width: 4px;
+        height: 24px;
+        background: #5b5fcf;
+        border-radius: 2px;
+    }
+    
+    /* Table styles */
+    .modern-table {
+        width: 100%;
+        background: white;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        border: 1px solid #e8e9ff;
+    }
+    
+    .modern-table thead {
+        background: #f8f9ff;
+    }
+    
+    .modern-table th {
+        padding: 16px 20px;
+        font-size: 13px;
+        font-weight: 600;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-bottom: 1px solid #e8e9ff;
+        text-align: left;
+    }
+    
+    .modern-table td {
+        padding: 16px 20px;
+        font-size: 14px;
+        color: #2f3640;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    
+    .modern-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+    
+    .modern-table tbody tr:hover {
+        background: #fafbff;
+    }
+    
+    /* Resource badges */
+    .resource-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 10px;
+        background: #f8f9ff;
+        border: 1px solid #e8e9ff;
+        border-radius: 6px;
+        font-size: 13px;
+        font-weight: 600;
+    }
+    
+    .resource-badge.unlimited {
+        background: #e8f5e9;
+        border-color: #c8e6c9;
+        color: #2e7d32;
+    }
+    
+    /* Status badges */
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+    
+    .status-badge.enabled {
+        background: #e8f5e9;
+        color: #2e7d32;
+    }
+    
+    .status-badge.disabled {
+        background: #fff3e0;
+        color: #f57c00;
+    }
+    
+    /* Action buttons */
+    .action-buttons {
+        display: flex;
+        gap: 8px;
+    }
+    
+    .btn-action {
+        padding: 6px 14px;
+        border-radius: 6px;
+        font-size: 13px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        cursor: pointer;
+        border: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+    
+    .btn-edit {
+        background: #f8f9ff;
+        color: #5b5fcf;
+    }
+    
+    .btn-edit:hover {
+        background: #5b5fcf;
+        color: white;
+        transform: translateY(-1px);
+    }
+    
+    .btn-delete {
+        background: #ffebee;
+        color: #dc3545;
+    }
+    
+    .btn-delete:hover {
+        background: #dc3545;
+        color: white;
+        transform: translateY(-1px);
+    }
+    
+    /* Modal styles */
+    .modal-content {
+        border-radius: 12px;
+        border: none;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+    }
+    
+    .modal-header {
+        background: #f8f9ff;
+        border-bottom: 1px solid #e8e9ff;
+        border-radius: 12px 12px 0 0;
+        padding: 20px 25px;
+    }
+    
+    .modal-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: #2f3640;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .modal-body {
+        padding: 25px;
+    }
+    
+    .modal-footer {
+        background: #f8f9ff;
+        border-top: 1px solid #e8e9ff;
+        border-radius: 0 0 12px 12px;
+        padding: 15px 25px;
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+    }
+    
+    /* Form styles in modal */
+    .form-section {
+        margin-bottom: 25px;
+    }
+    
+    .form-section-title {
+        font-size: 14px;
+        font-weight: 700;
+        color: #2f3640;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .form-section-title i {
+        color: #5b5fcf;
+    }
+    
+    .form-group {
+        margin-bottom: 20px;
+    }
+    
+    .form-label {
+        display: block;
+        font-size: 13px;
+        font-weight: 600;
+        color: #64748b;
+        margin-bottom: 8px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .form-control {
+        width: 100%;
+        padding: 10px 14px;
+        border: 1px solid #e8e9ff;
+        border-radius: 8px;
+        font-size: 14px;
+        color: #2f3640;
+        background: white;
+        transition: all 0.2s ease;
+    }
+    
+    .form-control:hover {
+        border-color: #5b5fcf;
+    }
+    
+    .form-control:focus {
+        outline: none;
+        border-color: #5b5fcf;
+        box-shadow: 0 0 0 3px rgba(91,95,207,0.1);
+    }
+    
+    .form-control[readonly] {
+        background: #f8f9ff;
+        cursor: not-allowed;
+    }
+    
+    /* Input group */
+    .input-group {
+        display: flex;
+        align-items: center;
+        gap: 0;
+    }
+    
+    .input-group .form-control {
+        border-radius: 8px 0 0 8px;
+    }
+    
+    .input-suffix {
+        background: #f8f9ff;
+        border: 1px solid #e8e9ff;
+        border-left: none;
+        padding: 10px 16px;
+        border-radius: 0 8px 8px 0;
+        font-size: 13px;
+        color: #64748b;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+    
+    /* Help text */
+    .help-text {
+        font-size: 12px;
+        color: #8893a7;
+        margin-top: 6px;
+    }
+    
+    /* Checkbox styles */
+    .checkbox-wrapper {
+        display: flex;
+        align-items: start;
+        gap: 10px;
+        padding: 12px 16px;
+        background: #f8f9ff;
+        border: 1px solid #e8e9ff;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+        cursor: pointer;
+        margin-bottom: 12px;
+    }
+    
+    .checkbox-wrapper:hover {
+        border-color: #5b5fcf;
+        background: #f0f1ff;
+    }
+    
+    .checkbox-wrapper input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+        border-radius: 4px;
+        cursor: pointer;
+        accent-color: #5b5fcf;
+        margin-top: 2px;
+    }
+    
+    .checkbox-content {
+        flex: 1;
+    }
+    
+    .checkbox-label {
+        font-size: 14px;
+        color: #2f3640;
+        font-weight: 600;
+        cursor: pointer;
+        user-select: none;
+        display: block;
+        margin-bottom: 4px;
+    }
+    
+    .checkbox-desc {
+        font-size: 12px;
+        color: #8893a7;
+        line-height: 1.5;
+    }
+    
+    /* Button styles */
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-decoration: none;
+    }
+    
+    .btn-primary {
+        background: #5b5fcf;
+        color: white;
+    }
+    
+    .btn-primary:hover {
+        background: #4a4fc4;
+        box-shadow: 0 4px 12px rgba(91,95,207,0.3);
+        transform: translateY(-1px);
+    }
+    
+    .btn-secondary {
+        background: #f8f9ff;
+        color: #5b5fcf;
+        border: 1px solid #e8e9ff;
+    }
+    
+    .btn-secondary:hover {
+        background: #eef0ff;
+        border-color: #5b5fcf;
+    }
+    
+    /* Loading spinner */
+    .loading-spinner {
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        border: 2px solid #f3f3f3;
+        border-top: 2px solid #5b5fcf;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-left: 10px;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    @media (max-width: 768px) {
+        .modern-table {
+            display: block;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+        
+        .action-buttons {
+            flex-direction: column;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
+{% load static %}
+{% get_current_language as LANGUAGE_CODE %}
 
-    {% load static %}
-    {% get_current_language as LANGUAGE_CODE %}
-    <!-- Current language: {{ LANGUAGE_CODE }} -->
-
-
-    <div class="container">
-        <div id="page-title">
-            <h2>{% trans "List Packages" %}</h2>
-            <p>{% trans "List Packages and delete or edit them." %}</p>
+<div class="page-wrapper" ng-controller="listPackageTables">
+    <div class="page-container">
+        <div class="page-header">
+            <h1 class="page-title">{% trans "List Packages" %}</h1>
+            <p class="page-subtitle">{% trans "Manage your hosting packages - edit resource limits or delete packages" %}</p>
         </div>
-        <div ng-controller="listPackageTables" class="panel">
-            <div class="panel-body">
-                <h3 class="content-box-header">
-                    {% trans "List Packages" %} <img ng-hide="cyberpanelLoading"
-                                                     src="{% static 'images/loading.gif' %}">
-                </h3>
-                <div class="example-box-wrapper">
 
-                    <!------ List of records --------------->
+        <div class="content-card">
+            <h2 class="card-title">
+                {% trans "Hosting Packages" %}
+                <span ng-hide="cyberpanelLoading" class="loading-spinner"></span>
+            </h2>
+            
+            <div class="table-responsive">
+                <table class="modern-table">
+                    <thead>
+                        <tr>
+                            <th>{% trans "Package Name" %}</th>
+                            <th>{% trans "Disk Space" %}</th>
+                            <th>{% trans "Bandwidth" %}</th>
+                            <th>{% trans "Domains" %}</th>
+                            <th>{% trans "Emails" %}</th>
+                            <th>{% trans "Databases" %}</th>
+                            <th>{% trans "FTP Accounts" %}</th>
+                            <th>{% trans "FQDN Status" %}</th>
+                            <th>{% trans "Actions" %}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr ng-repeat="record in records track by $index">
+                            <td>
+                                <strong>{$ record.package $}</strong>
+                            </td>
+                            <td>
+                                <span class="resource-badge" ng-class="{'unlimited': record.diskSpace == 0}">
+                                    <span ng-if="record.diskSpace == 0">{% trans "Unlimited" %}</span>
+                                    <span ng-if="record.diskSpace != 0">{$ record.diskSpace $} MB</span>
+                                </span>
+                            </td>
+                            <td>
+                                <span class="resource-badge" ng-class="{'unlimited': record.bandwidth == 0}">
+                                    <span ng-if="record.bandwidth == 0">{% trans "Unlimited" %}</span>
+                                    <span ng-if="record.bandwidth != 0">{$ record.bandwidth $} MB</span>
+                                </span>
+                            </td>
+                            <td>
+                                <span class="resource-badge" ng-class="{'unlimited': record.allowedDomains == 0}">
+                                    <span ng-if="record.allowedDomains == 0">{% trans "Unlimited" %}</span>
+                                    <span ng-if="record.allowedDomains != 0">{$ record.allowedDomains $}</span>
+                                </span>
+                            </td>
+                            <td>{$ record.emailAccounts $}</td>
+                            <td>{$ record.dataBases $}</td>
+                            <td>{$ record.ftpAccounts $}</td>
+                            <td>
+                                <span class="status-badge" ng-class="{'enabled': record.allowFullDomain, 'disabled': !record.allowFullDomain}">
+                                    <i class="fas fa-circle" style="font-size: 8px;"></i>
+                                    <span ng-if="record.allowFullDomain">{% trans "Enabled" %}</span>
+                                    <span ng-if="!record.allowFullDomain">{% trans "Disabled" %}</span>
+                                </span>
+                            </td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn-action btn-edit" 
+                                            ng-click="editInitial(record.package, record.diskSpace, record.bandwidth, record.emailAccounts, record.dataBases, record.ftpAccounts, record.allowedDomains, record.allowFullDomain, record.enforceDiskLimits)"
+                                            data-toggle="modal" 
+                                            data-target="#editPackageModal">
+                                        <i class="fas fa-edit"></i>
+                                        {% trans "Edit" %}
+                                    </button>
+                                    <button class="btn-action btn-delete" 
+                                            ng-click="confirmDelete(record.package)">
+                                        <i class="fas fa-trash"></i>
+                                        {% trans "Delete" %}
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 
-                    <div class="form-group">
-
-                        <div class="col-sm-12">
-
-                            <table class="table">
-                                <thead>
-                                <tr>
-                                    <th>{% trans "Package" %}</th>
-                                    <th>{% trans "Diskspace" %}</th>
-                                    <th>{% trans "Bandwidth" %}</th>
-                                    <th>{% trans "Email Accounts" %}</th>
-                                    <th>{% trans "Databases" %}</th>
-                                    <th>{% trans "FTPs" %}</th>
-                                    <th>{% trans "Child Domains" %}</th>
-                                    <th>{% trans "Allow FQDN as Childs" %}</th>
-                                    <th>{% trans "Actions" %}</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                <tr ng-repeat="record in records track by $index">
-                                    <td ng-bind="record.package"></td>
-                                    <td ng-bind="record.diskSpace"></td>
-                                    <td ng-bind="record.bandwidth"></td>
-                                    <td ng-bind="record.emailAccounts"></td>
-                                    <td ng-bind="record.dataBases"></td>
-                                    <td ng-bind="record.ftpAccounts"></td>
-                                    <td ng-bind="record.allowedDomains"></td>
-                                    <td><span ng-hide="record.allowFullDomain==0">Enabled</span><span
-                                            ng-hide="record.allowFullDomain">Disabled</span></td>
-                                    <td>
-                                        <a data-toggle="modal" data-target="#settings"
-                                           ng-click="editInitial(record.package, record.diskSpace, record.bandwidth,
-                                           record.emailAccounts, record.dataBases, record.ftpAccounts, record.allowedDomains, record.allowFullDomain, record.enforceDiskLimits)"
-                                           class="btn btn-border btn-alt border-purple btn-link font-purple" href="#"
-                                           title=""><span>{% trans 'Edit' %}</span></a>
-                                        <a ng-click="deletePackageFinal(record.package)"
-                                           class="btn btn-border btn-alt border-red btn-link font-red" href="#"
-                                           title=""><span>{% trans 'Delete' %}</span></a>
-
-                                        <!--- Modal --->
-                                        <div id="settings" class="modal fade" role="dialog">
-                                            <div class="modal-dialog">
-
-                                                <!-- Modal content-->
-                                                <div class="modal-content">
-                                                    <div class="modal-header">
-                                                        <button type="button" class="close" data-dismiss="modal">&times;
-                                                        </button>
-                                                        <h4 class="modal-title">Edit Package
-                                                            <img ng-hide="cyberpanelLoading"
-                                                                 src="{% static 'images/loading.gif' %}">
-                                                        </h4>
-                                                    </div>
-                                                    <div class="modal-body">
-
-                                                        <form name="containerSettingsForm" action="/"
-                                                              class="form-horizontal">
-                                                            <div ng-hide="installationDetailsForm" class="form-group">
-                                                                <label class="col-sm-3 control-label">{% trans "Name" %}</label>
-                                                                <div class="col-sm-6">
-                                                                    <input name="name" type="text" class="form-control"
-                                                                           ng-model="name" readonly>
-                                                                </div>
-                                                            </div>
-
-                                                            <hr>
-                                                            <div class="form-group">
-                                                                <label class="col-sm-3 control-label">{% trans "Domains" %}</label>
-                                                                <div class="col-sm-6">
-                                                                    <input type="number" class="form-control"
-                                                                           ng-model="$parent.allowedDomains" required>
-                                                                </div>
-                                                                <div class="current-pack"> {% trans "(0 = Unlimited)" %} </div>
-                                                            </div>
-                                                            <hr>
-
-
-                                                            <div class="form-group">
-                                                                <label class="col-sm-3 control-label">{% trans "Disk Space" %}</label>
-                                                                <div class="col-sm-6">
-                                                                    <input type="number" class="form-control"
-                                                                           ng-model="$parent.diskSpace" required>
-                                                                </div>
-                                                                <div class="current-pack"> {% trans "MB (0 = Unlimited)" %} </div>
-                                                            </div>
-                                                            <hr>
-
-                                                            <div class="form-group">
-                                                                <label class="col-sm-3 control-label">{% trans "Bandwidth" %}</label>
-                                                                <div class="col-sm-6">
-                                                                    <input type="number" class="form-control"
-                                                                           ng-model="$parent.bandwidth" required>
-                                                                </div>
-                                                                <div class="current-pack"> {% trans "MB (0 = Unlimited)" %} </div>
-                                                            </div>
-                                                            <hr>
-
-
-                                                            <div class="form-group">
-                                                                <label class="col-sm-3 control-label">{% trans "FTP Accounts" %}</label>
-                                                                <div class="col-sm-6">
-                                                                    <input type="number" class="form-control"
-                                                                           ng-model="$parent.ftpAccounts" required>
-                                                                </div>
-                                                            </div>
-                                                            <hr>
-
-                                                            <div class="form-group">
-                                                                <label class="col-sm-3 control-label">{% trans "Databases" %}</label>
-                                                                <div class="col-sm-6">
-                                                                    <input type="number" class="form-control"
-                                                                           ng-model="$parent.dataBases" required>
-                                                                </div>
-                                                            </div>
-                                                            <hr>
-
-                                                            <div class="form-group">
-                                                                <label class="col-sm-3 control-label">{% trans "Emails" %}</label>
-                                                                <div class="col-sm-6">
-                                                                    <input type="number" class="form-control"
-                                                                           ng-model="$parent.emails" required>
-                                                                </div>
-                                                            </div>
-                                                            <hr>
-
-                                                            <div ng-hide="installationDetailsForm" class="form-group">
-                                                                <label class="col-sm-3 control-label">{% trans "Additional" %}</label>
-                                                                <label class="col-sm-3 control-label"></label>
-                                                                <div class="col-sm-9">
-                                                                    <div class="checkbox">
-                                                                        <label>
-                                                                            <input ng-model="$parent.allowFullDomain"
-                                                                                   type="checkbox" value="">
-                                                                            Allow Creation of Fully Qualified Domain as
-                                                                            Child-Domains
-                                                                        </label>
-                                                                    </div>
-                                                                    <div class="checkbox">
-                                                                        <label>
-                                                                            <input ng-model="$parent.enforceDiskLimits"
-                                                                                   type="checkbox" value="">
-                                                                            Enforce Disk Limits
-                                                                        </label>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                            <hr>
-
-
-                                                        </form>
-
-                                                    </div>
-                                                    <div class="modal-footer">
-                                                        <button type="button" ng-disabled="savingSettings"
-                                                                class="btn btn-primary"
-                                                                ng-click="saveChanges()"
-                                                                data-dismiss="modal">
-                                                            Save
-                                                        </button>
-                                                        <button type="button" ng-disabled="savingSettings"
-                                                                class="btn btn-default" data-dismiss="modal">
-                                                            Close
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <!--- Modal End--->
-                                    </td>
-                                </tr>
-                                </tbody>
-                            </table>
+    <!-- Edit Package Modal - Inside Controller -->
+    <div id="editPackageModal" class="modal fade" role="dialog">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">
+                        {% trans "Edit Package" %}
+                        <span ng-hide="cyberpanelLoading" class="loading-spinner"></span>
+                    </h4>
+                </div>
+                <div class="modal-body">
+                    <form name="editPackageForm">
+                        <div class="form-group">
+                            <label class="form-label">{% trans "Package Name" %}</label>
+                            <input type="text" class="form-control" ng-model="name" readonly>
                         </div>
-                    </div>
-
-                    <!------ List of records --------------->
-
+                        
+                        <div class="form-section">
+                            <div class="form-section-title">
+                                <i class="fas fa-globe"></i>
+                                {% trans "Web Resources" %}
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">{% trans "Domains" %}</label>
+                                <input type="number" class="form-control" ng-model="allowedDomains" required>
+                                <div class="help-text">{% trans "Number of domains allowed (0 = Unlimited)" %}</div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">{% trans "Disk Space" %}</label>
+                                <div class="input-group">
+                                    <input type="number" class="form-control" ng-model="diskSpace" required>
+                                    <span class="input-suffix">MB</span>
+                                </div>
+                                <div class="help-text">{% trans "Disk space in MB (0 = Unlimited)" %}</div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">{% trans "Bandwidth" %}</label>
+                                <div class="input-group">
+                                    <input type="number" class="form-control" ng-model="bandwidth" required>
+                                    <span class="input-suffix">MB</span>
+                                </div>
+                                <div class="help-text">{% trans "Monthly bandwidth in MB (0 = Unlimited)" %}</div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-section">
+                            <div class="form-section-title">
+                                <i class="fas fa-server"></i>
+                                {% trans "Services & Features" %}
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">{% trans "Email Accounts" %}</label>
+                                <input type="number" class="form-control" ng-model="emails" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">{% trans "Databases" %}</label>
+                                <input type="number" class="form-control" ng-model="dataBases" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">{% trans "FTP Accounts" %}</label>
+                                <input type="number" class="form-control" ng-model="ftpAccounts" required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-section">
+                            <div class="form-section-title">
+                                <i class="fas fa-cog"></i>
+                                {% trans "Additional Features" %}
+                            </div>
+                            
+                            <div class="checkbox-wrapper">
+                                <input ng-model="allowFullDomain" type="checkbox" id="editAllowFullDomain">
+                                <div class="checkbox-content">
+                                    <label for="editAllowFullDomain" class="checkbox-label">
+                                        {% trans "Allow Fully Qualified Domains" %}
+                                    </label>
+                                    <div class="checkbox-desc">
+                                        {% trans "Allow creation of fully qualified domain names as child-domains" %}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="checkbox-wrapper">
+                                <input ng-model="enforceDiskLimits" type="checkbox" id="editEnforceDiskLimits">
+                                <div class="checkbox-content">
+                                    <label for="editEnforceDiskLimits" class="checkbox-label">
+                                        {% trans "Enforce Disk Limits" %}
+                                    </label>
+                                    <div class="checkbox-desc">
+                                        {% trans "Strictly enforce disk space limits for websites using this package" %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                        {% trans "Cancel" %}
+                    </button>
+                    <button type="button" class="btn btn-primary" ng-click="saveChanges()" data-dismiss="modal">
+                        <i class="fas fa-save"></i>
+                        {% trans "Save Changes" %}
+                    </button>
                 </div>
             </div>
         </div>
-
-
     </div>
 
+    <!-- Delete Package Modal -->
+    <div id="deletePackageModal" class="modal fade" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">
+                        {% trans "Delete Package" %}
+                    </h4>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <strong>{% trans "Warning!" %}</strong> {% trans "Are you sure you want to delete this package?" %}
+                    </div>
+                    <p>{% trans "Package to delete:" %} <strong>{$ packageToDelete $}</strong></p>
+                    <p class="text-muted">{% trans "This action cannot be undone." %}</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                        {% trans "Cancel" %}
+                    </button>
+                    <button type="button" class="btn btn-danger" ng-click="deletePackageFinal(packageToDelete)" data-dismiss="modal">
+                        <i class="fas fa-trash"></i>
+                        {% trans "Delete Package" %}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 {% endblock %}

@@ -118,10 +118,16 @@ function getWebsiteName(domain) {
 
 app.controller('systemStatusInfo', function ($scope, $http, $timeout) {
 
-    //getStuff();
+    $scope.uptimeLoaded = false;
+    $scope.uptime = 'Loading...';
+    
+    getStuff();
+    
+    $scope.getSystemStatus = function() {
+        getStuff();
+    };
 
     function getStuff() {
-
 
         url = "/base/getSystemStatus";
 
@@ -133,13 +139,35 @@ app.controller('systemStatusInfo', function ($scope, $http, $timeout) {
             $scope.cpuUsage = response.data.cpuUsage;
             $scope.ramUsage = response.data.ramUsage;
             $scope.diskUsage = response.data.diskUsage;
+            
+            // Total system information
+            $scope.cpuCores = response.data.cpuCores;
+            $scope.ramTotalMB = response.data.ramTotalMB;
+            $scope.diskTotalGB = response.data.diskTotalGB;
+            $scope.diskFreeGB = response.data.diskFreeGB;
+            
+            // Get uptime if available
+            if (response.data.uptime) {
+                $scope.uptime = response.data.uptime;
+                $scope.uptimeLoaded = true;
+            } else {
+                // Fallback: try to get uptime separately
+                $http.get("/base/getUptime").then(function(uptimeResponse) {
+                    if (uptimeResponse.data.uptime) {
+                        $scope.uptime = uptimeResponse.data.uptime;
+                        $scope.uptimeLoaded = true;
+                    }
+                });
+            }
 
         }
 
         function cantLoadInitialData(response) {
+            $scope.uptime = 'Unavailable';
+            $scope.uptimeLoaded = true;
         }
 
-        //$timeout(getStuff, 2000);
+        $timeout(getStuff, 60000); // Update every minute
 
     }
 });
@@ -870,10 +898,31 @@ app.controller('OnboardingCP', function ($scope, $http, $timeout, $window) {
 
 app.controller('dashboardStatsController', function ($scope, $http, $timeout) {
     // Card values
+    $scope.totalUsers = 0;
     $scope.totalSites = 0;
     $scope.totalWPSites = 0;
     $scope.totalDBs = 0;
     $scope.totalEmails = 0;
+    $scope.totalFTPUsers = 0;
+
+    // Top Processes
+    $scope.topProcesses = [];
+    $scope.loadingTopProcesses = true;
+    $scope.errorTopProcesses = '';
+    $scope.refreshTopProcesses = function() {
+        $scope.loadingTopProcesses = true;
+        $http.get('/base/getTopProcesses').then(function (response) {
+            $scope.loadingTopProcesses = false;
+            if (response.data && response.data.status === 1 && response.data.processes) {
+                $scope.topProcesses = response.data.processes;
+            } else {
+                $scope.topProcesses = [];
+            }
+        }, function (err) {
+            $scope.loadingTopProcesses = false;
+            $scope.errorTopProcesses = 'Failed to load top processes.';
+        });
+    };
 
     // SSH Logins
     $scope.sshLogins = [];
@@ -898,12 +947,16 @@ app.controller('dashboardStatsController', function ($scope, $http, $timeout) {
     $scope.sshLogs = [];
     $scope.loadingSSHLogs = true;
     $scope.errorSSHLogs = '';
+    $scope.securityAlerts = [];
+    $scope.loadingSecurityAnalysis = false;
     $scope.refreshSSHLogs = function() {
         $scope.loadingSSHLogs = true;
         $http.get('/base/getRecentSSHLogs').then(function (response) {
             $scope.loadingSSHLogs = false;
             if (response.data && response.data.logs) {
                 $scope.sshLogs = response.data.logs;
+                // Analyze logs for security issues
+                $scope.analyzeSSHSecurity();
             } else {
                 $scope.sshLogs = [];
             }
@@ -912,8 +965,33 @@ app.controller('dashboardStatsController', function ($scope, $http, $timeout) {
             $scope.errorSSHLogs = 'Failed to load SSH logs.';
         });
     };
+    
+    // Security Analysis
+    $scope.showAddonRequired = false;
+    $scope.addonInfo = {};
+    
+    $scope.analyzeSSHSecurity = function() {
+        $scope.loadingSecurityAnalysis = true;
+        $scope.showAddonRequired = false;
+        $http.post('/base/analyzeSSHSecurity', {}).then(function (response) {
+            $scope.loadingSecurityAnalysis = false;
+            if (response.data) {
+                if (response.data.addon_required) {
+                    $scope.showAddonRequired = true;
+                    $scope.addonInfo = response.data;
+                    $scope.securityAlerts = [];
+                } else if (response.data.status === 1) {
+                    $scope.securityAlerts = response.data.alerts;
+                    $scope.showAddonRequired = false;
+                }
+            }
+        }, function (err) {
+            $scope.loadingSecurityAnalysis = false;
+        });
+    };
 
     // Initial fetch
+    $scope.refreshTopProcesses();
     $scope.refreshSSHLogins();
     $scope.refreshSSHLogs();
 
@@ -932,10 +1010,12 @@ app.controller('dashboardStatsController', function ($scope, $http, $timeout) {
     function pollDashboardStats() {
         $http.get('/base/getDashboardStats').then(function(response) {
             if (response.data.status === 1) {
+                $scope.totalUsers = response.data.total_users;
                 $scope.totalSites = response.data.total_sites;
                 $scope.totalWPSites = response.data.total_wp_sites;
                 $scope.totalDBs = response.data.total_dbs;
                 $scope.totalEmails = response.data.total_emails;
+                $scope.totalFTPUsers = response.data.total_ftp_users;
             }
         });
     }
@@ -1074,24 +1154,83 @@ app.controller('dashboardStatsController', function ($scope, $http, $timeout) {
             data: {
                 labels: [],
                 datasets: [
-                    { label: 'RX (Bytes/sec)', data: [], borderColor: '#007bff', backgroundColor: 'rgba(0,123,255,0.08)', pointBackgroundColor: '#007bff', tension: 0.4, fill: true },
-                    { label: 'TX (Bytes/sec)', data: [], borderColor: '#28a745', backgroundColor: 'rgba(40,167,69,0.08)', pointBackgroundColor: '#28a745', tension: 0.4, fill: true }
+                    { 
+                        label: 'Download', 
+                        data: [], 
+                        borderColor: '#5b5fcf', 
+                        backgroundColor: 'rgba(91,95,207,0.1)', 
+                        pointBackgroundColor: '#5b5fcf',
+                        pointBorderColor: '#5b5fcf',
+                        pointRadius: 3,
+                        pointHoverRadius: 5,
+                        borderWidth: 2,
+                        tension: 0.4, 
+                        fill: true 
+                    },
+                    { 
+                        label: 'Upload', 
+                        data: [], 
+                        borderColor: '#4a90e2', 
+                        backgroundColor: 'rgba(74,144,226,0.1)', 
+                        pointBackgroundColor: '#4a90e2',
+                        pointBorderColor: '#4a90e2',
+                        pointRadius: 3,
+                        pointHoverRadius: 5,
+                        borderWidth: 2,
+                        tension: 0.4, 
+                        fill: true 
+                    }
                 ]
             },
             options: {
                 responsive: true,
-                animation: false,
+                maintainAspectRatio: false,
+                animation: { duration: 0 },
                 plugins: {
-                    legend: { display: true, labels: { font: { size: 14 } } },
-                    title: { display: true, text: 'Network Traffic', font: { size: 18 } },
-                    tooltip: { enabled: true, mode: 'index', intersect: false }
+                    legend: { 
+                        display: true, 
+                        position: 'top',
+                        labels: { 
+                            font: { size: 12, weight: '600' },
+                            color: '#64748b',
+                            usePointStyle: true,
+                            padding: 20
+                        } 
+                    },
+                    title: { display: false },
+                    tooltip: { 
+                        enabled: true, 
+                        mode: 'index', 
+                        intersect: false,
+                        backgroundColor: 'rgba(255,255,255,0.95)',
+                        titleColor: '#2f3640',
+                        bodyColor: '#64748b',
+                        borderColor: '#e8e9ff',
+                        borderWidth: 1,
+                        cornerRadius: 8,
+                        padding: 12
+                    }
                 },
                 interaction: { mode: 'nearest', axis: 'x', intersect: false },
                 scales: {
-                    x: { grid: { color: '#e9ecef' }, ticks: { font: { size: 12 } } },
-                    y: { beginAtZero: true, suggestedMin: 0, suggestedMax: 1000, grid: { color: '#e9ecef' }, ticks: { font: { size: 12 } } }
+                    x: { 
+                        grid: { color: '#f0f0ff', drawBorder: false }, 
+                        ticks: { 
+                            font: { size: 11 },
+                            color: '#94a3b8',
+                            maxTicksLimit: 8
+                        }
+                    },
+                    y: { 
+                        beginAtZero: true, 
+                        grid: { color: '#f0f0ff', drawBorder: false }, 
+                        ticks: { 
+                            font: { size: 11 },
+                            color: '#94a3b8'
+                        }
+                    }
                 },
-                layout: { padding: 10 }
+                layout: { padding: { top: 10, bottom: 10, left: 10, right: 10 } }
             }
         });
         window.trafficChart = trafficChart;
@@ -1108,24 +1247,83 @@ app.controller('dashboardStatsController', function ($scope, $http, $timeout) {
             data: {
                 labels: [],
                 datasets: [
-                    { label: 'Read (Bytes/sec)', data: [], borderColor: '#17a2b8', backgroundColor: 'rgba(23,162,184,0.08)', pointBackgroundColor: '#17a2b8', tension: 0.4, fill: true },
-                    { label: 'Write (Bytes/sec)', data: [], borderColor: '#ffc107', backgroundColor: 'rgba(255,193,7,0.08)', pointBackgroundColor: '#ffc107', tension: 0.4, fill: true }
+                    { 
+                        label: 'Read', 
+                        data: [], 
+                        borderColor: '#5b5fcf', 
+                        backgroundColor: 'rgba(91,95,207,0.1)', 
+                        pointBackgroundColor: '#5b5fcf',
+                        pointBorderColor: '#5b5fcf',
+                        pointRadius: 3,
+                        pointHoverRadius: 5,
+                        borderWidth: 2,
+                        tension: 0.4, 
+                        fill: true 
+                    },
+                    { 
+                        label: 'Write', 
+                        data: [], 
+                        borderColor: '#e74c3c', 
+                        backgroundColor: 'rgba(231,76,60,0.1)', 
+                        pointBackgroundColor: '#e74c3c',
+                        pointBorderColor: '#e74c3c',
+                        pointRadius: 3,
+                        pointHoverRadius: 5,
+                        borderWidth: 2,
+                        tension: 0.4, 
+                        fill: true 
+                    }
                 ]
             },
             options: {
                 responsive: true,
-                animation: false,
+                maintainAspectRatio: false,
+                animation: { duration: 0 },
                 plugins: {
-                    legend: { display: true, labels: { font: { size: 14 } } },
-                    title: { display: true, text: 'Disk IO', font: { size: 18 } },
-                    tooltip: { enabled: true, mode: 'index', intersect: false }
+                    legend: { 
+                        display: true, 
+                        position: 'top',
+                        labels: { 
+                            font: { size: 12, weight: '600' },
+                            color: '#64748b',
+                            usePointStyle: true,
+                            padding: 20
+                        } 
+                    },
+                    title: { display: false },
+                    tooltip: { 
+                        enabled: true, 
+                        mode: 'index', 
+                        intersect: false,
+                        backgroundColor: 'rgba(255,255,255,0.95)',
+                        titleColor: '#2f3640',
+                        bodyColor: '#64748b',
+                        borderColor: '#e8e9ff',
+                        borderWidth: 1,
+                        cornerRadius: 8,
+                        padding: 12
+                    }
                 },
                 interaction: { mode: 'nearest', axis: 'x', intersect: false },
                 scales: {
-                    x: { grid: { color: '#e9ecef' }, ticks: { font: { size: 12 } } },
-                    y: { beginAtZero: true, grid: { color: '#e9ecef' }, ticks: { font: { size: 12 } } }
+                    x: { 
+                        grid: { color: '#f0f0ff', drawBorder: false }, 
+                        ticks: { 
+                            font: { size: 11 },
+                            color: '#94a3b8',
+                            maxTicksLimit: 8
+                        }
+                    },
+                    y: { 
+                        beginAtZero: true, 
+                        grid: { color: '#f0f0ff', drawBorder: false }, 
+                        ticks: { 
+                            font: { size: 11 },
+                            color: '#94a3b8'
+                        }
+                    }
                 },
-                layout: { padding: 10 }
+                layout: { padding: { top: 10, bottom: 10, left: 10, right: 10 } }
             }
         });
         var cpuCtx = document.getElementById('cpuChart').getContext('2d');
@@ -1134,23 +1332,71 @@ app.controller('dashboardStatsController', function ($scope, $http, $timeout) {
             data: {
                 labels: [],
                 datasets: [
-                    { label: 'CPU Usage (%)', data: [], borderColor: '#dc3545', backgroundColor: 'rgba(220,53,69,0.08)', pointBackgroundColor: '#dc3545', tension: 0.4, fill: true }
+                    { 
+                        label: 'CPU Usage (%)', 
+                        data: [], 
+                        borderColor: '#5b5fcf', 
+                        backgroundColor: 'rgba(91,95,207,0.1)', 
+                        pointBackgroundColor: '#5b5fcf',
+                        pointBorderColor: '#5b5fcf',
+                        pointRadius: 3,
+                        pointHoverRadius: 5,
+                        borderWidth: 2,
+                        tension: 0.4, 
+                        fill: true 
+                    }
                 ]
             },
             options: {
                 responsive: true,
-                animation: false,
+                maintainAspectRatio: false,
+                animation: { duration: 0 },
                 plugins: {
-                    legend: { display: true, labels: { font: { size: 14 } } },
-                    title: { display: true, text: 'CPU Usage', font: { size: 18 } },
-                    tooltip: { enabled: true, mode: 'index', intersect: false }
+                    legend: { 
+                        display: true, 
+                        position: 'top',
+                        labels: { 
+                            font: { size: 12, weight: '600' },
+                            color: '#64748b',
+                            usePointStyle: true,
+                            padding: 20
+                        } 
+                    },
+                    title: { display: false },
+                    tooltip: { 
+                        enabled: true, 
+                        mode: 'index', 
+                        intersect: false,
+                        backgroundColor: 'rgba(255,255,255,0.95)',
+                        titleColor: '#2f3640',
+                        bodyColor: '#64748b',
+                        borderColor: '#e8e9ff',
+                        borderWidth: 1,
+                        cornerRadius: 8,
+                        padding: 12
+                    }
                 },
                 interaction: { mode: 'nearest', axis: 'x', intersect: false },
                 scales: {
-                    x: { grid: { color: '#e9ecef' }, ticks: { font: { size: 12 } } },
-                    y: { beginAtZero: true, max: 100, grid: { color: '#e9ecef' }, ticks: { font: { size: 12 } } }
+                    x: { 
+                        grid: { color: '#f0f0ff', drawBorder: false }, 
+                        ticks: { 
+                            font: { size: 11 },
+                            color: '#94a3b8',
+                            maxTicksLimit: 8
+                        }
+                    },
+                    y: { 
+                        beginAtZero: true, 
+                        max: 100, 
+                        grid: { color: '#f0f0ff', drawBorder: false }, 
+                        ticks: { 
+                            font: { size: 11 },
+                            color: '#94a3b8'
+                        }
+                    }
                 },
-                layout: { padding: 10 }
+                layout: { padding: { top: 10, bottom: 10, left: 10, right: 10 } }
             }
         });
 
@@ -1192,6 +1438,7 @@ app.controller('dashboardStatsController', function ($scope, $http, $timeout) {
             pollTraffic();
             pollDiskIO();
             pollCPU();
+            $scope.refreshTopProcesses();
             $timeout(pollAll, pollInterval);
         }
         pollAll();

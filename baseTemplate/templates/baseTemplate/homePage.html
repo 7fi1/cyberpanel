@@ -1,1221 +1,792 @@
 {% extends "baseTemplate/index.html" %}
 {% load i18n %}
-{% block title %}{% trans "Home - CyberPanel" %}{% endblock %}
+{% block title %}{% trans "Dashboard - CyberPanel" %}{% endblock %}
+
+{% block header_scripts %}
+<style>
+    /* Dashboard Specific Styles */
+    .dashboard-wrapper {
+        background: transparent;
+        padding: 20px;
+    }
+    
+    .dashboard-container {
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+    
+    /* Overview Section */
+    .overview-section {
+        background: white;
+        border-radius: 12px;
+        padding: 25px;
+        margin-bottom: 25px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        border: 1px solid #e8e9ff;
+    }
+    
+    .section-title {
+        font-size: 16px;
+        font-weight: 700;
+        color: #2f3640;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .section-title::before {
+        content: '';
+        width: 4px;
+        height: 24px;
+        background: #5b5fcf;
+        border-radius: 2px;
+    }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 20px;
+    }
+    
+    .stat-card {
+        background: white;
+        border: 1px solid #e8e9ff;
+        border-radius: 12px;
+        padding: 20px;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .stat-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+    
+    .stat-card-title {
+        font-size: 13px;
+        color: #8893a7;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .stat-card-value {
+        font-size: 13px;
+        color: #8893a7;
+    }
+    
+    .progress-bar-container {
+        width: 100%;
+        height: 8px;
+        background: #e8e9ff;
+        border-radius: 4px;
+        overflow: hidden;
+    }
+    
+    .progress-bar {
+        height: 100%;
+        border-radius: 4px;
+        transition: width 0.3s ease;
+        background: #5b5fcf;
+    }
+    
+    .stat-card-info {
+        margin-top: 10px;
+        font-size: 13px;
+        color: #8893a7;
+    }
+    
+    /* Insights Section */
+    .insights-section {
+        background: white;
+        border-radius: 12px;
+        padding: 25px;
+        margin-bottom: 25px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        border: 1px solid #e8e9ff;
+    }
+    
+    .insights-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 15px;
+    }
+    
+    .insight-card {
+        background: #f8f9ff;
+        border: 1px solid #e8e9ff;
+        border-radius: 10px;
+        padding: 20px 15px;
+        text-align: center;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    
+    .insight-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 20px rgba(91,95,207,0.1);
+        border-color: #5b5fcf;
+    }
+    
+    .insight-icon {
+        width: 48px;
+        height: 48px;
+        background: #5b5fcf;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 15px;
+        color: white;
+        font-size: 20px;
+    }
+    
+    .insight-value {
+        font-size: 28px;
+        font-weight: 700;
+        color: #2f3640;
+        margin-bottom: 5px;
+    }
+    
+    .insight-label {
+        font-size: 13px;
+        color: #8893a7;
+        font-weight: 500;
+    }
+    
+    /* Activity Board */
+    .activity-section {
+        background: white;
+        border-radius: 12px;
+        padding: 25px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        border: 1px solid #e8e9ff;
+    }
+    
+    .activity-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+    
+    .activity-tabs {
+        display: flex;
+        gap: 3px;
+        background: #f0f0ff;
+        padding: 3px;
+        border-radius: 8px;
+        border: 1px solid #e8e9ff;
+    }
+    
+    .activity-tab {
+        background: transparent;
+        border: none;
+        padding: 8px 14px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 600;
+        color: #64748b;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        white-space: nowrap;
+    }
+    
+    .activity-tab:hover {
+        color: #5b5fcf;
+        background: rgba(91,95,207,0.1);
+    }
+    
+    .activity-tab.active {
+        background: #5b5fcf;
+        color: white;
+        box-shadow: 0 2px 4px rgba(91,95,207,0.3);
+    }
+    
+    .activity-tab i {
+        font-size: 14px;
+    }
+    
+    .tab-content {
+        display: none;
+    }
+    
+    .tab-content.active {
+        display: block;
+    }
+    
+    .activity-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 15px;
+    }
+    
+    .activity-table th {
+        text-align: left;
+        padding: 12px 15px;
+        font-size: 11px;
+        font-weight: 700;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        border-bottom: 2px solid #e8e9ff;
+        background: #f8f9ff;
+    }
+    
+    .activity-table td {
+        padding: 12px 15px;
+        font-size: 13px;
+        color: #2f3640;
+        border-bottom: 1px solid #f0f0ff;
+    }
+    
+    .activity-table tr:hover {
+        background: #f8f9ff;
+    }
+    
+    .view-activity-btn {
+        background: #f8f9ff;
+        border: 1px solid #e8e9ff;
+        color: #5b5fcf;
+        padding: 6px 14px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    
+    .view-activity-btn:hover {
+        background: #5b5fcf;
+        color: white;
+        border-color: #5b5fcf;
+        box-shadow: 0 2px 4px rgba(91,95,207,0.3);
+    }
+    
+    .chart-container {
+        height: 280px;
+        position: relative;
+        padding: 15px;
+        background: #fafbff;
+        border-radius: 8px;
+        border: 1px solid #e8e9ff;
+        margin-top: 10px;
+    }
+    
+    /* Modal Styles */
+    .modal-backdrop {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0,0,0,0.5);
+        z-index: 10000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        backdrop-filter: blur(2px);
+    }
+    
+    .modal-content {
+        max-width: 90vw;
+        max-height: 90vh;
+        width: 600px;
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 8px 40px rgba(0,0,0,0.18);
+        padding: 32px 28px 24px;
+        position: relative;
+        overflow-y: auto;
+        animation: modalFadeIn 0.3s ease-out;
+    }
+    
+    @keyframes modalFadeIn {
+        from { 
+            opacity: 0; 
+            transform: scale(0.9) translateY(-20px); 
+        }
+        to { 
+            opacity: 1; 
+            transform: scale(1) translateY(0); 
+        }
+    }
+    
+    /* Brand Bird Badge */
+    .brand-badge {
+        background: #2f3640;
+        color: white;
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+    
+    .brand-badge img {
+        width: 16px;
+        height: 16px;
+    }
+    
+    /* Responsive */
+    @media (max-width: 1200px) {
+        .activity-tabs {
+            flex-wrap: wrap;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .stats-grid,
+        .insights-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .activity-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        
+        .activity-table {
+            font-size: 12px;
+        }
+        
+        .activity-table th,
+        .activity-table td {
+            padding: 8px;
+        }
+        
+        .view-activity-btn {
+            font-size: 12px;
+            padding: 4px 12px;
+        }
+        
+        .activity-tabs {
+            width: 100%;
+            overflow-x: auto;
+            flex-wrap: nowrap;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-
-    {% get_current_language as LANGUAGE_CODE %}
-    <!-- Current language: {{ LANGUAGE_CODE }} -->
-
-    <div
-        class="container"
-        style="
-            max-width: 1200px;
-            margin: 0 auto;
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            min-height: 100vh;
-            padding: 20px 20px 40px 20px;
-        "
-    >
-        <!--
-        ===============================
-          Page Title (Enhanced Welcome Card)
-        ===============================
-        -->
-        <div
-            id="page-title"
-            style="
-                max-width: 900px;
-                margin: 0 auto 40px auto;
-                text-align: center;
-                padding: 40px 30px;
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                border-radius: 20px;
-                box-shadow: 0 20px 40px rgba(102, 126, 234, 0.3);
-                border: none;
-                position: relative;
-                overflow: hidden;
-            "
-        >
-            <!-- Decorative background elements -->
-            <div style="position: absolute; top: -50px; right: -50px; width: 100px; height: 100px; background: rgba(255,255,255,0.1); border-radius: 50%; z-index: 0;"></div>
-            <div style="position: absolute; bottom: -30px; left: -30px; width: 80px; height: 80px; background: rgba(255,255,255,0.1); border-radius: 50%; z-index: 0;"></div>
+<div class="dashboard-wrapper">
+    <div class="dashboard-container" ng-controller="dashboardStatsController">
+    <!-- Overview Section -->
+    <div class="overview-section">
+        <h2 class="section-title">OVERVIEW</h2>
+        <div class="stats-grid" ng-controller="systemStatusInfo">
+            <div class="stat-card">
+                <div class="stat-card-header">
+                    <span class="stat-card-title">CPU USAGE</span>
+                    <span class="stat-card-value">({$ cpuUsage || 40 $}%)</span>
+                </div>
+                <div class="progress-bar-container">
+                    <div class="progress-bar" style="width: {$ cpuUsage || 40 $}%;"></div>
+                </div>
+                <div class="stat-card-info">You've {$ cpuCores || 2 $} Core(s) CPU.</div>
+            </div>
             
-            <div style="position: relative; z-index: 1;">
-                <h2
-                    style="
-                        color: #ffffff;
-                        font-size: 3rem;
-                        font-weight: 800;
-                        margin-bottom: 15px;
-                        text-shadow: 0 2px 20px rgba(0,0,0,0.1);
-                        letter-spacing: -1px;
-                    "
-                >
-                    {% trans "Home" %}
-                </h2>
-                <p style="color: rgba(255,255,255,0.9); font-size: 1.2rem; margin: 0; font-weight: 400; opacity: 0.95;">
-                    {% trans "Use the tabs to navigate through the control panel." %}
-                </p>
+            <div class="stat-card">
+                <div class="stat-card-header">
+                    <span class="stat-card-title">MEMORY USAGE</span>
+                    <span class="stat-card-value">({$ ramUsage || 10 $}%)</span>
+                </div>
+                <div class="progress-bar-container">
+                    <div class="progress-bar" style="width: {$ ramUsage || 10 $}%;"></div>
+                </div>
+                <div class="stat-card-info">You've {$ ramTotalMB || 6192 $} MB Memory.</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-card-header">
+                    <span class="stat-card-title">DISK USAGE</span>
+                    <span class="stat-card-value">({$ diskUsage || 80 $}%)</span>
+                </div>
+                <div class="progress-bar-container">
+                    <div class="progress-bar" style="width: {$ diskUsage || 80 $}%;"></div>
+                </div>
+                <div class="stat-card-info">You've {$ diskFreeGB || 80 $} GB remaining out of {$ diskTotalGB || 400 $} GB.</div>
             </div>
         </div>
-
-        <!--
-        =========================================
-          Dashboard Stats Section (Enhanced Info Cards)
-        =========================================
-        -->
-        <div ng-controller="dashboardStatsController" style="margin-bottom: 40px;">
-
-            <!-- Enhanced Info Cards Row -->
-            <div
-                style="
-                    display: grid;
-                    grid-template-columns: repeat(4, 1fr);
-                    gap: 25px;
-                    margin-bottom: 50px;
-                    padding: 0 10px;
-                "
-            >
-                <!-- Total Sites Card -->
-                <a
-                    href="{% url 'listWebsites' %}"
-                    style="text-decoration: none;"
-                >
-                    <div class="stat-card-wrapper">
-                        <div
-                            class="rounded-card enhanced-stat-card"
-                            style="
-                                background: linear-gradient(135deg, #4c5fad 0%, #6c7ce0 100%);
-                                color: #fff;
-                                padding: 30px 25px;
-                                position: relative;
-                                overflow: hidden;
-                                min-height: 160px;
-                                cursor: pointer;
-                                border-radius: 16px;
-                                transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-                            "
-                        >
-                            <!-- Decorative circles -->
-                            <div style="position: absolute; top: -20px; right: -20px; width: 80px; height: 80px; background: rgba(255,255,255,0.1); border-radius: 50%; z-index: 0;"></div>
-                            <div style="position: absolute; bottom: -40px; left: -40px; width: 120px; height: 120px; background: rgba(255,255,255,0.05); border-radius: 50%; z-index: 0;"></div>
-                            
-                            <div
-                                style="
-                                    display: flex;
-                                    align-items: center;
-                                    position: relative;
-                                    z-index: 1;
-                                "
-                            >
-                                <div
-                                    style="
-                                        font-size: 3.5rem;
-                                        margin-right: 25px;
-                                        opacity: 0.9;
-                                        line-height: 1;
-                                    "
-                                >🌐</div>
-                                <div>
-                                    <div
-                                        style="
-                                            font-size: 3.2rem;
-                                            font-weight: 800;
-                                            line-height: 1;
-                                            margin-bottom: 8px;
-                                        "
-                                    >
-                                        {$ totalSites $}
-                                </div>
-                                    <div
-                                        style="
-                                            font-size: 1.1rem;
-                                            opacity: 0.9;
-                                            font-weight: 600;
-                                            letter-spacing: 0.5px;
-                                        "
-                                    >
-                                        Total Sites
-                        </div>
-                                </div>
-                                </div>
-                        </div>
-                                </div>
-                            </a>
-
-                <!-- WordPress Sites Card -->
-                <a
-                    href="{% url 'ListWPSites' %}?wp=1"
-                    style="text-decoration: none;"
-                >
-                    <div class="stat-card-wrapper">
-                        <div
-                            class="rounded-card enhanced-stat-card"
-                            style="
-                                background: linear-gradient(135deg, #6eb5ff 0%, #4f46e5 100%);
-                                color: #fff;
-                                padding: 30px 25px;
-                                position: relative;
-                                overflow: hidden;
-                                min-height: 160px;
-                                cursor: pointer;
-                                border-radius: 16px;
-                                transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-                            "
-                        >
-                            <!-- Decorative circles -->
-                            <div style="position: absolute; top: -20px; right: -20px; width: 80px; height: 80px; background: rgba(255,255,255,0.1); border-radius: 50%; z-index: 0;"></div>
-                            <div style="position: absolute; bottom: -40px; left: -40px; width: 120px; height: 120px; background: rgba(255,255,255,0.05); border-radius: 50%; z-index: 0;"></div>
-                            
-                            <div
-                                style="
-                                    display: flex;
-                                    align-items: center;
-                                    position: relative;
-                                    z-index: 1;
-                                "
-                            >
-                                <div
-                                    style="
-                                        font-size: 3.5rem;
-                                        margin-right: 25px;
-                                        opacity: 0.9;
-                                        line-height: 1;
-                                    "
-                                >📝</div>
-                                <div>
-                                    <div
-                                        style="
-                                            font-size: 3.2rem;
-                                            font-weight: 800;
-                                            line-height: 1;
-                                            margin-bottom: 8px;
-                                        "
-                                    >
-                                        {$ totalWPSites $}
-                                </div>
-                                    <div
-                                        style="
-                                            font-size: 1.1rem;
-                                            opacity: 0.9;
-                                            font-weight: 600;
-                                            letter-spacing: 0.5px;
-                                        "
-                                    >
-                                        WordPress Sites
-                        </div>
-                                </div>
-                                </div>
-                        </div>
-                                </div>
-                            </a>
-
-                <!-- Total Databases Card -->
-                <a
-                    href="{% url 'listDBs' %}"
-                    style="text-decoration: none;"
-                >
-                    <div class="stat-card-wrapper">
-                        <div
-                            class="rounded-card enhanced-stat-card"
-                            style="
-                                background: linear-gradient(135deg, #ff6b9d 0%, #e91e63 100%);
-                                color: #fff;
-                                padding: 30px 25px;
-                                position: relative;
-                                overflow: hidden;
-                                min-height: 160px;
-                                cursor: pointer;
-                                border-radius: 16px;
-                                transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-                            "
-                        >
-                            <!-- Decorative circles -->
-                            <div style="position: absolute; top: -20px; right: -20px; width: 80px; height: 80px; background: rgba(255,255,255,0.1); border-radius: 50%; z-index: 0;"></div>
-                            <div style="position: absolute; bottom: -40px; left: -40px; width: 120px; height: 120px; background: rgba(255,255,255,0.05); border-radius: 50%; z-index: 0;"></div>
-                            
-                            <div
-                                style="
-                                    display: flex;
-                                    align-items: center;
-                                    position: relative;
-                                    z-index: 1;
-                                "
-                            >
-                                <div
-                                    style="
-                                        font-size: 3.5rem;
-                                        margin-right: 25px;
-                                        opacity: 0.9;
-                                        line-height: 1;
-                                    "
-                                >🗄️</div>
-                                <div>
-                                    <div
-                                        style="
-                                            font-size: 3.2rem;
-                                            font-weight: 800;
-                                            line-height: 1;
-                                            margin-bottom: 8px;
-                                        "
-                                    >
-                                        {$ totalDBs $}
-                                </div>
-                                    <div
-                                        style="
-                                            font-size: 1.1rem;
-                                            opacity: 0.9;
-                                            font-weight: 600;
-                                            letter-spacing: 0.5px;
-                                        "
-                                    >
-                                        Total Databases
-                        </div>
-                                </div>
-                                </div>
-                        </div>
-                                </div>
-                            </a>
-
-                <!-- Total Emails Card -->
-                <a
-                    href="{% url 'listEmails' %}"
-                    style="text-decoration: none;"
-                >
-                    <div class="stat-card-wrapper">
-                        <div
-                            class="rounded-card enhanced-stat-card"
-                            style="
-                                background: linear-gradient(135deg, #ffa726 0%, #ff7043 100%);
-                                color: #fff;
-                                padding: 30px 25px;
-                                position: relative;
-                                overflow: hidden;
-                                min-height: 160px;
-                                cursor: pointer;
-                                border-radius: 16px;
-                                transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-                            "
-                        >
-                            <!-- Decorative circles -->
-                            <div style="position: absolute; top: -20px; right: -20px; width: 80px; height: 80px; background: rgba(255,255,255,0.1); border-radius: 50%; z-index: 0;"></div>
-                            <div style="position: absolute; bottom: -40px; left: -40px; width: 120px; height: 120px; background: rgba(255,255,255,0.05); border-radius: 50%; z-index: 0;"></div>
-                            
-                            <div
-                                style="
-                                    display: flex;
-                                    align-items: center;
-                                    position: relative;
-                                    z-index: 1;
-                                "
-                            >
-                                <div
-                                    style="
-                                        font-size: 3.5rem;
-                                        margin-right: 25px;
-                                        opacity: 0.9;
-                                        line-height: 1;
-                                    "
-                                >📧</div>
-                                <div>
-                                    <div
-                                        style="
-                                            font-size: 3.2rem;
-                                            font-weight: 800;
-                                            line-height: 1;
-                                            margin-bottom: 8px;
-                                        "
-                                    >
-                                        {$ totalEmails $}
-                                    </div>
-                                    <div
-                                        style="
-                                            font-size: 1.1rem;
-                                            opacity: 0.9;
-                                            font-weight: 600;
-                                            letter-spacing: 0.5px;
-                                        "
-                                    >
-                                        Total Emails
-                                    </div>
-                                </div>
-                            </div>
-                                    </div>
-                                    </div>
-                                </a>
-                            </div>
-
-            <!--
-            ====================================
-              Enhanced Graphs Section (Traffic / DiskIO / CPU)
-            ====================================
-            -->
-            <div
-                style="
-                    background: linear-gradient(135deg, #fff 0%, #f8fafc 100%);
-                    border-radius: 20px;
-                    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.08);
-                    padding: 40px 30px 45px 30px;
-                    border: 1px solid rgba(255,255,255,0.2);
-                    margin-bottom: 50px;
-                    backdrop-filter: blur(10px);
-                "
-            >
-                <!-- Enhanced Tab Navigation -->
-                <div style="text-align: center; margin-bottom: 35px; padding-bottom: 5px;">
-                    <ul
-                        style="
-                            list-style: none;
-                            padding: 0;
-                            margin: 0 auto;
-                            display: inline-flex;
-                            background: linear-gradient(135deg, #4c5fad 0%, #667eea 100%);
-                            border-radius: 15px;
-                            padding: 12px;
-                            gap: 12px;
-                            box-shadow: 0 15px 35px rgba(76, 95, 173, 0.25);
-                        "
-                    >
-                        <li style="display: inline-block;">
-                            <a
-                                href="#traffic"
-                                id="traffic-tab"
-                                data-toggle="tab"
-                                class="graph-tab active"
-                                style="
-                                    display: block;
-                                    padding: 15px 30px;
-                                    background: #fff;
-                                    color: #4c5fad;
-                                    border-radius: 10px;
-                                    text-decoration: none;
-                                    font-weight: 700;
-                                    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-                                    text-transform: uppercase;
-                                    letter-spacing: 0.8px;
-                                    font-size: 0.9rem;
-                                    box-shadow: 0 4px 15px rgba(255,255,255,0.3);
-                                "
-                            >
-                                📊 Traffic
-                            </a>
-                        </li>
-                        <li style="display: inline-block;">
-                            <a
-                                href="#diskio"
-                                id="diskio-tab"
-                                data-toggle="tab"
-                                class="graph-tab"
-                                style="
-                                    display: block;
-                                    padding: 15px 30px;
-                                    background: transparent;
-                                    color: rgba(255, 255, 255, 0.9);
-                                    border-radius: 10px;
-                                    text-decoration: none;
-                                    font-weight: 700;
-                                    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-                                    text-transform: uppercase;
-                                    letter-spacing: 0.8px;
-                                    font-size: 0.9rem;
-                                "
-                            >
-                                💾 Disk IO
-                            </a>
-                        </li>
-                        <li style="display: inline-block;">
-                            <a
-                                href="#cpu"
-                                id="cpu-tab"
-                                data-toggle="tab"
-                                class="graph-tab"
-                                style="
-                                    display: block;
-                                    padding: 15px 30px;
-                                    background: transparent;
-                                    color: rgba(255, 255, 255, 0.9);
-                                    border-radius: 10px;
-                                    text-decoration: none;
-                                    font-weight: 700;
-                                    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-                                    text-transform: uppercase;
-                                    letter-spacing: 0.8px;
-                                    font-size: 0.9rem;
-                                "
-                            >
-                                🖥️ CPU Usage
-                            </a>
-                        </li>
-                    </ul>
-                            </div>
-
-                <!-- Enhanced Tab Content -->
-                <div
-                    class="tab-content"
-                    style="
-                        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-                        border-radius: 15px;
-                        padding: 35px;
-                        min-height: 380px;
-                        border: 1px solid rgba(255,255,255,0.5);
-                        box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
-                    "
-                >
-                    <div
-                        class="tab-pane fade show active"
-                        id="traffic"
-                        role="tabpanel"
-                    >
-                        <canvas id="trafficChart" height="80"></canvas>
-                                    </div>
-                    <div
-                        class="tab-pane fade"
-                        id="diskio"
-                        role="tabpanel"
-                    >
-                        <canvas id="diskIOChart" height="80"></canvas>
-                                    </div>
-                    <div
-                        class="tab-pane fade"
-                        id="cpu"
-                        role="tabpanel"
-                    >
-                        <canvas id="cpuChart" height="80"></canvas>
-                    </div>
+    </div>
+    
+    <!-- Insights Section -->
+    <div class="insights-section">
+        <h2 class="section-title">INSIGHTS</h2>
+        <div class="insights-grid">
+            <div class="insight-card">
+                <div class="insight-icon" style="background: #5b5fcf;">
+                    <i class="fas fa-users"></i>
                 </div>
+                <div class="insight-value">{$ totalUsers || 0 $}</div>
+                <div class="insight-label">Users</div>
             </div>
-
-            <!-- Place SSH Logins and Logs row here, after graphs section -->
-        {% if admin %}
-            <div style="display: flex; gap: 30px; justify-content: center; align-items: flex-start; flex-wrap: wrap; margin-bottom: 40px;">
-                <!-- Recent SSH Logins Widget -->
-                <div style="flex: 1 1 420px; min-width: 320px; max-width: 600px; background: linear-gradient(135deg, #e3eafc 0%, #f8fafc 100%); border-radius: 16px; box-shadow: 0 4px 24px rgba(76,95,173,0.10); border-left: 6px solid #4c5fad; padding: 28px 32px 24px 28px; border: 1px solid #e9ecef; position: relative;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
-                        <div style="font-size: 1.35rem; font-weight: 800; color: #2d3a5a; letter-spacing: 0.5px; display: flex; align-items: center; gap: 10px;">
-                            <span style="display: inline-block; width: 6px; height: 24px; background: #4c5fad; border-radius: 3px; margin-right: 10px;"></span>
-                            Recent SSH Logins
-                                                    </div>
-                        <button class="btn btn-sm btn-outline-primary refresh-btn" ng-click="refreshSSHLogins()" title="Refresh" style="display: flex; align-items: center; gap: 7px; font-size: 1.08rem; font-weight: 600; border-radius: 20px; padding: 6px 18px; border: 2px solid #4c5fad; color: #4c5fad; background: #fff; transition: all 0.2s;">
-                            <span class="refresh-icon" style="display: inline-block; transition: transform 0.4s;">&#x21bb;</span>
-                            Refresh
-                        </button>
-                                                </div>
-                    <div ng-if="loadingSSHLogins" style="text-align: center; color: #888; padding: 20px 0;">Loading...</div>
-                    <div ng-if="errorSSHLogins" style="color: #e53935; padding: 10px 0;">{$ errorSSHLogins $}</div>
-                    <div ng-if="!loadingSSHLogins && !errorSSHLogins && sshLogins.length === 0" style="text-align: center; color: #888; padding: 20px 0;">No recent SSH logins found.</div>
-                    <div style="overflow-x: auto;">
-                        <table class="table table-striped table-hover" style="margin-bottom: 0; border-radius: 10px; overflow: hidden;">
-                            <thead>
-                                <tr style="background: #f1f3f6;">
-                                    <th style="font-weight: 700; color: #4c5fad; background: #e3eafc;">User</th>
-                                    <th style="font-weight: 700; color: #4c5fad; background: #e3eafc;">IP</th>
-                                    <th style="font-weight: 700; color: #4c5fad; background: #e3eafc;">Country</th>
-                                    <th style="font-weight: 700; color: #4c5fad; background: #e3eafc;">Date</th>
-                                    <th style="font-weight: 700; color: #4c5fad; background: #e3eafc;">Session</th>
-                                    <th style="font-weight: 700; color: #4c5fad; background: #e3eafc;">Activity</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr ng-repeat="login in sshLogins" style="background: #f8f9fa; border-bottom: 1px solid #e9ecef; transition: background 0.2s;" onmouseover="this.style.background='#e3eafc'" onmouseout="this.style.background='#f8f9fa'">
-                                    <td style="padding: 8px 8px; font-weight: 600; color: #333;">{$ login.user $}</td>
-                                    <td style="padding: 8px 8px; color: #555; font-family: 'Menlo', 'Monaco', 'Consolas', monospace;">{$ login.ip $}</td>
-                                    <td style="padding: 8px 8px;">{$ login.country $}</td>
-                                    <td style="padding: 8px 8px; font-family: 'Menlo', 'Monaco', 'Consolas', monospace;">{$ login.date $}</td>
-                                    <td style="padding: 8px 8px;">{$ login.session $}</td>
-                                    <td style="padding: 8px 8px;">
-                                        <button class="view-activity-btn" ng-click="viewSSHActivity(login)">View Activity</button>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                                            </div>
-                                        </div>
-                <!-- Recent SSH Logs Widget -->
-                <div style="flex: 1 1 520px; min-width: 320px; max-width: 700px; background: linear-gradient(135deg, #fff4e3 0%, #f8fafc 100%); border-radius: 16px; box-shadow: 0 4px 24px rgba(255,167,38,0.10); border-left: 6px solid #ffa726; padding: 28px 32px 24px 28px; border: 1px solid #e9ecef; max-height: 600px; overflow-y: auto; position: relative;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
-                        <div style="font-size: 1.35rem; font-weight: 800; color: #a15c00; letter-spacing: 0.5px; display: flex; align-items: center; gap: 10px;">
-                            <span style="display: inline-block; width: 6px; height: 24px; background: #ffa726; border-radius: 3px; margin-right: 10px;"></span>
-                            Recent SSH Logs
-                        </div>
-                        <button class="btn btn-sm btn-outline-primary refresh-btn" ng-click="refreshSSHLogs()" title="Refresh" style="display: flex; align-items: center; gap: 7px; font-size: 1.08rem; font-weight: 600; border-radius: 20px; padding: 6px 18px; border: 2px solid #ffa726; color: #a15c00; background: #fff; transition: all 0.2s;">
-                            <span class="refresh-icon" style="display: inline-block; transition: transform 0.4s;">&#x21bb;</span>
-                            Refresh
-                        </button>
-                    </div>
-                    <div ng-if="loadingSSHLogs" style="text-align: center; color: #888; padding: 20px 0;">Loading...</div>
-                    <div ng-if="errorSSHLogs" style="color: #e53935; padding: 10px 0;">{$ errorSSHLogs $}</div>
-                    <div ng-if="!loadingSSHLogs && !errorSSHLogs && sshLogs.length === 0" style="text-align: center; color: #888; padding: 20px 0;">No recent SSH logs found.</div>
-                    <div style="overflow-x: auto;">
-                        <table class="table table-striped table-hover" style="margin-bottom: 0; border-radius: 10px; overflow: hidden;">
-                            <thead>
-                                <tr style="background: #fff4e3;">
-                                    <th style="font-weight: 700; color: #ffa726; background: #fff4e3;">Timestamp</th>
-                                    <th style="font-weight: 700; color: #ffa726; background: #fff4e3;">Message</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr ng-repeat="log in sshLogs" style="background: #f8f9fa; border-bottom: 1px solid #e9ecef; transition: background 0.2s;" onmouseover="this.style.background='#fff4e3'" onmouseout="this.style.background='#f8f9fa'">
-                                    <td style="padding: 8px 8px; color: #a15c00; font-family: 'Menlo', 'Monaco', 'Consolas', monospace; white-space: nowrap;">{$ log.timestamp $}</td>
-                                    <td style="padding: 8px 8px; color: #333;">{$ log.message $}</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        {% endif %}
             
-            <!-- Fixed SSH Activity Modal -->
-            <div ng-if="showSSHActivityModal" class="modal-backdrop" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.5); z-index: 10000; display: flex; align-items: center; justify-content: center; padding: 20px; box-sizing: border-box;" ng-click="closeModalOnBackdrop($event)">
-                <div class="modal-content" style="max-width: 90vw; max-height: 90vh; width: 600px; background: #fff; border-radius: 16px; box-shadow: 0 8px 40px rgba(44,62,80,0.18); padding: 32px 28px 24px 28px; position: relative; overflow-y: auto;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
-                        <div style="font-size: 1.2rem; font-weight: 800; color: #4c5fad; letter-spacing: 0.5px;">
-                            User Activity: <span style="color: #222;">{$ sshActivityUser $}</span>
+            <div class="insight-card">
+                <div class="insight-icon" style="background: #5b5fcf;">
+                    <i class="fas fa-globe"></i>
+                </div>
+                <div class="insight-value">{$ totalSites || 0 $}</div>
+                <div class="insight-label">Websites</div>
+            </div>
+            
+            <div class="insight-card">
+                <div class="insight-icon" style="background: #5b87da;">
+                    <i class="fab fa-wordpress"></i>
+                </div>
+                <div class="insight-value">{$ totalWPSites || 0 $}</div>
+                <div class="insight-label">WordPress</div>
+            </div>
+            
+            <div class="insight-card">
+                <div class="insight-icon" style="background: #5b5fcf;">
+                    <i class="fas fa-database"></i>
+                </div>
+                <div class="insight-value">{$ totalDBs || 0 $}</div>
+                <div class="insight-label">Databases</div>
+            </div>
+            
+            <div class="insight-card">
+                <div class="insight-icon" style="background: #5b5fcf;">
+                    <i class="fas fa-envelope"></i>
+                </div>
+                <div class="insight-value">{$ totalEmails || 0 $}</div>
+                <div class="insight-label">Emails</div>
+            </div>
+            
+            <div class="insight-card">
+                <div class="insight-icon" style="background: #5b5fcf;">
+                    <i class="fas fa-folder"></i>
+                </div>
+                <div class="insight-value">{$ totalFTPUsers || 0 $}</div>
+                <div class="insight-label">FTP Users</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Activity Board -->
+    <div class="activity-section">
+        <div class="activity-header">
+            <h2 class="section-title">ACTIVITY BOARD</h2>
+            <div class="activity-tabs">
+                <button class="activity-tab active" onclick="switchTab('ssh-logins', this)">
+                    <i class="fas fa-terminal"></i>
+                    <span>Recent SSH Logins</span>
+                </button>
+                <button class="activity-tab" onclick="switchTab('ssh-logs', this)">
+                    <i class="fas fa-file-alt"></i>
+                    <span>Recent SSH Logs</span>
+                    <span ng-if="securityAlerts.length > 0" style="background: #dc2626; color: white; padding: 2px 6px; border-radius: 4px; font-size: 10px; margin-left: 6px;">
+                        {$ securityAlerts.length $}
+                    </span>
+                </button>
+                <button class="activity-tab" onclick="switchTab('top-process', this)">
+                    <i class="fas fa-microchip"></i>
+                    <span>Top Process</span>
+                </button>
+                <button class="activity-tab" onclick="switchTab('traffic', this)">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Traffic</span>
+                </button>
+                <button class="activity-tab" onclick="switchTab('diskio', this)">
+                    <i class="fas fa-hard-drive"></i>
+                    <span>Disk IO</span>
+                </button>
+                <button class="activity-tab" onclick="switchTab('cpu-usage', this)">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>CPU Usage</span>
+                </button>
+            </div>
+        </div>
+        
+        <!-- SSH Logins Tab -->
+        <div id="ssh-logins" class="tab-content active">
+            <div ng-if="loadingSSHLogins" style="text-align: center; padding: 20px; color: #8893a7;">
+                Loading SSH logins...
+            </div>
+            <div ng-if="!loadingSSHLogins && sshLogins.length === 0" style="text-align: center; padding: 20px; color: #8893a7;">
+                No recent SSH logins found.
+            </div>
+            <table class="activity-table" ng-if="!loadingSSHLogins && sshLogins.length > 0">
+                <thead>
+                    <tr>
+                        <th>USER</th>
+                        <th>IP</th>
+                        <th>COUNTRY</th>
+                        <th>DATE</th>
+                        <th>SESSION</th>
+                        <th>ACTIVITY</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr ng-repeat="login in sshLogins">
+                        <td>{$ login.user $}</td>
+                        <td>{$ login.ip $}</td>
+                        <td>{$ login.country $}</td>
+                        <td>{$ login.date $}</td>
+                        <td>{$ login.session $}</td>
+                        <td>
+                            <button class="view-activity-btn" ng-click="viewSSHActivity(login)">View Activity</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <!-- Dummy data for demonstration -->
+            <table class="activity-table" ng-if="loadingSSHLogins">
+                <thead>
+                    <tr>
+                        <th>USER</th>
+                        <th>IP</th>
+                        <th>COUNTRY</th>
+                        <th>DATE</th>
+                        <th>SESSION</th>
+                        <th>ACTIVITY</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr ng-repeat="i in [1,2,3,4,5,6,7,8,9,10]">
+                        <td>root1</td>
+                        <td>192.168.0.180</td>
+                        <td>Bangladesh</td>
+                        <td>Wed Jun 4 20:59</td>
+                        <td>Still Logged In</td>
+                        <td>
+                            <button class="view-activity-btn" style="background: #5b5fcf; color: white; border-color: #5b5fcf;">View Activity</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- SSH Logs Tab -->
+        <div id="ssh-logs" class="tab-content">
+            <!-- Security Analysis Header -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="margin: 0; font-size: 14px; font-weight: 600; color: #2f3640; text-transform: uppercase; letter-spacing: 0.5px;">
+                    SSH Security Analysis
+                </h3>
+                <button ng-click="analyzeSSHSecurity()" class="btn-primary" style="padding: 6px 16px; font-size: 12px;">
+                    <i class="fas fa-sync-alt" ng-class="{'fa-spin': loadingSecurityAnalysis}"></i>
+                    Refresh Analysis
+                </button>
+            </div>
+            
+            <!-- Addon Required Section -->
+            <div ng-if="showAddonRequired" style="margin-bottom: 20px;">
+                <div style="background: linear-gradient(135deg, #f0f1ff 0%, #e8e9ff 100%); border: 1px solid #c7d2fe; border-radius: 16px; padding: 30px; text-align: center;">
+                    <div style="max-width: 600px; margin: 0 auto;">
+                        <div style="width: 80px; height: 80px; background: #5b5fcf; border-radius: 16px; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-shield-alt" style="color: white; font-size: 36px;"></i>
                         </div>
-                        <button class="btn btn-sm btn-outline-primary" style="border-radius: 12px; font-size: 1.1rem; padding: 2px 12px; cursor: pointer;" ng-click="closeSSHActivityModal()">&times;</button>
-                    </div>
-                    <div ng-if="loadingSSHActivity" style="text-align: center; color: #888; padding: 20px 0;">Loading activity...</div>
-                    <div ng-if="errorSSHActivity" style="color: #e53935; padding: 10px 0;">{$ errorSSHActivity $}</div>
-                    <div ng-if="!loadingSSHActivity && !errorSSHActivity">
-                        <!-- GeoIP Details -->
-                        <div ng-if="sshActivity.geoip && sshActivity.geoip.ip" style="background: #f8f9fa; border-radius: 10px; margin-bottom: 18px; padding: 14px 18px;">
-                            <div style="font-weight: 700; color: #4c5fad; margin-bottom: 6px;">Login Location & ISP</div>
-                            <div style="font-size: 1.01rem; color: #333;">
-                                <span ng-if="sshActivity.geoip.city">{$ sshActivity.geoip.city $}, </span>
-                                <span ng-if="sshActivity.geoip.region">{$ sshActivity.geoip.region $}, </span>
-                                <span ng-if="sshActivity.geoip.country">{$ sshActivity.geoip.country $}</span><br/>
-                                <span ng-if="sshActivity.geoip.isp">ISP: {$ sshActivity.geoip.isp $}</span>
-                                <span ng-if="sshActivity.geoip.org">, Org: {$ sshActivity.geoip.org $}</span><br/>
-                                <span ng-if="sshActivity.geoip.as">ASN: {$ sshActivity.geoip.as $}</span><br/>
-                                <span style="color: #888; font-size: 0.97rem;">IP: {$ sshActivity.geoip.ip $}</span>
-                            </div>
-                        </div>
-                        <!-- Disk Usage -->
-                        <div ng-if="sshActivity.disk_usage" style="background: #f8f9fa; border-radius: 10px; margin-bottom: 18px; padding: 14px 18px;">
-                            <div style="font-weight: 700; color: #4c5fad; margin-bottom: 6px;">Disk Usage</div>
-                            <div style="font-size: 1.01rem; color: #333;">Home Directory: <b>{$ sshActivity.disk_usage $}</b></div>
-                        </div>
-                        <!-- Shell History -->
-                        <div ng-if="sshActivity.shell_history && sshActivity.shell_history.length > 0" style="background: #f8f9fa; border-radius: 10px; margin-bottom: 18px; padding: 14px 18px;">
-                            <div style="font-weight: 700; color: #4c5fad; margin-bottom: 6px;">Shell History (last 10 commands)</div>
-                            <pre style="background: #fff; border-radius: 8px; padding: 10px 12px; color: #333; font-size: 0.97rem; white-space: pre-wrap; word-wrap: break-word; margin-bottom: 0;">{$ sshActivity.shell_history.join('\n') $}</pre>
-                        </div>
-                        <!-- Process Tree -->
-                        <div ng-if="sshActivity.process_tree && sshActivity.process_tree.length > 0" style="background: #f8f9fa; border-radius: 10px; margin-bottom: 18px; padding: 14px 18px;">
-                            <div style="font-weight: 700; color: #4c5fad; margin-bottom: 6px;">Process Tree</div>
-                            <ul style="list-style: none; padding-left: 0;">
-                                <li ng-repeat="proc in sshActivity.process_tree" style="font-family: 'Menlo', monospace; color: #333; padding-left: {$ proc.level * 18 $}px;">
-                                    <span style="color: #888;">[{$ proc.pid $}]</span> {$ proc.cmd $} <span ng-if="proc.cwd" style="color: #4c5fad; font-size: 0.95em;">(cwd: {$ proc.cwd $})</span>
+                        <h3 style="margin: 0 0 10px 0; color: #1e293b; font-size: 24px; font-weight: 700;">{$ addonInfo.feature_title $}</h3>
+                        <p style="margin: 0 0 25px 0; color: #64748b; font-size: 15px; line-height: 1.6;">{$ addonInfo.feature_description $}</p>
+                        
+                        <div style="background: white; border-radius: 12px; padding: 25px; margin-bottom: 25px; text-align: left;">
+                            <h4 style="margin: 0 0 15px 0; color: #1e293b; font-size: 16px; font-weight: 600;">
+                                <i class="fas fa-star" style="color: #f59e0b; margin-right: 8px;"></i>
+                                Premium Features Include:
+                            </h4>
+                            <ul style="list-style: none; margin: 0; padding: 0;">
+                                <li ng-repeat="feature in addonInfo.features" style="padding: 8px 0; color: #475569; font-size: 14px; display: flex; align-items: flex-start;">
+                                    <i class="fas fa-check-circle" style="color: #10b981; margin-right: 10px; margin-top: 2px; flex-shrink: 0;"></i>
+                                    <span>{$ feature $}</span>
                                 </li>
                             </ul>
                         </div>
-                        <!-- Processes Table -->
-                        <div ng-if="sshActivity.processes && sshActivity.processes.length > 0" style="background: #f8f9fa; border-radius: 10px; margin-bottom: 18px; padding: 14px 18px;">
-                            <div style="font-weight: 700; color: #4c5fad; margin-bottom: 6px;">Processes</div>
-                            <table class="table table-sm" style="font-size: 0.98rem;">
-                                <thead>
-                                    <tr style="background: #e3eafc;">
-                                        <th>PID</th>
-                                        <th>TTY</th>
-                                        <th>Time</th>
-                                        <th>Command</th>
-                                        <th>CWD</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr ng-repeat="proc in sshActivity.processes">
-                                        <td style="font-family: 'Menlo', monospace;">{$ proc.pid $}</td>
-                                        <td style="font-family: 'Menlo', monospace;">{$ proc.tty $}</td>
-                                        <td style="font-family: 'Menlo', monospace;">{$ proc.time $}</td>
-                                        <td style="font-family: 'Menlo', monospace;">{$ proc.cmd $}</td>
-                                        <td style="font-family: 'Menlo', monospace; color: #4c5fad;">{$ proc.cwd $}</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                        <!-- w output -->
-                        <div ng-if="sshActivity.w.length > 0" style="background: #f8f9fa; border-radius: 10px; margin-bottom: 0; padding: 14px 18px;">
-                            <div style="font-weight: 700; color: #4c5fad; margin-bottom: 6px;">w output</div>
-                            <pre style="background: #fff; border-radius: 8px; padding: 10px 12px; color: #333; font-size: 0.97rem; white-space: pre-wrap; word-wrap: break-word; margin-bottom: 0;">{$ sshActivity.w.join('\n') $}</pre>
+                        
+                        <a href="{$ addonInfo.addon_url $}" target="_blank" class="btn-primary" style="padding: 12px 30px; font-size: 16px; display: inline-flex; align-items: center; gap: 10px; text-decoration: none;">
+                            <i class="fas fa-unlock"></i>
+                            Unlock SSH Security Analysis
+                        </a>
+                        <p style="margin: 15px 0 0 0; color: #94a3b8; font-size: 13px;">
+                            Upgrade to CyberPanel Addons to access advanced security features
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Security Alerts Section -->
+            <div ng-if="!showAddonRequired && !loadingSecurityAnalysis && securityAlerts.length === 0" style="margin-bottom: 20px;">
+                <div style="background: #d1fae5; border: 1px solid #6ee7b7; border-radius: 12px; padding: 20px; display: flex; align-items: center; gap: 15px;">
+                    <i class="fas fa-check-circle" style="color: #10b981; font-size: 24px;"></i>
+                    <div>
+                        <h4 style="margin: 0; color: #065f46; font-size: 14px; font-weight: 600;">No Security Threats Detected</h4>
+                        <p style="margin: 4px 0 0 0; color: #047857; font-size: 13px;">Your SSH logs show no signs of malicious activity. Continue monitoring regularly.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div ng-if="securityAlerts.length > 0" style="margin-bottom: 20px;">
+                <div style="background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 12px; padding: 20px;">
+                    <h3 style="margin: 0 0 15px 0; color: #856404; font-size: 16px; font-weight: 700; display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-exclamation-triangle" style="color: #f39c12;"></i>
+                        Security Alerts Detected ({$ securityAlerts.length $})
+                    </h3>
+                    <div ng-repeat="alert in securityAlerts" style="margin-bottom: 15px; padding: 15px; background: #fff; border-radius: 8px; border: 1px solid #ffeaa7;">
+                        <div style="display: flex; align-items: flex-start; gap: 12px;">
+                            <i class="fas fa-shield-alt" style="color: {$ alert.severity === 'high' ? '#e74c3c' : (alert.severity === 'medium' ? '#f39c12' : (alert.severity === 'low' ? '#3498db' : '#10b981')) $}; font-size: 20px; margin-top: 2px;"></i>
+                            <div style="flex: 1;">
+                                <h4 style="margin: 0 0 8px 0; color: #2f3640; font-size: 14px; font-weight: 600;">{$ alert.title $}</h4>
+                                <p style="margin: 0 0 8px 0; color: #5f6368; font-size: 13px; line-height: 1.6;">{$ alert.description $}</p>
+                                <div ng-if="alert.details" style="margin-top: 10px;">
+                                    <div ng-repeat="(key, value) in alert.details" style="font-size: 12px; color: #64748b; margin-bottom: 4px;">
+                                        <strong style="color: #475569;">{$ key $}:</strong> {$ value $}
+                                    </div>
+                                </div>
+                                <div ng-if="alert.recommendation" style="margin-top: 10px; padding: 10px; background: #f0f4f8; border-radius: 6px;">
+                                    <strong style="font-size: 12px; color: #1e293b;">Recommendation:</strong>
+                                    <p style="margin: 4px 0 0 0; font-size: 12px; color: #475569; white-space: pre-line;">{$ alert.recommendation $}</p>
+                                </div>
+                            </div>
+                            <span style="background: {$ alert.severity === 'high' ? '#fee2e2' : (alert.severity === 'medium' ? '#fef3c7' : (alert.severity === 'low' ? '#dbeafe' : '#d1fae5')) $}; 
+                                       color: {$ alert.severity === 'high' ? '#dc2626' : (alert.severity === 'medium' ? '#f59e0b' : (alert.severity === 'low' ? '#3b82f6' : '#10b981')) $}; 
+                                       padding: 4px 12px; border-radius: 6px; font-size: 11px; font-weight: 600; text-transform: uppercase;">
+                                {$ alert.severity $}
+                            </span>
                         </div>
                     </div>
                 </div>
             </div>
+            
+            <!-- SSH Logs Table -->
+            <div ng-if="loadingSSHLogs" style="text-align: center; padding: 20px; color: #8893a7;">
+                Loading SSH logs...
+            </div>
+            <div ng-if="!loadingSSHLogs && sshLogs.length === 0" style="text-align: center; padding: 20px; color: #8893a7;">
+                No recent SSH logs found.
+            </div>
+            <table class="activity-table" ng-if="!loadingSSHLogs && sshLogs.length > 0">
+                <thead>
+                    <tr>
+                        <th>TIMESTAMP</th>
+                        <th>MESSAGE</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr ng-repeat="log in sshLogs">
+                        <td>{$ log.timestamp $}</td>
+                        <td>{$ log.message $}</td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
-        <!-- End Dashboard Stats Section -->
-
-        <!--
-        =====================================
-          Enhanced Custom Styles for Modern Design
-        =====================================
-        -->
-        <style>
-            /* Enhanced Rounded Card Helper */
-            .rounded-card {
-                border-radius: 16px;
-                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            }
-
-            /* Enhanced hover effect for stat cards */
-            .stat-card-wrapper {
-                transform: translateY(0);
-                transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            }
-
-            .stat-card-wrapper:hover {
-                transform: translateY(-8px) scale(1.02);
-            }
-
-            .stat-card-wrapper:hover > .rounded-card {
-                box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2) !important;
-            }
-
-            .enhanced-stat-card:hover {
-                transform: translateY(-2px) !important;
-            }
-
-            /* Enhanced SSH table hover */
-            .ssh-login-row:hover {
-                background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%) !important;
-                transform: translateX(5px);
-            }
-
-            /* Enhanced System stat cards hover */
-            .system-stat-card:hover {
-                transform: translateY(-6px) scale(1.02);
-                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15) !important;
-            }
-
-            /* Enhanced Tab styles */
-            .graph-tab {
-                cursor: pointer;
-                position: relative;
-            }
-
-            .graph-tab:hover {
-                background: rgba(255,255,255,0.95) !important;
-                color: #4c5fad !important;
-                transform: translateY(-3px);
-                box-shadow: 0 8px 25px rgba(255,255,255,0.4) !important;
-            }
-
-            .graph-tab.active {
-                background: #fff !important;
-                color: #4c5fad !important;
-                transform: translateY(-2px);
-                box-shadow: 0 6px 20px rgba(255,255,255,0.3) !important;
-            }
-
-            /* Enhanced CSS for circular progress bars */
-            .c100 {
-                position: relative;
-                font-size: 120px;
-                width: 1em;
-                height: 1em;
-                border-radius: 50%;
-                margin: 0 auto;
-                background-color: #f8fafc;
-                display: inline-block;
-                box-shadow: 0 8px 25px rgba(0,0,0,0.1);
-            }
-
-            .c100 *,
-            .c100 *:before,
-            .c100 *:after {
-                box-sizing: content-box;
-            }
-
-            .c100 > span {
-                position: absolute;
-                width: 100%;
-                z-index: 1;
-                left: 0;
-                top: 0;
-                line-height: 1em;
-                font-size: 0.18em;
-                color: #333;
-                display: block;
-                text-align: center;
-                white-space: nowrap;
-                height: 100%;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-weight: 800;
-            }
-
-            .c100:after {
-                position: absolute;
-                top: 0.08em;
-                left: 0.08em;
-                display: block;
-                content: " ";
-                border-radius: 50%;
-                background: linear-gradient(135deg, #fff 0%, #f8fafc 100%);
-                width: 0.84em;
-                height: 0.84em;
-                box-shadow: inset 0 2px 8px rgba(0,0,0,0.1);
-            }
-
-            .c100 .slice {
-                position: absolute;
-                width: 1em;
-                height: 1em;
-                clip: rect(0em, 1em, 1em, 0.5em);
-            }
-
-            .c100.p50 .slice {
-                clip: rect(auto, auto, auto, auto);
-            }
-
-            .c100 .bar {
-                position: absolute;
-                border: 0.1em solid #307bbb;
-                width: 0.8em;
-                height: 0.8em;
-                clip: rect(0em, 0.5em, 1em, 0em);
-                border-radius: 50%;
-                transform: rotate(0deg);
-                box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            }
-
-            .c100 .fill {
-                position: absolute;
-                border: 0.1em solid #307bbb;
-                width: 0.8em;
-                height: 0.8em;
-                clip: rect(0em, 0.5em, 1em, 0em);
-                border-radius: 50%;
-                transform: rotate(180deg);
-                box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            }
-
-            /* Generate rotation classes for percentages 0-49 */
-            .c100.p0 .bar { transform: rotate(0deg); }
-            .c100.p1 .bar { transform: rotate(3.6deg); }
-            .c100.p2 .bar { transform: rotate(7.2deg); }
-            .c100.p3 .bar { transform: rotate(10.8deg); }
-            .c100.p4 .bar { transform: rotate(14.4deg); }
-            .c100.p5 .bar { transform: rotate(18deg); }
-            .c100.p6 .bar { transform: rotate(21.6deg); }
-            .c100.p7 .bar { transform: rotate(25.2deg); }
-            .c100.p8 .bar { transform: rotate(28.8deg); }
-            .c100.p9 .bar { transform: rotate(32.4deg); }
-            .c100.p10 .bar { transform: rotate(36deg); }
-            .c100.p11 .bar { transform: rotate(39.6deg); }
-            .c100.p12 .bar { transform: rotate(43.2deg); }
-            .c100.p13 .bar { transform: rotate(46.8deg); }
-            .c100.p14 .bar { transform: rotate(50.4deg); }
-            .c100.p15 .bar { transform: rotate(54deg); }
-            .c100.p16 .bar { transform: rotate(57.6deg); }
-            .c100.p17 .bar { transform: rotate(61.2deg); }
-            .c100.p18 .bar { transform: rotate(64.8deg); }
-            .c100.p19 .bar { transform: rotate(68.4deg); }
-            .c100.p20 .bar { transform: rotate(72deg); }
-            .c100.p21 .bar { transform: rotate(75.6deg); }
-            .c100.p22 .bar { transform: rotate(79.2deg); }
-            .c100.p23 .bar { transform: rotate(82.8deg); }
-            .c100.p24 .bar { transform: rotate(86.4deg); }
-            .c100.p25 .bar { transform: rotate(90deg); }
-            .c100.p26 .bar { transform: rotate(93.6deg); }
-            .c100.p27 .bar { transform: rotate(97.2deg); }
-            .c100.p28 .bar { transform: rotate(100.8deg); }
-            .c100.p29 .bar { transform: rotate(104.4deg); }
-            .c100.p30 .bar { transform: rotate(108deg); }
-            .c100.p31 .bar { transform: rotate(111.6deg); }
-            .c100.p32 .bar { transform: rotate(115.2deg); }
-            .c100.p33 .bar { transform: rotate(118.8deg); }
-            .c100.p34 .bar { transform: rotate(122.4deg); }
-            .c100.p35 .bar { transform: rotate(126deg); }
-            .c100.p36 .bar { transform: rotate(129.6deg); }
-            .c100.p37 .bar { transform: rotate(133.2deg); }
-            .c100.p38 .bar { transform: rotate(136.8deg); }
-            .c100.p39 .bar { transform: rotate(140.4deg); }
-            .c100.p40 .bar { transform: rotate(144deg); }
-            .c100.p41 .bar { transform: rotate(147.6deg); }
-            .c100.p42 .bar { transform: rotate(151.2deg); }
-            .c100.p43 .bar { transform: rotate(154.8deg); }
-            .c100.p44 .bar { transform: rotate(158.4deg); }
-            .c100.p45 .bar { transform: rotate(162deg); }
-            .c100.p46 .bar { transform: rotate(165.6deg); }
-            .c100.p47 .bar { transform: rotate(169.2deg); }
-            .c100.p48 .bar { transform: rotate(172.8deg); }
-            .c100.p49 .bar { transform: rotate(176.4deg); }
-            .c100.p50 .bar { transform: rotate(180deg); }
-
-            /* For values > 50%, show the fill */
-            .c100.p51 .slice,
-            .c100.p52 .slice,
-            .c100.p53 .slice,
-            .c100.p54 .slice,
-            .c100.p55 .slice,
-            .c100.p56 .slice,
-            .c100.p57 .slice,
-            .c100.p58 .slice,
-            .c100.p59 .slice,
-            .c100.p60 .slice,
-            .c100.p61 .slice,
-            .c100.p62 .slice,
-            .c100.p63 .slice,
-            .c100.p64 .slice,
-            .c100.p65 .slice,
-            .c100.p66 .slice,
-            .c100.p67 .slice,
-            .c100.p68 .slice,
-            .c100.p69 .slice,
-            .c100.p70 .slice,
-            .c100.p71 .slice,
-            .c100.p72 .slice,
-            .c100.p73 .slice,
-            .c100.p74 .slice,
-            .c100.p75 .slice,
-            .c100.p76 .slice,
-            .c100.p77 .slice,
-            .c100.p78 .slice,
-            .c100.p79 .slice,
-            .c100.p80 .slice,
-            .c100.p81 .slice,
-            .c100.p82 .slice,
-            .c100.p83 .slice,
-            .c100.p84 .slice,
-            .c100.p85 .slice,
-            .c100.p86 .slice,
-            .c100.p87 .slice,
-            .c100.p88 .slice,
-            .c100.p89 .slice,
-            .c100.p90 .slice,
-            .c100.p91 .slice,
-            .c100.p92 .slice,
-            .c100.p93 .slice,
-            .c100.p94 .slice,
-            .c100.p95 .slice,
-            .c100.p96 .slice,
-            .c100.p97 .slice,
-            .c100.p98 .slice,
-            .c100.p99 .slice,
-            .c100.p100 .slice {
-                clip: rect(auto, auto, auto, auto);
-            }
-
-            .c100.p51 .bar { transform: rotate(180deg); }
-            .c100.p52 .bar { transform: rotate(180deg); }
-            .c100.p53 .bar { transform: rotate(180deg); }
-            .c100.p54 .bar { transform: rotate(180deg); }
-            .c100.p55 .bar { transform: rotate(180deg); }
-            .c100.p56 .bar { transform: rotate(180deg); }
-            .c100.p57 .bar { transform: rotate(180deg); }
-            .c100.p58 .bar { transform: rotate(180deg); }
-            .c100.p59 .bar { transform: rotate(180deg); }
-            .c100.p60 .bar { transform: rotate(180deg); }
-            .c100.p61 .bar { transform: rotate(180deg); }
-            .c100.p62 .bar { transform: rotate(180deg); }
-            .c100.p63 .bar { transform: rotate(180deg); }
-            .c100.p64 .bar { transform: rotate(180deg); }
-            .c100.p65 .bar { transform: rotate(180deg); }
-            .c100.p66 .bar { transform: rotate(180deg); }
-            .c100.p67 .bar { transform: rotate(180deg); }
-            .c100.p68 .bar { transform: rotate(180deg); }
-            .c100.p69 .bar { transform: rotate(180deg); }
-            .c100.p70 .bar { transform: rotate(180deg); }
-            .c100.p71 .bar { transform: rotate(180deg); }
-            .c100.p72 .bar { transform: rotate(180deg); }
-            .c100.p73 .bar { transform: rotate(180deg); }
-            .c100.p74 .bar { transform: rotate(180deg); }
-            .c100.p75 .bar { transform: rotate(180deg); }
-            .c100.p76 .bar { transform: rotate(180deg); }
-            .c100.p77 .bar { transform: rotate(180deg); }
-            .c100.p78 .bar { transform: rotate(180deg); }
-            .c100.p79 .bar { transform: rotate(180deg); }
-            .c100.p80 .bar { transform: rotate(180deg); }
-            .c100.p81 .bar { transform: rotate(180deg); }
-            .c100.p82 .bar { transform: rotate(180deg); }
-            .c100.p83 .bar { transform: rotate(180deg); }
-            .c100.p84 .bar { transform: rotate(180deg); }
-            .c100.p85 .bar { transform: rotate(180deg); }
-            .c100.p86 .bar { transform: rotate(180deg); }
-            .c100.p87 .bar { transform: rotate(180deg); }
-            .c100.p88 .bar { transform: rotate(180deg); }
-            .c100.p89 .bar { transform: rotate(180deg); }
-            .c100.p90 .bar { transform: rotate(180deg); }
-            .c100.p91 .bar { transform: rotate(180deg); }
-            .c100.p92 .bar { transform: rotate(180deg); }
-            .c100.p93 .bar { transform: rotate(180deg); }
-            .c100.p94 .bar { transform: rotate(180deg); }
-            .c100.p95 .bar { transform: rotate(180deg); }
-            .c100.p96 .bar { transform: rotate(180deg); }
-            .c100.p97 .bar { transform: rotate(180deg); }
-            .c100.p98 .bar { transform: rotate(180deg); }
-            .c100.p99 .bar { transform: rotate(180deg); }
-            .c100.p100 .bar { transform: rotate(180deg); }
-
-            .c100.p51 .fill { transform: rotate(183.6deg); }
-            .c100.p52 .fill { transform: rotate(187.2deg); }
-            .c100.p53 .fill { transform: rotate(190.8deg); }
-            .c100.p54 .fill { transform: rotate(194.4deg); }
-            .c100.p55 .fill { transform: rotate(198deg); }
-            .c100.p56 .fill { transform: rotate(201.6deg); }
-            .c100.p57 .fill { transform: rotate(205.2deg); }
-            .c100.p58 .fill { transform: rotate(208.8deg); }
-            .c100.p59 .fill { transform: rotate(212.4deg); }
-            .c100.p60 .fill { transform: rotate(216deg); }
-            .c100.p61 .fill { transform: rotate(219.6deg); }
-            .c100.p62 .fill { transform: rotate(223.2deg); }
-            .c100.p63 .fill { transform: rotate(226.8deg); }
-            .c100.p64 .fill { transform: rotate(230.4deg); }
-            .c100.p65 .fill { transform: rotate(234deg); }
-            .c100.p66 .fill { transform: rotate(237.6deg); }
-            .c100.p67 .fill { transform: rotate(241.2deg); }
-            .c100.p68 .fill { transform: rotate(244.8deg); }
-            .c100.p69 .fill { transform: rotate(248.4deg); }
-            .c100.p70 .fill { transform: rotate(252deg); }
-            .c100.p71 .fill { transform: rotate(255.6deg); }
-            .c100.p72 .fill { transform: rotate(259.2deg); }
-            .c100.p73 .fill { transform: rotate(262.8deg); }
-            .c100.p74 .fill { transform: rotate(266.4deg); }
-            .c100.p75 .fill { transform: rotate(270deg); }
-            .c100.p76 .fill { transform: rotate(273.6deg); }
-            .c100.p77 .fill { transform: rotate(277.2deg); }
-            .c100.p78 .fill { transform: rotate(280.8deg); }
-            .c100.p79 .fill { transform: rotate(284.4deg); }
-            .c100.p80 .fill { transform: rotate(288deg); }
-            .c100.p81 .fill { transform: rotate(291.6deg); }
-            .c100.p82 .fill { transform: rotate(295.2deg); }
-            .c100.p83 .fill { transform: rotate(298.8deg); }
-            .c100.p84 .fill { transform: rotate(302.4deg); }
-            .c100.p85 .fill { transform: rotate(306deg); }
-            .c100.p86 .fill { transform: rotate(309.6deg); }
-            .c100.p87 .fill { transform: rotate(313.2deg); }
-            .c100.p88 .fill { transform: rotate(316.8deg); }
-            .c100.p89 .fill { transform: rotate(320.4deg); }
-            .c100.p90 .fill { transform: rotate(324deg); }
-            .c100.p91 .fill { transform: rotate(327.6deg); }
-            .c100.p92 .fill { transform: rotate(331.2deg); }
-            .c100.p93 .fill { transform: rotate(334.8deg); }
-            .c100.p94 .fill { transform: rotate(338.4deg); }
-            .c100.p95 .fill { transform: rotate(342deg); }
-            .c100.p96 .fill { transform: rotate(345.6deg); }
-            .c100.p97 .fill { transform: rotate(349.2deg); }
-            .c100.p98 .fill { transform: rotate(352.8deg); }
-            .c100.p99 .fill { transform: rotate(356.4deg); }
-            .c100.p100 .fill { transform: rotate(360deg); }
-
-            /* Enhanced Color variants for progress circles */
-            .c100.red .bar, .c100.red .fill {
-                border-color: #e53935;
-                border-width: 0.1em;
-            }
-
-            .c100.green .bar, .c100.green .fill {
-                border-color: #43a047;
-                border-width: 0.1em;
-            }
-
-            .c100.pink .bar, .c100.pink .fill {
-                border-color: #d81b60;
-                border-width: 0.1em;
-            }
-
-            /* Disable transitions on chart elements so they render crisply */
-            canvas {
-                transition: none !important;
-            }
-
-            /* Enhanced button styles */
-            .btn-outline-primary {
-                border: 2px solid #4c5fad;
-                color: #4c5fad;
-                background: transparent;
-                transition: all 0.3s ease;
-            }
-
-            .btn-outline-primary:hover {
-                background: #4c5fad;
-                color: white;
-                transform: translateY(-2px);
-                box-shadow: 0 5px 15px rgba(76, 95, 173, 0.3);
-            }
-
-            .refresh-btn:hover svg {
-                animation: spin 0.5s ease-in-out;
-            }
-
-            @keyframes spin {
-                from { transform: rotate(0deg); }
-                to { transform: rotate(360deg); }
-            }
-
-            /* Modal Styles */
-            .modal-backdrop {
-                backdrop-filter: blur(2px);
-            }
-
-            .modal-content {
-                animation: modalFadeIn 0.3s ease-out;
-            }
-
-            @keyframes modalFadeIn {
-                from { 
-                    opacity: 0; 
-                    transform: scale(0.9) translateY(-20px); 
-                }
-                to { 
-                    opacity: 1; 
-                    transform: scale(1) translateY(0); 
-                }
-            }
-
-            /* Prevent body scroll when modal is open */
-            body.modal-open {
-                overflow: hidden;
-            }
-
-            /* Responsive improvements */
-            @media (max-width: 768px) {
-                .container {
-                    padding: 15px 10px 30px 10px;
-                }
-                
-                #page-title {
-                    padding: 30px 20px;
-                    margin-bottom: 30px;
-                }
-                
-                #page-title h2 {
-                    font-size: 2.5rem;
-                }
-                
-                .system-stats-row {
-                    gap: 20px !important;
-                }
-                
-                .c100 {
-                    font-size: 100px;
-                }
-
-                /* Mobile grid layout - stack vertically */
-                div[style*="grid-template-columns: repeat(4, 1fr)"] {
-                    grid-template-columns: 1fr !important;
-                }
-            }
-
-            @media (max-width: 1024px) {
-                /* Tablet layout - 2 columns */
-                div[style*="grid-template-columns: repeat(4, 1fr)"] {
-                    grid-template-columns: repeat(2, 1fr) !important;
-                }
-            }
-
-            @media (max-width: 1200px) {
-                /* Small desktop - 3 columns */
-                div[style*="grid-template-columns: repeat(4, 1fr)"] {
-                    grid-template-columns: repeat(3, 1fr) !important;
-                }
-            }
-
-            @media (min-width: 900px) {
-                .system-stats-row {
-                    flex-wrap: nowrap !important;
-                }
-            }
-
-            /* Enhanced loading and error states */
-            [ng-if*="loading"] {
-                animation: pulse 2s infinite;
-            }
-
-            @keyframes pulse {
-                0% { opacity: 1; }
-                50% { opacity: 0.5; }
-                100% { opacity: 1; }
-            }
-
-            /* Smooth scroll behavior */
-            html {
-                scroll-behavior: smooth;
-            }
-
-            /* Add spin animation for refresh icon on hover */
-            .refresh-btn:hover .refresh-icon {
-                transform: rotate(360deg);
-            }
-
-            .view-activity-btn {
-                border: 2px solid #4c5fad;
-                color: #4c5fad;
-                background: #fff;
-                border-radius: 999px;
-                font-size: 1rem;
-                font-weight: 700;
-                padding: 6px 22px;
-                transition: all 0.2s;
-                outline: none;
-                box-shadow: none;
-                cursor: pointer;
-                display: inline-block;
-                vertical-align: middle;
-                line-height: 1.2;
-            }
-            .view-activity-btn:hover, .view-activity-btn:focus {
-                background: #4c5fad;
-                color: #fff;
-                border-color: #4c5fad;
-                box-shadow: 0 2px 12px rgba(76,95,173,0.10);
-                text-decoration: none;
-            }
-        </style>
-
-        <!-- Chart.js (unchanged) -->
-        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-        <script>
-            // Handle tab switching – PRESERVED EXACTLY AS-IS
-            document.addEventListener('DOMContentLoaded', function () {
-                var tabs = document.querySelectorAll('a[data-toggle="tab"]');
-                tabs.forEach(function (tab) {
-                    tab.addEventListener('click', function (e) {
-                        e.preventDefault();
-
-                        // Remove active from all tabs and panes
-                        tabs.forEach(function (t) {
-                            t.classList.remove('active');
-                            t.style.background = 'transparent';
-                            t.style.color = 'rgba(255,255,255,0.9)';
-                            t.style.transform = 'translateY(0)';
-                            t.style.boxShadow = 'none';
-                        });
-                        document
-                            .querySelectorAll('.tab-pane')
-                            .forEach(function (pane) {
-                                pane.classList.remove('show', 'active');
-                            });
-
-                        // Add active to clicked tab
-                        this.classList.add('active');
-                        this.style.background = '#fff';
-                        this.style.color = '#4c5fad';
-                        this.style.transform = 'translateY(-2px)';
-                        this.style.boxShadow = '0 6px 20px rgba(255,255,255,0.3)';
-
-                        // Show corresponding pane
-                        var target = this.getAttribute('href');
-                        var targetPane = document.querySelector(target);
-                        if (targetPane) {
-                            targetPane.classList.add('show', 'active');
-                        }
-                    });
-                });
-
-                // Force traffic tab to be active on page load – PRESERVED EXACTLY
-                setTimeout(function () {
-                    var trafficTab = document.getElementById('traffic-tab');
-                    if (trafficTab) {
-                        trafficTab.click();
-                        console.log(
-                            'Traffic tab manually activated on page load'
-                        );
-                    }
-                }, 100);
-            });
-        </script>
+        
+        <!-- Top Process Tab -->
+        <div id="top-process" class="tab-content">
+            <div ng-if="loadingTopProcesses" style="text-align: center; padding: 20px; color: #8893a7;">
+                Loading top processes...
+            </div>
+            <div ng-if="!loadingTopProcesses && errorTopProcesses" style="text-align: center; padding: 20px; color: #e53935;">
+                {$ errorTopProcesses $}
+            </div>
+            <div ng-if="!loadingTopProcesses && !errorTopProcesses && topProcesses.length === 0" style="text-align: center; padding: 20px; color: #8893a7;">
+                No process information available.
+            </div>
+            <table class="activity-table" ng-if="!loadingTopProcesses && !errorTopProcesses && topProcesses.length > 0">
+                <thead>
+                    <tr>
+                        <th>PID</th>
+                        <th>USER</th>
+                        <th>CPU %</th>
+                        <th>MEMORY %</th>
+                        <th>COMMAND</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr ng-repeat="process in topProcesses">
+                        <td>{$ process.pid $}</td>
+                        <td>{$ process.user $}</td>
+                        <td>{$ process.cpu $}%</td>
+                        <td>{$ process.memory $}%</td>
+                        <td>{$ process.command $}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Traffic Tab -->
+        <div id="traffic" class="tab-content">
+            <div class="chart-container">
+                <canvas id="trafficChart"></canvas>
+            </div>
+        </div>
+        
+        <!-- Disk IO Tab -->
+        <div id="diskio" class="tab-content">
+            <div class="chart-container">
+                <canvas id="diskIOChart"></canvas>
+            </div>
+        </div>
+        
+        <!-- CPU Usage Tab -->
+        <div id="cpu-usage" class="tab-content">
+            <div class="chart-container">
+                <canvas id="cpuChart"></canvas>
+            </div>
+        </div>
+        
     </div>
+    
+    <!-- SSH Activity Modal -->
+    <div ng-if="showSSHActivityModal" class="modal-backdrop" ng-click="closeModalOnBackdrop($event)">
+        <div class="modal-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
+                <div style="font-size: 1.2rem; font-weight: 800; color: #5b5fcf;">
+                    User Activity: <span style="color: #2f3640;">{$ sshActivityUser $}</span>
+                </div>
+                <button class="btn btn-sm" style="border: none; background: none; font-size: 1.5rem; cursor: pointer;" ng-click="closeSSHActivityModal()">&times;</button>
+            </div>
+            <div ng-if="loadingSSHActivity" style="text-align: center; color: #8893a7; padding: 20px 0;">Loading activity...</div>
+            <div ng-if="errorSSHActivity" style="color: #e53935; padding: 10px 0;">{$ errorSSHActivity $}</div>
+            <div ng-if="!loadingSSHActivity && !errorSSHActivity">
+                <!-- Activity content will be displayed here -->
+                <pre style="background: #f8f9fa; padding: 15px; border-radius: 8px;">{$ sshActivity | json $}</pre>
+            </div>
+        </div>
+    </div>
+    </div>
+</div>
+
+<script>
+    // Tab switching functionality
+    function switchTab(tabId, tabButton) {
+        // Hide all tab contents
+        document.querySelectorAll('.tab-content').forEach(content => {
+            content.classList.remove('active');
+        });
+        
+        // Remove active class from all tabs
+        document.querySelectorAll('.activity-tab').forEach(tab => {
+            tab.classList.remove('active');
+        });
+        
+        // Show selected tab content
+        document.getElementById(tabId).classList.add('active');
+        
+        // Add active class to clicked tab
+        tabButton.classList.add('active');
+        
+        // Trigger chart resize if switching to chart tabs
+        if (tabId === 'traffic' || tabId === 'diskio' || tabId === 'cpu-usage') {
+            setTimeout(() => {
+                window.dispatchEvent(new Event('resize'));
+            }, 100);
+        }
+    }
+</script>
 {% endblock %}

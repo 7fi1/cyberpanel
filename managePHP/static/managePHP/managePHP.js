@@ -311,10 +311,10 @@ app.controller('editPHPConfig', function ($scope, $http, $timeout) {
         $scope.detailsSaved = true;
 
 
-        $('#allow_url_fopen').bootstrapToggle('off');
-        $('#display_errors').bootstrapToggle('off');
-        $('#file_uploads').bootstrapToggle('off');
-        $('#allow_url_include').bootstrapToggle('off');
+        $('#allow_url_fopen').prop('checked', false);
+        $('#display_errors').prop('checked', false);
+        $('#file_uploads').prop('checked', false);
+        $('#allow_url_include').prop('checked', false);
 
 
         var queryString = window.location.search;
@@ -351,16 +351,16 @@ app.controller('editPHPConfig', function ($scope, $http, $timeout) {
 
 
                 if (response.data.allow_url_fopen === "1") {
-                    $('#allow_url_fopen').bootstrapToggle('on');
+                    $('#allow_url_fopen').prop('checked', true);
                 }
                 if (response.data.display_errors === "1") {
-                    $('#display_errors').bootstrapToggle('on');
+                    $('#display_errors').prop('checked', true);
                 }
                 if (response.data.file_uploads === "1") {
-                    $('#file_uploads').bootstrapToggle('on');
+                    $('#file_uploads').prop('checked', true);
                 }
                 if (response.data.allow_url_include === "1") {
-                    $('#allow_url_include').bootstrapToggle('on');
+                    $('#allow_url_include').prop('checked', true);
                 }
 
                 $scope.loadingPHP = true;

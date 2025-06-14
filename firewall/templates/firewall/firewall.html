@@ -1,179 +1,720 @@
 {% extends "baseTemplate/index.html" %}
 {% load i18n %}
 {% block title %}{% trans "Firewall - CyberPanel" %}{% endblock %}
+
+{% block header_scripts %}
+<style>
+    .modern-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+    
+    .page-header {
+        text-align: center;
+        margin-bottom: 3rem;
+        padding: 3rem 0;
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        border-radius: 20px;
+        animation: fadeInDown 0.5s ease-out;
+        position: relative;
+        overflow: hidden;
+        color: white;
+    }
+    
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle at 70% 30%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+        animation: rotate 30s linear infinite;
+    }
+    
+    @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+    
+    @keyframes fadeInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .header-content {
+        position: relative;
+        z-index: 1;
+    }
+    
+    .page-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+    }
+    
+    .firewall-icon {
+        width: 60px;
+        height: 60px;
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    
+    .page-subtitle {
+        font-size: 1.125rem;
+        color: rgba(255, 255, 255, 0.9);
+        max-width: 700px;
+        margin: 0 auto;
+        line-height: 1.6;
+    }
+    
+    /* Status Panel */
+    .status-panel {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 10px 40px rgba(0,0,0,0.08);
+        border: 1px solid #e8e9ff;
+        overflow: hidden;
+        margin-bottom: 2rem;
+        animation: fadeInUp 0.5s ease-out;
+    }
+    
+    .status-header {
+        background: #f8f9ff;
+        padding: 1.5rem 2rem;
+        border-bottom: 1px solid #e8e9ff;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    
+    .status-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #1e293b;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    
+    .status-badge {
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.875rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .status-active {
+        background: #d1fae5;
+        color: #065f46;
+    }
+    
+    .status-inactive {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+    
+    .status-content {
+        padding: 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+    
+    .control-btn {
+        padding: 0.75rem 1.5rem;
+        border-radius: 10px;
+        font-weight: 500;
+        font-size: 0.875rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        min-width: 120px;
+        justify-content: center;
+    }
+    
+    .btn-start {
+        background: #10b981;
+        color: white;
+    }
+    
+    .btn-start:hover {
+        background: #059669;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    }
+    
+    .btn-stop {
+        background: #f59e0b;
+        color: white;
+    }
+    
+    .btn-stop:hover {
+        background: #d97706;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+    }
+    
+    .btn-reload {
+        background: #3b82f6;
+        color: white;
+    }
+    
+    .btn-reload:hover {
+        background: #2563eb;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+    
+    /* Rules Panel */
+    .rules-panel {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 10px 40px rgba(0,0,0,0.08);
+        border: 1px solid #e8e9ff;
+        overflow: hidden;
+        animation: fadeInUp 0.5s ease-out 0.2s;
+        animation-fill-mode: both;
+    }
+    
+    .panel-header {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        color: white;
+        padding: 1.5rem 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    
+    .panel-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    
+    .panel-icon {
+        width: 32px;
+        height: 32px;
+        background: rgba(255,255,255,0.2);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .add-rule-section {
+        background: #f8f9ff;
+        padding: 2rem;
+        border-bottom: 1px solid #e8e9ff;
+    }
+    
+    .rule-form {
+        display: grid;
+        grid-template-columns: 2fr 1fr 2fr 1fr auto;
+        gap: 1rem;
+        align-items: end;
+    }
+    
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .form-label {
+        font-weight: 500;
+        color: #475569;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    
+    .form-control {
+        padding: 0.75rem 1rem;
+        border: 1px solid #e8e9ff;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        transition: all 0.3s ease;
+        background: #fff;
+    }
+    
+    .form-control:focus {
+        outline: none;
+        border-color: #ef4444;
+        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+    }
+    
+    .select-control {
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+        background-position: right 0.5rem center;
+        background-repeat: no-repeat;
+        background-size: 1.5em 1.5em;
+        padding-right: 2.5rem;
+    }
+    
+    .btn-add {
+        background: #ef4444;
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 500;
+        font-size: 0.875rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        align-self: flex-end;
+    }
+    
+    .btn-add:hover {
+        background: #dc2626;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+    }
+    
+    /* Rules Table */
+    .rules-table-section {
+        padding: 2rem;
+    }
+    
+    .rules-table {
+        width: 100%;
+        background: white;
+        border-radius: 8px;
+        overflow: hidden;
+        border: 1px solid #e8e9ff;
+    }
+    
+    .rules-table thead {
+        background: #f8f9ff;
+    }
+    
+    .rules-table th {
+        padding: 1rem;
+        text-align: left;
+        font-weight: 600;
+        color: #475569;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        border-bottom: 1px solid #e8e9ff;
+    }
+    
+    .rules-table td {
+        padding: 1rem;
+        border-bottom: 1px solid #f1f5f9;
+        color: #334155;
+        font-size: 0.875rem;
+    }
+    
+    .rules-table tbody tr {
+        transition: all 0.2s ease;
+    }
+    
+    .rules-table tbody tr:hover {
+        background: #f8f9ff;
+    }
+    
+    .rule-id {
+        font-weight: 600;
+        color: #64748b;
+    }
+    
+    .rule-name {
+        font-weight: 600;
+        color: #1e293b;
+    }
+    
+    .protocol-badge {
+        display: inline-block;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        text-transform: uppercase;
+    }
+    
+    .protocol-tcp {
+        background: #dbeafe;
+        color: #1e40af;
+    }
+    
+    .protocol-udp {
+        background: #fef3c7;
+        color: #92400e;
+    }
+    
+    .ip-address {
+        font-family: 'Monaco', 'Consolas', monospace;
+        font-size: 0.875rem;
+        background: #f3f4f6;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+    }
+    
+    .port-number {
+        font-family: 'Monaco', 'Consolas', monospace;
+        font-weight: 600;
+        color: #ef4444;
+    }
+    
+    .btn-delete {
+        background: #fee2e2;
+        color: #ef4444;
+        width: 32px;
+        height: 32px;
+        border-radius: 6px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-weight: 700;
+        border: none;
+    }
+    
+    .btn-delete:hover {
+        background: #ef4444;
+        color: white;
+        transform: scale(1.1);
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: #64748b;
+    }
+    
+    .empty-icon {
+        font-size: 4rem;
+        color: #94a3b8;
+        margin-bottom: 1rem;
+    }
+    
+    .empty-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: #475569;
+    }
+    
+    .empty-text {
+        font-size: 0.875rem;
+        color: #64748b;
+    }
+    
+    .alert {
+        padding: 1rem 1.5rem;
+        border-radius: 8px;
+        margin-top: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        animation: fadeInUp 0.3s ease-out;
+    }
+    
+    .alert-success {
+        background: #d1fae5;
+        color: #065f46;
+        border: 1px solid #a7f3d0;
+    }
+    
+    .alert-danger {
+        background: #fee2e2;
+        color: #991b1b;
+        border: 1px solid #fecaca;
+    }
+    
+    .alert-icon {
+        font-size: 1.25rem;
+    }
+    
+    .loading-spinner {
+        width: 20px;
+        height: 20px;
+        border: 2px solid #f3f3f3;
+        border-top: 2px solid #ef4444;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        display: inline-block;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    /* Responsive */
+    @media (max-width: 1024px) {
+        .rule-form {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+        
+        .btn-add {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .modern-container {
+            padding: 1rem;
+        }
+        
+        .page-title {
+            font-size: 2rem;
+        }
+        
+        .status-content {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        
+        .control-btn {
+            width: 100%;
+        }
+        
+        .rules-table-section {
+            padding: 1rem;
+            overflow-x: auto;
+        }
+        
+        .rules-table {
+            min-width: 600px;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
+{% load static %}
+{% get_current_language as LANGUAGE_CODE %}
+<!-- Current language: {{ LANGUAGE_CODE }} -->
 
-    {% load static %}
-    {% get_current_language as LANGUAGE_CODE %}
-    <!-- Current language: {{ LANGUAGE_CODE }} -->
-
-
-    <div class="container">
-        <div id="page-title">
-            <h2>{% trans "Add/Delete Firewall Rules" %} </h2>
-            <p>{% trans "On this page you can add/delete firewall rules. (By default all ports are blocked, except mentioned below)" %}</p>
-        </div>
-        <div ng-controller="firewallController" class="panel">
-            <div class="panel-body">
-                <h3 class="content-box-header">
-                    {% trans "Add/Delete Rules" %} <img ng-hide="rulesLoading" src="{% static 'images/loading.gif' %}">
-                </h3>
-                <div class="example-box-wrapper">
-
-
-                    <form action="/" class="form-horizontal bordered-row panel-body">
-
-
-                        <div style="padding-bottom: 0px; padding-top: 15px;" class="form-group">
-                            <label class="col-sm-3 control-label"></label>
-                            <div class="col-sm-6">
-                                <div class="example-box-wrapper">
-
-                                    <div class="content-box remove-border clearfix text-center">
-
-                                        <a class="btn btn-primary" href="#" title="">
-                            <span>{% trans "Status" %}
-                            <b>{$ status $}</b></span>
-                                        </a>
-
-
-                                        <a ng-click="startFirewall()" href="#" class="btn btn-success" title="">
-
-                                            <i class="fa fa-play btn-icon"></i>
-                                        </a>
-                                        <a ng-click="stopFirewall()" href="#" class="btn btn-warning" title="">
-
-                                            <i class="fa fa-pause btn-icon"></i>
-                                        </a>
-
-                                        <a ng-click="reloadFireWall()" href="#" class="btn btn-info" title="">
-
-                                            <i class="fa fa-refresh btn-icon"></i>
-                                        </a>
-
-                                        <div style="margin-top: 2%;margin-bottom: 0px;" ng-hide="actionFailed"
-                                             class="alert alert-danger">
-                                            <p>{% trans "Action failed. Error message:" %} {$ errorMessage $}</p>
-                                        </div>
-
-                                        <div style="margin-top: 2%;margin-bottom: 0px;" ng-hide="actionSuccess"
-                                             class="alert alert-success">
-                                            <p>{% trans "Action successful." %}</p>
-                                        </div>
-
-
-                                    </div>
-
-                                </div>
-                            </div>
-                        </div>
-
-                        <div ng-hide="rulesDetails" class="form-group">
-
-                            <div class="col-sm-3">
-                                <input placeholder="Rule Name" type="text" class="form-control" ng-model="ruleName"
-                                       required>
-                            </div>
-
-                            <div class="col-sm-2">
-                                <select ng-model="ruleProtocol" class="form-control">
-                                    <option>tcp</option>
-                                    <option>udp</option>
-                                </select>
-                            </div>
-                            <!------------- ip box ------------->
-
-                            <div class="col-sm-3">
-                                <input placeholder="IP -> 0.0.0.0/0 for All IPs" type="text" class="form-control"
-                                       ng-model="ruleIP" required>
-                            </div>
-
-                            <!------------- ip box ------------->
-
-                            <!------------- port box ------------->
-
-                            <div class="col-sm-2">
-                                <input placeholder="Port" type="text" class="form-control" ng-model="rulePort" required>
-                            </div>
-
-                            <!------------- port box ------------->
-
-
-                            <div class="col-sm-1">
-                                <button style="width: 100%;" type="button" ng-click="addRule()"
-                                        class="btn btn-primary">{% trans "Add" %}</button>
-                            </div>
-
-                        </div>
-
-
-                        <!------ List of records --------------->
-
-                        <div ng-hide="rulesDetails" class="form-group">
-
-                            <div class="col-sm-12">
-
-                                <table class="table" style="margin-left: 0px;">
-                                    <thead>
-                                    <tr>
-                                        <th>{% trans "ID" %}</th>
-                                        <th>{% trans "Name" %}</th>
-                                        <th>{% trans "Protocol" %}</th>
-                                        <th>{% trans "IP Address" %}</th>
-                                        <th>{% trans "Port" %}</th>
-                                        <th>{% trans "Delete" %}</th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-                                    <tr ng-repeat="rule in rules track by $index">
-                                        <td ng-bind="rule.id"></td>
-                                        <td ng-bind="rule.name"></td>
-                                        <td ng-bind="rule.proto"></td>
-                                        <td ng-bind="rule.ipAddress"></td>
-                                        <td ng-bind="rule.port"></td>
-                                        <td ng-click="deleteRule(rule.id,rule.proto,rule.port,rule.ipAddress)">
-                                            <div class=" h4 text-danger text-bold">X</div>
-                                        </td>
-                                    </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-
-                        <!------ List of records --------------->
-
-
-                        <div class="form-group">
-
-
-                            <label class="col-sm-3 control-label"></label>
-                            <div class="col-sm-4">
-                                <div ng-hide="canNotAddRule" class="alert alert-danger">
-                                    <p>{% trans "Error message:" %} {$ errorMessage $}</p>
-                                </div>
-
-
-                                <div ng-hide="ruleAdded" class="alert alert-success">
-                                    <p>{% trans "Rule successfully added." %}</p>
-                                </div>
-
-                                <div ng-hide="couldNotConnect" class="alert alert-danger">
-                                    <p>{% trans "Could Not Connect to server. Please refresh this page" %}</p>
-                                </div>
-
-                            </div>
-                        </div>
-
-
-                    </form>
-
-
+<div class="modern-container" ng-controller="firewallController">
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="header-content">
+            <div class="page-title">
+                <div class="firewall-icon">
+                    <i class="fas fa-shield-alt fa-2x"></i>
                 </div>
+                {% trans "Firewall Management" %}
+            </div>
+            <p class="page-subtitle">
+                {% trans "Manage your server's firewall rules to control network traffic. By default, all ports are blocked except those explicitly allowed." %}
+            </p>
+        </div>
+    </div>
+    
+    <!-- Status Panel -->
+    <div class="status-panel">
+        <div class="status-header">
+            <h3 class="status-title">
+                <i class="fas fa-info-circle"></i>
+                {% trans "Firewall Status" %}
+            </h3>
+            <div class="status-badge" ng-class="{'status-active': status == 'Active', 'status-inactive': status != 'Active'}">
+                <i class="fas fa-circle" style="font-size: 0.5rem;"></i>
+                {$ status $}
             </div>
         </div>
-
-
+        <div class="status-content">
+            <button type="button" ng-click="startFirewall()" class="control-btn btn-start">
+                <i class="fas fa-play"></i>
+                {% trans "Start" %}
+            </button>
+            <button type="button" ng-click="stopFirewall()" class="control-btn btn-stop">
+                <i class="fas fa-pause"></i>
+                {% trans "Stop" %}
+            </button>
+            <button type="button" ng-click="reloadFireWall()" class="control-btn btn-reload">
+                <i class="fas fa-sync-alt"></i>
+                {% trans "Reload" %}
+            </button>
+        </div>
+        
+        <!-- Status Messages -->
+        <div style="padding: 0 2rem 1rem;">
+            <div ng-hide="actionFailed" class="alert alert-danger">
+                <i class="fas fa-exclamation-circle alert-icon"></i>
+                <span>{% trans "Action failed. Error message:" %} {$ errorMessage $}</span>
+            </div>
+            
+            <div ng-hide="actionSuccess" class="alert alert-success">
+                <i class="fas fa-check-circle alert-icon"></i>
+                <span>{% trans "Action completed successfully." %}</span>
+            </div>
+        </div>
     </div>
-
+    
+    <!-- Rules Panel -->
+    <div class="rules-panel">
+        <div class="panel-header">
+            <div class="panel-title">
+                <div class="panel-icon">
+                    <i class="fas fa-list-alt"></i>
+                </div>
+                {% trans "Firewall Rules" %}
+            </div>
+            <div ng-show="!rulesLoading" class="loading-spinner"></div>
+        </div>
+        
+        <!-- Add Rule Section -->
+        <div ng-hide="rulesDetails" class="add-rule-section">
+            <form class="rule-form">
+                <div class="form-group">
+                    <label class="form-label">{% trans "Rule Name" %}</label>
+                    <input type="text" 
+                           class="form-control" 
+                           ng-model="ruleName"
+                           placeholder="{% trans 'e.g., Allow SSH' %}"
+                           required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">{% trans "Protocol" %}</label>
+                    <select ng-model="ruleProtocol" class="form-control select-control">
+                        <option value="tcp">TCP</option>
+                        <option value="udp">UDP</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">{% trans "IP Address" %}</label>
+                    <input type="text" 
+                           class="form-control"
+                           ng-model="ruleIP" 
+                           placeholder="{% trans '0.0.0.0/0 for all IPs' %}"
+                           required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">{% trans "Port" %}</label>
+                    <input type="text" 
+                           class="form-control" 
+                           ng-model="rulePort" 
+                           placeholder="{% trans 'e.g., 80' %}"
+                           required>
+                </div>
+                
+                <button type="button" 
+                        ng-click="addRule()"
+                        class="btn-add">
+                    <i class="fas fa-plus"></i>
+                    {% trans "Add Rule" %}
+                </button>
+            </form>
+        </div>
+        
+        <!-- Rules Table -->
+        <div ng-hide="rulesDetails" class="rules-table-section">
+            <table class="rules-table" ng-if="rules.length > 0">
+                <thead>
+                    <tr>
+                        <th>{% trans "ID" %}</th>
+                        <th>{% trans "Rule Name" %}</th>
+                        <th>{% trans "Protocol" %}</th>
+                        <th>{% trans "IP Address" %}</th>
+                        <th>{% trans "Port" %}</th>
+                        <th>{% trans "Action" %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr ng-repeat="rule in rules track by $index">
+                        <td class="rule-id">#{$ rule.id $}</td>
+                        <td class="rule-name">{$ rule.name $}</td>
+                        <td>
+                            <span class="protocol-badge" 
+                                  ng-class="{'protocol-tcp': rule.proto == 'tcp', 'protocol-udp': rule.proto == 'udp'}">
+                                {$ rule.proto $}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="ip-address">{$ rule.ipAddress $}</span>
+                        </td>
+                        <td>
+                            <span class="port-number">{$ rule.port $}</span>
+                        </td>
+                        <td>
+                            <button type="button"
+                                    ng-click="deleteRule(rule.id, rule.proto, rule.port, rule.ipAddress)"
+                                    class="btn-delete"
+                                    title="{% trans 'Delete Rule' %}">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <!-- Empty State -->
+            <div ng-if="rules.length == 0" class="empty-state">
+                <i class="fas fa-shield-alt empty-icon"></i>
+                <h3 class="empty-title">{% trans "No Firewall Rules" %}</h3>
+                <p class="empty-text">{% trans "Add your first firewall rule to control network access to your server." %}</p>
+            </div>
+        </div>
+        
+        <!-- Messages -->
+        <div style="padding: 0 2rem 2rem;">
+            <div ng-hide="canNotAddRule" class="alert alert-danger">
+                <i class="fas fa-exclamation-circle alert-icon"></i>
+                <span>{% trans "Error message:" %} {$ errorMessage $}</span>
+            </div>
+            
+            <div ng-hide="ruleAdded" class="alert alert-success">
+                <i class="fas fa-check-circle alert-icon"></i>
+                <span>{% trans "Rule successfully added." %}</span>
+            </div>
+            
+            <div ng-hide="couldNotConnect" class="alert alert-danger">
+                <i class="fas fa-exclamation-circle alert-icon"></i>
+                <span>{% trans "Could not connect to server. Please refresh this page." %}</span>
+            </div>
+        </div>
+    </div>
+</div>
 
 {% endblock %}

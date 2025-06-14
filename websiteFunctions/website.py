@@ -7528,4 +7528,59 @@ StrictHostKeyChecking no
             json_data = json.dumps(data_ret)
             return HttpResponse(json_data)
 
+    def fetchWPBackups(self, userID=None, data=None):
+        try:
+            currentACL = ACLManager.loadedACL(userID)
+            admin = Administrator.objects.get(pk=userID)
+            WPid = data['WPid']
+            
+            # Get the WordPress site
+            wpsite = WPSites.objects.get(pk=WPid)
+            
+            # Check ownership
+            if currentACL['admin'] != 1:
+                if wpsite.owner != admin:
+                    data_ret = {'status': 0, 'error_message': 'Not authorized to view this site backups'}
+                    json_data = json.dumps(data_ret)
+                    return HttpResponse(json_data)
+            
+            # Get backups for this WordPress site
+            backups = WPSitesBackup.objects.filter(WPSiteID=WPid).order_by('-id')
+            
+            backup_list = []
+            for backup in backups:
+                try:
+                    config = json.loads(backup.config)
+                    # Extract date from backup name (format: backup-wpsite.com-11.28.23_01-12-36)
+                    backup_name = config.get('name', 'Unknown')
+                    date_str = 'Unknown'
+                    if 'backup-' in backup_name:
+                        try:
+                            # Extract date part from name
+                            date_part = backup_name.split('-')[-1]  # Gets "11.28.23_01-12-36"
+                            date_components = date_part.split('_')
+                            if len(date_components) == 2:
+                                date_str = date_components[0].replace('.', '/') + ' ' + date_components[1].replace('-', ':')
+                        except:
+                            date_str = backup_name
+                    
+                    backup_list.append({
+                        'id': backup.id,
+                        'name': backup_name,
+                        'date': date_str,
+                        'type': config.get('Backuptype', 'Full Backup'),
+                        'size': config.get('size', '0')
+                    })
+                except Exception as e:
+                    logging.CyberCPLogFileWriter.writeToFile(f"Error parsing backup config: {str(e)}")
+                    continue
+            
+            data_ret = {'status': 1, 'backups': backup_list}
+            json_data = json.dumps(data_ret)
+            return HttpResponse(json_data)
+            
+        except BaseException as msg:
+            data_ret = {'status': 0, 'error_message': str(msg)}
+            json_data = json.dumps(data_ret)
+            return HttpResponse(json_data)
 

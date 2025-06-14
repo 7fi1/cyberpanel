@@ -7,89 +7,234 @@
 {% get_current_language as LANGUAGE_CODE %}
 <!-- Current language: {{ LANGUAGE_CODE }} -->
 
+<style>
+    body {
+        background-color: #f0f0ff;
+    }
+    
+    .page-header {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        color: white;
+        padding: 3rem 0;
+        margin-bottom: 3rem;
+        box-shadow: 0 4px 15px rgba(239, 68, 68, 0.2);
+    }
+    
+    .page-header h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    
+    .page-header p {
+        font-size: 1.1rem;
+        opacity: 0.9;
+        margin-bottom: 0;
+    }
+    
+    .form-card {
+        background: white;
+        border-radius: 12px;
+        padding: 2.5rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        border: 1px solid #e8e9ff;
+    }
+    
+    .section-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #2f3640;
+        margin-bottom: 2rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 3px solid #ef4444;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .form-label {
+        color: #2f3640;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+    
+    .form-control {
+        border: 1px solid #e8e9ff;
+        border-radius: 8px;
+        padding: 0.75rem 1rem;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+    
+    .form-control:focus {
+        border-color: #5b5fcf;
+        box-shadow: 0 0 0 3px rgba(91, 95, 207, 0.1);
+        outline: none;
+    }
+    
+    .btn-danger {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        border: none;
+        border-radius: 8px;
+        padding: 0.75rem 2rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+        color: white;
+    }
+    
+    .btn-danger:hover {
+        background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+    }
+    
+    .btn-confirm {
+        background: #991b1b;
+        border: none;
+        border-radius: 8px;
+        padding: 0.75rem 2rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        transition: all 0.3s ease;
+        color: white;
+    }
+    
+    .btn-confirm:hover {
+        background: #7f1d1d;
+        transform: translateY(-2px);
+    }
+    
+    .alert {
+        border-radius: 8px;
+        padding: 1rem 1.5rem;
+        margin-top: 1rem;
+        border: none;
+    }
+    
+    .alert-success {
+        background: rgba(16, 185, 129, 0.1);
+        color: #065f46;
+    }
+    
+    .alert-danger {
+        background: rgba(239, 68, 68, 0.1);
+        color: #991b1b;
+    }
+    
+    .alert-warning {
+        background: rgba(245, 158, 11, 0.1);
+        color: #92400e;
+        border-left: 4px solid #f59e0b;
+    }
+    
+    .warning-icon {
+        color: #f59e0b;
+        font-size: 1.2rem;
+        margin-right: 0.5rem;
+    }
+    
+    .help-text {
+        color: #8893a7;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+    
+    .delete-info {
+        background: #fff5f5;
+        border: 1px solid #fee2e2;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .delete-info h4 {
+        color: #991b1b;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+    
+    .delete-info ul {
+        margin: 0;
+        padding-left: 1.5rem;
+        color: #7f1d1d;
+    }
+    
+    .delete-info ul li {
+        margin-bottom: 0.25rem;
+    }
+</style>
 
-<div class="container">
-<div id="page-title">
-   <h2>{% trans "Delete User" %}</h2>
-   <p>{% trans "Websites owned by this user will automatically transfer to the root." %}</p>
-</div>
-
-<div class="panel">
-    <div class="panel-body">
-        <h3 class="content-box-header">
-            {% trans "Delete User" %}
-        </h3>
-        <div ng-controller="deleteUser" class="example-box-wrapper">
-
-
-            <form  action="/" class="form-horizontal bordered-row panel-body">
-
-
-                 <div class="form-group">
-                    <label class="col-sm-3 control-label">{% trans "Select User" %}</label>
-                    <div class="col-sm-6">
-                        <select ng-model="accountUsername" class="form-control">
-                            {% for items in acctNames %}
-                                <option>{{ items }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                </div>
-
-            <div class="form-group">
-                    <label class="col-sm-3 control-label"></label>
-                    <div class="col-sm-4">
-                         <button type="button" ng-click="deleteUser()" class="btn btn-primary btn-lg">{% trans "Delete User" %}</button>
-
-                    </div>
-            </div>
-
-
-            <div ng-hide="deleteUserButton" class="form-group">
-                    <label class="col-sm-3 control-label"></label>
-                    <div class="col-sm-4">
-                         <button type="button" ng-click="deleteUserFinal()" class="btn btn-primary btn-lg btn-block">{% trans "Are you sure?" %}</button>
-
-                    </div>
-            </div>
-
-
-                <div class="form-group">
-                    <label class="col-sm-3 control-label"></label>
-                    <div class="col-sm-6">
-                            <div ng-hide="deleteFailure" class="alert alert-danger">
-                                        <p>{% trans "Cannot delete user. Error message:" %} {$ errorMessage $}</p>
-                            </div>
-
-                            <div ng-hide="deleteSuccess" class="alert alert-success">
-                                <p>{% trans "User " %}<strong>{$ deletedUser $}</strong>{% trans " Successfully Deleted" %}</p>
-                            </div>
-
-
-                            <div ng-hide="couldNotConnect" class="alert alert-danger">
-                                <p>{% trans "Could not connect to the server. Please refresh this page." %}</p>
-                            </div>
-
-
-
-                    </div>
-
-
-
-                </div>
-
-
-            </form>
-
-
-
-
-        </div>
+<div class="page-header">
+    <div class="container">
+        <h1>{% trans "Delete User" %}</h1>
+        <p>{% trans "Permanently remove user accounts from the system" %}</p>
     </div>
 </div>
 
+<div class="container">
+    <div class="form-card" ng-controller="deleteUser">
+        <h3 class="section-title">
+            <i class="fa fa-exclamation-triangle warning-icon"></i>
+            {% trans "Delete User Account" %}
+        </h3>
+        
+        <div class="delete-info">
+            <h4><i class="fa fa-info-circle"></i> {% trans "Important Information" %}</h4>
+            <ul>
+                <li>{% trans "All websites owned by this user will be transferred to the root administrator" %}</li>
+                <li>{% trans "This action cannot be undone" %}</li>
+                <li>{% trans "All user data and settings will be permanently removed" %}</li>
+            </ul>
+        </div>
+        
+        <form action="/" class="form-horizontal">
+            <div class="form-group">
+                <label class="form-label">{% trans "Select User to Delete" %}</label>
+                <select ng-model="accountUsername" class="form-control">
+                    <option value="">-- {% trans "Choose a user" %} --</option>
+                    {% for items in acctNames %}
+                        <option>{{ items }}</option>
+                    {% endfor %}
+                </select>
+                <p class="help-text">{% trans "Select the user account you want to permanently delete" %}</p>
+            </div>
 
+            <div class="form-group mt-4">
+                <button type="button" ng-click="deleteUser()" class="btn btn-danger btn-lg">
+                    <i class="fa fa-trash"></i> {% trans "Delete User" %}
+                </button>
+            </div>
+
+            <div ng-hide="deleteUserButton" class="form-group">
+                <div class="alert alert-warning">
+                    <i class="fa fa-exclamation-triangle"></i> 
+                    <strong>{% trans "Final Confirmation" %}</strong><br>
+                    {% trans "You are about to delete user:" %} <strong>{$ accountUsername $}</strong><br>
+                    {% trans "This action is permanent and cannot be reversed." %}
+                </div>
+                <button type="button" ng-click="deleteUserFinal()" class="btn btn-confirm btn-lg">
+                    <i class="fa fa-check"></i> {% trans "Yes, Delete This User" %}
+                </button>
+            </div>
+
+            <div ng-hide="deleteFailure" class="alert alert-danger">
+                <i class="fa fa-times-circle"></i> {% trans "Cannot delete user. Error message:" %} {$ errorMessage $}
+            </div>
+
+            <div ng-hide="deleteSuccess" class="alert alert-success">
+                <i class="fa fa-check-circle"></i> {% trans "User" %} <strong>{$ deletedUser $}</strong> {% trans "has been successfully deleted" %}
+            </div>
+
+            <div ng-hide="couldNotConnect" class="alert alert-danger">
+                <i class="fa fa-times-circle"></i> {% trans "Could not connect to the server. Please refresh this page." %}
+            </div>
+        </form>
+    </div>
 </div>
-
 
 {% endblock %}
