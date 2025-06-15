@@ -489,6 +489,90 @@
             min-height: 100vh;
         }
         
+        /* Notification Banner */
+        .notification-banner {
+            position: fixed;
+            top: 80px;
+            left: 260px;
+            right: 0;
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border-bottom: 1px solid #f59e0b;
+            padding: 12px 30px;
+            z-index: 999;
+            box-shadow: 0 2px 8px rgba(245, 158, 11, 0.15);
+            animation: slideDown 0.3s ease-out;
+            display: none; /* Hidden by default */
+        }
+        
+        .notification-banner.show {
+            display: block;
+        }
+        
+        .notification-content {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .notification-icon {
+            color: #d97706;
+            font-size: 1.25rem;
+            flex-shrink: 0;
+        }
+        
+        .notification-text {
+            flex: 1;
+            color: #92400e;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        
+        .configure-link {
+            color: #d97706;
+            font-weight: 600;
+            text-decoration: underline;
+            margin-left: 0.5rem;
+            transition: color 0.2s ease;
+        }
+        
+        .configure-link:hover {
+            color: #b45309;
+        }
+        
+        .notification-close {
+            background: transparent;
+            border: none;
+            color: #92400e;
+            font-size: 1.125rem;
+            cursor: pointer;
+            padding: 0.25rem;
+            transition: all 0.2s ease;
+            border-radius: 4px;
+        }
+        
+        .notification-close:hover {
+            background: rgba(217, 119, 6, 0.1);
+            color: #b45309;
+        }
+        
+        /* Adjust main content padding when notification is shown */
+        .notification-shown #main-content {
+            padding-top: 160px;
+        }
+        
+        @keyframes slideDown {
+            from {
+                transform: translateY(-100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
         /* Scrollbar */
         ::-webkit-scrollbar {
             width: 8px;
@@ -556,6 +640,19 @@
             
             #header .info-text {
                 display: none;
+            }
+            
+            .notification-banner {
+                left: 0;
+                padding: 12px 15px;
+            }
+            
+            .notification-shown #main-content {
+                padding-top: 140px;
+            }
+            
+            .notification-text {
+                font-size: 0.813rem;
             }
         }
     </style>
@@ -1333,6 +1430,22 @@
         {% endif %}
     </div>
     
+    <!-- Backup Notification Banner -->
+    <div id="backup-notification" class="notification-banner">
+        <div class="notification-content">
+            <div class="notification-icon">
+                <i class="fas fa-shield-alt"></i>
+            </div>
+            <div class="notification-text">
+                <span>{% trans "Looks like your websites are not secured with automatic backups." %}</span>
+                <a href="{% url 'OneClickBackups' %}" class="configure-link">{% trans "Configure now" %}</a>
+            </div>
+            <button class="notification-close" onclick="dismissBackupNotification()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    </div>
+    
     <!-- Main Content -->
     <div id="main-content">
         {% block content %}{% endblock %}
@@ -1408,6 +1521,47 @@
                 sidebar.classList.contains('show')) {
                 sidebar.classList.remove('show');
             }
+        });
+        
+        // Backup notification banner logic
+        function checkBackupStatus() {
+            // Check if user has dismissed the notification in this session
+            if (sessionStorage.getItem('backupNotificationDismissed') === 'true') {
+                return;
+            }
+            
+            // Check if user has backup configured (you'll need to implement this API)
+            // For now, we'll show it by default unless they have a backup plan
+            // This should be replaced with an actual check
+            {% if not request.session.has_backup_configured %}
+                showBackupNotification();
+            {% endif %}
+            
+            // For demonstration, let's show it if URL doesn't contain 'OneClickBackups'
+            if (!window.location.href.includes('OneClickBackups')) {
+                showBackupNotification();
+            }
+        }
+        
+        function showBackupNotification() {
+            const banner = document.getElementById('backup-notification');
+            const body = document.body;
+            banner.classList.add('show');
+            body.classList.add('notification-shown');
+        }
+        
+        function dismissBackupNotification() {
+            const banner = document.getElementById('backup-notification');
+            const body = document.body;
+            banner.classList.remove('show');
+            body.classList.remove('notification-shown');
+            // Remember dismissal for this session
+            sessionStorage.setItem('backupNotificationDismissed', 'true');
+        }
+        
+        // Check backup status when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            checkBackupStatus();
         });
     </script>
     
