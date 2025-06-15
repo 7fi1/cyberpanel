@@ -131,6 +131,11 @@ def getSystemStatus(request):
     try:
         val = request.session['userID']
         currentACL = ACLManager.loadedACL(val)
+        
+        # Only admins should see system-wide information
+        if not currentACL.get('admin', 0):
+            return HttpResponse(json.dumps({'status': 0, 'error_message': 'Admin access required'}), content_type='application/json', status=403)
+        
         HTTPData = SystemInformation.getSystemInformation()
         json_data = json.dumps(HTTPData)
         return HttpResponse(json_data)
@@ -142,6 +147,11 @@ def getLoadAverage(request):
     try:
         val = request.session['userID']
         currentACL = ACLManager.loadedACL(val)
+        
+        # Only admins should see system load averages
+        if not currentACL.get('admin', 0):
+            return HttpResponse(json.dumps({'status': 0, 'error_message': 'Admin access required'}), content_type='application/json', status=403)
+        
         loadAverage = SystemInformation.cpuLoad()
         loadAverage = list(loadAverage)
         one = loadAverage[0]
@@ -495,6 +505,11 @@ def getTrafficStats(request):
     try:
         val = request.session['userID']
         currentACL = ACLManager.loadedACL(val)
+        
+        # Only admins should see system-wide network stats
+        if not currentACL.get('admin', 0):
+            return HttpResponse(json.dumps({'status': 0, 'error_message': 'Admin access required'}), content_type='application/json', status=403)
+        
         # Get network stats from /proc/net/dev (Linux)
         rx = tx = 0
         with open('/proc/net/dev', 'r') as f:
@@ -518,6 +533,11 @@ def getDiskIOStats(request):
     try:
         val = request.session['userID']
         currentACL = ACLManager.loadedACL(val)
+        
+        # Only admins should see system-wide disk I/O stats
+        if not currentACL.get('admin', 0):
+            return HttpResponse(json.dumps({'status': 0, 'error_message': 'Admin access required'}), content_type='application/json', status=403)
+        
         # Parse /proc/diskstats for all disks
         read_sectors = 0
         write_sectors = 0
@@ -547,6 +567,11 @@ def getCPULoadGraph(request):
     try:
         val = request.session['userID']
         currentACL = ACLManager.loadedACL(val)
+        
+        # Only admins should see system-wide CPU stats
+        if not currentACL.get('admin', 0):
+            return HttpResponse(json.dumps({'status': 0, 'error_message': 'Admin access required'}), content_type='application/json', status=403)
+        
         # Parse /proc/stat for the 'cpu' line
         with open('/proc/stat', 'r') as f:
             for line in f:
