@@ -270,8 +270,6 @@ def upgradeStatus(request):
 def upgradeVersion(request):
     try:
 
-
-
         vers = version.objects.get(pk=1)
         getVersion = requests.get('https://cyberpanel.net/version.txt')
         latest = getVersion.json()
@@ -432,14 +430,53 @@ def getDashboardStats(request):
     try:
         val = request.session['userID']
         currentACL = ACLManager.loadedACL(val)
+        admin = Administrator.objects.get(pk=val)
         
-        # Get counts for all resources
-        total_users = Administrator.objects.count()
-        total_sites = Websites.objects.count()
-        total_wp_sites = WPSites.objects.count()
-        total_dbs = Databases.objects.count()
-        total_emails = EUsers.objects.count()
-        total_ftp_users = FTPUsers.objects.count()
+        # Check if user is admin
+        if currentACL['admin'] == 1:
+            # Admin can see all resources
+            total_users = Administrator.objects.count()
+            total_sites = Websites.objects.count()
+            total_wp_sites = WPSites.objects.count()
+            total_dbs = Databases.objects.count()
+            total_emails = EUsers.objects.count()
+            total_ftp_users = FTPUsers.objects.count()
+        else:
+            # Non-admin users can only see their own resources and resources of users they created
+            
+            # Count users created by this admin (resellers)
+            total_users = Administrator.objects.filter(owner=admin.pk).count() + 1  # +1 for self
+            
+            # Get websites directly owned by this admin
+            user_websites = admin.websites_set.all()
+            website_names = list(user_websites.values_list('domain', flat=True))
+            
+            # Also get websites owned by admins created by this user (reseller pattern)
+            child_admins = Administrator.objects.filter(owner=admin.pk)
+            for child_admin in child_admins:
+                child_websites = child_admin.websites_set.all()
+                website_names.extend(list(child_websites.values_list('domain', flat=True)))
+            
+            total_sites = len(website_names)
+            
+            # Count WP sites associated with user's websites
+            if website_names:
+                total_wp_sites = WPSites.objects.filter(owner__domain__in=website_names).count()
+                
+                # Count databases associated with user's websites
+                total_dbs = Databases.objects.filter(website__domain__in=website_names).count()
+                
+                # Count email accounts associated with user's domains
+                from mailServer.models import Domains as EmailDomains
+                total_emails = EUsers.objects.filter(emailOwner__domainOwner__domain__in=website_names).count()
+                
+                # Count FTP users associated with user's domains
+                total_ftp_users = FTPUsers.objects.filter(domain__in=website_names).count()
+            else:
+                total_wp_sites = 0
+                total_dbs = 0
+                total_emails = 0
+                total_ftp_users = 0
         
         data = {
             'total_users': total_users,
