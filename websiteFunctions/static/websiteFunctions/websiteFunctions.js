@@ -3306,7 +3306,7 @@ app.controller('listWebsites', function ($scope, $http, $window) {
 
     $scope.goToFileManager = function($event, domain) {
         $event.stopPropagation();
-        window.location = '/filemanager/' + domain + '?modern=1';
+        window.location = '/filemanager/' + domain;
     };
 
 });
@@ -10130,7 +10130,7 @@ app.controller('listWebsites', function ($scope, $http, $window) {
 
     $scope.goToFileManager = function($event, domain) {
         $event.stopPropagation();
-        window.location = '/filemanager/' + domain + '?modern=1';
+        window.location = '/filemanager/' + domain;
     };
 
 });

@@ -41,7 +41,15 @@
 
 <nav id="navBar" class="navbar navbar-expand-lg navbar-light bg-light">
     <div class="header-logo">
-        <a href="/websites/{{ domainName }}"><img src="{% static 'filemanager/images/fileManager.png' %}"> <span style="display: none" id="domainNameInitial">{{ domainName }}</span></a>
+        <a href="/websites/{{ domainName }}">
+            <div class="logo-icon">
+                <i class="fa fa-folder-open"></i>
+            </div>
+            <div class="logo-text">
+                <span class="brand">File Manager</span>
+                <span class="domain" id="domainNameInitial">{{ domainName }}</span>
+            </div>
+        </a>
     </div>
     <!--- second bar ---->
 
