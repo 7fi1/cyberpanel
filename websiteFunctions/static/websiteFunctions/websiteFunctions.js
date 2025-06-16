@@ -3151,7 +3151,7 @@ app.controller('listWebsites', function ($scope, $http, $window) {
         });
     };
 
-    $scope.cyberPanelLoading = false;
+    $scope.cyberPanelLoading = true;
 
     $scope.issueSSL = function (virtualHost) {
         $scope.cyberPanelLoading = false;
@@ -3173,7 +3173,8 @@ app.controller('listWebsites', function ($scope, $http, $window) {
 
 
         function ListInitialDatas(response) {
-                    if (response.data.SSL === 1) {
+            $scope.cyberPanelLoading = true;
+            if (response.data.SSL === 1) {
                 new PNotify({
                     title: 'Success!',
                     text: 'SSL successfully issued.',
@@ -6628,6 +6629,8 @@ app.controller('listChildDomainsMain', function ($scope, $http, $timeout) {
     };
     $scope.getFurtherWebsitesFromDB();
 
+    $scope.cyberPanelLoading = true;
+
     $scope.issueSSL = function (virtualHost) {
         $scope.cyberPanelLoading = false;
 
@@ -6895,10 +6898,9 @@ app.controller('listChildDomainsMain', function ($scope, $http, $timeout) {
 
     }
 
-    $scope.DeleteDomain = '';
+    var DeleteDomain;
     $scope.deleteDomainInit = function (childDomainForDeletion) {
-        $scope.DeleteDomain = childDomainForDeletion;
-        console.log('Domain to delete:', childDomainForDeletion);
+        DeleteDomain = childDomainForDeletion;
     };
 
     $scope.deleteChildDomain = function () {
@@ -6906,7 +6908,7 @@ app.controller('listChildDomainsMain', function ($scope, $http, $timeout) {
         url = "/websites/submitDomainDeletion";
 
         var data = {
-            websiteName: $scope.DeleteDomain,
+            websiteName: DeleteDomain,
             DeleteDocRoot: $scope.DeleteDocRoot
         };
 
@@ -6926,7 +6928,6 @@ app.controller('listChildDomainsMain', function ($scope, $http, $timeout) {
                     text: 'Child Domain successfully deleted.',
                     type: 'success'
                 });
-                $('#DeleteChild').modal('hide');
                 $scope.getFurtherWebsitesFromDB();
             } else {
                 new PNotify({
@@ -10138,9 +10139,6 @@ app.controller('listChildDomainsMain', function ($scope, $http, $timeout) {
 
     $scope.currentPage = 1;
     $scope.recordsToShow = 10;
-    $scope.expandedSites = {};
-    $scope.DeleteDocRoot = false;
-    $scope.cyberPanelLoading = false;
 
     $scope.getFurtherWebsitesFromDB = function () {
 
@@ -10455,26 +10453,19 @@ app.controller('listChildDomainsMain', function ($scope, $http, $timeout) {
 
     }
 
+    var DeleteDomain;
     $scope.deleteDomainInit = function (childDomainForDeletion) {
-        $scope.DeleteDomain = childDomainForDeletion;
-        console.log('Domain to delete:', childDomainForDeletion);
+        DeleteDomain = childDomainForDeletion;
     };
 
     $scope.deleteChildDomain = function () {
-        alert('Delete function called! Domain: ' + $scope.DeleteDomain);
-        console.log('Deleting domain:', $scope.DeleteDomain);
-        if (!$scope.DeleteDomain) {
-            alert('No domain selected for deletion');
-            return;
-        }
         $scope.cyberPanelLoading = false;
         url = "/websites/submitDomainDeletion";
 
         var data = {
-            websiteName: $scope.DeleteDomain,
+            websiteName: DeleteDomain,
             DeleteDocRoot: $scope.DeleteDocRoot
         };
-        console.log('Delete request data:', data);
 
         var config = {
             headers: {
