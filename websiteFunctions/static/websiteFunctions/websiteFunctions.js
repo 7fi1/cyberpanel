@@ -10140,6 +10140,8 @@ app.controller('listChildDomainsMain', function ($scope, $http, $timeout) {
 
     $scope.currentPage = 1;
     $scope.recordsToShow = 10;
+    $scope.expandedSites = {};
+    $scope.DeleteDocRoot = false;
 
     $scope.getFurtherWebsitesFromDB = function () {
 
