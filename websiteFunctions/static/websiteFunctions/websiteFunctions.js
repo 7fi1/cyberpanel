@@ -465,18 +465,6 @@ app.controller('createWordpress', function ($scope, $http, $timeout, $compile, $
                     $scope.installPercentage = "100";
                     $scope.currentStatus = response.data.currentStatus;
                     $timeout.cancel();
-                    
-                    new PNotify({
-                        title: 'Success!',
-                        text: 'Domain successfully converted to website.',
-                        type: 'success'
-                    });
-                    
-                    setTimeout(function() {
-                        $('#settings').modal('hide');
-                        $scope.getFurtherWebsitesFromDB();
-                        $scope.$apply();
-                    }, 2000);
 
                 } else {
 
@@ -1325,18 +1313,6 @@ app.controller('WPsiteHome', function ($scope, $http, $timeout, $compile, $windo
                     $scope.installPercentage = "100";
                     $scope.currentStatus = response.data.currentStatus;
                     $timeout.cancel();
-                    
-                    new PNotify({
-                        title: 'Success!',
-                        text: 'Domain successfully converted to website.',
-                        type: 'success'
-                    });
-                    
-                    setTimeout(function() {
-                        $('#settings').modal('hide');
-                        $scope.getFurtherWebsitesFromDB();
-                        $scope.$apply();
-                    }, 2000);
 
 
                 } else {
@@ -1729,18 +1705,6 @@ app.controller('WPsiteHome', function ($scope, $http, $timeout, $compile, $windo
                     $scope.installPercentage = "100";
                     $scope.currentStatus = response.data.currentStatus;
                     $timeout.cancel();
-                    
-                    new PNotify({
-                        title: 'Success!',
-                        text: 'Domain successfully converted to website.',
-                        type: 'success'
-                    });
-                    
-                    setTimeout(function() {
-                        $('#settings').modal('hide');
-                        $scope.getFurtherWebsitesFromDB();
-                        $scope.$apply();
-                    }, 2000);
                     
                     // Re-enable buttons
                     $('#createbackupbutton').prop('disabled', false).html('<i class="fas fa-download"></i> Create Backup');
@@ -2280,18 +2244,6 @@ app.controller('RestoreWPBackup', function ($scope, $http, $timeout, $window) {
                     $scope.installPercentage = "100";
                     $scope.currentStatus = response.data.currentStatus;
                     $timeout.cancel();
-                    
-                    new PNotify({
-                        title: 'Success!',
-                        text: 'Domain successfully converted to website.',
-                        type: 'success'
-                    });
-                    
-                    setTimeout(function() {
-                        $('#settings').modal('hide');
-                        $scope.getFurtherWebsitesFromDB();
-                        $scope.$apply();
-                    }, 2000);
                     
                     // Re-enable buttons
                     $('#createbackupbutton').prop('disabled', false).html('<i class="fas fa-download"></i> Create Backup');
@@ -3199,6 +3151,7 @@ app.controller('listWebsites', function ($scope, $http, $window) {
         });
     };
 
+    $scope.cyberPanelLoading = false;
 
     $scope.issueSSL = function (virtualHost) {
         $scope.cyberPanelLoading = false;
@@ -3825,18 +3778,6 @@ app.controller('createWordpress', function ($scope, $http, $timeout, $compile, $
                     $scope.installPercentage = "100";
                     $scope.currentStatus = response.data.currentStatus;
                     $timeout.cancel();
-                    
-                    new PNotify({
-                        title: 'Success!',
-                        text: 'Domain successfully converted to website.',
-                        type: 'success'
-                    });
-                    
-                    setTimeout(function() {
-                        $('#settings').modal('hide');
-                        $scope.getFurtherWebsitesFromDB();
-                        $scope.$apply();
-                    }, 2000);
 
                 } else {
 
@@ -4664,18 +4605,6 @@ app.controller('WPsiteHome', function ($scope, $http, $timeout, $compile, $windo
                     $scope.installPercentage = "100";
                     $scope.currentStatus = response.data.currentStatus;
                     $timeout.cancel();
-                    
-                    new PNotify({
-                        title: 'Success!',
-                        text: 'Domain successfully converted to website.',
-                        type: 'success'
-                    });
-                    
-                    setTimeout(function() {
-                        $('#settings').modal('hide');
-                        $scope.getFurtherWebsitesFromDB();
-                        $scope.$apply();
-                    }, 2000);
 
 
                 } else {
@@ -5375,18 +5304,6 @@ app.controller('RestoreWPBackup', function ($scope, $http, $timeout, $window) {
                     $scope.currentStatus = response.data.currentStatus;
                     $timeout.cancel();
                     
-                    new PNotify({
-                        title: 'Success!',
-                        text: 'Domain successfully converted to website.',
-                        type: 'success'
-                    });
-                    
-                    setTimeout(function() {
-                        $('#settings').modal('hide');
-                        $scope.getFurtherWebsitesFromDB();
-                        $scope.$apply();
-                    }, 2000);
-                    
                     // Re-enable buttons
                     $('#createbackupbutton').prop('disabled', false).html('<i class="fas fa-download"></i> Create Backup');
                     $('button[ng-click="CreateStagingNow()"]').prop('disabled', false).html('<i class="fas fa-clone"></i> Create Staging Site');
@@ -6028,18 +5945,6 @@ app.controller('createWebsite', function ($scope, $http, $timeout, $window) {
                     $scope.installPercentage = "100";
                     $scope.currentStatus = response.data.currentStatus;
                     $timeout.cancel();
-                    
-                    new PNotify({
-                        title: 'Success!',
-                        text: 'Domain successfully converted to website.',
-                        type: 'success'
-                    });
-                    
-                    setTimeout(function() {
-                        $('#settings').modal('hide');
-                        $scope.getFurtherWebsitesFromDB();
-                        $scope.$apply();
-                    }, 2000);
 
                 } else {
 
@@ -6956,18 +6861,6 @@ app.controller('listChildDomainsMain', function ($scope, $http, $timeout) {
                     $scope.installPercentage = "100";
                     $scope.currentStatus = response.data.currentStatus;
                     $timeout.cancel();
-                    
-                    new PNotify({
-                        title: 'Success!',
-                        text: 'Domain successfully converted to website.',
-                        type: 'success'
-                    });
-                    
-                    setTimeout(function() {
-                        $('#settings').modal('hide');
-                        $scope.getFurtherWebsitesFromDB();
-                        $scope.$apply();
-                    }, 2000);
 
                 } else {
 
@@ -7005,9 +6898,10 @@ app.controller('listChildDomainsMain', function ($scope, $http, $timeout) {
 
     }
 
-    var DeleteDomain;
+    $scope.DeleteDomain = '';
     $scope.deleteDomainInit = function (childDomainForDeletion) {
-        DeleteDomain = childDomainForDeletion;
+        $scope.DeleteDomain = childDomainForDeletion;
+        console.log('Domain to delete:', childDomainForDeletion);
     };
 
     $scope.deleteChildDomain = function () {
@@ -7015,7 +6909,7 @@ app.controller('listChildDomainsMain', function ($scope, $http, $timeout) {
         url = "/websites/submitDomainDeletion";
 
         var data = {
-            websiteName: DeleteDomain,
+            websiteName: $scope.DeleteDomain,
             DeleteDocRoot: $scope.DeleteDocRoot
         };
 
@@ -7035,7 +6929,6 @@ app.controller('listChildDomainsMain', function ($scope, $http, $timeout) {
                     text: 'Child Domain successfully deleted.',
                     type: 'success'
                 });
-                $('#DeleteChild').modal('hide');
                 $scope.getFurtherWebsitesFromDB();
             } else {
                 new PNotify({
@@ -7603,18 +7496,6 @@ app.controller('createWordpress', function ($scope, $http, $timeout, $compile, $
                     $scope.installPercentage = "100";
                     $scope.currentStatus = response.data.currentStatus;
                     $timeout.cancel();
-                    
-                    new PNotify({
-                        title: 'Success!',
-                        text: 'Domain successfully converted to website.',
-                        type: 'success'
-                    });
-                    
-                    setTimeout(function() {
-                        $('#settings').modal('hide');
-                        $scope.getFurtherWebsitesFromDB();
-                        $scope.$apply();
-                    }, 2000);
 
                 } else {
 
@@ -8442,18 +8323,6 @@ app.controller('WPsiteHome', function ($scope, $http, $timeout, $compile, $windo
                     $scope.installPercentage = "100";
                     $scope.currentStatus = response.data.currentStatus;
                     $timeout.cancel();
-                    
-                    new PNotify({
-                        title: 'Success!',
-                        text: 'Domain successfully converted to website.',
-                        type: 'success'
-                    });
-                    
-                    setTimeout(function() {
-                        $('#settings').modal('hide');
-                        $scope.getFurtherWebsitesFromDB();
-                        $scope.$apply();
-                    }, 2000);
 
 
                 } else {
@@ -9277,18 +9146,6 @@ app.controller('RestoreWPBackup', function ($scope, $http, $timeout, $window) {
                     $scope.installPercentage = "100";
                     $scope.currentStatus = response.data.currentStatus;
                     $timeout.cancel();
-                    
-                    new PNotify({
-                        title: 'Success!',
-                        text: 'Domain successfully converted to website.',
-                        type: 'success'
-                    });
-                    
-                    setTimeout(function() {
-                        $('#settings').modal('hide');
-                        $scope.getFurtherWebsitesFromDB();
-                        $scope.$apply();
-                    }, 2000);
                     
                     // Re-enable buttons
                     $('#createbackupbutton').prop('disabled', false).html('<i class="fas fa-download"></i> Create Backup');
@@ -10560,18 +10417,6 @@ app.controller('listChildDomainsMain', function ($scope, $http, $timeout) {
                     $scope.installPercentage = "100";
                     $scope.currentStatus = response.data.currentStatus;
                     $timeout.cancel();
-                    
-                    new PNotify({
-                        title: 'Success!',
-                        text: 'Domain successfully converted to website.',
-                        type: 'success'
-                    });
-                    
-                    setTimeout(function() {
-                        $('#settings').modal('hide');
-                        $scope.getFurtherWebsitesFromDB();
-                        $scope.$apply();
-                    }, 2000);
 
                 } else {
 
@@ -12262,18 +12107,6 @@ app.controller('websitePages', function ($scope, $http, $timeout, $window) {
                     $scope.installPercentage = "100";
                     $scope.currentStatus = response.data.currentStatus;
                     $timeout.cancel();
-                    
-                    new PNotify({
-                        title: 'Success!',
-                        text: 'Domain successfully converted to website.',
-                        type: 'success'
-                    });
-                    
-                    setTimeout(function() {
-                        $('#settings').modal('hide');
-                        $scope.getFurtherWebsitesFromDB();
-                        $scope.$apply();
-                    }, 2000);
 
                 } else {
 
@@ -13771,18 +13604,6 @@ app.controller('manageAliasController', function ($scope, $http, $timeout, $wind
                     $scope.installPercentage = "100";
                     $scope.currentStatus = response.data.currentStatus;
                     $timeout.cancel();
-                    
-                    new PNotify({
-                        title: 'Success!',
-                        text: 'Domain successfully converted to website.',
-                        type: 'success'
-                    });
-                    
-                    setTimeout(function() {
-                        $('#settings').modal('hide');
-                        $scope.getFurtherWebsitesFromDB();
-                        $scope.$apply();
-                    }, 2000);
                     fetchDomains();
 
                 } else {
@@ -14693,18 +14514,6 @@ app.controller('installWordPressCTRL', function ($scope, $http, $timeout) {
                     $scope.installPercentage = "100";
                     $scope.currentStatus = response.data.currentStatus;
                     $timeout.cancel();
-                    
-                    new PNotify({
-                        title: 'Success!',
-                        text: 'Domain successfully converted to website.',
-                        type: 'success'
-                    });
-                    
-                    setTimeout(function() {
-                        $('#settings').modal('hide');
-                        $scope.getFurtherWebsitesFromDB();
-                        $scope.$apply();
-                    }, 2000);
 
                 } else {
 
@@ -14822,18 +14631,6 @@ app.controller('installJoomlaCTRL', function ($scope, $http, $timeout) {
                     $scope.installPercentage = "100";
                     $scope.currentStatus = response.data.currentStatus;
                     $timeout.cancel();
-                    
-                    new PNotify({
-                        title: 'Success!',
-                        text: 'Domain successfully converted to website.',
-                        type: 'success'
-                    });
-                    
-                    setTimeout(function() {
-                        $('#settings').modal('hide');
-                        $scope.getFurtherWebsitesFromDB();
-                        $scope.$apply();
-                    }, 2000);
 
                 } else {
 
@@ -15011,18 +14808,6 @@ app.controller('setupGit', function ($scope, $http, $timeout, $window) {
                     $scope.installPercentage = "100";
                     $scope.currentStatus = response.data.currentStatus;
                     $timeout.cancel();
-                    
-                    new PNotify({
-                        title: 'Success!',
-                        text: 'Domain successfully converted to website.',
-                        type: 'success'
-                    });
-                    
-                    setTimeout(function() {
-                        $('#settings').modal('hide');
-                        $scope.getFurtherWebsitesFromDB();
-                        $scope.$apply();
-                    }, 2000);
                     $timeout(function () {
                         $window.location.reload();
                     }, 3000);
@@ -15345,18 +15130,6 @@ app.controller('installPrestaShopCTRL', function ($scope, $http, $timeout) {
                     $scope.installPercentage = "100";
                     $scope.currentStatus = response.data.currentStatus;
                     $timeout.cancel();
-                    
-                    new PNotify({
-                        title: 'Success!',
-                        text: 'Domain successfully converted to website.',
-                        type: 'success'
-                    });
-                    
-                    setTimeout(function() {
-                        $('#settings').modal('hide');
-                        $scope.getFurtherWebsitesFromDB();
-                        $scope.$apply();
-                    }, 2000);
 
                 } else {
 
@@ -15545,18 +15318,6 @@ app.controller('installMauticCTRL', function ($scope, $http, $timeout) {
                     $scope.installPercentage = "100";
                     $scope.currentStatus = response.data.currentStatus;
                     $timeout.cancel();
-                    
-                    new PNotify({
-                        title: 'Success!',
-                        text: 'Domain successfully converted to website.',
-                        type: 'success'
-                    });
-                    
-                    setTimeout(function() {
-                        $('#settings').modal('hide');
-                        $scope.getFurtherWebsitesFromDB();
-                        $scope.$apply();
-                    }, 2000);
 
                 } else {
 
@@ -16078,18 +15839,6 @@ app.controller('cloneWebsite', function ($scope, $http, $timeout, $window) {
                     $scope.installPercentage = "100";
                     $scope.currentStatus = response.data.currentStatus;
                     $timeout.cancel();
-                    
-                    new PNotify({
-                        title: 'Success!',
-                        text: 'Domain successfully converted to website.',
-                        type: 'success'
-                    });
-                    
-                    setTimeout(function() {
-                        $('#settings').modal('hide');
-                        $scope.getFurtherWebsitesFromDB();
-                        $scope.$apply();
-                    }, 2000);
 
                 } else {
 
@@ -17873,18 +17622,6 @@ app.controller('createDockerSite', function ($scope, $http, $timeout) {
                     $scope.installPercentage = "100";
                     $scope.currentStatus = response.data.currentStatus;
                     $timeout.cancel();
-                    
-                    new PNotify({
-                        title: 'Success!',
-                        text: 'Domain successfully converted to website.',
-                        type: 'success'
-                    });
-                    
-                    setTimeout(function() {
-                        $('#settings').modal('hide');
-                        $scope.getFurtherWebsitesFromDB();
-                        $scope.$apply();
-                    }, 2000);
 
                 } else {
 

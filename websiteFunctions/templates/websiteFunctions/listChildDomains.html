@@ -538,7 +538,7 @@
             <div class="page-title-section">
                 <h1 class="page-title">
                     {% trans "List Child Domains" %}
-                    <span ng-show="cyberPanelLoading" class="loading-spinner"></span>
+                    <span ng-hide="cyberPanelLoading" class="loading-spinner"></span>
                 </h1>
                 <p class="page-subtitle">{% trans "Manage your sub-domains and addon domains from one place" %}</p>
             </div>
@@ -660,13 +660,13 @@
 </div>
 
 <!-- Delete Modal -->
-<div id="DeleteChild" class="modal fade" role="dialog" data-backdrop="static" data-keyboard="false">
+<div id="DeleteChild" class="modal fade" role="dialog">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
                 <h4 class="modal-title">
                     {% trans "Delete Sub/Addon Domain" %}
-                    <span ng-show="cyberPanelLoading" class="loading-spinner"></span>
+                    <span ng-hide="cyberPanelLoading" class="loading-spinner"></span>
                 </h4>
                 <button type="button" class="close" data-dismiss="modal">&times;</button>
             </div>
@@ -699,13 +699,13 @@
 </div>
 
 <!-- Convert to Website Modal -->
-<div id="settings" class="modal fade" role="dialog" data-backdrop="static" data-keyboard="false">
+<div id="settings" class="modal fade" role="dialog">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
                 <h4 class="modal-title">
                     {% trans "Convert Sub/Addon Domain to Website" %}
-                    <span ng-show="cyberPanelLoading" class="loading-spinner"></span>
+                    <span ng-hide="cyberPanelLoading" class="loading-spinner"></span>
                 </h4>
                 <button type="button" class="close" data-dismiss="modal">&times;</button>
             </div>
