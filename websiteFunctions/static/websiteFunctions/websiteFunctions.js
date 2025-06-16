@@ -6628,8 +6628,6 @@ app.controller('listChildDomainsMain', function ($scope, $http, $timeout) {
     };
     $scope.getFurtherWebsitesFromDB();
 
-    $scope.cyberPanelLoading = true;
-
     $scope.issueSSL = function (virtualHost) {
         $scope.cyberPanelLoading = false;
 
@@ -10142,6 +10140,7 @@ app.controller('listChildDomainsMain', function ($scope, $http, $timeout) {
     $scope.recordsToShow = 10;
     $scope.expandedSites = {};
     $scope.DeleteDocRoot = false;
+    $scope.cyberPanelLoading = false;
 
     $scope.getFurtherWebsitesFromDB = function () {
 
@@ -10462,6 +10461,7 @@ app.controller('listChildDomainsMain', function ($scope, $http, $timeout) {
     };
 
     $scope.deleteChildDomain = function () {
+        alert('Delete function called! Domain: ' + $scope.DeleteDomain);
         console.log('Deleting domain:', $scope.DeleteDomain);
         if (!$scope.DeleteDomain) {
             alert('No domain selected for deletion');
