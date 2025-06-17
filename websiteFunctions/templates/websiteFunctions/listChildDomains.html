@@ -657,127 +657,127 @@
             </select>
         </div>
     </div>
-</div>
 
-<!-- Delete Modal -->
-<div id="DeleteChild" class="modal fade" role="dialog">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h4 class="modal-title">
-                    {% trans "Delete Sub/Addon Domain" %}
-                    <span ng-hide="cyberPanelLoading" class="loading-spinner"></span>
-                </h4>
-                <button type="button" class="close" data-dismiss="modal">&times;</button>
-            </div>
-            <div class="modal-body">
-                <form name="DeleteDocumentRootForm">
-                    <div class="form-group">
-                        <div class="checkbox-wrapper">
-                            <input ng-model="DeleteDocRoot" type="checkbox" id="deleteDocRoot">
-                            <label for="deleteDocRoot" class="checkbox-label">
-                                {% trans "Delete Document Root" %}
-                            </label>
+    <!-- Delete Modal -->
+    <div id="DeleteChild" class="modal fade" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">
+                        {% trans "Delete Sub/Addon Domain" %}
+                        <span ng-hide="cyberPanelLoading" class="loading-spinner"></span>
+                    </h4>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <form name="DeleteDocumentRootForm">
+                        <div class="form-group">
+                            <div class="checkbox-wrapper">
+                                <input ng-model="DeleteDocRoot" type="checkbox" id="deleteDocRoot">
+                                <label for="deleteDocRoot" class="checkbox-label">
+                                    {% trans "Delete Document Root" %}
+                                </label>
+                            </div>
+                            <p style="margin-top: 10px; font-size: 13px; color: #8893a7;">
+                                {% trans "Warning: This will permanently delete all files in the document root directory." %}
+                            </p>
                         </div>
-                        <p style="margin-top: 10px; font-size: 13px; color: #8893a7;">
-                            {% trans "Warning: This will permanently delete all files in the document root directory." %}
-                        </p>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">
-                    {% trans "Cancel" %}
-                </button>
-                <button type="button" class="btn btn-danger" ng-click="deleteChildDomain()">
-                    <i class="fas fa-trash"></i>
-                    {% trans "Delete Now" %}
-                </button>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                        {% trans "Cancel" %}
+                    </button>
+                    <button type="button" class="btn btn-danger" ng-click="deleteChildDomain()">
+                        <i class="fas fa-trash"></i>
+                        {% trans "Delete Now" %}
+                    </button>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
-<!-- Convert to Website Modal -->
-<div id="settings" class="modal fade" role="dialog">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h4 class="modal-title">
-                    {% trans "Convert Sub/Addon Domain to Website" %}
-                    <span ng-hide="cyberPanelLoading" class="loading-spinner"></span>
-                </h4>
-                <button type="button" class="close" data-dismiss="modal">&times;</button>
-            </div>
-            <div class="modal-body">
-                <form name="containerSettingsForm">
-                    <div ng-hide="installationDetailsForm">
-                        <div class="form-group">
-                            <label class="form-label">{% trans "Domain Name" %}</label>
-                            <input name="dom" type="text" class="form-control" 
-                                   ng-model="domainName" readonly>
+    <!-- Convert to Website Modal -->
+    <div id="settings" class="modal fade" role="dialog">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">
+                        {% trans "Convert Sub/Addon Domain to Website" %}
+                        <span ng-hide="cyberPanelLoading" class="loading-spinner"></span>
+                    </h4>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <form name="containerSettingsForm">
+                        <div ng-hide="installationDetailsForm">
+                            <div class="form-group">
+                                <label class="form-label">{% trans "Domain Name" %}</label>
+                                <input name="dom" type="text" class="form-control" 
+                                       ng-model="domainName" readonly>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">{% trans "Select Owner" %}</label>
+                                <select ng-model="websiteOwner" class="form-control">
+                                    <option value="">-- {% trans "Select an owner" %} --</option>
+                                    {% for items in owernList %}
+                                        <option>{{ items }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">{% trans "Select Package" %}</label>
+                                <select ng-model="packageForWebsite" class="form-control">
+                                    <option value="">-- {% trans "Select a package" %} --</option>
+                                    {% for items in packageList %}
+                                        <option>{{ items }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">{% trans "Email" %}</label>
+                                <input type="email" name="email" class="form-control" 
+                                       ng-model="adminEmail" placeholder="admin@example.com" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">{% trans "Select PHP Version" %}</label>
+                                <select ng-model="phpSelection" class="form-control">
+                                    {% for php in phps %}
+                                        <option>{{ php }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
                         </div>
 
-                        <div class="form-group">
-                            <label class="form-label">{% trans "Select Owner" %}</label>
-                            <select ng-model="websiteOwner" class="form-control">
-                                <option value="">-- {% trans "Select an owner" %} --</option>
-                                {% for items in owernList %}
-                                    <option>{{ items }}</option>
-                                {% endfor %}
-                            </select>
+                        <div ng-hide="installationProgress" class="progress-section">
+                            <div class="progress-status">{$ currentStatus $}</div>
+                            <div class="progress-bar-container">
+                                <div id="installProgress" class="progress-bar-fill" style="width:0%"></div>
+                            </div>
                         </div>
 
-                        <div class="form-group">
-                            <label class="form-label">{% trans "Select Package" %}</label>
-                            <select ng-model="packageForWebsite" class="form-control">
-                                <option value="">-- {% trans "Select a package" %} --</option>
-                                {% for items in packageList %}
-                                    <option>{{ items }}</option>
-                                {% endfor %}
-                            </select>
+                        <div ng-hide="installationProgress" style="margin-top: 20px;">
+                            <button type="button" ng-disabled="goBackDisable" ng-click="goBack()"
+                                    class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i>
+                                {% trans "Go Back" %}
+                            </button>
                         </div>
-
-                        <div class="form-group">
-                            <label class="form-label">{% trans "Email" %}</label>
-                            <input type="email" name="email" class="form-control" 
-                                   ng-model="adminEmail" placeholder="admin@example.com" required>
-                        </div>
-
-                        <div class="form-group">
-                            <label class="form-label">{% trans "Select PHP Version" %}</label>
-                            <select ng-model="phpSelection" class="form-control">
-                                {% for php in phps %}
-                                    <option>{{ php }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                    </div>
-
-                    <div ng-hide="installationProgress" class="progress-section">
-                        <div class="progress-status">{$ currentStatus $}</div>
-                        <div class="progress-bar-container">
-                            <div id="installProgress" class="progress-bar-fill" style="width:0%"></div>
-                        </div>
-                    </div>
-
-                    <div ng-hide="installationProgress" style="margin-top: 20px;">
-                        <button type="button" ng-disabled="goBackDisable" ng-click="goBack()"
-                                class="btn btn-secondary">
-                            <i class="fas fa-arrow-left"></i>
-                            {% trans "Go Back" %}
-                        </button>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">
-                    {% trans "Cancel" %}
-                </button>
-                <button type="button" class="btn btn-primary" ng-click="convert()">
-                    <i class="fas fa-exchange-alt"></i>
-                    {% trans "Convert" %}
-                </button>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                        {% trans "Cancel" %}
+                    </button>
+                    <button type="button" class="btn btn-primary" ng-click="convert()">
+                        <i class="fas fa-exchange-alt"></i>
+                        {% trans "Convert" %}
+                    </button>
+                </div>
             </div>
         </div>
     </div>
