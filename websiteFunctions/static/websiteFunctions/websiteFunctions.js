@@ -1,6 +1,14 @@
 /**
  * Created by usman on 7/26/17.
  */
+
+// Global function for deleting staging sites
+function deleteStagingGlobal(stagingId) {
+    if (confirm("Are you sure you want to delete this staging site? This action cannot be undone.")) {
+        // Redirect to WordPress list with delete parameter
+        window.location.href = "/websites/ListWPSites?DeleteID=" + stagingId;
+    }
+}
 function getCookie(name) {
     var cookieValue = null;
     var t = document.cookie;
@@ -530,35 +538,7 @@ function DeployToProductionInitial(vall) {
     DeploytoProductionID = vall;
 }
 
-var create_staging_domain_check = 0;
-
-function create_staging_checkbox_function() {
-
-    try {
-
-        var checkBox = document.getElementById("Create_Staging_Check");
-        // Get the output text
-
-
-        // If the checkbox is checked, display the output text
-        if (checkBox.checked == true) {
-            create_staging_domain_check = 0;
-            document.getElementById('Website_Create_Test_Domain').style.display = "block";
-            document.getElementById('Website_Create_Own_Domain').style.display = "none";
-
-        } else {
-            document.getElementById('Website_Create_Test_Domain').style.display = "none";
-            document.getElementById('Website_Create_Own_Domain').style.display = "block";
-            create_staging_domain_check = 1;
-        }
-    } catch (e) {
-
-    }
-
-    // alert(domain_check);
-}
-
-create_staging_checkbox_function();
+// Simplified staging domain input - checkbox functionality removed
 
 app.controller('WPsiteHome', function ($scope, $http, $timeout, $compile, $window) {
     var CheckBoxpasssword = 0;
@@ -1211,26 +1191,17 @@ app.controller('WPsiteHome', function ($scope, $http, $timeout, $compile, $windo
             return;
         }
 
-        // Determine domain based on selection
-        var domainNameCreate;
-        if (create_staging_domain_check == 0) {
-            // Use test domain (subdomain)
-            var Part2_domainNameCreate = document.getElementById('Part2_domainNameCreate').value;
-            var TestDomainNameCreate = document.getElementById('TestDomainNameCreate').value || stagingName;
-            domainNameCreate = TestDomainNameCreate + Part2_domainNameCreate;
-        } else {
-            // Use own domain
-            domainNameCreate = $scope.own_domainNameCreate;
-            if (!domainNameCreate) {
-                new PNotify({
-                    title: 'Error!',
-                    text: 'Please enter your own domain',
-                    type: 'error'
-                });
-                $('#wordpresshomeloading').hide();
-                $scope.wordpresshomeloading = true;
-                return;
-            }
+        // Get staging domain from the simplified input
+        var domainNameCreate = $('#stagingDomainName').val() || $scope.stagingDomainName;
+        if (!domainNameCreate) {
+            new PNotify({
+                title: 'Error!',
+                text: 'Please enter a staging domain',
+                type: 'error'
+            });
+            $('#wordpresshomeloading').hide();
+            $scope.wordpresshomeloading = true;
+            return;
         }
         
         var data = {
@@ -1376,58 +1347,76 @@ app.controller('WPsiteHome', function ($scope, $http, $timeout, $compile, $windo
 
     $scope.fetchstaging = function () {
 
-        $('#wordpresshomeloading').show();
-        $scope.wordpresshomeloading = false;
-
-        var url = "/websites/fetchstaging";
-
-        var data = {
-            WPid: $('#WPid').html(),
-        }
-
-        var config = {
-            headers: {
-                'X-CSRFToken': getCookie('csrftoken')
+        // Ensure DOM is ready
+        $timeout(function() {
+            // Check if the staging table exists
+            if ($('#StagingBody').length === 0) {
+                console.error('StagingBody table not found in DOM');
+                return;
             }
-        };
+
+            $('#wordpresshomeloading').show();
+            $scope.wordpresshomeloading = false;
+
+            var url = "/websites/fetchstaging";
+
+            var data = {
+                WPid: $('#WPid').html(),
+            }
+
+            var config = {
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken')
+                }
+            };
 
 
-        $http.post(url, data, config).then(ListInitialDatas, cantLoadInitialDatas);
+            $http.post(url, data, config).then(ListInitialDatas, cantLoadInitialDatas);
 
 
-        function ListInitialDatas(response) {
-            wordpresshomeloading = true;
-            $('#wordpresshomeloading').hide();
+            function ListInitialDatas(response) {
+                wordpresshomeloading = true;
+                $('#wordpresshomeloading').hide();
 
-            if (response.data.status === 1) {
+                if (response.data.status === 1) {
 
-                //   $('#ThemeBody').html('');
-                // var themes = JSON.parse(response.data.themes);
-                // themes.forEach(AddThemes);
+                    //   $('#ThemeBody').html('');
+                    // var themes = JSON.parse(response.data.themes);
+                    // themes.forEach(AddThemes);
 
-                $('#StagingBody').html('');
-                console.log('Staging response:', response.data);
-                var staging = JSON.parse(response.data.wpsites);
-                console.log('Parsed staging data:', staging);
-                
-                if (staging && staging.length > 0) {
-                    staging.forEach(AddStagings);
+                    $('#StagingBody').html('');
+                    console.log('Staging response:', response.data);
+                    
+                    try {
+                        var staging = JSON.parse(response.data.wpsites);
+                        console.log('Parsed staging data:', staging);
+                        
+                        if (staging && staging.length > 0) {
+                            staging.forEach(function(site, index) {
+                                console.log('Processing staging site ' + index + ':', site);
+                                AddStagings(site, index, staging);
+                            });
+                        } else {
+                            $('#StagingBody').html('<tr><td colspan="4" class="text-center">No staging sites found</td></tr>');
+                        }
+                    } catch (e) {
+                        console.error('Error parsing staging data:', e);
+                        $('#StagingBody').html('<tr><td colspan="4" class="text-center text-danger">Error loading staging sites</td></tr>');
+                    }
+
                 } else {
-                    $('#StagingBody').html('<tr><td colspan="4" class="text-center">No staging sites found</td></tr>');
+                    console.error("Error from server:", response.data.error_message);
+                    $('#StagingBody').html('<tr><td colspan="4" class="text-center text-danger">Error: ' + response.data.error_message + '</td></tr>');
                 }
 
-            } else {
-                alert("Error data.error_message:" + response.data.error_message)
-
             }
 
-        }
-
-        function cantLoadInitialDatas(response) {
-            $('#wordpresshomeloading').hide();
-            alert("Error" + response)
-
-        }
+            function cantLoadInitialDatas(response) {
+                $('#wordpresshomeloading').hide();
+                console.error("Request failed:", response);
+                $('#StagingBody').html('<tr><td colspan="4" class="text-center text-danger">Failed to load staging sites</td></tr>');
+            }
+        }, 100); // Small delay to ensure DOM is ready
 
     };
 
@@ -1532,21 +1521,36 @@ app.controller('WPsiteHome', function ($scope, $http, $timeout, $compile, $windo
 
     function AddStagings(value, index, array) {
         console.log('Adding staging site:', value);
+        
+        // Ensure all required properties exist
+        if (!value || !value.id) {
+            console.error('Invalid staging site data:', value);
+            return;
+        }
+        
+        // Check if table exists
+        if ($('#StagingBody').length === 0) {
+            console.error('StagingBody table not found');
+            return;
+        }
+        
         var FinalMarkup = '<tr>';
         
         // Add columns in correct order: Name, Domain, Path, Actions
-        FinalMarkup += '<td><a href="/websites/WPHome?ID=' + value.id + '">' + value.name + '</a></td>';
-        FinalMarkup += '<td>' + value.Domain + '</td>';
-        FinalMarkup += '<td>' + value.path + '</td>';
+        FinalMarkup += '<td><a href="/websites/WPHome?ID=' + (value.id || '') + '">' + (value.name || 'Unnamed') + '</a></td>';
+        FinalMarkup += '<td>' + (value.Domain || '') + '</td>';
+        FinalMarkup += '<td>' + (value.path || '') + '</td>';
         FinalMarkup += '<td>' +
             '<button onclick="DeployToProductionInitial(' + value.id + ')" data-toggle="modal" data-target="#DeployToProduction" style="margin-right: 10px;" aria-label="" type="button" class="btn btn-outline-primary btn-sm">' +
             '<i class="fas fa-rocket"></i> Deploy to Production</button>' +
-            '<a href="' + value.deleteURL + '">' +
-            '<button aria-label="" class="btn btn-danger btn-sm" type="button"><i class="fas fa-trash"></i> Delete</button>' +
-            '</a></td>';
+            '<button onclick="deleteStagingGlobal(' + value.id + ')" aria-label="" class="btn btn-danger btn-sm" type="button"><i class="fas fa-trash"></i> Delete</button>' +
+            '</td>';
         
         FinalMarkup += '</tr>';
+        
+        console.log('Appending markup to table:', FinalMarkup);
         AppendToTable('#StagingBody', FinalMarkup);
+        console.log('Table content after append:', $('#StagingBody').html());
     }
 
     $scope.FinalDeployToProduction = function () {
@@ -2069,7 +2073,23 @@ function AddThemeToArray(cBox, name) {
 
 
 function AppendToTable(table, markup) {
-    $(table).append(markup);
+    try {
+        if ($(table).length === 0) {
+            console.error('Table element not found:', table);
+            return false;
+        }
+        
+        console.log('Appending to table:', table);
+        console.log('Markup:', markup);
+        
+        $(table).append(markup);
+        
+        console.log('Successfully appended. Table now has', $(table).find('tr').length, 'rows');
+        return true;
+    } catch (e) {
+        console.error('Error appending to table:', e);
+        return false;
+    }
 }
 
 
@@ -3843,35 +3863,7 @@ function DeployToProductionInitial(vall) {
     DeploytoProductionID = vall;
 }
 
-var create_staging_domain_check = 0;
-
-function create_staging_checkbox_function() {
-
-    try {
-
-        var checkBox = document.getElementById("Create_Staging_Check");
-        // Get the output text
-
-
-        // If the checkbox is checked, display the output text
-        if (checkBox.checked == true) {
-            create_staging_domain_check = 0;
-            document.getElementById('Website_Create_Test_Domain').style.display = "block";
-            document.getElementById('Website_Create_Own_Domain').style.display = "none";
-
-        } else {
-            document.getElementById('Website_Create_Test_Domain').style.display = "none";
-            document.getElementById('Website_Create_Own_Domain').style.display = "block";
-            create_staging_domain_check = 1;
-        }
-    } catch (e) {
-
-    }
-
-    // alert(domain_check);
-}
-
-create_staging_checkbox_function();
+// Simplified staging domain input - checkbox functionality removed
 
 app.controller('WPsiteHome', function ($scope, $http, $timeout, $compile, $window) {
     var CheckBoxpasssword = 0;
@@ -4512,15 +4504,8 @@ app.controller('WPsiteHome', function ($scope, $http, $timeout, $compile, $windo
 
         $scope.currentStatus = "Starting creation Staging..";
 
-        //here enter domain name
-        if (create_staging_domain_check == 0) {
-            var Part2_domainNameCreate = document.getElementById('Part2_domainNameCreate').value;
-            var domainNameCreate = document.getElementById('TestDomainNameCreate').value + Part2_domainNameCreate;
-        }
-        if (create_staging_domain_check == 1) {
-
-            var domainNameCreate = $scope.own_domainNameCreate;
-        }
+        // Get the staging domain from the simplified input
+        var domainNameCreate = $('#stagingDomainName').val() || $scope.stagingDomainName;
         var data = {
             StagingName: $('#stagingName').val(),
             StagingDomain: domainNameCreate,
@@ -4694,54 +4679,76 @@ app.controller('WPsiteHome', function ($scope, $http, $timeout, $compile, $windo
 
     $scope.fetchstaging = function () {
 
-        $('#wordpresshomeloading').show();
-        $scope.wordpresshomeloading = false;
-
-        var url = "/websites/fetchstaging";
-
-        var data = {
-            WPid: $('#WPid').html(),
-        }
-
-        var config = {
-            headers: {
-                'X-CSRFToken': getCookie('csrftoken')
-            }
-        };
-
-
-        $http.post(url, data, config).then(ListInitialDatas, cantLoadInitialDatas);
-
-
-        function ListInitialDatas(response) {
-            wordpresshomeloading = true;
-            $('#wordpresshomeloading').hide();
-            
-            console.log('Staging response:', response);
-
-            if (response.data.status === 1) {
-
-                //   $('#ThemeBody').html('');
-                // var themes = JSON.parse(response.data.themes);
-                // themes.forEach(AddThemes);
-
-                $('#stagingListBody').html('');
-                var staging = JSON.parse(response.data.wpsites);
-                console.log('Parsed staging data:', staging);
-                staging.forEach(AddStagings);
-
-            } else {
-                alert("Error data.error_message:" + response.data.error_message)
-
+        // Ensure DOM is ready
+        $timeout(function() {
+            // Check if the staging table exists
+            if ($('#StagingBody').length === 0) {
+                console.error('StagingBody table not found in DOM');
+                return;
             }
 
-        }
+            $('#wordpresshomeloading').show();
+            $scope.wordpresshomeloading = false;
 
-        function cantLoadInitialDatas(response) {
-            $('#wordpresshomeloading').hide();
-            alert("Error" + response)
+            var url = "/websites/fetchstaging";
 
-        }
+            var data = {
+                WPid: $('#WPid').html(),
+            }
+
+            var config = {
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken')
+                }
+            };
+
+
+            $http.post(url, data, config).then(ListInitialDatas, cantLoadInitialDatas);
+
+
+            function ListInitialDatas(response) {
+                wordpresshomeloading = true;
+                $('#wordpresshomeloading').hide();
+
+                if (response.data.status === 1) {
+
+                    //   $('#ThemeBody').html('');
+                    // var themes = JSON.parse(response.data.themes);
+                    // themes.forEach(AddThemes);
+
+                    $('#StagingBody').html('');
+                    console.log('Staging response:', response.data);
+                    
+                    try {
+                        var staging = JSON.parse(response.data.wpsites);
+                        console.log('Parsed staging data:', staging);
+                        
+                        if (staging && staging.length > 0) {
+                            staging.forEach(function(site, index) {
+                                console.log('Processing staging site ' + index + ':', site);
+                                AddStagings(site, index, staging);
+                            });
+                        } else {
+                            $('#StagingBody').html('<tr><td colspan="4" class="text-center">No staging sites found</td></tr>');
+                        }
+                    } catch (e) {
+                        console.error('Error parsing staging data:', e);
+                        $('#StagingBody').html('<tr><td colspan="4" class="text-center text-danger">Error loading staging sites</td></tr>');
+                    }
+
+                } else {
+                    console.error("Error from server:", response.data.error_message);
+                    $('#StagingBody').html('<tr><td colspan="4" class="text-center text-danger">Error: ' + response.data.error_message + '</td></tr>');
+                }
+
+            }
+
+            function cantLoadInitialDatas(response) {
+                $('#wordpresshomeloading').hide();
+                console.error("Request failed:", response);
+                $('#StagingBody').html('<tr><td colspan="4" class="text-center text-danger">Failed to load staging sites</td></tr>');
+            }
+        }, 100); // Small delay to ensure DOM is ready
 
     };
 
@@ -4845,6 +4852,23 @@ app.controller('WPsiteHome', function ($scope, $http, $timeout, $compile, $windo
     };
 
     function AddStagings(value, index, array) {
+        console.log('AddStagings function called with:', value);
+        
+        // Check if table element exists
+        if ($('#stagingListBody').length === 0) {
+            console.error('stagingListBody not found! Looking for StagingBody...');
+            if ($('#StagingBody').length > 0) {
+                console.log('Found StagingBody, using that instead');
+                var tableSelector = '#StagingBody';
+            } else {
+                console.error('Neither stagingListBody nor StagingBody found!');
+                console.log('Available table bodies:', $('tbody').map(function() { return this.id; }).get());
+                return;
+            }
+        } else {
+            var tableSelector = '#stagingListBody';
+        }
+        
         var stagingUrl = 'http://' + value.Domain + value.path;
         var createdDate = new Date().toLocaleDateString();
         
@@ -4853,11 +4877,14 @@ app.controller('WPsiteHome', function ($scope, $http, $timeout, $compile, $windo
         FinalMarkup += '<td><a href="' + stagingUrl + '" target="_blank">' + stagingUrl + '</a></td>';
         FinalMarkup += '<td>' + createdDate + '</td>';
         FinalMarkup += '<td>';
-        FinalMarkup += '<button class="btn btn-sm btn-primary" onclick="syncToProduction(\'' + value.id + '\')"><i class="fas fa-sync"></i> Sync to Production</button> ';
-        FinalMarkup += '<button class="btn btn-sm btn-danger" onclick="deleteStaging(\'' + value.id + '\')"><i class="fas fa-trash"></i> Delete</button>';
+        FinalMarkup += '<button class="btn btn-sm btn-primary" onclick="DeployToProductionInitial(' + value.id + ')" data-toggle="modal" data-target="#DeployToProduction"><i class="fas fa-sync"></i> Sync to Production</button> ';
+        FinalMarkup += '<button class="btn btn-sm btn-danger" onclick="deleteStagingGlobal(' + value.id + ')"><i class="fas fa-trash"></i> Delete</button>';
         FinalMarkup += '</td>';
         FinalMarkup += '</tr>';
-        $('#stagingListBody').append(FinalMarkup);
+        
+        console.log('Appending to:', tableSelector);
+        $(tableSelector).append(FinalMarkup);
+        console.log('Rows in table after append:', $(tableSelector).find('tr').length);
     }
 
     $scope.FinalDeployToProduction = function () {
@@ -6899,11 +6926,16 @@ app.controller('listChildDomainsMain', function ($scope, $http, $timeout) {
     }
 
     var DeleteDomain;
+    $scope.DeleteDocRoot = false;
     $scope.deleteDomainInit = function (childDomainForDeletion) {
         DeleteDomain = childDomainForDeletion;
+        $scope.DeleteDocRoot = false;
     };
 
     $scope.deleteChildDomain = function () {
+        console.log("Delete child domain called for:", DeleteDomain);
+        console.log("Delete doc root:", $scope.DeleteDocRoot);
+        
         $scope.cyberPanelLoading = false;
         url = "/websites/submitDomainDeletion";
 
@@ -6918,18 +6950,25 @@ app.controller('listChildDomainsMain', function ($scope, $http, $timeout) {
             }
         };
 
+        console.log("Sending delete request with data:", data);
         $http.post(url, data, config).then(ListInitialDatas, cantLoadInitialDatas);
 
         function ListInitialDatas(response) {
+            console.log("Delete response received:", response.data);
             $scope.cyberPanelLoading = true;
             if (response.data.websiteDeleteStatus === 1) {
+                console.log("Delete successful");
                 new PNotify({
                     title: 'Success!',
                     text: 'Child Domain successfully deleted.',
                     type: 'success'
                 });
+                $('#DeleteChild').modal('hide');
+                $('.modal-backdrop').remove();
+                $scope.DeleteDocRoot = false;
                 $scope.getFurtherWebsitesFromDB();
             } else {
+                console.log("Delete failed:", response.data.error_message);
                 new PNotify({
                     title: 'Operation Failed!',
                     text: response.data.error_message,
@@ -6939,6 +6978,7 @@ app.controller('listChildDomainsMain', function ($scope, $http, $timeout) {
         }
 
         function cantLoadInitialDatas(response) {
+            console.log("Delete request failed:", response);
             $scope.cyberPanelLoading = true;
             new PNotify({
                 title: 'Operation Failed!',
@@ -7560,35 +7600,7 @@ function DeployToProductionInitial(vall) {
     DeploytoProductionID = vall;
 }
 
-var create_staging_domain_check = 0;
-
-function create_staging_checkbox_function() {
-
-    try {
-
-        var checkBox = document.getElementById("Create_Staging_Check");
-        // Get the output text
-
-
-        // If the checkbox is checked, display the output text
-        if (checkBox.checked == true) {
-            create_staging_domain_check = 0;
-            document.getElementById('Website_Create_Test_Domain').style.display = "block";
-            document.getElementById('Website_Create_Own_Domain').style.display = "none";
-
-        } else {
-            document.getElementById('Website_Create_Test_Domain').style.display = "none";
-            document.getElementById('Website_Create_Own_Domain').style.display = "block";
-            create_staging_domain_check = 1;
-        }
-    } catch (e) {
-
-    }
-
-    // alert(domain_check);
-}
-
-create_staging_checkbox_function();
+// Simplified staging domain input - checkbox functionality removed
 
 app.controller('WPsiteHome', function ($scope, $http, $timeout, $compile, $window) {
     var CheckBoxpasssword = 0;
@@ -8229,15 +8241,8 @@ app.controller('WPsiteHome', function ($scope, $http, $timeout, $compile, $windo
 
         $scope.currentStatus = "Starting creation Staging..";
 
-        //here enter domain name
-        if (create_staging_domain_check == 0) {
-            var Part2_domainNameCreate = document.getElementById('Part2_domainNameCreate').value;
-            var domainNameCreate = document.getElementById('TestDomainNameCreate').value + Part2_domainNameCreate;
-        }
-        if (create_staging_domain_check == 1) {
-
-            var domainNameCreate = $scope.own_domainNameCreate;
-        }
+        // Get the staging domain from the simplified input
+        var domainNameCreate = $('#stagingDomainName').val() || $scope.stagingDomainName;
         var data = {
             StagingName: $('#stagingName').val(),
             StagingDomain: domainNameCreate,
@@ -8411,54 +8416,76 @@ app.controller('WPsiteHome', function ($scope, $http, $timeout, $compile, $windo
 
     $scope.fetchstaging = function () {
 
-        $('#wordpresshomeloading').show();
-        $scope.wordpresshomeloading = false;
-
-        var url = "/websites/fetchstaging";
-
-        var data = {
-            WPid: $('#WPid').html(),
-        }
-
-        var config = {
-            headers: {
-                'X-CSRFToken': getCookie('csrftoken')
-            }
-        };
-
-
-        $http.post(url, data, config).then(ListInitialDatas, cantLoadInitialDatas);
-
-
-        function ListInitialDatas(response) {
-            wordpresshomeloading = true;
-            $('#wordpresshomeloading').hide();
-            
-            console.log('Staging response:', response);
-
-            if (response.data.status === 1) {
-
-                //   $('#ThemeBody').html('');
-                // var themes = JSON.parse(response.data.themes);
-                // themes.forEach(AddThemes);
-
-                $('#stagingListBody').html('');
-                var staging = JSON.parse(response.data.wpsites);
-                console.log('Parsed staging data:', staging);
-                staging.forEach(AddStagings);
-
-            } else {
-                alert("Error data.error_message:" + response.data.error_message)
-
+        // Ensure DOM is ready
+        $timeout(function() {
+            // Check if the staging table exists
+            if ($('#StagingBody').length === 0) {
+                console.error('StagingBody table not found in DOM');
+                return;
             }
 
-        }
+            $('#wordpresshomeloading').show();
+            $scope.wordpresshomeloading = false;
 
-        function cantLoadInitialDatas(response) {
-            $('#wordpresshomeloading').hide();
-            alert("Error" + response)
+            var url = "/websites/fetchstaging";
 
-        }
+            var data = {
+                WPid: $('#WPid').html(),
+            }
+
+            var config = {
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken')
+                }
+            };
+
+
+            $http.post(url, data, config).then(ListInitialDatas, cantLoadInitialDatas);
+
+
+            function ListInitialDatas(response) {
+                wordpresshomeloading = true;
+                $('#wordpresshomeloading').hide();
+
+                if (response.data.status === 1) {
+
+                    //   $('#ThemeBody').html('');
+                    // var themes = JSON.parse(response.data.themes);
+                    // themes.forEach(AddThemes);
+
+                    $('#StagingBody').html('');
+                    console.log('Staging response:', response.data);
+                    
+                    try {
+                        var staging = JSON.parse(response.data.wpsites);
+                        console.log('Parsed staging data:', staging);
+                        
+                        if (staging && staging.length > 0) {
+                            staging.forEach(function(site, index) {
+                                console.log('Processing staging site ' + index + ':', site);
+                                AddStagings(site, index, staging);
+                            });
+                        } else {
+                            $('#StagingBody').html('<tr><td colspan="4" class="text-center">No staging sites found</td></tr>');
+                        }
+                    } catch (e) {
+                        console.error('Error parsing staging data:', e);
+                        $('#StagingBody').html('<tr><td colspan="4" class="text-center text-danger">Error loading staging sites</td></tr>');
+                    }
+
+                } else {
+                    console.error("Error from server:", response.data.error_message);
+                    $('#StagingBody').html('<tr><td colspan="4" class="text-center text-danger">Error: ' + response.data.error_message + '</td></tr>');
+                }
+
+            }
+
+            function cantLoadInitialDatas(response) {
+                $('#wordpresshomeloading').hide();
+                console.error("Request failed:", response);
+                $('#StagingBody').html('<tr><td colspan="4" class="text-center text-danger">Failed to load staging sites</td></tr>');
+            }
+        }, 100); // Small delay to ensure DOM is ready
 
     };
 
@@ -8570,11 +8597,25 @@ app.controller('WPsiteHome', function ($scope, $http, $timeout, $compile, $windo
         FinalMarkup += '<td><a href="' + stagingUrl + '" target="_blank">' + stagingUrl + '</a></td>';
         FinalMarkup += '<td>' + createdDate + '</td>';
         FinalMarkup += '<td>';
-        FinalMarkup += '<button class="btn btn-sm btn-primary" onclick="syncToProduction(\'' + value.id + '\')"><i class="fas fa-sync"></i> Sync to Production</button> ';
-        FinalMarkup += '<button class="btn btn-sm btn-danger" onclick="deleteStaging(\'' + value.id + '\')"><i class="fas fa-trash"></i> Delete</button>';
+        FinalMarkup += '<button class="btn btn-sm btn-primary" onclick="DeployToProductionInitial(' + value.id + ')" data-toggle="modal" data-target="#DeployToProduction"><i class="fas fa-sync"></i> Sync to Production</button> ';
+        FinalMarkup += '<button class="btn btn-sm btn-danger" onclick="deleteStagingGlobal(' + value.id + ')"><i class="fas fa-trash"></i> Delete</button>';
         FinalMarkup += '</td>';
         FinalMarkup += '</tr>';
-        $('#stagingListBody').append(FinalMarkup);
+        
+        console.log('Appending to #stagingListBody');
+        if ($('#stagingListBody').length === 0) {
+            console.error('stagingListBody not found! Looking for StagingBody...');
+            if ($('#StagingBody').length > 0) {
+                console.log('Found StagingBody, using that instead');
+                $('#StagingBody').append(FinalMarkup);
+            } else {
+                console.error('Neither stagingListBody nor StagingBody found!');
+                console.log('Available table bodies:', $('tbody').map(function() { return this.id; }).get());
+            }
+        } else {
+            $('#stagingListBody').append(FinalMarkup);
+        }
+        console.log('Rows in table after append:', $('#stagingListBody').find('tr').length + ' in stagingListBody, ' + $('#StagingBody').find('tr').length + ' in StagingBody');
     }
 
     $scope.FinalDeployToProduction = function () {
@@ -10166,10 +10207,6 @@ app.controller('listChildDomainsMain', function ($scope, $http, $timeout) {
                 $scope.pagination = response.data.pagination;
                 $scope.clients = JSON.parse(response.data.data);
                 $("#listFail").hide();
-                // Expand the first site by default
-                if ($scope.WebSitesList.length > 0) {
-                    $scope.expandedSites[$scope.WebSitesList[0].domain] = true;
-                }
             } else {
                 $("#listFail").fadeIn();
                 $scope.errorMessage = response.data.error_message;

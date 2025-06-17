@@ -2267,41 +2267,13 @@
                                             </div>
                                             
                                             <div class="form-group row">
-                                                <label class="col-sm-3 control-label">Domain Selection</label>
+                                                <label class="col-sm-3 control-label">Staging Domain</label>
                                                 <div class="col-sm-9">
-                                                    <div class="domain-selection-box">
-                                                        <div class="custom-control custom-checkbox">
-                                                            <input type="checkbox" class="custom-control-input" id="Create_Staging_Check" 
-                                                                   onchange="create_staging_checkbox_function()" checked>
-                                                            <label class="custom-control-label" for="Create_Staging_Check">
-                                                                Use test domain (recommended)
-                                                            </label>
-                                                        </div>
-                                                        
-                                                        <!-- Test Domain Option -->
-                                                        <div id="Website_Create_Test_Domain" class="domain-option-content">
-                                                            <div class="input-group">
-                                                                <input type="text" class="form-control" id="TestDomainNameCreate" 
-                                                                       placeholder="staging" style="text-align: right;">
-                                                                <div class="input-group-append">
-                                                                    <select id="Part2_domainNameCreate" class="form-control domain-select">
-                                                                        <option>.{{ wpsite.owner.domain }}</option>
-                                                                        {% for domain in wpsite.owner.childdomains_set.all %}
-                                                                        <option>.{{ domain.domain }}</option>
-                                                                        {% endfor %}
-                                                                    </select>
-                                                                </div>
-                                                            </div>
-                                                            <small class="form-text text-muted">Your staging site will be created as a subdomain</small>
-                                                        </div>
-                                                        
-                                                        <!-- Own Domain Option -->
-                                                        <div id="Website_Create_Own_Domain" class="domain-option-content" style="display: none;">
-                                                            <input type="text" class="form-control" ng-model="own_domainNameCreate" 
-                                                                   placeholder="Enter your own domain (e.g., staging.example.com)">
-                                                            <small class="form-text text-muted">Use your own domain for the staging site</small>
-                                                        </div>
-                                                    </div>
+                                                    <input type="text" class="form-control" id="stagingDomainName" 
+                                                           ng-model="stagingDomainName"
+                                                           placeholder="Enter staging domain (e.g., staging.example.com)" 
+                                                           required>
+                                                    <small class="form-text text-muted">Enter the full domain name for your staging site</small>
                                                 </div>
                                             </div>
                                             
