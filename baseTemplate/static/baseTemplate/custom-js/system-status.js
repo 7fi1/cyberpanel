@@ -748,7 +748,8 @@ app.controller('OnboardingCP', function ($scope, $http, $timeout, $window) {
     $scope.ExecutionStatus = true;
     $scope.ReportStatus = true;
     $scope.OnboardineDone = true;
-
+    
+    var statusTimer = null;
 
     function statusFunc() {
         $scope.cyberpanelLoading = false;
@@ -774,18 +775,24 @@ app.controller('OnboardingCP', function ($scope, $http, $timeout, $window) {
                     $scope.functionStatus = response.data.currentStatus;
                     $scope.cyberpanelLoading = true;
                     $scope.OnboardineDone = false;
-                    $timeout.cancel();
+                    if (statusTimer) {
+                        $timeout.cancel(statusTimer);
+                        statusTimer = null;
+                    }
                 } else {
                     $scope.functionProgress = {"width": response.data.installationProgress + "%"};
                     $scope.functionStatus = response.data.currentStatus;
-                    timeout(statusFunc, 3000);
+                    statusTimer = $timeout(statusFunc, 3000);
                 }
 
             } else {
                 $scope.cyberpanelLoading = true;
                 $scope.functionStatus = response.data.error_message;
                 $scope.functionProgress = {"width": response.data.installationProgress + "%"};
-                $timeout.cancel();
+                if (statusTimer) {
+                    $timeout.cancel(statusTimer);
+                    statusTimer = null;
+                }
             }
 
         }
