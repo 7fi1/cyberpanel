@@ -6,6 +6,8 @@
     {% load static %}
     {% get_current_language as LANGUAGE_CODE %}
     <!-- Current language: {{ LANGUAGE_CODE }} -->
+    
+    <div ng-controller="launchChild" ng-init="childDomainName='{{ childDomain }}'; masterDomain='{{ domain }}'">
 
     <style>
         /* Ultra-Modern CyberPanel Design System */
@@ -534,7 +536,7 @@
         }
     </style>
 
-    <div ng-controller="launchChild" class="container">
+    <div class="container">
 
         <div id="page-title">
             <h2>
@@ -1243,6 +1245,6 @@
 
     </div>
 
-
+    </div>
 
 {% endblock %}

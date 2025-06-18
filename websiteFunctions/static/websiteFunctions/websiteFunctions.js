@@ -17883,13 +17883,18 @@ app.controller('launchChild', function ($scope, $http) {
         $scope.hideLogs = true;
     };
 
-    $scope.fileManagerURL = "/filemanager/" + $("#domainNamePage").text();
-    $scope.previewUrl = "/preview/" + $("#childDomain").text() + "/";
-    $scope.wordPressInstallURL = "/websites/" + $("#childDomain").text() + "/wordpressInstall";
-    $scope.joomlaInstallURL = "/websites/" + $("#childDomain").text() + "/joomlaInstall";
-    $scope.setupGit = "/websites/" + $("#childDomain").text() + "/setupGit";
-    $scope.installPrestaURL = "/websites/" + $("#childDomain").text() + "/installPrestaShop";
-    $scope.installMagentoURL = "/websites/" + $("#childDomain").text() + "/installMagento";
+    // Watch for when the scope variables are initialized from ng-init
+    $scope.$watch('childDomainName', function(newVal) {
+        if (newVal) {
+            $scope.fileManagerURL = "/filemanager/" + $scope.masterDomain;
+            $scope.previewUrl = "/preview/" + $scope.childDomainName + "/";
+            $scope.wordPressInstallURL = "/websites/" + $scope.childDomainName + "/wordpressInstall";
+            $scope.joomlaInstallURL = "/websites/" + $scope.childDomainName + "/joomlaInstall";
+            $scope.setupGit = "/websites/" + $scope.childDomainName + "/setupGit";
+            $scope.installPrestaURL = "/websites/" + $scope.childDomainName + "/installPrestaShop";
+            $scope.installMagentoURL = "/websites/" + $scope.childDomainName + "/installMagento";
+        }
+    });
 
     var logType = 0;
     $scope.pageNumber = 1;
