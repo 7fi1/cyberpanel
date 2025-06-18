@@ -62,6 +62,14 @@ class virtualHostUtilities:
 
         logging.CyberCPLogFileWriter.statusWriter(tempStatusPath, 'Setting up hostname,10')
         admin = Administrator.objects.get(pk=1)
+        
+        # Validate admin email exists
+        if not hasattr(admin, 'email') or not admin.email:
+            message = 'Administrator email is not configured. Please set admin email first. [404]'
+            logging.CyberCPLogFileWriter.statusWriter(tempStatusPath, message)
+            logging.CyberCPLogFileWriter.writeToFile(message)
+            return 0
+            
         try:
             config = json.loads(admin.config)
         except:
@@ -89,14 +97,37 @@ class virtualHostUtilities:
 
         ####
 
-        PostFixHostname = mailUtilities.FetchPostfixHostname()
-        serverIP = ACLManager.fetchIP()
+        # Get postfix hostname with error handling
+        try:
+            PostFixHostname = mailUtilities.FetchPostfixHostname()
+        except Exception as e:
+            message = f'Failed to fetch postfix hostname: {str(e)} [404]'
+            logging.CyberCPLogFileWriter.statusWriter(tempStatusPath, message)
+            logging.CyberCPLogFileWriter.writeToFile(message)
+            return 0
+
+        # Get server IP with error handling
+        try:
+            serverIP = ACLManager.fetchIP()
+        except Exception as e:
+            message = f'Failed to fetch server IP: {str(e)} [404]'
+            logging.CyberCPLogFileWriter.statusWriter(tempStatusPath, message)
+            logging.CyberCPLogFileWriter.writeToFile(message)
+            return 0
+
         ### if skipRDNSCheck == 1, it means we need to skip checking for rDNS
         if skipRDNSCheck:
-            ### so if skipRDNSCheck is 1 means we need to skip checking for rDNS so lets set current as rDNS because no checking is required
-            rDNS = [CurrentHostName]
+            ### When skipping rDNS check, include both current hostname and the domain being set up
+            ### This ensures both code paths work correctly
+            rDNS = [CurrentHostName, Domain]
         else:
-            rDNS = mailUtilities.reverse_dns_lookup(serverIP)
+            try:
+                rDNS = mailUtilities.reverse_dns_lookup(serverIP)
+            except Exception as e:
+                message = f'Failed to perform reverse DNS lookup: {str(e)} [404]'
+                logging.CyberCPLogFileWriter.statusWriter(tempStatusPath, message)
+                logging.CyberCPLogFileWriter.writeToFile(message)
+                return 0
 
         time.sleep(3)
 
@@ -137,13 +168,22 @@ class virtualHostUtilities:
                 SSLProvider = 'Denial'
                 logging.CyberCPLogFileWriter.writeToFile(f"SSL certificate check error: {str(e)}")
 
+            # Get website object and admin email
+            adminEmail = None
             try:
                 child = ChildDomains.objects.get(domain=CurrentHostName)
                 website = child.master
                 path = child.path
+                adminEmail = website.adminEmail
             except:
-                website = Websites.objects.get(domain=CurrentHostName)
-                path = f'/home/{CurrentHostName}/public_html'
+                try:
+                    website = Websites.objects.get(domain=CurrentHostName)
+                    path = f'/home/{CurrentHostName}/public_html'
+                    adminEmail = website.adminEmail
+                except:
+                    # If neither child domain nor website exists, use admin email
+                    adminEmail = admin.email
+                    path = f'/home/{CurrentHostName}/public_html'
 
             if SSLProvider == 'Denial':
                 message = 'It seems that the hostname used with mail service and rDNS does not have a valid SSL certificate, CyberPanel will try to issue valid SSL and restart related services,20'
@@ -151,7 +191,7 @@ class virtualHostUtilities:
                 logging.CyberCPLogFileWriter.statusWriter(tempStatusPath, message)
                 logging.CyberCPLogFileWriter.writeToFile(message)
 
-                virtualHostUtilities.issueSSL(CurrentHostName, path, website.adminEmail)
+                virtualHostUtilities.issueSSL(CurrentHostName, path, adminEmail)
 
                 ### once SSL is issued, re-read the SSL file and check if valid ssl got issued.
 
@@ -230,31 +270,57 @@ class virtualHostUtilities:
                     coreResult = ab.submitWebsiteCreation(admin.id, DataToPass)
                     coreResult1 = json.loads((coreResult).content)
                     logging.CyberCPLogFileWriter.writeToFile("Creating website result....%s" % coreResult1)
-                    reutrntempath = coreResult1['tempStatusPath']
-                    while (1):
-                        lastLine = open(reutrntempath, 'r').read()
-                        if os.path.exists(ProcessUtilities.debugPath):
-                            logging.CyberCPLogFileWriter.writeToFile("Info web creating lastline ....... %s" % lastLine)
-                        if lastLine.find('[200]') > -1:
-                            break
-                        elif lastLine.find('[404]') > -1:
-                            statusFile = open(currentTemp, 'w')
-                            statusFile.writelines('Failed to Create Website: error: %s. [404]' % lastLine)
-                            statusFile.close()
-                            return 0
-                        else:
-                            statusFile = open(currentTemp, 'w')
-                            statusFile.writelines('Creating Website....,20')
-                            statusFile.close()
-                            time.sleep(2)
+                    returnTempPath = coreResult1.get('tempStatusPath')
+                    
+                    if not returnTempPath:
+                        with open(currentTemp, 'w') as statusFile:
+                            statusFile.write('Failed to get status path from website creation. [404]')
+                        return 0
+                    
+                    # Wait for website creation with timeout
+                    timeout = 120  # 2 minutes timeout
+                    poll_interval = 2  # Check every 2 seconds
+                    start_time = time.time()
+                    
+                    while (time.time() - start_time) < timeout:
+                        try:
+                            # Check if file exists before trying to read
+                            if not os.path.exists(returnTempPath):
+                                time.sleep(poll_interval)
+                                continue
+                                
+                            # Read file content safely
+                            with open(returnTempPath, 'r') as f:
+                                lastLine = f.read()
+                            
+                            if os.path.exists(ProcessUtilities.debugPath):
+                                logging.CyberCPLogFileWriter.writeToFile("Info web creating lastline ....... %s" % lastLine)
+                            
+                            # Check for completion
+                            if lastLine.find('[200]') > -1:
+                                break
+                            elif lastLine.find('[404]') > -1:
+                                with open(currentTemp, 'w') as statusFile:
+                                    statusFile.write('Failed to Create Website: error: %s. [404]' % lastLine)
+                                return 0
+                            else:
+                                with open(currentTemp, 'w') as statusFile:
+                                    statusFile.write('Creating Website....,20')
+                                    
+                        except Exception as e:
+                            logging.CyberCPLogFileWriter.writeToFile(f"Error reading status file: {str(e)}")
+                            
+                        time.sleep(poll_interval)
+                    else:
+                        # Timeout reached
+                        with open(currentTemp, 'w') as statusFile:
+                            statusFile.write('Website creation timed out after %d seconds. [404]' % timeout)
+                        return 0
 
             ### Case 2 where postfix hostname either does not exist or does not match with server hostname or
             ### hostname does not exists at all
 
-            ### if skipRDNSCheck == 1, it means we need to skip checking for rDNS
-            if skipRDNSCheck:
-                ### so if skipRDNSCheck is 1 means we need to skip checking for rDNS so lets set current domain as rDNS because no checking is required
-                rDNS = [Domain]
+            # Note: rDNS is already set at the beginning of the function, no need to set it again here
 
             if os.path.exists(ProcessUtilities.debugPath):
                 logging.CyberCPLogFileWriter.writeToFile(
@@ -277,12 +343,17 @@ class virtualHostUtilities:
 
             ### now issue hostname ssl
 
+            # Get website path - we don't need the website object itself here
             try:
                 website = Websites.objects.get(domain=Domain)
                 path = "/home/" + Domain + "/public_html"
             except:
-                website = ChildDomains.objects.get(domain=Domain)
-                path = website.path
+                try:
+                    child = ChildDomains.objects.get(domain=Domain)
+                    path = child.path
+                except:
+                    # If neither exists, use default path
+                    path = "/home/" + Domain + "/public_html"
 
             filePath = '/etc/letsencrypt/live/%s/fullchain.pem' % (Domain)
 
@@ -358,7 +429,8 @@ class virtualHostUtilities:
                 config['skipRDNSCheck'] = skipRDNSCheck
                 admin.config = json.dumps(config)
                 admin.save()
-                command = 'systemctl restart postfix && systemctl restart dovecot && postmap -F hash:/etc/postfix/vmail_ssl.map'
+                # First update the postfix hash database, then restart services
+                command = 'postmap -F hash:/etc/postfix/vmail_ssl.map && systemctl restart postfix && systemctl restart dovecot'
                 ProcessUtilities.executioner(command, 'root', True)
                 logging.CyberCPLogFileWriter.statusWriter(tempStatusPath, 'Completed. [200]')
 
