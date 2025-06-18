@@ -2190,217 +2190,262 @@ class ApplicationInstaller(multi.Thread):
             logging.writeToFile("Error WP ChangeStatusThemes ....... %s" % str(msg))
             return 0
 
+    def _initializeStagingCreation(self, wpobj):
+        """Initialize staging creation process and set up temporary directories"""
+        # Get PHP path
+        php = PHPManager.getPHPString(wpobj.owner.phpSelection)
+        FinalPHPPath = '/usr/local/lsws/lsphp%s/bin/php' % (php)
+        
+        # Get WordPress version
+        path_to_wordpress = wpobj.path
+        command = f"{FinalPHPPath} -d error_reporting=0 /usr/bin/wp --path='{path_to_wordpress}' core version --skip-plugins --skip-themes"
+        Wp_version = ProcessUtilities.outputExecutioner(command, wpobj.owner.externalApp)
+        old_wp_version = Wp_version.rstrip('\n')
+        logging.writeToFile("Old site wp version:%s" % old_wp_version)
+        
+        # Create secure folder
+        ACLManager.CreateSecureDir()
+        tempPath = '%s/%s' % ('/usr/local/CyberCP/tmp', str(randint(1000, 9999)))
+        
+        command = f'mkdir -p {tempPath}'
+        ProcessUtilities.executioner(command)
+        
+        command = f'chown -R {wpobj.owner.externalApp}:{wpobj.owner.externalApp} {tempPath}'
+        ProcessUtilities.executioner(command)
+        
+        return FinalPHPPath, old_wp_version, tempPath
+
+    def _createStagingWebsite(self, wpobj, UserID, currentTemp, tempStatusPath):
+        """Create the staging website"""
+        from websiteFunctions.website import WebsiteManager
+        import json
+        
+        statusFile = open(tempStatusPath, 'w')
+        statusFile.writelines('Creating Website...,10')
+        statusFile.close()
+        
+        DataToPass = {}
+        DataToPass['domainName'] = self.data['StagingDomain']
+        DataToPass['adminEmail'] = wpobj.owner.adminEmail
+        DataToPass['phpSelection'] = wpobj.owner.phpSelection
+        DataToPass['websiteOwner'] = wpobj.owner.admin.userName
+        DataToPass['package'] = 'Default'
+        DataToPass['ssl'] = 1
+        DataToPass['dkimCheck'] = 0
+        DataToPass['openBasedir'] = 0
+        DataToPass['mailDomain'] = 0
+        
+        ab = WebsiteManager()
+        coreResult = ab.submitWebsiteCreation(UserID, DataToPass)
+        coreResult1 = json.loads((coreResult).content)
+        
+        if os.path.exists('/usr/local/CyberCP/debug'):
+            logging.writeToFile("Creating website result....%s" % coreResult1)
+        
+        reutrntempath = coreResult1['tempStatusPath']
+        
+        # Wait for website creation to complete
+        while (1):
+            lastLine = open(reutrntempath, 'r').read()
+            
+            if lastLine.find('[200]') > -1:
+                break
+            elif lastLine.find('[404]') > -1:
+                statusFile = open(currentTemp, 'w')
+                statusFile.writelines('Failed to Create Website: error: %s[404]' % lastLine)
+                statusFile.close()
+                return None
+            else:
+                statusFile = open(currentTemp, 'w')
+                statusFile.writelines('Creating Website....,15')
+                statusFile.close()
+                time.sleep(2)
+        
+        return Websites.objects.get(domain=self.data['StagingDomain'])
+
+    def _setupWordPressCore(self, website, old_wp_version, dbNameRestore, dbUser, dbPassword, currentTemp):
+        """Download and configure WordPress core"""
+        PHPVersion = website.phpSelection
+        php = ACLManager.getPHPString(PHPVersion)
+        FinalPHPPath = '/usr/local/lsws/lsphp%s/bin/php' % (php)
+        
+        StagingPath = f'/home/{website.domain}/public_html'
+        
+        statusFile = open(currentTemp, 'w')
+        statusFile.writelines('Downloading WordPress...,40')
+        statusFile.close()
+        
+        # Download WordPress
+        command = f'{FinalPHPPath} -d error_reporting=0 /usr/bin/wp core download --path={StagingPath} --version={old_wp_version}'
+        if ProcessUtilities.executioner(command, website.externalApp) == 0:
+            raise BaseException('Failed to download wp core. [404]')
+        
+        # Configure WordPress
+        command = f'{FinalPHPPath} -d error_reporting=0 /usr/bin/wp core config --dbname={dbNameRestore} --dbuser={dbUser} --dbpass={dbPassword} --dbhost={ApplicationInstaller.LOCALHOST}:{ApplicationInstaller.PORT} --path={StagingPath}'
+        if ProcessUtilities.executioner(command, website.externalApp) == 0:
+            raise BaseException('WP Core congiruations failed. [404]')
+        
+        return FinalPHPPath, StagingPath
+
+    def _exportAndCopyContent(self, wpobj, path, tempPath, FinalPHPPath, currentTemp):
+        """Export database and copy content from source site"""
+        # Get table prefix
+        command = f'{FinalPHPPath} -d error_reporting=0 /usr/bin/wp config get table_prefix --skip-plugins --skip-themes --path={path}'
+        TablePrefix = ProcessUtilities.outputExecutioner(command, wpobj.owner.externalApp).rstrip('\n')
+        
+        # Export database
+        statusFile = open(currentTemp, 'w')
+        statusFile.writelines('Exporting Database...,55')
+        statusFile.close()
+        
+        command = f'{FinalPHPPath} -d error_reporting=0 /usr/bin/wp --allow-root --skip-plugins --skip-themes --path={path} db export {tempPath}/dbexport-stage.sql'
+        if ProcessUtilities.executioner(command, wpobj.owner.externalApp) == 0:
+            raise BaseException('Failed to export database from master site. [404]')
+        
+        # Copy wp-content
+        statusFile = open(currentTemp, 'w')
+        statusFile.writelines('Copying Files...,65')
+        statusFile.close()
+        
+        command = f'{FinalPHPPath} -d error_reporting=0 /usr/bin/wp theme path --skip-plugins --skip-themes --allow-root --path={path}'
+        WpContentPath = ProcessUtilities.outputExecutioner(command, wpobj.owner.externalApp).splitlines()[-1].replace('themes', '')
+        
+        command = f'cp -R {WpContentPath} {tempPath}/'
+        if ProcessUtilities.executioner(command, wpobj.owner.externalApp) == 0:
+            raise BaseException('Failed to copy wp-content from master to temp folder. [404]')
+        
+        # Copy .htaccess
+        command = f'cp -f {path}/.htaccess {tempPath}/'
+        if ProcessUtilities.executioner(command, wpobj.owner.externalApp) == 0:
+            logging.writeToFile('While staging creation .htaccess file did not copy')
+        
+        return TablePrefix
+
+    def _importAndSetupStaging(self, website, tempPath, StagingPath, FinalPHPPath, TablePrefix, currentTemp):
+        """Import database and setup staging site files"""
+        # Set table prefix
+        command = f'{FinalPHPPath} -d error_reporting=0 /usr/bin/wp config set table_prefix {TablePrefix} --path={StagingPath}'
+        if ProcessUtilities.executioner(command, website.externalApp) == 0:
+            raise BaseException('Failed to set table prefix on staging site. [404]')
+        
+        # Change permissions
+        command = f'chown -R {website.externalApp}:{website.externalApp} {tempPath}'
+        ProcessUtilities.executioner(command)
+        
+        # Import Database
+        statusFile = open(currentTemp, 'w')
+        statusFile.writelines('Importing Database...,75')
+        statusFile.close()
+        
+        command = f'{FinalPHPPath} -d error_reporting=0 /usr/bin/wp --allow-root --skip-plugins --skip-themes --path={StagingPath} --quiet db import {tempPath}/dbexport-stage.sql'
+        if ProcessUtilities.executioner(command, website.externalApp) == 0:
+            raise BaseException('Failed to import database on staging site. [404]')
+        
+        # Cleanup database export
+        try:
+            command = 'rm -f %s/dbexport-stage.sql' % (tempPath)
+            ProcessUtilities.executioner(command, website.externalApp)
+        except:
+            pass
+        
+        # Move wp-content
+        statusFile = open(currentTemp, 'w')
+        statusFile.writelines('Moving Files...,85')
+        statusFile.close()
+        
+        command = f'rm -rf {StagingPath}/wp-content'
+        ProcessUtilities.executioner(command, website.externalApp)
+        
+        command = f'mv {tempPath}/wp-content {StagingPath}/'
+        if ProcessUtilities.executioner(command, website.externalApp) == 0:
+            raise BaseException('Failed to copy wp-content from temp to staging site. [404]')
+        
+        # Copy htaccess
+        command = f'cp -f {tempPath}/.htaccess {StagingPath}/'
+        if ProcessUtilities.executioner(command, website.externalApp) == 0:
+            logging.writeToFile('While staging creation .htaccess file did not copy')
+
+    def _updateStagingUrls(self, wpobj, website, StagingPath, FinalPHPPath, domain, currentTemp):
+        """Update URLs in staging site database"""
+        statusFile = open(currentTemp, 'w')
+        statusFile.writelines('Updating URLs...,95')
+        statusFile.close()
+        
+        # Search and replace URLs
+        command = f'{FinalPHPPath} -d error_reporting=0 /usr/bin/wp search-replace --skip-plugins --skip-themes --path={StagingPath} "{wpobj.FinalURL}" "{domain}"'
+        if ProcessUtilities.executioner(command, website.externalApp) == 0:
+            raise BaseException('search-replace failed 1. [404]')
+        
+        command = f'{FinalPHPPath} -d error_reporting=0 /usr/bin/wp search-replace --skip-plugins --skip-themes --path={StagingPath} "www.{wpobj.FinalURL}" "{domain}"'
+        if ProcessUtilities.executioner(command, website.externalApp) == 0:
+            raise BaseException('search-replace failed 2. [404]')
+        
+        command = f'{FinalPHPPath} -d error_reporting=0 /usr/bin/wp search-replace --skip-plugins --skip-themes --path={StagingPath} "https://{domain}" "http://{domain}"'
+        if ProcessUtilities.executioner(command, website.externalApp) == 0:
+            raise BaseException('search-replace failed 3. [404]')
+
     def CreateStagingNow(self):
         try:
-            from websiteFunctions.website import WebsiteManager
-            import json
-
-            ## Source object
-
+            # Get source WordPress site
             wpobj = WPSites.objects.get(pk=self.data['WPid'])
-
-            php = PHPManager.getPHPString(wpobj.owner.phpSelection)
-            FinalPHPPath = '/usr/local/lsws/lsphp%s/bin/php' % (php)
-
-
-
-            #get wp version
-            path_to_wordpress = wpobj.path
-            command = f"{FinalPHPPath} -d error_reporting=0 /usr/bin/wp --path='{path_to_wordpress}' core version --skip-plugins --skip-themes"
-            Wp_version = ProcessUtilities.outputExecutioner(command, wpobj.owner.externalApp)
-            old_wp_version = Wp_version.rstrip('\n')
-            logging.writeToFile("Old site wp version:%s"% old_wp_version)
-
-
-
-            ### Create secure folder
-            ACLManager.CreateSecureDir()
-            tempPath = '%s/%s' % ('/usr/local/CyberCP/tmp', str(randint(1000, 9999)))
-            self.tempPath = tempPath
-
-            command = f'mkdir -p {tempPath}'
-            ProcessUtilities.executioner(command)
-
-            command = f'chown -R {wpobj.owner.externalApp}:{wpobj.owner.externalApp} {tempPath}'
-            ProcessUtilities.executioner(command)
-
+            
+            # Set up necessary paths
             tempStatusPath = self.data['tempStatusPath']
             self.tempStatusPath = tempStatusPath
-            statusFile = open(tempStatusPath, 'w')
-            statusFile.writelines('Creating Website...,15')
-            statusFile.close()
-
-            DataToPass = {}
-
             currentTemp = self.extraArgs['tempStatusPath']
-            DataToPass['domainName'] = self.data['StagingDomain']
-            DataToPass['adminEmail'] = wpobj.owner.adminEmail
-            DataToPass['phpSelection'] = wpobj.owner.phpSelection
-            DataToPass['websiteOwner'] = wpobj.owner.admin.userName
-            DataToPass['package'] = 'Default'
-            DataToPass['ssl'] = 1
-            DataToPass['dkimCheck'] = 0
-            DataToPass['openBasedir'] = 0
-            DataToPass['mailDomain'] = 0
             UserID = self.data['adminID']
-
-            ab = WebsiteManager()
-            coreResult = ab.submitWebsiteCreation(UserID, DataToPass)
-            coreResult1 = json.loads((coreResult).content)
-
-            if os.path.exists('/usr/local/CyberCP/debug'):
-                logging.writeToFile("Creating website result....%s" % coreResult1)
-
-            reutrntempath = coreResult1['tempStatusPath']
-
-            while (1):
-                lastLine = open(reutrntempath, 'r').read()
-
-                if lastLine.find('[200]') > -1:
-                    break
-                elif lastLine.find('[404]') > -1:
-                    statusFile = open(currentTemp, 'w')
-                    statusFile.writelines('Failed to Create Website: error: %s[404]' % lastLine)
-                    statusFile.close()
-                    return 0
-                else:
-                    statusFile = open(currentTemp, 'w')
-                    statusFile.writelines('Creating Website....,20')
-                    statusFile.close()
-                    time.sleep(2)
-
-            statusFile = open(tempStatusPath, 'w')
-            statusFile.writelines('Installing WordPress....,30')
-            statusFile.close()
-
-            ####No crreating DataBAse.............
-
-            statusFile = open(tempStatusPath, 'w')
-            statusFile.writelines('Creating DataBase....,30')
-            statusFile.close()
-            website = Websites.objects.get(domain=self.data['StagingDomain'])
-
-            dbNameRestore, dbUser, dbPassword = self.dbCreation(tempStatusPath, website)
-
-            statusFile = open(tempStatusPath, 'w')
-            statusFile.writelines('Creating Staging....,50')
-            statusFile.close()
-
-            masterDomain = wpobj.owner.domain
             domain = self.data['StagingDomain']
-
+            
+            # Step 1: Initialize staging creation
+            FinalPHPPath, old_wp_version, tempPath = self._initializeStagingCreation(wpobj)
+            self.tempPath = tempPath
+            
+            # Step 2: Create staging website
+            website = self._createStagingWebsite(wpobj, UserID, currentTemp, tempStatusPath)
+            if website is None:
+                return 0
+            
+            # Step 3: Create database
+            statusFile = open(tempStatusPath, 'w')
+            statusFile.writelines('Creating Database...,25')
+            statusFile.close()
+            dbNameRestore, dbUser, dbPassword = self.dbCreation(tempStatusPath, website)
+            
+            # Step 4: Setup WordPress core
+            FinalPHPPath, StagingPath = self._setupWordPressCore(
+                website, old_wp_version, dbNameRestore, dbUser, dbPassword, currentTemp
+            )
+            
+            # Step 5: Export database and copy content from source
             path = wpobj.path
-
-            PHPVersion = website.phpSelection
-            php = ACLManager.getPHPString(PHPVersion)
-            FinalPHPPath = '/usr/local/lsws/lsphp%s/bin/php' % (php)
-
-            ## Staging site
-
-            StagingPath = f'/home/{website.domain}/public_html'
-
-            command = f'{FinalPHPPath} -d error_reporting=0 /usr/bin/wp core download --path={StagingPath} --version={old_wp_version}'
-
-            if ProcessUtilities.executioner(command, website.externalApp) == 0:
-                raise BaseException('Failed to download wp core. [404]')
-
-            command = f'{FinalPHPPath} -d error_reporting=0 /usr/bin/wp core config --dbname={dbNameRestore} --dbuser={dbUser} --dbpass={dbPassword} --dbhost={ApplicationInstaller.LOCALHOST}:{ApplicationInstaller.PORT} --path={StagingPath}'
-            if ProcessUtilities.executioner(command, website.externalApp) == 0:
-                raise BaseException('WP Core congiruations failed. [404]')
-
-            ### Get table prefix of master site
-
-            command = f'{FinalPHPPath} -d error_reporting=0 /usr/bin/wp config get table_prefix --skip-plugins --skip-themes --path={path}'
-            TablePrefix = ProcessUtilities.outputExecutioner(command, wpobj.owner.externalApp).rstrip('\n')
-
-            ## Export database from master site
-
-            command = f'{FinalPHPPath} -d error_reporting=0 /usr/bin/wp --allow-root --skip-plugins --skip-themes --path={path} db export {tempPath}/dbexport-stage.sql'
-            if ProcessUtilities.executioner(command, wpobj.owner.externalApp) == 0:
-                raise BaseException('Failed to export database from master site. [404]')
-
-            ## Copy wp content folder to securey path
-
-            command = f'{FinalPHPPath} -d error_reporting=0 /usr/bin/wp theme path --skip-plugins --skip-themes --allow-root --path={path}'
-            WpContentPath = ProcessUtilities.outputExecutioner(command, wpobj.owner.externalApp).splitlines()[
-                -1].replace('themes', '')
-
-            command = f'cp -R {WpContentPath} {tempPath}/'
-            if ProcessUtilities.executioner(command, wpobj.owner.externalApp) == 0:
-                raise BaseException('Failed to copy wp-content from master to temp folder. [404]')
-
-            command = f'cp -f {path}/.htaccess {tempPath}/'
-
-            if ProcessUtilities.executioner(command, wpobj.owner.externalApp) == 0:
-                logging.writeToFile('While staging creation .htaccess file did not copy')
-
-            ### Set table prefix
-
-            command = f'{FinalPHPPath} -d error_reporting=0 /usr/bin/wp config set table_prefix {TablePrefix} --path={StagingPath}'
-            if ProcessUtilities.executioner(command, website.externalApp) == 0:
-                raise BaseException('Failed to set table prefix on staging site. [404]')
-
-            ### Change permissions of temp folder to staging site
-
-            command = f'chown -R {website.externalApp}:{website.externalApp} {tempPath}'
-            ProcessUtilities.executioner(command)
-
-            ## Import Database
-
-            command = f'{FinalPHPPath} -d error_reporting=0 /usr/bin/wp --allow-root --skip-plugins --skip-themes --path={StagingPath} --quiet db import {tempPath}/dbexport-stage.sql'
-            if ProcessUtilities.executioner(command, website.externalApp) == 0:
-                raise BaseException('Failed to import database on staging site. [404]')
-
-            try:
-                command = 'rm -f %s/dbexport-stage.sql' % (tempPath)
-                ProcessUtilities.executioner(command, website.externalApp)
-            except:
-                pass
-
-            ## Move wp-content from temp tp staging
-
-            command = f'rm -rf {StagingPath}/wp-content'
-            ProcessUtilities.executioner(command, website.externalApp)
-
-            command = f'mv {tempPath}/wp-content {StagingPath}/'
-            if ProcessUtilities.executioner(command, website.externalApp) == 0:
-                raise BaseException('Failed to copy wp-content from temp to staging site. [404]')
-
-            ## Copy htaccess
-
-            command = f'cp -f {tempPath}/.htaccess {StagingPath}/'
-            if ProcessUtilities.executioner(command, wpobj.owner.externalApp) == 0:
-                logging.writeToFile('While staging creation .htaccess file did not copy')
-
-            ## Search and replace url
-
-            command = f'{FinalPHPPath} -d error_reporting=0 /usr/bin/wp search-replace --skip-plugins --skip-themes --path={StagingPath} "{wpobj.FinalURL}" "{domain}"'
-            if ProcessUtilities.executioner(command, website.externalApp) == 0:
-                raise BaseException('search-replace failed 1. [404]')
-
-            command = f'{FinalPHPPath} -d error_reporting=0 /usr/bin/wp search-replace --skip-plugins --skip-themes --path={StagingPath} "www.{wpobj.FinalURL}" "{domain}"'
-            if ProcessUtilities.executioner(command, website.externalApp) == 0:
-                raise BaseException('search-replace failed 2. [404]')
-
-            command = f'{FinalPHPPath} -d error_reporting=0 /usr/bin/wp search-replace --skip-plugins --skip-themes --path={StagingPath} "https://{domain}" "http://{domain}"'
-            if ProcessUtilities.executioner(command, website.externalApp) == 0:
-                raise BaseException('search-replace failed 3. [404]')
-
+            TablePrefix = self._exportAndCopyContent(wpobj, path, tempPath, FinalPHPPath, currentTemp)
+            
+            # Step 6: Import database and setup staging files
+            self._importAndSetupStaging(
+                website, tempPath, StagingPath, FinalPHPPath, TablePrefix, currentTemp
+            )
+            
+            # Step 7: Update URLs in staging database
+            self._updateStagingUrls(wpobj, website, StagingPath, FinalPHPPath, domain, currentTemp)
+            
+            # Step 8: Restart LiteSpeed
             from plogical.installUtilities import installUtilities
             installUtilities.reStartLiteSpeed()
-
+            
+            # Step 9: Save staging site record
             wpsite = WPSites(owner=website, title=self.data['StagingName'],
                              path="/home/%s/public_html" % (self.extraArgs['StagingDomain']),
                              FinalURL='%s' % (self.data['StagingDomain']))
             wpsite.save()
-
+            
+            # Step 10: Cleanup and finalize
             command = f'rm -rf {tempPath}'
             ProcessUtilities.executioner(command)
 
             WPStaging(wpsite=wpsite, owner=wpobj).save()
 
             statusFile = open(currentTemp, 'w')
-            statusFile.writelines('Staging site created,[200]')
+            statusFile.writelines('Staging site created successfully!,100[200]')
             statusFile.close()
 
         except BaseException as msg:
