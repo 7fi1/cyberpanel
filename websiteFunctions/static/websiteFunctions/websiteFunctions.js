@@ -4869,7 +4869,7 @@ app.controller('WPsiteHome', function ($scope, $http, $timeout, $compile, $windo
             var tableSelector = '#stagingListBody';
         }
         
-        var stagingUrl = 'http://' + value.Domain + value.path;
+        var stagingUrl = 'http://' + value.Domain;
         var createdDate = new Date().toLocaleDateString();
         
         var FinalMarkup = '<tr>';
@@ -8589,7 +8589,7 @@ app.controller('WPsiteHome', function ($scope, $http, $timeout, $compile, $windo
     };
 
     function AddStagings(value, index, array) {
-        var stagingUrl = 'http://' + value.Domain + value.path;
+        var stagingUrl = 'http://' + value.Domain;
         var createdDate = new Date().toLocaleDateString();
         
         var FinalMarkup = '<tr>';

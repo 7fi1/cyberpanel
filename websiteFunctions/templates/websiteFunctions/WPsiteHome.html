@@ -2289,8 +2289,9 @@
                                         </div>
                                     </div>
                                 <div style="margin-top: 1%" ng-hide="installationProgress" class="form-group">
-                                    <label class="col-sm-2 control-label"></label>
-                                    <div class="col-sm-7">
+                                    <div class="row">
+                                        <label class="col-sm-2 control-label"></label>
+                                        <div class="col-sm-7">
 
                                         <div class="alert alert-success text-center">
                                             <h2>{$ currentStatus $}</h2>
@@ -2318,25 +2319,28 @@
                                             <p>{% trans "Could not connect to server. Please refresh this page." %}</p>
                                         </div>
 
+                                        <div style="margin-top: 20px; text-align: center;">
+                                            <button type="button" ng-disabled="goBackDisable"
+                                                    ng-click="goBack()"
+                                                    class="btn btn-default">
+                                                <i class="fas fa-arrow-left"></i>
+                                                {% trans "Go Back" %}
+                                            </button>
+                                        </div>
 
+                                        </div>
                                     </div>
                                 </div>
-
-                                <div ng-hide="installationProgress" class="form-group center-div">
-                                    <div class="col-sm-12">
-                                        <button type="button" ng-disabled="goBackDisable"
-                                                ng-click="goBack()"
-                                                class="btn btn-default center-div">
-                                            <i class="fas fa-arrow-left"></i>
-                                            {% trans "Go Back" %}
-                                        </button>
+                                
+                                <!-- Existing Staging Sites -->
+                                <div class="existing-staging-section" style="margin-top: 40px; clear: both;">
+                                    <div class="section-header">
+                                        <h4>Existing Staging Sites</h4>
+                                        <p class="text-muted">Manage your staging environments</p>
                                     </div>
-                                </div>
-                                    <!-- Existing Staging Sites -->
-                                    <div class="existing-staging-section">
-                                        <h5>Existing Staging Sites</h5>
+                                    <div class="form-card">
                                         <div class="table-responsive">
-                                            <table class="table table-hover staging-table">
+                                            <table class="table table-hover staging-table mb-0">
                                                 <thead>
                                                 <tr>
                                                     <th>Name</th>
@@ -2350,6 +2354,7 @@
                                             </table>
                                         </div>
                                     </div>
+                                </div>
                                 </div>
 
                             </div>
