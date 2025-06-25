@@ -758,3 +758,76 @@ def deleteFirewallRule(request):
         data_ret = {'submitUserDeletion': 0, 'error_message': str(msg)}
         json_data = json.dumps(data_ret)
         return HttpResponse(json_data)
+
+
+# AI Scanner API endpoints for external workers
+@csrf_exempt
+def aiScannerAuthenticate(request):
+    """AI Scanner worker authentication endpoint"""
+    try:
+        from aiScanner.api import authenticate_worker
+        return authenticate_worker(request)
+    except Exception as e:
+        logging.writeToFile(f'[API] AI Scanner authenticate error: {str(e)}')
+        data_ret = {'error': 'Authentication service unavailable'}
+        return HttpResponse(json.dumps(data_ret), status=500)
+
+
+@csrf_exempt
+def aiScannerListFiles(request):
+    """AI Scanner file listing endpoint"""
+    try:
+        from aiScanner.api import list_files
+        return list_files(request)
+    except Exception as e:
+        logging.writeToFile(f'[API] AI Scanner list files error: {str(e)}')
+        data_ret = {'error': 'File listing service unavailable'}
+        return HttpResponse(json.dumps(data_ret), status=500)
+
+
+@csrf_exempt
+def aiScannerGetFileContent(request):
+    """AI Scanner file content endpoint"""
+    try:
+        from aiScanner.api import get_file_content
+        return get_file_content(request)
+    except Exception as e:
+        logging.writeToFile(f'[API] AI Scanner get file content error: {str(e)}')
+        data_ret = {'error': 'File content service unavailable'}
+        return HttpResponse(json.dumps(data_ret), status=500)
+
+
+@csrf_exempt
+def aiScannerCallback(request):
+    """AI Scanner scan completion callback endpoint"""
+    try:
+        from aiScanner.api import scan_callback
+        return scan_callback(request)
+    except Exception as e:
+        logging.writeToFile(f'[API] AI Scanner callback error: {str(e)}')
+        data_ret = {'error': 'Callback service unavailable'}
+        return HttpResponse(json.dumps(data_ret), status=500)
+
+
+# Real-time monitoring API endpoints
+@csrf_exempt
+def aiScannerStatusWebhook(request):
+    """AI Scanner real-time status webhook endpoint"""
+    try:
+        from aiScanner.status_api import receive_status_update
+        return receive_status_update(request)
+    except Exception as e:
+        logging.writeToFile(f'[API] AI Scanner status webhook error: {str(e)}')
+        data_ret = {'error': 'Status webhook service unavailable'}
+        return HttpResponse(json.dumps(data_ret), status=500)
+
+
+def aiScannerLiveProgress(request, scan_id):
+    """AI Scanner live progress endpoint"""
+    try:
+        from aiScanner.status_api import get_live_scan_progress
+        return get_live_scan_progress(request, scan_id)
+    except Exception as e:
+        logging.writeToFile(f'[API] AI Scanner live progress error: {str(e)}')
+        data_ret = {'error': 'Live progress service unavailable'}
+        return HttpResponse(json.dumps(data_ret), status=500)
