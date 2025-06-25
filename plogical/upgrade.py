@@ -806,6 +806,94 @@ $cfg['Servers'][$i]['LogoutURL'] = 'phpmyadminsignin.php?logout';
             except:
                 pass
 
+            # AI Scanner Tables
+            try:
+                cursor.execute('''
+                    CREATE TABLE `ai_scanner_settings` (
+                        `id` integer AUTO_INCREMENT NOT NULL PRIMARY KEY,
+                        `admin_id` integer NOT NULL UNIQUE,
+                        `api_key` varchar(255) DEFAULT NULL,
+                        `balance` decimal(10,4) NOT NULL DEFAULT 0.0000,
+                        `is_payment_configured` bool NOT NULL DEFAULT 0,
+                        `created_at` datetime(6) NOT NULL,
+                        `updated_at` datetime(6) NOT NULL,
+                        KEY `ai_scanner_settings_admin_id_idx` (`admin_id`),
+                        CONSTRAINT `ai_scanner_settings_admin_id_fk` FOREIGN KEY (`admin_id`) 
+                        REFERENCES `loginSystem_administrator` (`id`) ON DELETE CASCADE
+                    )
+                ''')
+            except:
+                pass
+
+            try:
+                cursor.execute('''
+                    CREATE TABLE `ai_scanner_history` (
+                        `id` integer AUTO_INCREMENT NOT NULL PRIMARY KEY,
+                        `admin_id` integer NOT NULL,
+                        `scan_id` varchar(100) NOT NULL UNIQUE,
+                        `domain` varchar(255) NOT NULL,
+                        `scan_type` varchar(20) NOT NULL DEFAULT 'full',
+                        `status` varchar(20) NOT NULL DEFAULT 'pending',
+                        `cost_usd` decimal(10,6) DEFAULT NULL,
+                        `files_scanned` integer NOT NULL DEFAULT 0,
+                        `issues_found` integer NOT NULL DEFAULT 0,
+                        `findings_json` longtext DEFAULT NULL,
+                        `summary_json` longtext DEFAULT NULL,
+                        `error_message` longtext DEFAULT NULL,
+                        `started_at` datetime(6) NOT NULL,
+                        `completed_at` datetime(6) DEFAULT NULL,
+                        KEY `ai_scanner_history_admin_id_idx` (`admin_id`),
+                        KEY `ai_scanner_history_scan_id_idx` (`scan_id`),
+                        KEY `ai_scanner_history_started_at_idx` (`started_at`),
+                        CONSTRAINT `ai_scanner_history_admin_id_fk` FOREIGN KEY (`admin_id`) 
+                        REFERENCES `loginSystem_administrator` (`id`) ON DELETE CASCADE
+                    )
+                ''')
+            except:
+                pass
+
+            try:
+                cursor.execute('''
+                    CREATE TABLE `ai_scanner_file_tokens` (
+                        `id` integer AUTO_INCREMENT NOT NULL PRIMARY KEY,
+                        `token` varchar(100) NOT NULL UNIQUE,
+                        `scan_history_id` integer NOT NULL,
+                        `domain` varchar(255) NOT NULL,
+                        `wp_path` varchar(500) NOT NULL,
+                        `expires_at` datetime(6) NOT NULL,
+                        `created_at` datetime(6) NOT NULL,
+                        `is_active` bool NOT NULL DEFAULT 1,
+                        KEY `ai_scanner_file_tokens_scan_history_id_idx` (`scan_history_id`),
+                        KEY `ai_scanner_file_tokens_token_idx` (`token`),
+                        CONSTRAINT `ai_scanner_file_tokens_scan_history_id_fk` FOREIGN KEY (`scan_history_id`) 
+                        REFERENCES `ai_scanner_history` (`id`) ON DELETE CASCADE
+                    )
+                ''')
+            except:
+                pass
+
+            try:
+                cursor.execute('''
+                    CREATE TABLE `ai_scanner_status_updates` (
+                        `scan_id` varchar(100) NOT NULL PRIMARY KEY,
+                        `phase` varchar(50) NOT NULL,
+                        `progress` integer NOT NULL DEFAULT 0,
+                        `current_file` longtext DEFAULT NULL,
+                        `files_discovered` integer NOT NULL DEFAULT 0,
+                        `files_scanned` integer NOT NULL DEFAULT 0,
+                        `files_remaining` integer NOT NULL DEFAULT 0,
+                        `threats_found` integer NOT NULL DEFAULT 0,
+                        `critical_threats` integer NOT NULL DEFAULT 0,
+                        `high_threats` integer NOT NULL DEFAULT 0,
+                        `activity_description` longtext DEFAULT NULL,
+                        `last_updated` datetime(6) NOT NULL,
+                        `created_at` datetime(6) NOT NULL,
+                        KEY `ai_scanner_status_updates_scan_id_last_updated_idx` (`scan_id`, `last_updated` DESC)
+                    )
+                ''')
+            except:
+                pass
+
             try:
                 cursor.execute(
                     'CREATE TABLE `loginSystem_acl` (`id` integer AUTO_INCREMENT NOT NULL PRIMARY KEY, `name` varchar(50) NOT NULL UNIQUE, `adminStatus` integer NOT NULL DEFAULT 0, `versionManagement` integer NOT NULL DEFAULT 0, `createNewUser` integer NOT NULL DEFAULT 0, `deleteUser` integer NOT NULL DEFAULT 0, `resellerCenter` integer NOT NULL DEFAULT 0, `changeUserACL` integer NOT NULL DEFAULT 0, `createWebsite` integer NOT NULL DEFAULT 0, `modifyWebsite` integer NOT NULL DEFAULT 0, `suspendWebsite` integer NOT NULL DEFAULT 0, `deleteWebsite` integer NOT NULL DEFAULT 0, `createPackage` integer NOT NULL DEFAULT 0, `deletePackage` integer NOT NULL DEFAULT 0, `modifyPackage` integer NOT NULL DEFAULT 0, `createDatabase` integer NOT NULL DEFAULT 0, `deleteDatabase` integer NOT NULL DEFAULT 0, `listDatabases` integer NOT NULL DEFAULT 0, `createNameServer` integer NOT NULL DEFAULT 0, `createDNSZone` integer NOT NULL DEFAULT 0, `deleteZone` integer NOT NULL DEFAULT 0, `addDeleteRecords` integer NOT NULL DEFAULT 0, `createEmail` integer NOT NULL DEFAULT 0, `deleteEmail` integer NOT NULL DEFAULT 0, `emailForwarding` integer NOT NULL DEFAULT 0, `changeEmailPassword` integer NOT NULL DEFAULT 0, `dkimManager` integer NOT NULL DEFAULT 0, `createFTPAccount` integer NOT NULL DEFAULT 0, `deleteFTPAccount` integer NOT NULL DEFAULT 0, `listFTPAccounts` integer NOT NULL DEFAULT 0, `createBackup` integer NOT NULL DEFAULT 0, `restoreBackup` integer NOT NULL DEFAULT 0, `addDeleteDestinations` integer NOT NULL DEFAULT 0, `scheduleBackups` integer NOT NULL DEFAULT 0, `remoteBackups` integer NOT NULL DEFAULT 0, `manageSSL` integer NOT NULL DEFAULT 0, `hostnameSSL` integer NOT NULL DEFAULT 0, `mailServerSSL` integer NOT NULL DEFAULT 0)')
