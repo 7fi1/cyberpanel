@@ -1,0 +1,1037 @@
+{% extends "baseTemplate/index.html" %}
+{% load i18n %}
+
+{% block title %}
+AI Security Scanner - CyberPanel
+{% endblock %}
+
+{% block content %}
+<div class="col-md-12 col-xs-12 col-sm-12">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">
+                <i class="fas fa-shield-alt"></i> AI Security Scanner
+            </h3>
+        </div>
+        <div class="panel-body">
+            
+            <!-- Error Display -->
+            {% if error %}
+            <div class="alert alert-danger">
+                <i class="fas fa-exclamation-triangle"></i> {{ error }}
+            </div>
+            {% endif %}
+
+            <!-- Messages -->
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">
+                        <i class="fas fa-info-circle"></i> {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <!-- Payment Setup Section -->
+            {% if not is_payment_configured %}
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="alert alert-info">
+                        <h4><i class="fas fa-credit-card"></i> Setup Required</h4>
+                        <p>Configure your payment method to start scanning WordPress sites for malware and security vulnerabilities. Your card will be charged <strong>$10 initially</strong> to fund your scanning account.</p>
+                        
+                        {% if pricing_data.success and pricing_data.plan %}
+                        <div class="row" style="margin-top: 15px;">
+                            <div class="col-md-6">
+                                <h6>Current Pricing:</h6>
+                                <ul class="list-unstyled">
+                                    <li><strong>{{ pricing_data.plan.name }}</strong></li>
+                                    <li>AI Model: {{ pricing_data.plan.ai_model.name }}</li>
+                                    <li>Max Files: {{ pricing_data.plan.limits.max_files_per_scan|floatformat:0 }}</li>
+                                    <li>Max File Size: {{ pricing_data.plan.limits.max_file_size_mb }}MB</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h6>Example Costs:</h6>
+                                <ul class="list-unstyled">
+                                    <li>Small Scan: ${{ pricing_data.plan.example_costs.small_scan.estimated_cost_usd }}</li>
+                                    <li>Medium Scan: ${{ pricing_data.plan.example_costs.medium_scan.estimated_cost_usd }}</li>
+                                    <li>Large Scan: ${{ pricing_data.plan.example_costs.large_scan.estimated_cost_usd }}</li>
+                                </ul>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <button type="button" class="btn btn-primary btn-lg" onclick="setupPayment()">
+                            <i class="fas fa-credit-card"></i> Setup Payment ($10 Initial Charge)
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            
+            <!-- Scanner Dashboard -->
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="panel panel-success">
+                        <div class="panel-heading">
+                            <h4 class="panel-title">
+                                <i class="fas fa-wallet"></i> Account Balance
+                            </h4>
+                        </div>
+                        <div class="panel-body text-center">
+                            <h2 class="text-success">${{ current_balance|floatformat:4 }}</h2>
+                            <p class="text-muted">Available Credit</p>
+                            <button class="btn btn-xs btn-default" onclick="refreshBalance()">
+                                <i class="fas fa-sync"></i> Refresh
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="panel panel-info">
+                        <div class="panel-heading">
+                            <h4 class="panel-title">
+                                <i class="fas fa-chart-line"></i> Recent Scans
+                            </h4>
+                        </div>
+                        <div class="panel-body text-center">
+                            <h2 class="text-info">{{ recent_scans|length }}</h2>
+                            <p class="text-muted">Last 30 Days</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="panel panel-warning">
+                        <div class="panel-heading">
+                            <h4 class="panel-title">
+                                <i class="fas fa-exclamation-triangle"></i> Issues Found
+                            </h4>
+                        </div>
+                        <div class="panel-body text-center">
+                            <h2 class="text-warning">
+                                {% for scan in recent_scans %}{% if scan.status == 'completed' %}{{ scan.issues_found|add:0 }}{% endif %}{% endfor %}
+                            </h2>
+                            <p class="text-muted">Total Issues</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment Methods Section -->
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <h4 class="panel-title">
+                                <i class="fas fa-credit-card"></i> Payment Methods
+                                <button class="btn btn-xs btn-primary pull-right" onclick="addPaymentMethod()">
+                                    <i class="fas fa-plus"></i> Add Payment Method
+                                </button>
+                            </h4>
+                        </div>
+                        <div class="panel-body">
+                            <p class="text-muted">
+                                <i class="fas fa-info-circle"></i> 
+                                Your account uses automatic billing. Add multiple payment methods for backup security.
+                            </p>
+                            <div id="paymentMethodsList">
+                                <p class="text-muted">Payment methods will be managed through the platform.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scan Form -->
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <h4 class="panel-title">
+                                <i class="fas fa-search"></i> Start New Scan
+                            </h4>
+                        </div>
+                        <div class="panel-body">
+                            <form id="scanForm">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="scanDomain">Select Website:</label>
+                                            <select class="form-control" id="scanDomain" name="domain" required>
+                                                <option value="">Choose a website...</option>
+                                                {% for website in websites %}
+                                                <option value="{{ website.domain }}">{{ website.domain }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label for="scanType">Scan Type:</label>
+                                            <select class="form-control" id="scanType" name="scan_type">
+                                                <option value="full">Full Scan (Recommended)</option>
+                                                <option value="quick">Quick Scan</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <div class="form-group">
+                                            <label>&nbsp;</label>
+                                            <button type="submit" class="btn btn-success btn-block" id="scanButton">
+                                                <i class="fas fa-search"></i> Start Scan
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Scan History -->
+            {% if is_payment_configured and recent_scans %}
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <h4 class="panel-title">
+                                <i class="fas fa-history"></i> Recent Scans
+                                <button class="btn btn-xs btn-default pull-right" onclick="refreshScanHistory()">
+                                    <i class="fas fa-refresh"></i> Refresh
+                                </button>
+                            </h4>
+                        </div>
+                        <div class="panel-body">
+                            <div class="table-responsive">
+                                <table class="table table-striped" id="scanHistoryTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Domain</th>
+                                            <th>Type</th>
+                                            <th>Status</th>
+                                            <th>Progress</th>
+                                            <th>Files</th>
+                                            <th>Issues</th>
+                                            <th>Cost</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="scanHistoryBody">
+                                        {% for scan in recent_scans %}
+                                        <tr data-scan-id="{{ scan.scan_id }}">
+                                            <td>{{ scan.started_at|date:"M d, Y H:i" }}</td>
+                                            <td>{{ scan.domain }}</td>
+                                            <td>
+                                                <span class="label label-info">{{ scan.get_scan_type_display }}</span>
+                                            </td>
+                                            <td class="scan-status">
+                                                {% if scan.status == 'completed' %}
+                                                    <span class="label label-success">Completed</span>
+                                                {% elif scan.status == 'running' %}
+                                                    <span class="label label-warning">Running</span>
+                                                {% elif scan.status == 'failed' %}
+                                                    <span class="label label-danger">Failed</span>
+                                                {% elif scan.status == 'pending' %}
+                                                    <span class="label label-default">Pending</span>
+                                                {% endif %}
+                                            </td>
+                                            <td class="scan-progress">
+                                                {% if scan.status == 'running' or scan.status == 'pending' %}
+                                                    <div class="progress" style="margin: 0; height: 20px;">
+                                                        <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                                                             role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+                                                            <span class="progress-text">0%</span>
+                                                        </div>
+                                                    </div>
+                                                {% else %}
+                                                    100%
+                                                {% endif %}
+                                            </td>
+                                            <td class="scan-files">{{ scan.files_scanned|default:"-" }}</td>
+                                            <td class="scan-issues">
+                                                {% if scan.issues_found > 0 %}
+                                                    <span class="text-danger"><strong>{{ scan.issues_found }}</strong></span>
+                                                {% else %}
+                                                    <span class="text-success">{{ scan.issues_found }}</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if scan.cost_usd %}
+                                                    ${{ scan.cost_usd|floatformat:4 }}
+                                                {% else %}
+                                                    -
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <button class="btn btn-xs btn-info" onclick="viewScanDetails('{{ scan.scan_id }}')">
+                                                    <i class="fas fa-eye"></i> View
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+</div>
+
+<!-- Scan Details Modal -->
+<div class="modal fade" id="scanDetailsModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">
+                    <i class="fas fa-search"></i> Scan Results
+                </h4>
+            </div>
+            <div class="modal-body" id="scanDetailsContent">
+                <!-- Real-time Progress Section -->
+                <div id="progressSection" style="display: none;">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <h5>
+                                <span id="scanPhase" class="label label-primary">Loading...</span>
+                                <button class="btn btn-xs btn-default pull-right" onclick="refreshScanProgress()">
+                                    <i class="fas fa-sync-alt"></i> Refresh
+                                </button>
+                            </h5>
+                        </div>
+                    </div>
+                    
+                    <!-- Progress Bar -->
+                    <div class="row" style="margin-bottom: 15px;">
+                        <div class="col-md-12">
+                            <div class="progress" style="height: 25px;">
+                                <div id="scanProgressBar" class="progress-bar progress-bar-striped progress-bar-animated" 
+                                     role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+                                    <span id="scanProgressText">0%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Current Activity -->
+                    <div class="row" style="margin-bottom: 15px;">
+                        <div class="col-md-6">
+                            <strong>Current Activity:</strong>
+                            <br><span id="currentActivity" class="text-muted">Initializing...</span>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Current File:</strong>
+                            <br><code id="currentFile" class="text-primary">N/A</code>
+                        </div>
+                    </div>
+
+                    <!-- Statistics -->
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="panel panel-info">
+                                <div class="panel-body text-center">
+                                    <h4 id="filesDiscovered">0</h4>
+                                    <small>Files Discovered</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="panel panel-primary">
+                                <div class="panel-body text-center">
+                                    <h4 id="filesScanned">0</h4>
+                                    <small>Files Scanned</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="panel panel-warning">
+                                <div class="panel-body text-center">
+                                    <h4 id="filesRemaining">0</h4>
+                                    <small>Files Remaining</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="panel panel-danger">
+                                <div class="panel-body text-center">
+                                    <h4 id="threatsFound">0</h4>
+                                    <small>Threats Found</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Threat Breakdown -->
+                    <div class="row">
+                        <div class="col-md-12">
+                            <strong>Threat Breakdown:</strong>
+                            <span class="label label-danger" style="margin-left: 10px;">Critical: <span id="criticalThreats">0</span></span>
+                            <span class="label label-warning" style="margin-left: 10px;">High: <span id="highThreats">0</span></span>
+                        </div>
+                    </div>
+
+                    <!-- Last Updated -->
+                    <div class="row" style="margin-top: 15px;">
+                        <div class="col-md-12">
+                            <small class="text-muted">Last updated: <span id="lastUpdated">Never</span></small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Loading Section -->
+                <div id="loadingSection" class="text-center">
+                    <i class="fas fa-spinner fa-spin fa-2x"></i>
+                    <p>Loading scan details...</p>
+                </div>
+
+                <!-- Completed Scan Results Section -->
+                <div id="completedSection" style="display: none;">
+                    <!-- This will be populated with completed scan results -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function setupPayment() {
+    // Show loading
+    const button = event.target;
+    const originalText = button.innerHTML;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Setting up...';
+    button.disabled = true;
+    
+    fetch('/aiscanner/setup-payment/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Redirect to payment setup
+            window.location.href = data.payment_url;
+        } else {
+            alert('Error: ' + data.error);
+            button.innerHTML = originalText;
+            button.disabled = false;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Failed to setup payment. Please try again.');
+        button.innerHTML = originalText;
+        button.disabled = false;
+    });
+}
+
+const scanForm = document.getElementById('scanForm');
+if (scanForm) {
+    scanForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const domain = document.getElementById('scanDomain').value;
+        const scanType = document.getElementById('scanType').value;
+        const button = document.getElementById('scanButton');
+    
+    if (!domain) {
+        alert('Please select a website to scan.');
+        return;
+    }
+    
+    // Show loading
+    const originalText = button.innerHTML;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Starting...';
+    button.disabled = true;
+    
+    fetch('/aiscanner/start-scan/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({
+            domain: domain,
+            scan_type: scanType
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Scan started successfully! You will be notified when it completes.');
+            // Reset form and refresh page
+            document.getElementById('scanForm').reset();
+            setTimeout(() => location.reload(), 2000);
+        } else {
+            alert('Error: ' + data.error);
+        }
+        button.innerHTML = originalText;
+        button.disabled = false;
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Failed to start scan. Please try again.');
+        button.innerHTML = originalText;
+        button.disabled = false;
+    });
+});
+}
+
+function refreshScanHistory() {
+    fetch('/aiscanner/scan-history/')
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            updateScanHistoryTable(data.scans);
+        }
+    })
+    .catch(error => console.error('Error refreshing scan history:', error));
+}
+
+function updateScanHistoryTable(scans) {
+    const tbody = document.getElementById('scanHistoryBody');
+    if (!tbody) return;
+    
+    tbody.innerHTML = '';
+    
+    scans.forEach(scan => {
+        const statusBadge = getStatusBadge(scan.status);
+        const issuesText = scan.issues_found > 0 ? 
+            `<span class="text-danger"><strong>${scan.issues_found}</strong></span>` :
+            `<span class="text-success">${scan.issues_found}</span>`;
+        
+        const actionsHtml = `<button class="btn btn-xs btn-info" onclick="viewScanDetails('${scan.scan_id}')">
+                <i class="fas fa-eye"></i> View
+            </button>`;
+        
+        const progressHtml = (scan.status === 'running' || scan.status === 'pending') ?
+            `<div class="progress" style="margin: 0; height: 20px;">
+                <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                     role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+                    <span class="progress-text">0%</span>
+                </div>
+            </div>` : '100%';
+        
+        const row = `
+            <tr data-scan-id="${scan.scan_id}">
+                <td>${new Date(scan.started_at).toLocaleDateString()}</td>
+                <td>${scan.domain}</td>
+                <td><span class="label label-info">${scan.scan_type}</span></td>
+                <td class="scan-status">${statusBadge}</td>
+                <td class="scan-progress">${progressHtml}</td>
+                <td class="scan-files">${scan.files_scanned || '-'}</td>
+                <td class="scan-issues">${issuesText}</td>
+                <td>${scan.cost_usd ? '$' + scan.cost_usd.toFixed(4) : '-'}</td>
+                <td>${actionsHtml}</td>
+            </tr>
+        `;
+        tbody.innerHTML += row;
+    });
+}
+
+function getStatusBadge(status) {
+    const badges = {
+        'completed': '<span class="label label-success">Completed</span>',
+        'running': '<span class="label label-warning">Running</span>',
+        'failed': '<span class="label label-danger">Failed</span>',
+        'pending': '<span class="label label-default">Pending</span>'
+    };
+    return badges[status] || '<span class="label label-default">Unknown</span>';
+}
+
+// Global scan monitor variables
+let currentScanId = null;
+let scanMonitorInterval = null;
+
+function viewScanDetails(scanId) {
+    currentScanId = scanId;
+    const modal = document.getElementById('scanDetailsModal');
+    
+    // Reset sections
+    document.getElementById('loadingSection').style.display = 'block';
+    document.getElementById('progressSection').style.display = 'none';
+    document.getElementById('completedSection').style.display = 'none';
+    
+    $('#scanDetailsModal').modal('show');
+    
+    // Check if scan has real-time status updates
+    fetchLiveProgress(scanId);
+}
+
+function fetchLiveProgress(scanId) {
+    console.log(`[AI Scanner] Fetching live progress for scan: ${scanId}`);
+    fetch(`/api/ai-scanner/scan/${scanId}/live-progress`)
+    .then(response => response.json())
+    .then(data => {
+        console.log(`[AI Scanner] Live progress response:`, data);
+        if (data.success) {
+            if (data.is_active) {
+                console.log(`[AI Scanner] Scan is active (${data.phase}), showing progress section`);
+                // Show real-time progress section
+                showProgressSection(data);
+                startProgressMonitoring(scanId);
+            } else {
+                console.log(`[AI Scanner] Scan is completed, fetching full results`);
+                // Scan is completed, show full results
+                fetchCompletedScanDetails(scanId);
+            }
+        } else {
+            console.log(`[AI Scanner] No live status found, falling back to completed results`);
+            // No live status found, try fetching completed scan details
+            fetchCompletedScanDetails(scanId);
+        }
+    })
+    .catch(error => {
+        console.error('[AI Scanner] Error fetching live progress:', error);
+        fetchCompletedScanDetails(scanId);
+    });
+}
+
+function showProgressSection(data) {
+    document.getElementById('loadingSection').style.display = 'none';
+    document.getElementById('progressSection').style.display = 'block';
+    document.getElementById('completedSection').style.display = 'none';
+    
+    updateProgressUI(data);
+}
+
+function updateProgressUI(data) {
+    // Update progress bar
+    const progressBar = document.getElementById('scanProgressBar');
+    const progressText = document.getElementById('scanProgressText');
+    progressBar.style.width = data.progress + '%';
+    progressBar.setAttribute('aria-valuenow', data.progress);
+    progressText.textContent = data.progress + '%';
+    
+    // Update phase
+    const phaseElement = document.getElementById('scanPhase');
+    phaseElement.textContent = formatPhase(data.phase);
+    phaseElement.className = `label label-${getPhaseColor(data.phase)}`;
+    
+    // Update activity and file info
+    document.getElementById('currentActivity').textContent = data.activity_description || 'Processing...';
+    document.getElementById('currentFile').textContent = data.current_file || 'N/A';
+    
+    // Update counters
+    document.getElementById('filesDiscovered').textContent = data.files_discovered;
+    document.getElementById('filesScanned').textContent = data.files_scanned;
+    document.getElementById('filesRemaining').textContent = data.files_remaining;
+    document.getElementById('threatsFound').textContent = data.threats_found;
+    document.getElementById('criticalThreats').textContent = data.critical_threats;
+    document.getElementById('highThreats').textContent = data.high_threats;
+    
+    // Update timestamp
+    document.getElementById('lastUpdated').textContent = new Date(data.last_updated).toLocaleTimeString();
+}
+
+function startProgressMonitoring(scanId) {
+    console.log(`[AI Scanner] Starting progress monitoring for scan: ${scanId}`);
+    // Clear any existing interval
+    if (scanMonitorInterval) {
+        clearInterval(scanMonitorInterval);
+    }
+    
+    // Poll every 3 seconds
+    scanMonitorInterval = setInterval(() => {
+        fetch(`/api/ai-scanner/scan/${scanId}/live-progress`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                if (data.is_active) {
+                    console.log(`[AI Scanner] Progress update: ${data.phase} - ${data.progress}%`);
+                    updateProgressUI(data);
+                } else {
+                    console.log(`[AI Scanner] Scan completed, stopping monitoring`);
+                    // Scan completed, stop monitoring and show results
+                    stopProgressMonitoring();
+                    fetchCompletedScanDetails(scanId);
+                }
+            }
+        })
+        .catch(error => {
+            console.error('[AI Scanner] Error in progress monitoring:', error);
+        });
+    }, 3000);
+}
+
+function stopProgressMonitoring() {
+    if (scanMonitorInterval) {
+        clearInterval(scanMonitorInterval);
+        scanMonitorInterval = null;
+    }
+}
+
+function refreshScanProgress() {
+    if (currentScanId) {
+        fetchLiveProgress(currentScanId);
+    }
+}
+
+function fetchCompletedScanDetails(scanId) {
+    console.log(`[AI Scanner] Fetching completed scan details for: ${scanId}`);
+    fetch(`/aiscanner/scan-details/${scanId}/`)
+    .then(response => {
+        console.log(`[AI Scanner] Scan details response status: ${response.status}`);
+        return response.json();
+    })
+    .then(data => {
+        console.log(`[AI Scanner] Scan details data:`, data);
+        if (data.success) {
+            displayCompletedScanDetails(data.scan);
+        } else {
+            console.error(`[AI Scanner] Scan details error: ${data.error}`);
+            document.getElementById('loadingSection').style.display = 'none';
+            document.getElementById('progressSection').style.display = 'none';
+            document.getElementById('completedSection').style.display = 'block';
+            document.getElementById('completedSection').innerHTML = 
+                `<div class="alert alert-danger">Error: ${data.error}</div>`;
+        }
+    })
+    .catch(error => {
+        console.error('[AI Scanner] Fetch error:', error);
+        document.getElementById('loadingSection').style.display = 'none';
+        document.getElementById('progressSection').style.display = 'none';
+        document.getElementById('completedSection').style.display = 'block';
+        document.getElementById('completedSection').innerHTML = 
+            `<div class="alert alert-danger">Failed to load scan details. Please try again.</div>`;
+    });
+}
+
+function displayCompletedScanDetails(scan) {
+    console.log(`[AI Scanner] Displaying completed scan details:`, scan);
+    document.getElementById('loadingSection').style.display = 'none';
+    document.getElementById('progressSection').style.display = 'none';
+    document.getElementById('completedSection').style.display = 'block';
+    
+    let findingsHtml = '';
+    if (scan.findings && scan.findings.length > 0) {
+        findingsHtml = `
+            <h5>Security Issues Found (${scan.findings.length})</h5>
+            <div class="list-group">
+        `;
+        
+        scan.findings.forEach(finding => {
+            const severityClass = finding.severity === 'high' ? 'danger' : 
+                                finding.severity === 'medium' ? 'warning' : 'info';
+            
+            findingsHtml += `
+                <div class="list-group-item">
+                    <h6 class="list-group-item-heading">
+                        <span class="label label-${severityClass}">${finding.severity}</span>
+                        ${finding.title}
+                    </h6>
+                    <p class="list-group-item-text">${finding.description}</p>
+                    ${finding.file ? `<small class="text-muted">File: ${finding.file}</small>` : ''}
+                </div>
+            `;
+        });
+        findingsHtml += '</div>';
+    } else {
+        findingsHtml = '<div class="alert alert-success">No security issues found!</div>';
+    }
+    
+    document.getElementById('completedSection').innerHTML = `
+        <div class="row">
+            <div class="col-md-3">
+                <div class="panel panel-info">
+                    <div class="panel-body text-center">
+                        <h4>${scan.files_scanned || 0}</h4>
+                        <small>Files Scanned</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="panel panel-${scan.issues_found > 0 ? 'danger' : 'success'}">
+                    <div class="panel-body text-center">
+                        <h4>${scan.issues_found || 0}</h4>
+                        <small>Issues Found</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="panel panel-default">
+                    <div class="panel-body text-center">
+                        <h4>${scan.cost_usd ? '$' + scan.cost_usd.toFixed(4) : 'Free'}</h4>
+                        <small>Cost</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="panel panel-default">
+                    <div class="panel-body text-center">
+                        <h4>${new Date(scan.started_at).toLocaleDateString()}</h4>
+                        <small>Scan Date</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        ${findingsHtml}
+    `;
+}
+
+function formatPhase(phase) {
+    const phases = {
+        'starting': 'Starting Scan',
+        'discovering_files': 'Discovering Files',
+        'scanning_files': 'Scanning Files',
+        'completing': 'Finalizing',
+        'completed': 'Completed',
+        'failed': 'Failed',
+        'cancelled': 'Cancelled'
+    };
+    return phases[phase] || phase;
+}
+
+function getPhaseColor(phase) {
+    const colors = {
+        'starting': 'info',
+        'discovering_files': 'warning',
+        'scanning_files': 'primary',
+        'completing': 'success',
+        'completed': 'success',
+        'failed': 'danger',
+        'cancelled': 'default'
+    };
+    return colors[phase] || 'default';
+}
+
+// Clean up monitoring when modal is closed
+$('#scanDetailsModal').on('hidden.bs.modal', function () {
+    stopProgressMonitoring();
+    currentScanId = null;
+});
+
+// Global table monitoring variables
+let tableMonitorInterval = null;
+
+// Start monitoring active scans in the table
+function startTableMonitoring() {
+    // Clear any existing interval
+    if (tableMonitorInterval) {
+        clearInterval(tableMonitorInterval);
+    }
+    
+    // Check for active scans every 5 seconds
+    tableMonitorInterval = setInterval(() => {
+        updateActiveScansInTable();
+    }, 5000);
+    
+    // Also run once immediately
+    updateActiveScansInTable();
+}
+
+function updateActiveScansInTable() {
+    const scanRows = document.querySelectorAll('tr[data-scan-id]');
+    
+    scanRows.forEach(row => {
+        const scanId = row.getAttribute('data-scan-id');
+        const statusCell = row.querySelector('.scan-status span');
+        const progressCell = row.querySelector('.scan-progress');
+        const filesCell = row.querySelector('.scan-files');
+        const issuesCell = row.querySelector('.scan-issues');
+        
+        // Only update running/pending scans
+        if (statusCell && (statusCell.textContent.includes('Running') || statusCell.textContent.includes('Pending'))) {
+            // Fetch live progress for this scan
+            fetch(`/api/ai-scanner/scan/${scanId}/live-progress`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    updateTableRowProgress(row, data);
+                }
+            })
+            .catch(error => {
+                // Silently fail for individual scan updates
+                console.log(`No live data for scan ${scanId}`);
+            });
+        }
+    });
+}
+
+function updateTableRowProgress(row, data) {
+    const statusCell = row.querySelector('.scan-status span');
+    const progressCell = row.querySelector('.scan-progress');
+    const filesCell = row.querySelector('.scan-files');
+    const issuesCell = row.querySelector('.scan-issues');
+    const costCell = row.querySelector('td:nth-child(8)'); // Cost column
+    
+    // Update status
+    if (statusCell) {
+        const phaseText = formatPhase(data.phase);
+        const statusClass = getStatusClass(data.phase);
+        statusCell.className = `label label-${statusClass}`;
+        statusCell.textContent = phaseText;
+    }
+    
+    // Update progress
+    if (progressCell) {
+        if (data.is_active) {
+            progressCell.innerHTML = `
+                <div class="progress" style="margin: 0; height: 20px;">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                         role="progressbar" style="width: ${data.progress}%" 
+                         aria-valuenow="${data.progress}" aria-valuemin="0" aria-valuemax="100">
+                        <span class="progress-text">${data.progress}%</span>
+                    </div>
+                </div>
+            `;
+        } else {
+            progressCell.innerHTML = '100%';
+        }
+    }
+    
+    // Update files count
+    if (filesCell && data.files_scanned > 0) {
+        filesCell.textContent = `${data.files_scanned}/${data.files_discovered}`;
+    }
+    
+    // Update issues count
+    if (issuesCell && data.threats_found > 0) {
+        issuesCell.innerHTML = `<span class="text-danger"><strong>${data.threats_found}</strong></span>`;
+    }
+    
+    // Update cost (real-time cost from platform)
+    if (costCell && data.cost) {
+        costCell.textContent = data.cost;
+    }
+}
+
+function getStatusClass(phase) {
+    const statusClasses = {
+        'starting': 'info',
+        'discovering_files': 'warning', 
+        'scanning_files': 'warning',
+        'completing': 'warning',
+        'completed': 'success',
+        'failed': 'danger',
+        'cancelled': 'default'
+    };
+    return statusClasses[phase] || 'default';
+}
+
+// Auto-start table monitoring when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    // Only start monitoring if we're on the scanner page with a scan history table
+    if (document.getElementById('scanHistoryTable')) {
+        startTableMonitoring();
+        console.log('Started real-time scan monitoring');
+    }
+});
+
+// Stop monitoring when page unloads
+window.addEventListener('beforeunload', function() {
+    if (tableMonitorInterval) {
+        clearInterval(tableMonitorInterval);
+    }
+});
+
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+function refreshBalance() {
+    const button = event.target.closest('button');
+    const originalHtml = button.innerHTML;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Refreshing...';
+    button.disabled = true;
+    
+    fetch('/aiscanner/refresh-balance/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Update the balance display
+            const balanceElement = button.closest('.panel-body').querySelector('h2');
+            balanceElement.textContent = '$' + parseFloat(data.balance).toFixed(4);
+            
+            // Show success message
+            if (data.message) {
+                alert(data.message);
+            }
+        } else {
+            alert('Error: ' + data.error);
+        }
+        
+        button.innerHTML = originalHtml;
+        button.disabled = false;
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Failed to refresh balance. Please try again.');
+        button.innerHTML = originalHtml;
+        button.disabled = false;
+    });
+}
+
+function addPaymentMethod() {
+    const button = event.target.closest('button');
+    const originalHtml = button.innerHTML;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Setting up...';
+    button.disabled = true;
+    
+    fetch('/aiscanner/add-payment-method/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Redirect to payment method setup
+            window.location.href = data.setup_url;
+        } else {
+            alert('Error: ' + data.error);
+            button.innerHTML = originalHtml;
+            button.disabled = false;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Failed to setup payment method. Please try again.');
+        button.innerHTML = originalHtml;
+        button.disabled = false;
+    });
+}
+
+// Auto-refresh scan history every 30 seconds if there are running scans
+setInterval(() => {
+    if (document.getElementById('scanHistoryTable')) {
+        refreshScanHistory();
+    }
+}, 30000);
+</script>
+{% endblock %}

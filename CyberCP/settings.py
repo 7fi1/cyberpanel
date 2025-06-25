@@ -65,6 +65,7 @@ INSTALLED_APPS = [
     'containerization',
     'CLManager',
     'IncBackups',
+    'aiScanner',
     #    'WebTerminal'
 ]
 
