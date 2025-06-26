@@ -237,13 +237,37 @@ class AIScannerManager:
                 # Field doesn't exist yet, allow access for now
                 pass
             
-            # Get scanner settings
-            try:
-                scanner_settings = AIScannerSettings.objects.get(admin=admin)
-                if not scanner_settings.is_payment_configured or not scanner_settings.api_key:
-                    return JsonResponse({'success': False, 'error': 'Payment not configured'})
-            except AIScannerSettings.DoesNotExist:
-                return JsonResponse({'success': False, 'error': 'Scanner not configured'})
+            # Check VPS free scans availability first
+            server_ip = ACLManager.fetchIP()
+            vps_info = self.check_vps_free_scans(server_ip)
+            
+            # If VPS is eligible for free scans, get or create API key
+            vps_api_key = None
+            vps_key_data = None
+            if (vps_info.get('success') and 
+                vps_info.get('is_vps') and 
+                vps_info.get('free_scans_available', 0) > 0):
+                
+                self.logger.writeToFile(f'[AIScannerManager.startScan] VPS eligible for free scans, getting API key for IP: {server_ip}')
+                vps_key_data = self.get_or_create_vps_api_key(server_ip)
+                
+                if vps_key_data:
+                    vps_api_key = vps_key_data.get('api_key')
+                    free_scans_remaining = vps_key_data.get('free_scans_remaining', 0)
+                    self.logger.writeToFile(f'[AIScannerManager.startScan] VPS API key obtained, {free_scans_remaining} free scans remaining')
+                else:
+                    self.logger.writeToFile(f'[AIScannerManager.startScan] Failed to get VPS API key')
+                    return JsonResponse({'success': False, 'error': 'Failed to authenticate VPS for free scans'})
+            
+            # Get scanner settings (only required if not using VPS free scan)
+            scanner_settings = None
+            if not vps_api_key:
+                try:
+                    scanner_settings = AIScannerSettings.objects.get(admin=admin)
+                    if not scanner_settings.is_payment_configured or not scanner_settings.api_key:
+                        return JsonResponse({'success': False, 'error': 'Payment not configured'})
+                except AIScannerSettings.DoesNotExist:
+                    return JsonResponse({'success': False, 'error': 'Scanner not configured'})
             
             # Parse request data
             data = json.loads(request.body)
@@ -277,7 +301,6 @@ class AIScannerManager:
                 scan_type=scan_type,
                 status='pending'
             )
-            server_ip = ACLManager.fetchIP()
             
             # Create file access token
             FileAccessToken.objects.create(
@@ -291,8 +314,12 @@ class AIScannerManager:
             # Submit scan to AI Scanner API
             callback_url = f"https://{request.get_host()}/api/ai-scanner/callback"
             file_access_base_url = f"https://{request.get_host()}/api/ai-scanner/"
+            
+            # Use VPS API key if available, otherwise use regular scanner settings
+            api_key_to_use = vps_api_key if vps_api_key else scanner_settings.api_key
+            
             scan_response = self.submit_wordpress_scan(
-                scanner_settings.api_key,
+                api_key_to_use,
                 domain,
                 scan_type,
                 callback_url,
@@ -306,10 +333,16 @@ class AIScannerManager:
                 scan_history.status = 'running'
                 scan_history.save()
                 
+                # Create appropriate success message
+                if vps_api_key:
+                    message = f'Free VPS scan started successfully! {vps_key_data.get("free_scans_remaining", 0)} free scans remaining.'
+                else:
+                    message = 'Scan started successfully'
+                
                 return JsonResponse({
                     'success': True,
                     'scan_id': scan_id,
-                    'message': 'Scan started successfully'
+                    'message': message
                 })
             else:
                 scan_history.status = 'failed'
@@ -756,6 +789,43 @@ class AIScannerManager:
             return None
         except Exception as e:
             self.logger.writeToFile(f'[AIScannerManager.setup_add_payment_method] Exception: {str(e)}')
+            return None
+
+    def get_or_create_vps_api_key(self, server_ip):
+        """Get API key for VPS free scans from platform"""
+        try:
+            payload = {'server_ip': server_ip}
+            
+            self.logger.writeToFile(f'[AIScannerManager.get_or_create_vps_api_key] Requesting VPS API key for IP: {server_ip}')
+            
+            response = requests.post(
+                f'{self.AI_SCANNER_API_BASE}/api/vps/generate-api-key/',
+                json=payload,
+                headers={'Content-Type': 'application/json'},
+                timeout=10
+            )
+            
+            self.logger.writeToFile(f'[AIScannerManager.get_or_create_vps_api_key] Response status: {response.status_code}')
+            self.logger.writeToFile(f'[AIScannerManager.get_or_create_vps_api_key] Response content: {response.text}')
+            
+            if response.status_code == 200:
+                data = response.json()
+                if data.get('success'):
+                    return {
+                        'api_key': data.get('api_key'),
+                        'free_scans_remaining': data.get('free_scans_remaining'),
+                        'account_type': data.get('account_type'),
+                        'vps_name': data.get('vps_name'),
+                        'vps_id': data.get('vps_id')
+                    }
+                else:
+                    self.logger.writeToFile(f'[AIScannerManager.get_or_create_vps_api_key] API returned success=false: {data.get("error", "Unknown error")}')
+            else:
+                self.logger.writeToFile(f'[AIScannerManager.get_or_create_vps_api_key] Non-200 status code: {response.status_code}')
+            
+            return None
+        except Exception as e:
+            self.logger.writeToFile(f'[AIScannerManager.get_or_create_vps_api_key] Exception: {str(e)}')
             return None
 
     def generate_file_access_token(self):
