@@ -54,7 +54,7 @@ except:
     pass
 
 VERSION = '2.4'
-BUILD = 1
+BUILD = 2
 
 
 ## I am not the monster that you think I am..

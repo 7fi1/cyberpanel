@@ -712,6 +712,7 @@ class AIScannerManager:
         """Submit scan request to AI Scanner API"""
         try:
             payload = {
+                'domain': domain,
                 'site_url': domain,
                 'scan_type': scan_type,
                 'cyberpanel_callback': callback_url,
