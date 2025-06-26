@@ -2973,6 +2973,12 @@ Require valid-user
 
             modifyWeb.save()
 
+            ## Update disk quota when package changes - Fix for GitHub issue #1442
+            if webpack.enforceDiskLimits:
+                spaceString = f'{webpack.diskSpace}M {webpack.diskSpace}M'
+                command = f'setquota -u {modifyWeb.externalApp} {spaceString} 0 0 /'
+                ProcessUtilities.executioner(command)
+
             ## Fix https://github.com/usmannasir/cyberpanel/issues/998
 
             # from plogical.IncScheduler import IncScheduler
