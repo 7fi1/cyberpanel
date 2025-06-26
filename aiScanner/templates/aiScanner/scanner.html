@@ -1422,7 +1422,7 @@ function refreshBalance() {
     .then(data => {
         if (data.success) {
             // Update the balance display
-            const balanceElement = button.closest('.panel-body').querySelector('h2');
+            const balanceElement = button.closest('.stat-card').querySelector('h2');
             balanceElement.textContent = '$' + parseFloat(data.balance).toFixed(4);
             
             // Show success message
