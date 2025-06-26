@@ -66,6 +66,10 @@ class AIScannerManager:
                 else:
                     self.logger.writeToFile(f'[AIScannerManager.scannerHome] API balance call failed, keeping stored balance: {current_balance}')
             
+            # Check VPS free scans availability
+            server_ip = ACLManager.fetchIP()
+            vps_info = self.check_vps_free_scans(server_ip)
+            
             # Get user's websites for scan selection
             from websiteFunctions.models import Websites
             try:
@@ -86,6 +90,8 @@ class AIScannerManager:
                 'current_balance': current_balance,
                 'websites': websites,
                 'is_payment_configured': scanner_settings.is_payment_configured,
+                'vps_info': vps_info,
+                'server_ip': server_ip,
             }
             
             self.logger.writeToFile(f'[AIScannerManager.scannerHome] Context built successfully, rendering template')
@@ -255,6 +261,7 @@ class AIScannerManager:
                 scan_type=scan_type,
                 status='pending'
             )
+            server_ip = ACLManager.fetchIP()
             
             # Create file access token
             FileAccessToken.objects.create(
@@ -275,7 +282,8 @@ class AIScannerManager:
                 callback_url,
                 file_access_token,
                 file_access_base_url,
-                scan_id
+                scan_id,
+                server_ip
             )
             
             if scan_response:
@@ -562,7 +570,7 @@ class AIScannerManager:
             self.logger.writeToFile(f'[AIScannerManager.get_account_balance] Exception: {str(e)}')
             return None
     
-    def submit_wordpress_scan(self, api_key, domain, scan_type, callback_url, file_access_token, file_access_base_url, scan_id):
+    def submit_wordpress_scan(self, api_key, domain, scan_type, callback_url, file_access_token, file_access_base_url, scan_id, server_ip):
         """Submit scan request to AI Scanner API"""
         try:
             payload = {
@@ -571,7 +579,8 @@ class AIScannerManager:
                 'cyberpanel_callback': callback_url,
                 'file_access_token': file_access_token,
                 'file_access_base_url': file_access_base_url,
-                'scan_id': scan_id
+                'scan_id': scan_id,
+                'server_ip': server_ip
             }
             
             self.logger.writeToFile(f'[AIScannerManager.submit_wordpress_scan] Submitting scan {scan_id} for {domain}')
@@ -634,6 +643,30 @@ class AIScannerManager:
         except Exception as e:
             self.logger.writeToFile(f'[AIScannerManager.get_scan_results] Error: {str(e)}')
             return None
+    
+    def check_vps_free_scans(self, server_ip):
+        """Check if server IP belongs to VPS hosting and has free scans available"""
+        try:
+            self.logger.writeToFile(f'[AIScannerManager.check_vps_free_scans] Checking VPS free scans for IP: {server_ip}')
+            
+            response = requests.post(
+                'https://platform.cyberpersons.com/ai-scanner/api/vps/check-free-scans/',
+                json={'ip': server_ip},
+                timeout=10
+            )
+            
+            self.logger.writeToFile(f'[AIScannerManager.check_vps_free_scans] Response status: {response.status_code}')
+            
+            if response.status_code == 200:
+                data = response.json()
+                self.logger.writeToFile(f'[AIScannerManager.check_vps_free_scans] Response data: {data}')
+                return data
+            else:
+                self.logger.writeToFile(f'[AIScannerManager.check_vps_free_scans] API error: {response.text}')
+                return {'success': False, 'is_vps': False, 'error': 'API call failed'}
+        except Exception as e:
+            self.logger.writeToFile(f'[AIScannerManager.check_vps_free_scans] Error: {str(e)}')
+            return {'success': False, 'is_vps': False, 'error': str(e)}
 
     def setup_add_payment_method(self, api_key, user_email, cyberpanel_host):
         """Setup additional payment method with AI Scanner API"""
