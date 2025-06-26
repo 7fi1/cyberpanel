@@ -151,14 +151,26 @@ class secMiddleware:
                             final_json = json.dumps(final_dic)
                             return HttpResponse(final_json)
 
-                    if FinalURL.find(
-                            'api/remoteTransfer') > -1 or FinalURL.find(
-                        'api/verifyConn') > -1 or FinalURL.find(
-                        'webhook') > -1 or FinalURL.find(
-                        'saveSpamAssassinConfigurations') > -1 or FinalURL.find(
-                        'docker') > -1 or FinalURL.find(
-                        'cloudAPI') > -1 or FinalURL.find(
-                        'verifyLogin') > -1 or FinalURL.find('submitUserCreation') > -1:
+                    # Allow JSON structure characters for API endpoints but keep security checks for dangerous characters
+                    isAPIEndpoint = (FinalURL.find('api/remoteTransfer') > -1 or FinalURL.find('api/verifyConn') > -1 or 
+                                   FinalURL.find('webhook') > -1 or FinalURL.find('saveSpamAssassinConfigurations') > -1 or 
+                                   FinalURL.find('docker') > -1 or FinalURL.find('cloudAPI') > -1 or 
+                                   FinalURL.find('verifyLogin') > -1 or FinalURL.find('submitUserCreation') > -1 or 
+                                   FinalURL.find('/api/') > -1)
+                    
+                    if isAPIEndpoint:
+                        # For API endpoints, still check for the most dangerous command injection characters
+                        if (value.find('- -') > -1 or value.find('\n') > -1 or value.find(';') > -1 or 
+                            value.find('&&') > -1 or value.find('||') > -1 or value.find('|') > -1 or 
+                            value.find('...') > -1 or value.find("`") > -1 or value.find("$") > -1 or
+                            value.find('../') > -1 or value.find('../../') > -1):
+                            logging.writeToFile(request.body)
+                            final_dic = {
+                                'error_message': "API request contains potentially dangerous characters: `;`, `&&`, `||`, `|`, `` ` ``, `$`, `../` are not allowed.",
+                                "errorMessage": "API request contains potentially dangerous characters."
+                            }
+                            final_json = json.dumps(final_dic)
+                            return HttpResponse(final_json)
                         continue
                     if key == 'MainDashboardCSS' or key == 'ownerPassword' or key == 'scriptUrl' or key == 'CLAMAV_VIRUS' or key == "Rspamdserver" or key == 'smtpd_milters' \
                             or key == 'non_smtpd_milters' or key == 'key' or key == 'cert' or key == 'recordContentAAAA' or key == 'backupDestinations'\

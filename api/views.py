@@ -23,54 +23,138 @@ from userManagment.views import submitUserCreation as suc
 from userManagment.views import submitUserDeletion as duc
 # Create your views here.
 
+def validate_api_input(input_value, field_name="field"):
+    """
+    Validate API input for security threats while allowing legitimate data
+    Returns tuple: (is_valid, error_message)
+    """
+    if not isinstance(input_value, str):
+        return True, None
+    
+    # Check for command injection patterns
+    dangerous_patterns = [
+        ';', '&&', '||', '|', '`', '$', 
+        '../', '../../', '\n', '\r',
+        '<script', '</script>', 'javascript:',
+        'eval(', 'exec(', 'system(', 'shell_exec('
+    ]
+    
+    for pattern in dangerous_patterns:
+        if pattern in input_value:
+            return False, f"{field_name} contains invalid characters or patterns."
+    
+    return True, None
+
 
 @csrf_exempt
 def verifyConn(request):
     try:
         if request.method == 'POST':
+            try:
+                data = json.loads(request.body)
+                adminUser = data['adminUser']
+                adminPass = data['adminPass']
+                
+                # Additional security: validate input for dangerous characters
+                is_valid, error_msg = validate_api_input(adminUser, "adminUser")
+                if not is_valid:
+                    data_ret = {"verifyConn": 0, 'error_message': error_msg}
+                    json_data = json.dumps(data_ret)
+                    return HttpResponse(json_data, status=400)
+                    
+            except (json.JSONDecodeError, KeyError) as e:
+                data_ret = {"verifyConn": 0, 'error_message': "Invalid JSON or missing adminUser/adminPass fields."}
+                json_data = json.dumps(data_ret)
+                return HttpResponse(json_data, status=400)
 
-            data = json.loads(request.body)
-            adminUser = data['adminUser']
-            adminPass = data['adminPass']
-
-            admin = Administrator.objects.get(userName=adminUser)
+            try:
+                admin = Administrator.objects.get(userName=adminUser)
+            except Administrator.DoesNotExist:
+                data_ret = {"verifyConn": 0, 'error_message': "Administrator not found."}
+                json_data = json.dumps(data_ret)
+                return HttpResponse(json_data, status=404)
 
             if admin.api == 0:
                 data_ret = {"verifyConn": 0, 'error_message': "API Access Disabled."}
                 json_data = json.dumps(data_ret)
-                return HttpResponse(json_data)
+                return HttpResponse(json_data, status=403)
 
             if hashPassword.check_password(admin.password, adminPass):
                 data_ret = {"verifyConn": 1}
                 json_data = json.dumps(data_ret)
                 return HttpResponse(json_data)
             else:
-                data_ret = {"verifyConn": 0}
+                data_ret = {"verifyConn": 0, 'error_message': "Invalid password."}
                 json_data = json.dumps(data_ret)
-                return HttpResponse(json_data)
-    except BaseException as msg:
-        data_ret = {'verifyConn': 0, 'error_message': str(msg)}
+                return HttpResponse(json_data, status=401)
+        else:
+            data_ret = {"verifyConn": 0, 'error_message': "Only POST method allowed."}
+            json_data = json.dumps(data_ret)
+            return HttpResponse(json_data, status=405)
+    except Exception as msg:
+        data_ret = {'verifyConn': 0, 'error_message': f"Internal server error: {str(msg)}"}
         json_data = json.dumps(data_ret)
-        return HttpResponse(json_data)
+        return HttpResponse(json_data, status=500)
 
 
 @csrf_exempt
 def createWebsite(request):
-    data = json.loads(request.body)
-    adminUser = data['adminUser']
-    admin = Administrator.objects.get(userName=adminUser)
+    try:
+        if request.method != 'POST':
+            data_ret = {"existsStatus": 0, 'createWebSiteStatus': 0,
+                        'error_message': "Only POST method allowed."}
+            json_data = json.dumps(data_ret)
+            return HttpResponse(json_data, status=405)
 
-    if os.path.exists(ProcessUtilities.debugPath):
-        logging.writeToFile(f'Create website payload in API {str(data)}')
+        try:
+            data = json.loads(request.body)
+            adminUser = data['adminUser']
+            
+            # Additional security: validate critical fields for dangerous characters
+            is_valid, error_msg = validate_api_input(adminUser, "adminUser")
+            if not is_valid:
+                data_ret = {"existsStatus": 0, 'createWebSiteStatus': 0, 'error_message': error_msg}
+                json_data = json.dumps(data_ret)
+                return HttpResponse(json_data, status=400)
+                
+            # Validate domain name if provided
+            if 'domainName' in data:
+                is_valid, error_msg = validate_api_input(data['domainName'], "domainName")
+                if not is_valid:
+                    data_ret = {"existsStatus": 0, 'createWebSiteStatus': 0, 'error_message': error_msg}
+                    json_data = json.dumps(data_ret)
+                    return HttpResponse(json_data, status=400)
+                    
+        except (json.JSONDecodeError, KeyError):
+            data_ret = {"existsStatus": 0, 'createWebSiteStatus': 0,
+                        'error_message': "Invalid JSON or missing adminUser field."}
+            json_data = json.dumps(data_ret)
+            return HttpResponse(json_data, status=400)
 
-    if admin.api == 0:
+        try:
+            admin = Administrator.objects.get(userName=adminUser)
+        except Administrator.DoesNotExist:
+            data_ret = {"existsStatus": 0, 'createWebSiteStatus': 0,
+                        'error_message': "Administrator not found."}
+            json_data = json.dumps(data_ret)
+            return HttpResponse(json_data, status=404)
+
+        if os.path.exists(ProcessUtilities.debugPath):
+            logging.writeToFile(f'Create website payload in API {str(data)}')
+
+        if admin.api == 0:
+            data_ret = {"existsStatus": 0, 'createWebSiteStatus': 0,
+                        'error_message': "API Access Disabled."}
+            json_data = json.dumps(data_ret)
+            return HttpResponse(json_data, status=403)
+
+        wm = WebsiteManager()
+        return wm.createWebsiteAPI(data)
+    except Exception as msg:
         data_ret = {"existsStatus": 0, 'createWebSiteStatus': 0,
-                    'error_message': "API Access Disabled."}
+                    'error_message': f"Internal server error: {str(msg)}"}
         json_data = json.dumps(data_ret)
-        return HttpResponse(json_data)
-
-    wm = WebsiteManager()
-    return wm.createWebsiteAPI(json.loads(request.body))
+        return HttpResponse(json_data, status=500)
 
 
 @csrf_exempt
