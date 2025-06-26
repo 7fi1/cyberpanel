@@ -179,32 +179,86 @@ class AIScannerManager:
             if status == 'success':
                 api_key = request.GET.get('api_key')
                 balance = request.GET.get('balance', '0.00')
+                charged = request.GET.get('charged') == 'true'
+                amount = request.GET.get('amount', '0.00')
                 
                 self.logger.writeToFile(f'[AIScannerManager.setupComplete] API Key: {api_key[:20] if api_key else "None"}...')
                 self.logger.writeToFile(f'[AIScannerManager.setupComplete] Balance from URL: {balance}')
+                self.logger.writeToFile(f'[AIScannerManager.setupComplete] Charged: {charged}, Amount: {amount}')
                 
                 if api_key:
-                    # Update scanner settings
-                    scanner_settings, created = AIScannerSettings.objects.get_or_create(
-                        admin=admin,
-                        defaults={
-                            'api_key': api_key,
-                            'balance': float(balance),
-                            'is_payment_configured': True
-                        }
-                    )
-                    
-                    if not created:
-                        scanner_settings.api_key = api_key
-                        scanner_settings.balance = float(balance)
-                        scanner_settings.is_payment_configured = True
-                        scanner_settings.save()
-                    
-                    self.logger.writeToFile(f'[AIScannerManager.setupComplete] Saved balance: {scanner_settings.balance}')
-                    messages.success(request, f'Payment setup successful! You have ${balance} credit.')
-                    self.logger.writeToFile(f'[AIScannerManager] Payment setup completed for {admin.userName} with balance ${balance}')
+                    try:
+                        # Convert balance to float with error handling
+                        balance_float = float(balance) if balance else 0.0
+                        
+                        # Update scanner settings
+                        scanner_settings, created = AIScannerSettings.objects.get_or_create(
+                            admin=admin,
+                            defaults={
+                                'api_key': api_key,
+                                'balance': balance_float,
+                                'is_payment_configured': True
+                            }
+                        )
+                        
+                        if not created:
+                            # Update existing record
+                            scanner_settings.api_key = api_key
+                            scanner_settings.balance = balance_float
+                            scanner_settings.is_payment_configured = True
+                            scanner_settings.save()
+                            self.logger.writeToFile(f'[AIScannerManager.setupComplete] Updated existing scanner settings')
+                        else:
+                            self.logger.writeToFile(f'[AIScannerManager.setupComplete] Created new scanner settings')
+                        
+                        # Verify the save worked
+                        scanner_settings.refresh_from_db()
+                        self.logger.writeToFile(f'[AIScannerManager.setupComplete] Final state - API Key: {scanner_settings.api_key[:20] if scanner_settings.api_key else "None"}..., Balance: {scanner_settings.balance}, Configured: {scanner_settings.is_payment_configured}')
+                        
+                        # Success message
+                        if charged:
+                            messages.success(request, f'Payment setup successful! ${amount} charged to your card. You have ${balance} credit.')
+                        else:
+                            messages.success(request, f'Payment setup successful! You have ${balance} credit.')
+                        
+                        self.logger.writeToFile(f'[AIScannerManager] Payment setup completed for {admin.userName} with balance ${balance}')
+                        
+                    except ValueError as e:
+                        self.logger.writeToFile(f'[AIScannerManager.setupComplete] Balance conversion error: {str(e)}')
+                        messages.error(request, 'Payment setup completed but balance format invalid.')
+                    except Exception as e:
+                        self.logger.writeToFile(f'[AIScannerManager.setupComplete] Database save error: {str(e)}')
+                        messages.error(request, 'Payment setup completed but failed to save settings.')
                 else:
+                    self.logger.writeToFile(f'[AIScannerManager.setupComplete] No API key received in success callback')
                     messages.error(request, 'Payment setup completed but API key not received.')
+                    
+            elif status == 'partial_success':
+                # Handle partial success (payment method added but charge failed)
+                api_key = request.GET.get('api_key')
+                if api_key:
+                    try:
+                        scanner_settings, created = AIScannerSettings.objects.get_or_create(
+                            admin=admin,
+                            defaults={
+                                'api_key': api_key,
+                                'balance': 0.0,
+                                'is_payment_configured': True
+                            }
+                        )
+                        
+                        if not created:
+                            scanner_settings.api_key = api_key
+                            scanner_settings.is_payment_configured = True
+                            scanner_settings.save()
+                        
+                        messages.warning(request, 'Payment method added but initial charge failed. Please add funds manually.')
+                        self.logger.writeToFile(f'[AIScannerManager] Partial payment setup for {admin.userName}')
+                    except Exception as e:
+                        self.logger.writeToFile(f'[AIScannerManager.setupComplete] Partial success save error: {str(e)}')
+                        messages.error(request, 'Payment method setup partially failed.')
+                else:
+                    messages.error(request, 'Payment method setup failed - no API key received.')
                     
             elif status in ['failed', 'cancelled', 'error']:
                 error = request.GET.get('error', 'Payment setup failed')
