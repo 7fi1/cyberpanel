@@ -91,9 +91,19 @@ def getScanHistory(request):
         userID = request.session['userID']
         from loginSystem.models import Administrator
         from .models import ScanHistory
+        from plogical.acl import ACLManager
         
         admin = Administrator.objects.get(pk=userID)
-        scans = ScanHistory.objects.filter(admin=admin).order_by('-started_at')[:20]
+        currentACL = ACLManager.loadedACL(userID)
+        
+        # Get scan history with ACL respect
+        if currentACL['admin'] == 1:
+            # Admin can see all scans
+            scans = ScanHistory.objects.all().order_by('-started_at')[:20]
+        else:
+            # Users can only see their own scans and their sub-users' scans
+            user_admins = ACLManager.loadUserObjects(userID)
+            scans = ScanHistory.objects.filter(admin__in=user_admins).order_by('-started_at')[:20]
         
         scan_data = []
         for scan in scans:
@@ -125,9 +135,23 @@ def getScanDetails(request, scan_id):
         userID = request.session['userID']
         from loginSystem.models import Administrator
         from .models import ScanHistory
+        from plogical.acl import ACLManager
         
         admin = Administrator.objects.get(pk=userID)
-        scan = ScanHistory.objects.get(scan_id=scan_id, admin=admin)
+        currentACL = ACLManager.loadedACL(userID)
+        
+        # Get scan with ACL respect
+        try:
+            scan = ScanHistory.objects.get(scan_id=scan_id)
+            
+            # Check if user has access to this scan
+            if currentACL['admin'] != 1:
+                # Non-admin users can only see their own scans and their sub-users' scans
+                user_admins = ACLManager.loadUserObjects(userID)
+                if scan.admin not in user_admins:
+                    return JsonResponse({'success': False, 'error': 'Access denied to this scan'})
+        except ScanHistory.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Scan not found'})
         
         scan_data = {
             'scan_id': scan.scan_id,
@@ -160,9 +184,23 @@ def getPlatformScanStatus(request, scan_id):
         userID = request.session['userID']
         from loginSystem.models import Administrator
         from .models import ScanHistory
+        from plogical.acl import ACLManager
         
         admin = Administrator.objects.get(pk=userID)
-        scan = ScanHistory.objects.get(scan_id=scan_id, admin=admin)
+        currentACL = ACLManager.loadedACL(userID)
+        
+        # Get scan with ACL respect
+        try:
+            scan = ScanHistory.objects.get(scan_id=scan_id)
+            
+            # Check if user has access to this scan
+            if currentACL['admin'] != 1:
+                # Non-admin users can only see their own scans and their sub-users' scans
+                user_admins = ACLManager.loadUserObjects(userID)
+                if scan.admin not in user_admins:
+                    return JsonResponse({'success': False, 'error': 'Access denied to this scan'})
+        except ScanHistory.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Scan not found'})
         scanner_settings = admin.ai_scanner_settings
         
         if not scanner_settings.api_key:
