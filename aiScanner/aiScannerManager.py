@@ -477,13 +477,43 @@ class AIScannerManager:
                 # Field doesn't exist yet, allow access for now
                 pass
             
-            # Check if user has scanner configured
+            # Check if user has scanner configured (create if VPS user)
             try:
                 scanner_settings = AIScannerSettings.objects.get(admin=admin)
                 if not scanner_settings.is_payment_configured or not scanner_settings.api_key:
-                    return JsonResponse({'success': False, 'error': 'Initial payment setup required first'})
+                    # Check if this is a VPS with free scans
+                    server_ip = ACLManager.fetchIP()
+                    vps_info = self.check_vps_free_scans(server_ip)
+                    
+                    if vps_info.get('is_vps'):
+                        # VPS users can add payment methods without initial setup
+                        # Get or create VPS API key
+                        vps_key_data = self.get_or_create_vps_api_key(server_ip)
+                        if vps_key_data and vps_key_data.get('api_key'):
+                            # Use VPS API key for adding payment method
+                            api_key_to_use = vps_key_data.get('api_key')
+                        else:
+                            return JsonResponse({'success': False, 'error': 'Failed to authenticate VPS'})
+                    else:
+                        return JsonResponse({'success': False, 'error': 'Initial payment setup required first'})
+                else:
+                    api_key_to_use = scanner_settings.api_key
             except AIScannerSettings.DoesNotExist:
-                return JsonResponse({'success': False, 'error': 'Scanner not configured'})
+                # Check if this is a VPS with free scans
+                server_ip = ACLManager.fetchIP()
+                vps_info = self.check_vps_free_scans(server_ip)
+                
+                if vps_info.get('is_vps'):
+                    # VPS users can add payment methods without initial setup
+                    # Get or create VPS API key
+                    vps_key_data = self.get_or_create_vps_api_key(server_ip)
+                    if vps_key_data and vps_key_data.get('api_key'):
+                        # Use VPS API key for adding payment method
+                        api_key_to_use = vps_key_data.get('api_key')
+                    else:
+                        return JsonResponse({'success': False, 'error': 'Failed to authenticate VPS'})
+                else:
+                    return JsonResponse({'success': False, 'error': 'Scanner not configured'})
             
             # Get admin email and domain
             cyberpanel_host = request.get_host()  # Keep full host including port
@@ -493,7 +523,7 @@ class AIScannerManager:
             self.logger.writeToFile(f'[AIScannerManager.addPaymentMethod] Setting up new payment method for {admin.userName} (API key authentication)')
             
             # Call platform API to add payment method
-            setup_data = self.setup_add_payment_method(scanner_settings.api_key, admin_email, cyberpanel_host)
+            setup_data = self.setup_add_payment_method(api_key_to_use, admin_email, cyberpanel_host)
             
             if setup_data:
                 self.logger.writeToFile(f'[AIScannerManager.addPaymentMethod] Payment method setup successful for {admin_email}')
