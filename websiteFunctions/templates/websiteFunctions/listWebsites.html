@@ -668,10 +668,10 @@
                                 </span>
                             </div>
                             <div class="row-actions">
-                                <a href="/websites/{{web.domain}}" class="btn btn-primary btn-sm" title="{% trans 'Manage' %}">
+                                <a href="/websites/{$ web.domain $}" class="btn btn-primary btn-sm" title="{% trans 'Manage' %}">
                                     Manage
                                 </a>
-                                <a href="/filemanager/{{web.domain}}" class="btn btn-outline btn-sm" title="{% trans 'File Manager' %}">
+                                <a href="/filemanager/{$ web.domain $}" class="btn btn-outline btn-sm" title="{% trans 'File Manager' %}">
                                     Filemanager
                                 </a>
                             </div>
@@ -803,7 +803,7 @@
                                                         </div>
                                                     </div>
                                                     <div class="wp-site-actions">
-                                                        <a href="/websites/WPHome?ID={{wp.id}}" class="btn btn-primary btn-sm">
+                                                        <a href="/websites/WPHome?ID={$ wp.id $}" class="btn btn-primary btn-sm">
                                                             <i class="fas fa-cog"></i>
                                                             Manage
                                                         </a>
