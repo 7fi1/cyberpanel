@@ -1091,7 +1091,7 @@ function startProgressMonitoring(scanId) {
         .then(data => {
             if (data.success) {
                 if (data.is_active) {
-                    console.log(`[AI Scanner] Progress update: ${data.phase} - ${data.progress}%`);
+                    console.log(`[AI Scanner] Progress update: Phase="${data.phase}" Progress=${data.progress}% Activity="${data.activity_description || 'N/A'}" Files=${data.files_scanned}/${data.files_discovered}`);
                     updateProgressUI(data);
                 } else {
                     console.log(`[AI Scanner] Scan completed, stopping monitoring`);
@@ -1238,6 +1238,7 @@ function formatPhase(phase) {
         'starting': 'Starting Scan',
         'discovering_files': 'Discovering Files',
         'scanning_files': 'Scanning Files',
+        'ai_analysis': 'AI Analysis',
         'completing': 'Finalizing',
         'completed': 'Completed',
         'failed': 'Failed',
@@ -1251,6 +1252,7 @@ function getPhaseColor(phase) {
         'starting': 'info',
         'discovering_files': 'warning',
         'scanning_files': 'primary',
+        'ai_analysis': 'warning',
         'completing': 'success',
         'completed': 'success',
         'failed': 'danger',
@@ -1365,6 +1367,7 @@ function getStatusClass(phase) {
         'starting': 'info',
         'discovering_files': 'warning', 
         'scanning_files': 'warning',
+        'ai_analysis': 'info',
         'completing': 'warning',
         'completed': 'success',
         'failed': 'danger',

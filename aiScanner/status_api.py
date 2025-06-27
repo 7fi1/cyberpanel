@@ -60,6 +60,13 @@ def receive_status_update(request):
         
         # Extended logging for debugging
         logging.writeToFile(f'[Status API] ✅ {action} status update for scan {scan_id}')
+        
+        # Track phase transitions
+        old_phase = status_update.phase if not created else 'none'
+        new_phase = data.get("phase")
+        if old_phase != new_phase:
+            logging.writeToFile(f'[Status API]    📊 Phase transition: {old_phase} → {new_phase}')
+        
         logging.writeToFile(f'[Status API]    Phase: {data.get("phase")} → Progress: {data.get("progress", 0)}%')
         logging.writeToFile(f'[Status API]    Files: {data.get("files_scanned", 0)}/{data.get("files_discovered", 0)} ({data.get("files_remaining", 0)} remaining)')
         logging.writeToFile(f'[Status API]    Threats: {data.get("threats_found", 0)} total (Critical: {data.get("critical_threats", 0)}, High: {data.get("high_threats", 0)})')
@@ -67,6 +74,16 @@ def receive_status_update(request):
             logging.writeToFile(f'[Status API]    Current File: {data.get("current_file")}')
         if data.get('activity_description'):
             logging.writeToFile(f'[Status API]    Activity: {data.get("activity_description")}')
+        
+        # Log specific phase milestones
+        phase = data.get('phase', '')
+        if phase == 'discovering_files' and data.get('files_discovered', 0) > 0:
+            logging.writeToFile(f'[Status API]    ✅ File discovery complete: {data.get("files_discovered")} files found')
+        elif phase == 'scanning_files' and data.get('files_scanned', 0) > 0:
+            percentage = (data.get('files_scanned', 0) / data.get('files_discovered', 1)) * 100
+            logging.writeToFile(f'[Status API]    📈 Scan progress: {percentage:.1f}% of files scanned')
+        elif phase == 'ai_analysis':
+            logging.writeToFile(f'[Status API]    🤖 AI Analysis phase - suspicious files being analyzed')
         
         return JsonResponse({'success': True})
 
