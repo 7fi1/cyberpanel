@@ -1029,9 +1029,18 @@ function fetchLiveProgress(scanId) {
                 fetchCompletedScanDetails(scanId);
             }
         } else {
-            console.log(`[AI Scanner] No live status found, falling back to completed results`);
-            // No live status found, try fetching completed scan details
-            fetchCompletedScanDetails(scanId);
+            // Check if scan exists but no status yet
+            if (data.scan_exists && data.scan_status === 'running') {
+                console.log(`[AI Scanner] Scan is running but no status updates yet, retrying...`);
+                // Show loading state and retry in a few seconds
+                setTimeout(() => {
+                    fetchLiveProgress(scanId);
+                }, 3000);
+            } else {
+                console.log(`[AI Scanner] No live status found, falling back to completed results`);
+                // No live status found, try fetching completed scan details
+                fetchCompletedScanDetails(scanId);
+            }
         }
     })
     .catch(error => {

@@ -124,11 +124,31 @@ def get_live_scan_progress(request, scan_id):
     }
     """
     try:
+        # Log the request
+        logging.writeToFile(f'[Status API] Live progress request for scan: {scan_id}')
+        
         # Get latest status update
         try:
             status_update = ScanStatusUpdate.objects.get(scan_id=scan_id)
         except ScanStatusUpdate.DoesNotExist:
-            logging.writeToFile(f'[Status API] Status not found for scan {scan_id}')
+            logging.writeToFile(f'[Status API] Status not found for scan {scan_id} - checking if scan exists in history')
+            
+            # Check if scan exists in ScanHistory
+            from .models import ScanHistory
+            try:
+                scan_history = ScanHistory.objects.get(scan_id=scan_id)
+                logging.writeToFile(f'[Status API] Scan {scan_id} exists in history with status: {scan_history.status}')
+                
+                # If scan exists but no status update, it might not have started yet
+                return JsonResponse({
+                    'success': False,
+                    'error': 'No live status available yet',
+                    'scan_exists': True,
+                    'scan_status': scan_history.status
+                }, status=404)
+            except ScanHistory.DoesNotExist:
+                logging.writeToFile(f'[Status API] Scan {scan_id} not found in history either')
+                
             return JsonResponse({'success': False, 'error': 'Scan not found'}, status=404)
 
         response_data = {
