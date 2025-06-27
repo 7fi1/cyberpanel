@@ -116,6 +116,23 @@
             white-space: nowrap;
         }
         
+        /* Ensure anchor tags styled as buttons work properly */
+        a.btn {
+            text-decoration: none;
+            color: inherit;
+        }
+        
+        a.btn:hover {
+            text-decoration: none;
+            color: inherit;
+        }
+        
+        a.btn:focus,
+        a.btn:active {
+            text-decoration: none;
+            color: inherit;
+        }
+        
         .btn-primary {
             background: #5b5fcf;
             color: white;
@@ -651,12 +668,12 @@
                                 </span>
                             </div>
                             <div class="row-actions">
-                                <button class="btn btn-primary btn-sm" title="{% trans 'Manage' %}" ng-click="goToManage($event, web.domain)">
+                                <a href="/websites/{{web.domain}}" class="btn btn-primary btn-sm" title="{% trans 'Manage' %}">
                                     Manage
-                                </button>
-                                <button class="btn btn-outline btn-sm" title="{% trans 'File Manager' %}" ng-click="goToFileManager($event, web.domain)">
+                                </a>
+                                <a href="/filemanager/{{web.domain}}" class="btn btn-outline btn-sm" title="{% trans 'File Manager' %}">
                                     Filemanager
-                                </button>
+                                </a>
                             </div>
                         </div>
                         
@@ -786,10 +803,10 @@
                                                         </div>
                                                     </div>
                                                     <div class="wp-site-actions">
-                                                        <button class="btn btn-primary btn-sm" ng-click="manageWP(wp.id)">
+                                                        <a href="/websites/WPHome?ID={{wp.id}}" class="btn btn-primary btn-sm">
                                                             <i class="fas fa-cog"></i>
                                                             Manage
-                                                        </button>
+                                                        </a>
                                                         <button class="btn btn-outline-danger btn-sm" ng-click="deleteWPSite(wp)">
                                                             <i class="fas fa-trash"></i>
                                                             Delete
