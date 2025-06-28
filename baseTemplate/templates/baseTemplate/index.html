@@ -465,6 +465,31 @@
             color: white;
         }
         
+        /* Active submenu item */
+        #sidebar .submenu .menu-item.active {
+            background: #5856d6;
+            color: white;
+            box-shadow: 0 2px 8px rgba(88,86,214,0.2);
+        }
+        
+        #sidebar .submenu .menu-item.active:hover {
+            background: #4a48c8;
+        }
+        
+        /* Parent menu item with active child */
+        #sidebar .menu-item.has-active-child {
+            color: #5856d6;
+            font-weight: 600;
+        }
+        
+        #sidebar .menu-item.has-active-child .icon-wrapper {
+            background: #e8e6ff;
+        }
+        
+        #sidebar .menu-item.has-active-child i {
+            color: #5856d6;
+        }
+        
         /* Main Content */
         #main-content {
             margin-left: 260px;
@@ -1797,7 +1822,41 @@
             checkBackupStatus();
             // Show AI Scanner notification with a slight delay for better UX
             setTimeout(checkAIScannerStatus, 1000);
+            
+            // Set active menu state based on current URL
+            setActiveMenuState();
         });
+        
+        // Function to set active menu state
+        function setActiveMenuState() {
+            const currentPath = window.location.pathname;
+            const allMenuItems = document.querySelectorAll('.menu-item');
+            
+            // Remove all active and has-active-child classes first
+            allMenuItems.forEach(item => {
+                item.classList.remove('active', 'has-active-child');
+            });
+            
+            // Find and activate the matching menu item
+            allMenuItems.forEach(item => {
+                const href = item.getAttribute('href');
+                if (href && href !== '#' && currentPath === href) {
+                    item.classList.add('active');
+                    
+                    // If this item is in a submenu, expand the parent
+                    const parentSubmenu = item.closest('.submenu');
+                    if (parentSubmenu) {
+                        parentSubmenu.classList.add('show');
+                        
+                        // Find the parent menu item (the one with the chevron)
+                        const parentMenuItem = parentSubmenu.previousElementSibling;
+                        if (parentMenuItem && parentMenuItem.classList.contains('menu-item')) {
+                            parentMenuItem.classList.add('expanded', 'has-active-child');
+                        }
+                    }
+                }
+            });
+        }
     </script>
     
     {% block footer_scripts %}{% endblock %}
