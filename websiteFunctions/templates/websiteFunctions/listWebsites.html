@@ -832,7 +832,7 @@
                     <select ng-model="currentPage" 
                             class="form-control pagination-select" 
                             ng-change="getFurtherWebsitesFromDB()">
-                        <option ng-repeat="page in pagination">Page {$ $index + 1 $}</option>
+                        <option ng-repeat="page in pagination" value="{$ $index + 1 $}">Page {$ $index + 1 $}</option>
                     </select>
                 </div>
             </div>

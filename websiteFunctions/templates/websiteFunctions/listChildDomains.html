@@ -653,7 +653,7 @@
         <!-- Pagination -->
         <div class="pagination-section" ng-show="pagination.length > 0">
             <select ng-model="currentPage" class="pagination-select" ng-change="getFurtherWebsitesFromDB()">
-                <option ng-repeat="page in pagination">{% trans "Page" %} {$ $index + 1 $}</option>
+                <option ng-repeat="page in pagination" value="{$ $index + 1 $}">{% trans "Page" %} {$ $index + 1 $}</option>
             </select>
         </div>
     </div>
