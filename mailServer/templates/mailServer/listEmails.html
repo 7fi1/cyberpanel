@@ -642,10 +642,12 @@
                                                             <i class="fas fa-key"></i>
                                                             <span>{% trans 'Change Password' %}</span>
                                                         </a>
-                                                        <a ng-click="deleteEmailAccountFinal(record.email)"
+                                                        <a ng-click="confirmDeleteEmail(record.email)"
                                                            class="btn-danger" 
                                                            href="#"
-                                                           title="">
+                                                           title=""
+                                                           data-toggle="modal" 
+                                                           data-target="#deleteConfirmModal">
                                                             <i class="fas fa-trash"></i>
                                                             <span>{% trans 'Delete' %}</span>
                                                         </a>
@@ -706,6 +708,45 @@
                         </div>
                     </form>
                 {% endif %}
+            </div>
+        </div>
+
+        <!-- Delete Confirmation Modal -->
+        <div id="deleteConfirmModal" class="modal fade" role="dialog">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        <h4 class="modal-title">
+                            <i class="fas fa-exclamation-triangle" style="color: #ef4444;"></i>
+                            {% trans "Confirm Email Deletion" %}
+                        </h4>
+                    </div>
+                    <div class="modal-body">
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <div>
+                                <strong>{% trans "Warning: This action cannot be undone!" %}</strong>
+                                <p style="margin: 0.5rem 0 0 0;">{% trans "This will permanently delete the email account and all associated data including emails, folders, and settings." %}</p>
+                            </div>
+                        </div>
+                        <p><strong>{% trans "Email to delete:" %}</strong> <span style="color: #ef4444; font-weight: 600;">{$ emailToDelete $}</span></p>
+                        <p>{% trans "Are you sure you want to continue?" %}</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" 
+                                class="btn btn-danger" 
+                                ng-click="deleteEmailAccountFinal(emailToDelete)"
+                                data-dismiss="modal">
+                            <i class="fas fa-trash"></i>
+                            {% trans "Yes, Delete Email" %}
+                        </button>
+                        <button type="button" class="btn btn-default" data-dismiss="modal">
+                            <i class="fas fa-times"></i>
+                            {% trans "Cancel" %}
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

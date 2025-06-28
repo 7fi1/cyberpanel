@@ -1186,6 +1186,10 @@ app.controller('listEmails', function ($scope, $http) {
 
     };
 
+    $scope.confirmDeleteEmail = function (email) {
+        $scope.emailToDelete = email;
+    };
+
     $scope.deleteEmailAccountFinal = function (email) {
 
         $scope.cyberpanelLoading = true;  // Show loading while deleting
