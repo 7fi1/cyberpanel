@@ -11,8 +11,8 @@ import sys
 import django
 
 # Setup Django environment
-sys.path.append('/usr/local/CyberPanel')
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "CyberPanel.settings")
+sys.path.append('/usr/local/CyberCP')
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "CyberCP.settings")
 django.setup()
 
 from loginSystem.models import Administrator
