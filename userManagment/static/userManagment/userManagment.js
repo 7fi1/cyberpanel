@@ -153,6 +153,32 @@ app.controller('modifyUser', function ($scope, $http) {
             $scope.qrHidden = true;
         }
     };
+    
+    $scope.copySecretKey = function() {
+        if ($scope.secretKey) {
+            // Create a temporary textarea element
+            var tempTextarea = document.createElement('textarea');
+            tempTextarea.value = $scope.secretKey;
+            tempTextarea.style.position = 'fixed';
+            tempTextarea.style.opacity = '0';
+            document.body.appendChild(tempTextarea);
+            
+            // Select and copy the text
+            tempTextarea.select();
+            tempTextarea.setSelectionRange(0, 99999); // For mobile devices
+            
+            try {
+                document.execCommand('copy');
+                // Show success feedback (you can add a toast notification here if available)
+                alert('Secret key copied to clipboard!');
+            } catch (err) {
+                alert('Failed to copy secret key. Please copy it manually.');
+            }
+            
+            // Remove the temporary element
+            document.body.removeChild(tempTextarea);
+        }
+    };
 
 
     $scope.fetchUserDetails = function () {
@@ -191,6 +217,12 @@ app.controller('modifyUser', function ($scope, $http) {
                 $scope.securityLevel = userDetails.securityLevel;
                 $scope.currentSecurityLevel = userDetails.securityLevel;
                 $scope.twofa = Boolean(userDetails.twofa);
+                
+                // Format secret key with spaces for better readability
+                if (userDetails.secretKey) {
+                    $scope.secretKey = userDetails.secretKey;
+                    $scope.formattedSecretKey = userDetails.secretKey.match(/.{1,4}/g).join(' ');
+                }
 
                 qrCode.set({
                     value: userDetails.otpauth

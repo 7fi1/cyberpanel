@@ -310,7 +310,8 @@ def fetchUserDetails(request):
                     "websitesLimit": websitesLimit,
                     "securityLevel": SecurityLevel(user.securityLevel).name,
                     "otpauth": otpauth,
-                    'twofa': user.twoFA
+                    'twofa': user.twoFA,
+                    'secretKey': user.secretKey
                 }
 
                 data_ret = {'fetchStatus': 1, 'error_message': 'None', "userDetails": userDetails}
