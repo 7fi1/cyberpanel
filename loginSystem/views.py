@@ -101,16 +101,18 @@ def verifyLogin(request):
 
             if hashPassword.check_password(admin.password, password):
                 if admin.twoFA:
-                    if request.session['twofa'] == 0:
+                    if request.session.get('twofa', 1) == 0:
                         import pyotp
                         totp = pyotp.TOTP(admin.secretKey)
-                        del request.session['twofa']
-                        if totp.now() != data['twofa']:
+                        twofa_code = data.get('twofa', '')
+                        if not twofa_code or str(totp.now()) != str(twofa_code):
                             request.session['twofa'] = 0
                             data = {'userID': 0, 'loginStatus': 0, 'error_message': "Invalid verification code."}
                             json_data = json.dumps(data)
                             response.write(json_data)
                             return response
+                        # Clear the session flag after successful 2FA verification
+                        del request.session['twofa']
 
                 request.session['userID'] = admin.pk
 
