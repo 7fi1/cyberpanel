@@ -982,8 +982,17 @@ class BackupManager:
             config = {'frequency': backupFrequency,
                       'retention': backupRetention}
 
-            nbj = NormalBackupJobs(owner=nbd, name=name, config=json.dumps(config))
-            nbj.save()
+            # Check if a job with this name already exists
+            existing_job = NormalBackupJobs.objects.filter(name=name).first()
+            if existing_job:
+                # Update existing job instead of creating a new one
+                existing_job.owner = nbd
+                existing_job.config = json.dumps(config)
+                existing_job.save()
+            else:
+                # Create new job
+                nbj = NormalBackupJobs(owner=nbd, name=name, config=json.dumps(config))
+                nbj.save()
 
             final_json = json.dumps({'status': 1, 'scheduleStatus': 0})
             return HttpResponse(final_json)
@@ -1540,7 +1549,11 @@ class BackupManager:
             if ACLManager.currentContextPermission(currentACL, 'scheduleBackups') == 0:
                 return ACLManager.loadErrorJson('scheduleStatus', 0)
 
-            nbd = NormalBackupJobs.objects.get(name=selectedAccount)
+            try:
+                nbd = NormalBackupJobs.objects.get(name=selectedAccount)
+            except NormalBackupJobs.MultipleObjectsReturned:
+                # If multiple jobs exist with same name, get the first one
+                nbd = NormalBackupJobs.objects.filter(name=selectedAccount).first()
 
             websites = nbd.normalbackupsites_set.all()
 
@@ -1661,7 +1674,11 @@ class BackupManager:
             selectedJob = data['selectedJob']
             type = data['type']
 
-            nbj = NormalBackupJobs.objects.get(name=selectedJob)
+            try:
+                nbj = NormalBackupJobs.objects.get(name=selectedJob)
+            except NormalBackupJobs.MultipleObjectsReturned:
+                # If multiple jobs exist with same name, get the first one
+                nbj = NormalBackupJobs.objects.filter(name=selectedJob).first()
 
             if type == 'all':
                 config = json.loads(nbj.config)
@@ -1713,7 +1730,11 @@ class BackupManager:
             selectedJob = data['selectedJob']
             selectedWebsite = data['website']
 
-            nbj = NormalBackupJobs.objects.get(name=selectedJob)
+            try:
+                nbj = NormalBackupJobs.objects.get(name=selectedJob)
+            except NormalBackupJobs.MultipleObjectsReturned:
+                # If multiple jobs exist with same name, get the first one
+                nbj = NormalBackupJobs.objects.filter(name=selectedJob).first()
             website = Websites.objects.get(domain=selectedWebsite)
 
             if ACLManager.currentContextPermission(currentACL, 'scheduleBackups') == 0:
@@ -1746,7 +1767,11 @@ class BackupManager:
             backupFrequency = data['backupFrequency']
 
 
-            nbj = NormalBackupJobs.objects.get(name=selectedJob)
+            try:
+                nbj = NormalBackupJobs.objects.get(name=selectedJob)
+            except NormalBackupJobs.MultipleObjectsReturned:
+                # If multiple jobs exist with same name, get the first one
+                nbj = NormalBackupJobs.objects.filter(name=selectedJob).first()
 
             if ACLManager.currentContextPermission(currentACL, 'scheduleBackups') == 0:
                 return ACLManager.loadErrorJson('scheduleStatus', 0)
@@ -1783,7 +1808,11 @@ class BackupManager:
 
             selectedJob = data['selectedJob']
 
-            nbj = NormalBackupJobs.objects.get(name=selectedJob)
+            try:
+                nbj = NormalBackupJobs.objects.get(name=selectedJob)
+            except NormalBackupJobs.MultipleObjectsReturned:
+                # If multiple jobs exist with same name, get the first one
+                nbj = NormalBackupJobs.objects.filter(name=selectedJob).first()
 
             if ACLManager.currentContextPermission(currentACL, 'scheduleBackups') == 0:
                 return ACLManager.loadErrorJson('scheduleStatus', 0)
@@ -1815,7 +1844,11 @@ class BackupManager:
             if ACLManager.currentContextPermission(currentACL, 'scheduleBackups') == 0:
                 return ACLManager.loadErrorJson('scheduleStatus', 0)
 
-            nbj = NormalBackupJobs.objects.get(name=selectedJob)
+            try:
+                nbj = NormalBackupJobs.objects.get(name=selectedJob)
+            except NormalBackupJobs.MultipleObjectsReturned:
+                # If multiple jobs exist with same name, get the first one
+                nbj = NormalBackupJobs.objects.filter(name=selectedJob).first()
 
             logs = nbj.normalbackupjoblogs_set.all().order_by('-id')
 
