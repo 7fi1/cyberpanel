@@ -130,10 +130,11 @@ CyberPanel runs on x86_64 architecture and supports the following operating syst
 - RHEL 8 ✅ EOL: 31 May 2029.
 
 ### **AlmaLinux**:
-- AlmaLinux 9 ✅ EOL: 31 May 2027.
-- AlmaLinux 8 🛑 EOL: 1 May 2024.
+- AlmaLinux 9 ✅ EOL: 31 May 2032.
+- AlmaLinux 8 ✅ EOL: 31 May 2029.
 
 ### **Other OS**:
+- RockyLinux 9 ✅ EOL: 31 May 2032.
 - RockyLinux 8 ✅ EOL: 31 May 2029.
 - CloudLinux 8 ✅ EOL: 31 May 2029.
 - CloudLinux 7 🛑 EOL: 1 Jul 2024.
