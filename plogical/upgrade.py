@@ -2948,6 +2948,33 @@ echo $oConfig->Save() ? 'Done' : 'Error';
                 writeToFile.write(content)
                 writeToFile.close()
 
+            # Fix mailbox auto-creation issue
+            if dovecotContent.find('lda_mailbox_autocreate') == -1:
+                Upgrade.stdOut("Enabling mailbox auto-creation in dovecot...")
+                
+                # Add mailbox auto-creation settings to protocol lda section
+                dovecotContent = open(dovecotConf, 'r').read()
+                
+                if dovecotContent.find('protocol lda') > -1:
+                    # Update existing protocol lda section
+                    import re
+                    pattern = r'(protocol lda\s*{[^}]*)'
+                    replacement = r'\1\n    lda_mailbox_autocreate = yes\n    lda_mailbox_autosubscribe = yes'
+                    dovecotContent = re.sub(pattern, replacement, dovecotContent)
+                    
+                    writeToFile = open(dovecotConf, 'w')
+                    writeToFile.write(dovecotContent)
+                    writeToFile.close()
+                else:
+                    # Add new protocol lda section
+                    writeToFile = open(dovecotConf, 'a')
+                    content = """\nprotocol lda {
+    lda_mailbox_autocreate = yes
+    lda_mailbox_autosubscribe = yes
+}\n"""
+                    writeToFile.write(content)
+                    writeToFile.close()
+
                 command = 'systemctl restart dovecot'
                 Upgrade.executioner(command, command, 0)
 

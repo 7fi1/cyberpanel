@@ -325,21 +325,47 @@ class mailUtilities:
             emailLimits = EmailLimits(email=emailAcct)
             emailLimits.save()
 
-            ### Create email folders manually if they dont exist
+            ### Create maildir structure if it doesn't exist
+            
+            # Create base maildir path
+            maildir_base = f"/home/vmail/{domain}/{userName}"
+            maildir_path = f"{maildir_base}/Maildir"
+            
+            # Create the main maildir structure
+            if not os.path.exists(maildir_path):
+                command = f"mkdir -p '{maildir_path}/cur' '{maildir_path}/new' '{maildir_path}/tmp'"
+                ProcessUtilities.executioner(command, 'vmail')
+                
+                # Set proper permissions
+                command = f"chmod -R 700 '{maildir_base}'"
+                ProcessUtilities.executioner(command, 'vmail')
+                
+                # Ensure ownership is correct
+                command = f"chown -R vmail:vmail '{maildir_base}'"
+                ProcessUtilities.executioner(command, 'root')
 
-            # command = f"mkdir '/home/vmail/{domain}/{userName}/Maildir/.Archive' " \
-            #           f"'/home/vmail/{domain}/{userName}/Maildir/.Deleted Items' " \
-            #           f"'/home/vmail/{domain}/{userName}/Maildir/.Drafts' " \
-            #           f"'/home/vmail/{domain}/{userName}/Maildir/.Sent' " \
-            #           f"'/home/vmail/{domain}/{userName}/Maildir/.Junk E-mail'"
-            # ProcessUtilities.executioner(command, 'vmail')
-            #
-            # command = f"chmod 700 '/home/vmail/{domain}/{userName}/Maildir/.Archive' " \
-            #           f"'/home/vmail/{domain}/{userName}/Maildir/.Deleted Items' " \
-            #           f"'/home/vmail/{domain}/{userName}/Maildir/.Drafts' " \
-            #           f"'/home/vmail/{domain}/{userName}/Maildir/.Sent' " \
-            #           f"'/home/vmail/{domain}/{userName}/Maildir/.Junk E-mail'"
-            # ProcessUtilities.executioner(command, 'vmail')
+            # Create standard IMAP folders
+            standard_folders = [
+                ".Archive",
+                ".Deleted Items", 
+                ".Drafts",
+                ".Sent",
+                ".Junk E-mail"
+            ]
+            
+            for folder in standard_folders:
+                folder_path = f"{maildir_path}/{folder}"
+                if not os.path.exists(folder_path):
+                    command = f"mkdir -p '{folder_path}/cur' '{folder_path}/new' '{folder_path}/tmp'"
+                    ProcessUtilities.executioner(command, 'vmail')
+            
+            # Set permissions for all folders
+            command = f"chmod -R 700 '{maildir_path}'"
+            ProcessUtilities.executioner(command, 'vmail')
+            
+            # Ensure final ownership
+            command = f"chown -R vmail:vmail '{maildir_base}'"
+            ProcessUtilities.executioner(command, 'root')
 
             #if not os.path.exists('/usr/local/lscp/cyberpanel/rainloop/data/_data_/_default_/plugins/mailbox-detect'):
             #    mailUtilities.InstallMailBoxFoldersPlugin()
