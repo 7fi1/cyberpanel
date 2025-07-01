@@ -85,6 +85,43 @@
         transition: all 0.2s ease;
     }
     
+    /* Specific styling for select elements to fix Windows visibility issues */
+    select.form-control {
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+        background-color: white;
+        background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23dc3545' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right 10px center;
+        background-size: 20px;
+        padding-right: 40px;
+        color: #2f3640 !important;
+        font-size: 14px !important;
+        line-height: 1.5;
+        height: auto;
+        min-height: 42px;
+    }
+    
+    /* Ensure option text is visible */
+    select.form-control option {
+        color: #2f3640;
+        background-color: white;
+        padding: 8px;
+        font-size: 14px;
+    }
+    
+    /* Fix for Windows high contrast mode */
+    @media screen and (-ms-high-contrast: active) {
+        select.form-control {
+            border: 2px solid;
+        }
+        select.form-control option {
+            background: white;
+            color: black;
+        }
+    }
+    
     .form-control:hover {
         border-color: #dc3545;
     }
@@ -93,6 +130,12 @@
         outline: none;
         border-color: #dc3545;
         box-shadow: 0 0 0 3px rgba(220,53,69,0.1);
+    }
+    
+    /* Specific focus styles for select */
+    select.form-control:focus {
+        background-color: white;
+        color: #2f3640;
     }
     
     /* Website selector card */
@@ -347,6 +390,34 @@
     
     #websiteDeleteSuccess {
         display: none;
+    }
+    
+    /* Additional Windows-specific fixes */
+    @supports (-ms-ime-align: auto) {
+        /* Edge/IE specific styles */
+        select.form-control {
+            color: #2f3640 !important;
+            background-color: white !important;
+        }
+    }
+    
+    /* Fix for Firefox on Windows */
+    @-moz-document url-prefix() {
+        select.form-control {
+            color: #2f3640 !important;
+            text-shadow: none;
+        }
+    }
+    
+    /* Ensure selected option is always visible */
+    select.form-control::-ms-value {
+        color: #2f3640;
+        background-color: white;
+    }
+    
+    /* Fix for Chrome on Windows */
+    select.form-control:not(:focus):not(:hover) {
+        color: #2f3640 !important;
     }
     
     @media (max-width: 768px) {

@@ -33,9 +33,10 @@
         }
         
         .page-subtitle {
-            font-size: 1.125rem;
+            font-size: 1.25rem;
             color: #64748b;
             margin-bottom: 0;
+            line-height: 1.5;
         }
         
         .header-actions {
@@ -86,9 +87,10 @@
         .form-label {
             display: block;
             margin-bottom: 0.5rem;
-            font-weight: 500;
+            font-weight: 600;
             color: #1e293b;
-            font-size: 0.875rem;
+            font-size: 0.9375rem;
+            letter-spacing: 0.3px;
         }
         
         .form-control {
@@ -98,6 +100,8 @@
             border-radius: 8px;
             font-size: 0.875rem;
             transition: all 0.3s ease;
+            color: #2f3640;
+            background-color: white;
             background: #fff;
         }
         
@@ -105,6 +109,77 @@
             outline: none;
             border-color: #5b5fcf;
             box-shadow: 0 0 0 3px rgba(91, 95, 207, 0.1);
+        }
+        
+        /* Specific styling for select elements to fix Windows visibility issues */
+        select.form-control {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            background-color: white;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%235b5fcf' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            background-size: 20px;
+            padding-right: 40px;
+            color: #2f3640 !important;
+            font-size: 0.9375rem !important;
+            line-height: 1.5;
+            height: auto;
+            min-height: 42px;
+        }
+        
+        /* Ensure option text is visible */
+        select.form-control option {
+            color: #2f3640;
+            background-color: white;
+            padding: 8px;
+            font-size: 0.9375rem;
+        }
+        
+        /* Fix for Windows high contrast mode */
+        @media screen and (-ms-high-contrast: active) {
+            select.form-control {
+                border: 2px solid;
+            }
+            select.form-control option {
+                background: white;
+                color: black;
+            }
+        }
+        
+        /* Specific focus styles for select */
+        select.form-control:focus {
+            background-color: white;
+            color: #2f3640;
+        }
+        
+        /* Additional Windows-specific fixes */
+        @supports (-ms-ime-align: auto) {
+            /* Edge/IE specific styles */
+            select.form-control {
+                color: #2f3640 !important;
+                background-color: white !important;
+            }
+        }
+        
+        /* Fix for Firefox on Windows */
+        @-moz-document url-prefix() {
+            select.form-control {
+                color: #2f3640 !important;
+                text-shadow: none;
+            }
+        }
+        
+        /* Ensure selected option is always visible */
+        select.form-control::-ms-value {
+            color: #2f3640;
+            background-color: white;
+        }
+        
+        /* Fix for Chrome on Windows */
+        select.form-control:not(:focus):not(:hover) {
+            color: #2f3640 !important;
         }
         
         .btn-primary {
@@ -151,13 +226,14 @@
             background: #fff;
             color: #ef4444;
             border: 1px solid #fee2e2;
-            padding: 0.5rem 1rem;
+            padding: 0.625rem 1.125rem;
             border-radius: 6px;
-            font-weight: 500;
+            font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
             text-decoration: none;
-            font-size: 0.875rem;
+            font-size: 0.9375rem;
+            letter-spacing: 0.3px;
         }
         
         .btn-danger:hover {
@@ -170,13 +246,14 @@
             background: #fff;
             color: #5b5fcf;
             border: 1px solid #e8e9ff;
-            padding: 0.5rem 1rem;
+            padding: 0.625rem 1.125rem;
             border-radius: 6px;
-            font-weight: 500;
+            font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
             text-decoration: none;
-            font-size: 0.875rem;
+            font-size: 0.9375rem;
+            letter-spacing: 0.3px;
         }
         
         .btn-action:hover {
@@ -241,7 +318,7 @@
         
         .info-card h4 {
             color: #1e293b;
-            font-size: 1rem;
+            font-size: 1.125rem;
             font-weight: 600;
             margin-bottom: 1rem;
             display: flex;
@@ -261,17 +338,18 @@
         .config-table th {
             background: #5b5fcf;
             color: white;
-            padding: 0.75rem 1rem;
+            padding: 0.875rem 1rem;
             text-align: left;
             font-weight: 600;
-            font-size: 0.875rem;
+            font-size: 0.9375rem;
         }
         
         .config-table td {
-            padding: 0.75rem 1rem;
+            padding: 0.875rem 1rem;
             border-bottom: 1px solid #f3f4f6;
-            font-size: 0.875rem;
-            color: #64748b;
+            font-size: 0.9375rem;
+            color: #2f3640;
+            line-height: 1.5;
         }
         
         .config-table tr:last-child td {
@@ -291,21 +369,22 @@
         }
         
         .email-table th {
-            padding: 1rem;
+            padding: 1.25rem 1rem;
             text-align: left;
-            font-weight: 600;
+            font-weight: 700;
             color: #1e293b;
-            font-size: 0.875rem;
+            font-size: 0.9375rem;
             text-transform: uppercase;
-            letter-spacing: 0.05em;
-            border-bottom: 1px solid #e8e9ff;
+            letter-spacing: 0.75px;
+            border-bottom: 2px solid #e8e9ff;
         }
         
         .email-table td {
-            padding: 1rem;
-            color: #64748b;
-            font-size: 0.875rem;
+            padding: 1.25rem 1rem;
+            color: #2f3640;
+            font-size: 0.9375rem;
             border-bottom: 1px solid #f3f4f6;
+            line-height: 1.5;
         }
         
         .email-table tbody tr:hover {
@@ -373,19 +452,21 @@
         }
         
         .modal .form-horizontal .control-label {
-            font-weight: 500;
+            font-weight: 600;
             color: #1e293b;
-            font-size: 0.875rem;
+            font-size: 0.9375rem;
             padding-top: 0.75rem;
             text-align: right;
+            letter-spacing: 0.3px;
         }
         
         .modal .form-control {
-            padding: 0.75rem 1rem;
+            padding: 0.875rem 1rem;
             border: 1px solid #e8e9ff;
             border-radius: 8px;
-            font-size: 0.875rem;
+            font-size: 1rem;
             transition: all 0.3s ease;
+            line-height: 1.5;
         }
         
         .modal .form-control:focus {
@@ -625,10 +706,10 @@
                                             <tr ng-repeat="record in records track by $index">
                                                 <td>
                                                     <i class="fas fa-user-circle" style="color: #5b5fcf; margin-right: 0.5rem;"></i>
-                                                    <strong ng-bind="record.email"></strong>
+                                                    <strong style="font-size: 0.9375rem; color: #1e293b;" ng-bind="record.email"></strong>
                                                 </td>
                                                 <td>
-                                                    <span style="padding: 0.25rem 0.75rem; background: #f0f1ff; color: #5b5fcf; border-radius: 4px; font-weight: 500; font-size: 0.75rem;">
+                                                    <span style="padding: 0.375rem 0.875rem; background: #f0f1ff; color: #5b5fcf; border-radius: 4px; font-weight: 600; font-size: 0.875rem;">
                                                         {{ record.DiskUsage }}
                                                     </span>
                                                 </td>

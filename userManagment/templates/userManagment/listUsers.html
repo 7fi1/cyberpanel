@@ -36,7 +36,7 @@
         .section-title {
             font-size: 2rem;
             font-weight: 700;
-            color: #2f3640;
+            color: #1a1a2e;
             text-transform: uppercase;
             letter-spacing: 0.5px;
             margin: 0;
@@ -50,8 +50,9 @@
             background: linear-gradient(135deg, #5b5fcf 0%, #7b7fd0 100%);
             border: none;
             border-radius: 8px;
-            padding: 0.5rem 1.5rem;
+            padding: 0.625rem 1.5rem;
             font-weight: 600;
+            font-size: 0.875rem;
             text-transform: uppercase;
             letter-spacing: 0.5px;
             transition: all 0.3s ease;
@@ -73,27 +74,33 @@
         }
         .table thead th {
             background: #f8f9ff;
-            color: #2f3640;
+            color: #1a1a2e;
             font-weight: 700;
             text-transform: uppercase;
-            font-size: 0.85rem;
-            letter-spacing: 0.5px;
-            padding: 1rem;
+            font-size: 0.875rem;
+            letter-spacing: 0.75px;
+            padding: 1.25rem 1rem;
             border: none;
             border-bottom: 2px solid #e8e9ff;
             text-align: left;
         }
         .table tbody td {
-            padding: 1rem;
+            padding: 1.25rem 1rem;
             vertical-align: middle;
             color: #2f3640;
+            font-size: 0.9375rem;
             border-bottom: 1px solid #f0f0ff;
+            line-height: 1.5;
+        }
+        .table tbody td strong {
+            color: #1a1a2e;
+            font-weight: 600;
         }
         .table tbody tr:hover {
             background: #f8f9ff;
         }
         .btn-action {
-            padding: 0.375rem 0.75rem;
+            padding: 0.5rem 0.875rem;
             font-size: 0.875rem;
             border-radius: 6px;
             font-weight: 600;
@@ -103,6 +110,7 @@
             margin: 0 0.25rem;
             border: 1px solid transparent;
             cursor: pointer;
+            letter-spacing: 0.3px;
         }
         .btn-suspend {
             color: #ef4444;
@@ -149,18 +157,21 @@
             text-decoration: none;
         }
         .state-badge {
-            padding: 0.25rem 0.75rem;
+            padding: 0.375rem 0.875rem;
             border-radius: 20px;
-            font-size: 0.85rem;
+            font-size: 0.875rem;
             font-weight: 600;
+            letter-spacing: 0.3px;
         }
         .state-active {
-            background: rgba(16, 185, 129, 0.1);
+            background: rgba(16, 185, 129, 0.15);
             color: #065f46;
+            border: 1px solid rgba(16, 185, 129, 0.2);
         }
         .state-suspended {
-            background: rgba(239, 68, 68, 0.1);
+            background: rgba(239, 68, 68, 0.15);
             color: #991b1b;
+            border: 1px solid rgba(239, 68, 68, 0.2);
         }
         .loading-icon {
             width: 20px;
@@ -179,25 +190,30 @@
         }
         .modal-title {
             font-weight: 700;
-            color: #2f3640;
+            color: #1a1a2e;
+            font-size: 1.25rem;
         }
         .modal-body {
             padding: 2rem;
         }
         .form-label {
-            color: #2f3640;
+            color: #1a1a2e;
             font-weight: 600;
+            font-size: 0.9375rem;
             margin-bottom: 0.5rem;
             display: block;
+            letter-spacing: 0.3px;
         }
         .form-control {
             border: 1px solid #e8e9ff;
             border-radius: 8px;
-            padding: 0.75rem 1rem;
+            padding: 0.875rem 1rem;
             font-size: 1rem;
             transition: all 0.3s ease;
             width: 100%;
             box-sizing: border-box;
+            color: #2f3640;
+            line-height: 1.5;
         }
         .form-control:focus {
             border-color: #5b5fcf;
@@ -205,10 +221,11 @@
             outline: none;
         }
         .danger-text {
-            color: #ef4444;
+            color: #dc2626;
             font-weight: 600;
-            font-size: 1.1rem;
+            font-size: 1rem;
             margin-bottom: 1rem;
+            line-height: 1.5;
         }
         .btn-danger {
             background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
@@ -231,30 +248,39 @@
                 padding-left: 12px;
                 padding-right: 12px;
             }
+            .content-card {
+                padding: 1.5rem;
+            }
             .section-title {
                 float: none;
                 text-align: center;
                 margin-bottom: 1rem;
+                font-size: 1.5rem;
             }
             .header-actions {
                 float: none;
                 text-align: center;
                 margin-top: 0;
             }
-            .table-card {
-                padding: 1rem;
-            }
             .table {
-                font-size: 0.9rem;
+                font-size: 0.875rem;
             }
-            .table thead th,
+            .table thead th {
+                font-size: 0.8125rem;
+                padding: 0.875rem 0.625rem;
+            }
             .table tbody td {
-                padding: 0.5rem;
+                padding: 0.875rem 0.625rem;
+                font-size: 0.875rem;
             }
             .btn-action {
-                padding: 0.25rem 0.5rem;
-                font-size: 0.8rem;
-                margin: 0.1rem;
+                padding: 0.375rem 0.625rem;
+                font-size: 0.8125rem;
+                margin: 0.125rem;
+            }
+            .state-badge {
+                font-size: 0.8125rem;
+                padding: 0.25rem 0.625rem;
             }
         }
     </style>
