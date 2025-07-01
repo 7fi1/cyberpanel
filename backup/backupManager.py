@@ -922,15 +922,23 @@ class BackupManager:
             return HttpResponse(final_json)
 
     def scheduleBackup(self, request, userID=None, data=None):
-        currentACL = ACLManager.loadedACL(userID)
-        destinations = NormalBackupDests.objects.all()
-        dests = []
-        for dest in destinations:
-            dests.append(dest.name)
-        websitesName = ACLManager.findAllSites(currentACL, userID)
-        proc = httpProc(request, 'backup/backupSchedule.html', {'destinations': dests, 'websites': websitesName},
-                        'scheduleBackups')
-        return proc.render()
+        try:
+            currentACL = ACLManager.loadedACL(userID)
+            
+            if ACLManager.currentContextPermission(currentACL, 'scheduleBackups') == 0:
+                return ACLManager.loadError()
+            
+            destinations = NormalBackupDests.objects.all()
+            dests = []
+            for dest in destinations:
+                dests.append(dest.name)
+            websitesName = ACLManager.findAllSites(currentACL, userID)
+            proc = httpProc(request, 'backup/backupSchedule.html', {'destinations': dests, 'websites': websitesName},
+                            'scheduleBackups')
+            return proc.render()
+        except Exception as msg:
+            logging.writeToFile(str(msg) + ' [scheduleBackup]')
+            return HttpResponse("Error: " + str(msg))
 
     def getCurrentBackupSchedules(self, userID=None, data=None):
         try:
@@ -2116,49 +2124,111 @@ class BackupManager:
         return proc.render()
 
     def RestoreOCBackups(self, request=None, userID=None, data=None):
-        userID = request.session['userID']
-        currentACL = ACLManager.loadedACL(userID)
-        admin = Administrator.objects.get(pk=userID)
+        try:
+            userID = request.session['userID']
+            currentACL = ACLManager.loadedACL(userID)
+            admin = Administrator.objects.get(pk=userID)
 
-        if currentACL['admin'] == 1:
-            pass
-        else:
-            return ACLManager.loadErrorJson()
+            if currentACL['admin'] == 1:
+                pass
+            else:
+                return ACLManager.loadErrorJson()
 
-        from IncBackups.models import OneClickBackups
-        ocb = OneClickBackups.objects.get(pk = request.GET.get('id'), owner=admin)
+            from IncBackups.models import OneClickBackups
+            
+            # Check if an ID was provided
+            backup_id = request.GET.get('id')
+            if not backup_id:
+                # If no ID provided, redirect to manage backups page
+                from django.shortcuts import redirect
+                return redirect('/backup/ManageOCBackups')
+            
+            try:
+                ocb = OneClickBackups.objects.get(pk=backup_id, owner=admin)
+            except OneClickBackups.DoesNotExist:
+                return ACLManager.loadErrorJson('restoreStatus', 0)
+        except Exception as msg:
+            logging.writeToFile(str(msg) + ' [RestoreOCBackups]')
+            return HttpResponse("Error: " + str(msg))
 
         # Load the private key
-
-        nbd = NormalBackupDests.objects.get(name=ocb.sftpUser)
-        ip = json.loads(nbd.config)['ip']
+        finalDirs = []
+        
+        try:
+            nbd = NormalBackupDests.objects.get(name=ocb.sftpUser)
+            ip = json.loads(nbd.config)['ip']
+        except Exception as e:
+            logging.writeToFile(f"Failed to get backup destination: {str(e)} [RestoreOCBackups]")
+            return HttpResponse(f"Error: Failed to get backup destination configuration. {str(e)}")
 
         # Connect to the remote server using the private key
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        # Read the private key content
-        private_key_path = '/root/.ssh/cyberpanel'
-        key_content = ProcessUtilities.outputExecutioner(f'cat {private_key_path}').rstrip('\n')
+        
+        try:
+            # Read the private key content
+            private_key_path = '/root/.ssh/cyberpanel'
+            
+            if not os.path.exists(private_key_path):
+                logging.writeToFile(f"SSH key not found at {private_key_path} [RestoreOCBackups]")
+                return HttpResponse(f"Error: SSH key not found at {private_key_path}. Please ensure One-click Backup is properly configured.")
+            
+            key_content = ProcessUtilities.outputExecutioner(f'cat {private_key_path}').rstrip('\n')
 
-        # Load the private key from the content
-        key_file = StringIO(key_content)
-        key = paramiko.RSAKey.from_private_key(key_file)
-        # Connect to the server using the private key
-        ssh.connect(ip, username=ocb.sftpUser, pkey=key)
-        # Command to list directories under the specified path
-        command = f"ls -d cpbackups/*/"
+            # Load the private key from the content
+            key_file = StringIO(key_content)
+            
+            # Try different key types
+            key = None
+            try:
+                key = paramiko.RSAKey.from_private_key(key_file)
+            except:
+                try:
+                    key_file.seek(0)
+                    key = paramiko.Ed25519Key.from_private_key(key_file)
+                except:
+                    try:
+                        key_file.seek(0)
+                        key = paramiko.ECDSAKey.from_private_key(key_file)
+                    except:
+                        key_file.seek(0)
+                        key = paramiko.DSSKey.from_private_key(key_file)
+            
+            # Connect to the server using the private key
+            ssh.connect(ip, username=ocb.sftpUser, pkey=key, timeout=30)
+            
+            # Command to list directories under the specified path
+            command = f"ls -d cpbackups/*/ 2>/dev/null || echo 'NO_DIRS_FOUND'"
 
-        # Execute the command
-        stdin, stdout, stderr = ssh.exec_command(command)
+            # Execute the command
+            stdin, stdout, stderr = ssh.exec_command(command)
 
-        # Read the results
-        directories = stdout.read().decode().splitlines()
-
-        finalDirs = []
-
-        # Print directories
-        for directory in directories:
-            finalDirs.append(directory.split('/')[1])
+            # Read the results
+            output = stdout.read().decode().strip()
+            
+            if output == 'NO_DIRS_FOUND' or not output:
+                finalDirs = []
+            else:
+                directories = output.splitlines()
+                # Print directories
+                for directory in directories:
+                    if directory and '/' in directory:
+                        finalDirs.append(directory.split('/')[1])
+                        
+        except paramiko.AuthenticationException as e:
+            logging.writeToFile(f"SSH Authentication failed: {str(e)} [RestoreOCBackups]")
+            return HttpResponse("Error: SSH Authentication failed. Please check your One-click Backup configuration.")
+        except paramiko.SSHException as e:
+            logging.writeToFile(f"SSH Connection failed: {str(e)} [RestoreOCBackups]")
+            return HttpResponse(f"Error: Failed to connect to backup server: {str(e)}")
+        except Exception as e:
+            logging.writeToFile(f"Unexpected error during SSH operation: {str(e)} [RestoreOCBackups]")
+            return HttpResponse(f"Error: Failed to retrieve backup list: {str(e)}")
+        finally:
+            try:
+                ssh.close()
+            except:
+                pass
 
         proc = httpProc(request, 'backup/restoreOCBackups.html', {'directories': finalDirs},
                         'scheduleBackups')
