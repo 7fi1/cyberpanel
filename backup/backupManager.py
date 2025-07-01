@@ -937,7 +937,7 @@ class BackupManager:
                             'scheduleBackups')
             return proc.render()
         except Exception as msg:
-            logging.writeToFile(str(msg) + ' [scheduleBackup]')
+            logging.CyberCPLogFileWriter.writeToFile(str(msg) + ' [scheduleBackup]')
             return HttpResponse("Error: " + str(msg))
 
     def getCurrentBackupSchedules(self, userID=None, data=None):
@@ -2148,7 +2148,7 @@ class BackupManager:
             except OneClickBackups.DoesNotExist:
                 return ACLManager.loadErrorJson('restoreStatus', 0)
         except Exception as msg:
-            logging.writeToFile(str(msg) + ' [RestoreOCBackups]')
+            logging.CyberCPLogFileWriter.writeToFile(str(msg) + ' [RestoreOCBackups]')
             return HttpResponse("Error: " + str(msg))
 
         # Load the private key
@@ -2158,7 +2158,7 @@ class BackupManager:
             nbd = NormalBackupDests.objects.get(name=ocb.sftpUser)
             ip = json.loads(nbd.config)['ip']
         except Exception as e:
-            logging.writeToFile(f"Failed to get backup destination: {str(e)} [RestoreOCBackups]")
+            logging.CyberCPLogFileWriter.writeToFile(f"Failed to get backup destination: {str(e)} [RestoreOCBackups]")
             return HttpResponse(f"Error: Failed to get backup destination configuration. {str(e)}")
 
         # Connect to the remote server using the private key
@@ -2169,11 +2169,19 @@ class BackupManager:
             # Read the private key content
             private_key_path = '/root/.ssh/cyberpanel'
             
-            if not os.path.exists(private_key_path):
-                logging.writeToFile(f"SSH key not found at {private_key_path} [RestoreOCBackups]")
+            # Check if file exists using ProcessUtilities (runs with proper privileges)
+            check_exists = ProcessUtilities.outputExecutioner(f'test -f {private_key_path} && echo "EXISTS" || echo "NOT_EXISTS"').strip()
+            
+            if check_exists == "NOT_EXISTS":
+                logging.CyberCPLogFileWriter.writeToFile(f"SSH key not found at {private_key_path} [RestoreOCBackups]")
                 return HttpResponse(f"Error: SSH key not found at {private_key_path}. Please ensure One-click Backup is properly configured.")
             
-            key_content = ProcessUtilities.outputExecutioner(f'cat {private_key_path}').rstrip('\n')
+            # Read the key content using ProcessUtilities
+            key_content = ProcessUtilities.outputExecutioner(f'sudo cat {private_key_path}').rstrip('\n')
+            
+            if not key_content or key_content.startswith('cat:'):
+                logging.CyberCPLogFileWriter.writeToFile(f"Failed to read SSH key at {private_key_path} [RestoreOCBackups]")
+                return HttpResponse(f"Error: Could not read SSH key at {private_key_path}. Please check permissions.")
 
             # Load the private key from the content
             key_file = StringIO(key_content)
@@ -2216,13 +2224,13 @@ class BackupManager:
                         finalDirs.append(directory.split('/')[1])
                         
         except paramiko.AuthenticationException as e:
-            logging.writeToFile(f"SSH Authentication failed: {str(e)} [RestoreOCBackups]")
+            logging.CyberCPLogFileWriter.writeToFile(f"SSH Authentication failed: {str(e)} [RestoreOCBackups]")
             return HttpResponse("Error: SSH Authentication failed. Please check your One-click Backup configuration.")
         except paramiko.SSHException as e:
-            logging.writeToFile(f"SSH Connection failed: {str(e)} [RestoreOCBackups]")
+            logging.CyberCPLogFileWriter.writeToFile(f"SSH Connection failed: {str(e)} [RestoreOCBackups]")
             return HttpResponse(f"Error: Failed to connect to backup server: {str(e)}")
         except Exception as e:
-            logging.writeToFile(f"Unexpected error during SSH operation: {str(e)} [RestoreOCBackups]")
+            logging.CyberCPLogFileWriter.writeToFile(f"Unexpected error during SSH operation: {str(e)} [RestoreOCBackups]")
             return HttpResponse(f"Error: Failed to retrieve backup list: {str(e)}")
         finally:
             try:
