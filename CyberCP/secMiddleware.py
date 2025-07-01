@@ -118,6 +118,10 @@ class secMiddleware:
                     if request.path.find('gitNotify') > -1:
                         break
 
+                    # Skip validation for ports key to allow port ranges with colons
+                    if key == 'ports':
+                        continue
+
                     if type(value) == str or type(value) == bytes:
                         pass
                     elif type(value) == list:

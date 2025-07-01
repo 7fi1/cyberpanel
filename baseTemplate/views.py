@@ -508,7 +508,7 @@ def getTrafficStats(request):
         
         # Only admins should see system-wide network stats
         if not currentACL.get('admin', 0):
-            return HttpResponse(json.dumps({'status': 0, 'error_message': 'Admin access required'}), content_type='application/json', status=403)
+            return HttpResponse(json.dumps({'status': 0, 'error_message': 'Admin access required', 'admin_only': True}), content_type='application/json')
         
         # Get network stats from /proc/net/dev (Linux)
         rx = tx = 0
@@ -536,7 +536,7 @@ def getDiskIOStats(request):
         
         # Only admins should see system-wide disk I/O stats
         if not currentACL.get('admin', 0):
-            return HttpResponse(json.dumps({'status': 0, 'error_message': 'Admin access required'}), content_type='application/json', status=403)
+            return HttpResponse(json.dumps({'status': 0, 'error_message': 'Admin access required', 'admin_only': True}), content_type='application/json')
         
         # Parse /proc/diskstats for all disks
         read_sectors = 0
@@ -570,7 +570,7 @@ def getCPULoadGraph(request):
         
         # Only admins should see system-wide CPU stats
         if not currentACL.get('admin', 0):
-            return HttpResponse(json.dumps({'status': 0, 'error_message': 'Admin access required'}), content_type='application/json', status=403)
+            return HttpResponse(json.dumps({'status': 0, 'error_message': 'Admin access required', 'admin_only': True}), content_type='application/json')
         
         # Parse /proc/stat for the 'cpu' line
         with open('/proc/stat', 'r') as f:

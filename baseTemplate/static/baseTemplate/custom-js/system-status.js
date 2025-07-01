@@ -911,6 +911,9 @@ app.controller('dashboardStatsController', function ($scope, $http, $timeout) {
     $scope.totalDBs = 0;
     $scope.totalEmails = 0;
     $scope.totalFTPUsers = 0;
+    
+    // Hide system charts for non-admin users
+    $scope.hideSystemCharts = false;
 
     // Top Processes
     $scope.topProcesses = [];
@@ -1030,6 +1033,11 @@ app.controller('dashboardStatsController', function ($scope, $http, $timeout) {
     function pollTraffic() {
         console.log('pollTraffic called');
         $http.get('/base/getTrafficStats').then(function(response) {
+            if (response.data.admin_only) {
+                // Hide chart for non-admin users
+                $scope.hideSystemCharts = true;
+                return;
+            }
             if (response.data.status === 1) {
                 var now = new Date();
                 var rx = response.data.rx_bytes;
@@ -1079,6 +1087,11 @@ app.controller('dashboardStatsController', function ($scope, $http, $timeout) {
 
     function pollDiskIO() {
         $http.get('/base/getDiskIOStats').then(function(response) {
+            if (response.data.admin_only) {
+                // Hide chart for non-admin users
+                $scope.hideSystemCharts = true;
+                return;
+            }
             if (response.data.status === 1) {
                 var now = new Date();
                 var read = response.data.read_bytes;
@@ -1117,6 +1130,11 @@ app.controller('dashboardStatsController', function ($scope, $http, $timeout) {
 
     function pollCPU() {
         $http.get('/base/getCPULoadGraph').then(function(response) {
+            if (response.data.admin_only) {
+                // Hide chart for non-admin users
+                $scope.hideSystemCharts = true;
+                return;
+            }
             if (response.data.status === 1 && response.data.cpu_times && response.data.cpu_times.length >= 4) {
                 var now = new Date();
                 var cpuTimes = response.data.cpu_times;
@@ -1433,8 +1451,19 @@ app.controller('dashboardStatsController', function ($scope, $http, $timeout) {
 
     // Initial setup
     $timeout(function() {
-        setupCharts();
-        // Immediately poll once so charts are updated on first load
+        // Check if user is admin before setting up charts
+        $http.get('/base/getAdminStatus').then(function(response) {
+            if (response.data && response.data.admin === 1) {
+                setupCharts();
+            } else {
+                $scope.hideSystemCharts = true;
+            }
+        }).catch(function() {
+            // If error, assume non-admin and hide charts
+            $scope.hideSystemCharts = true;
+        });
+        
+        // Immediately poll once so stats are updated on first load
         pollDashboardStats();
         pollTraffic();
         pollDiskIO();

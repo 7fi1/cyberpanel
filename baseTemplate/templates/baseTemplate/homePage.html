@@ -494,19 +494,19 @@
                         {$ securityAlerts.length $}
                     </span>
                 </button>
-                <button class="activity-tab" onclick="switchTab('top-process', this)">
+                <button class="activity-tab" onclick="switchTab('top-process', this)" ng-hide="hideSystemCharts">
                     <i class="fas fa-microchip"></i>
                     <span>Top Process</span>
                 </button>
-                <button class="activity-tab" onclick="switchTab('traffic', this)">
+                <button class="activity-tab" onclick="switchTab('traffic', this)" ng-hide="hideSystemCharts">
                     <i class="fas fa-chart-line"></i>
                     <span>Traffic</span>
                 </button>
-                <button class="activity-tab" onclick="switchTab('diskio', this)">
+                <button class="activity-tab" onclick="switchTab('diskio', this)" ng-hide="hideSystemCharts">
                     <i class="fas fa-hard-drive"></i>
                     <span>Disk IO</span>
                 </button>
-                <button class="activity-tab" onclick="switchTab('cpu-usage', this)">
+                <button class="activity-tab" onclick="switchTab('cpu-usage', this)" ng-hide="hideSystemCharts">
                     <i class="fas fa-tachometer-alt"></i>
                     <span>CPU Usage</span>
                 </button>
@@ -687,7 +687,7 @@
         </div>
         
         <!-- Top Process Tab -->
-        <div id="top-process" class="tab-content">
+        <div id="top-process" class="tab-content" ng-hide="hideSystemCharts">
             <div ng-if="loadingTopProcesses" style="text-align: center; padding: 20px; color: #8893a7;">
                 Loading top processes...
             </div>
@@ -720,21 +720,21 @@
         </div>
         
         <!-- Traffic Tab -->
-        <div id="traffic" class="tab-content">
+        <div id="traffic" class="tab-content" ng-hide="hideSystemCharts">
             <div class="chart-container">
                 <canvas id="trafficChart"></canvas>
             </div>
         </div>
         
         <!-- Disk IO Tab -->
-        <div id="diskio" class="tab-content">
+        <div id="diskio" class="tab-content" ng-hide="hideSystemCharts">
             <div class="chart-container">
                 <canvas id="diskIOChart"></canvas>
             </div>
         </div>
         
         <!-- CPU Usage Tab -->
-        <div id="cpu-usage" class="tab-content">
+        <div id="cpu-usage" class="tab-content" ng-hide="hideSystemCharts">
             <div class="chart-container">
                 <canvas id="cpuChart"></canvas>
             </div>

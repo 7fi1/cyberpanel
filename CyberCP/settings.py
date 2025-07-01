@@ -192,3 +192,6 @@ LANGUAGES = (
 MEDIA_URL = '/usr/local/CyberCP/tmp/'
 MEDIA_ROOT = MEDIA_URL
 DATA_UPLOAD_MAX_MEMORY_SIZE = 2147483648
+
+# Security settings for CSF compliance
+X_FRAME_OPTIONS = 'SAMEORIGIN'
