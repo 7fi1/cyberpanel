@@ -718,9 +718,16 @@ AI Security Scanner - CyberPanel
                                 {% endif %}
                             </td>
                             <td>
-                                <button class="btn-default btn-xs" onclick="viewScanDetails('{{ scan.scan_id }}')">
-                                    <i class="fas fa-eye"></i> View
-                                </button>
+                                <div style="display: flex; gap: 5px;">
+                                    <button class="btn-default btn-xs" onclick="viewScanDetails('{{ scan.scan_id }}')">
+                                        <i class="fas fa-eye"></i> View
+                                    </button>
+                                    {% if scan.status == 'completed' %}
+                                    <button class="btn-primary btn-xs" onclick="viewOnPlatform('{{ scan.scan_id }}')" title="View detailed AI analysis on platform">
+                                        <i class="fas fa-external-link-alt"></i> AI Analysis
+                                    </button>
+                                    {% endif %}
+                                </div>
                             </td>
                         </tr>
                         {% endfor %}
@@ -953,9 +960,16 @@ function updateScanHistoryTable(scans) {
             `<span style="color: #ef4444; font-weight: 700;">${scan.issues_found}</span>` :
             `<span style="color: #10b981;">${scan.issues_found}</span>`;
         
-        const actionsHtml = `<button class="btn-default btn-xs" onclick="viewScanDetails('${scan.scan_id}')">
-                <i class="fas fa-eye"></i> View
-            </button>`;
+        const actionsHtml = `<div style="display: flex; gap: 5px;">
+                <button class="btn-default btn-xs" onclick="viewScanDetails('${scan.scan_id}')">
+                    <i class="fas fa-eye"></i> View
+                </button>
+                ${scan.status === 'completed' ? `
+                <button class="btn-primary btn-xs" onclick="viewOnPlatform('${scan.scan_id}')" title="View detailed AI analysis on platform">
+                    <i class="fas fa-external-link-alt"></i> AI Analysis
+                </button>
+                ` : ''}
+            </div>`;
         
         const progressHtml = (scan.status === 'running' || scan.status === 'pending') ?
             `<div class="progress" style="height: 20px;">
@@ -1009,6 +1023,24 @@ function viewScanDetails(scanId) {
     
     // Check if scan has real-time status updates
     fetchLiveProgress(scanId);
+}
+
+function viewOnPlatform(scanId) {
+    // Fetch the platform monitor URL
+    fetch(`/aiscanner/platform-monitor-url/${scanId}/`)
+    .then(response => response.json())
+    .then(data => {
+        if (data.success && data.monitor_url) {
+            // Open in new tab
+            window.open(data.monitor_url, '_blank');
+        } else {
+            alert('Error: ' + (data.error || 'Could not get platform URL'));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Failed to get platform URL. Please try again.');
+    });
 }
 
 function fetchLiveProgress(scanId) {
@@ -1207,21 +1239,29 @@ function displayCompletedScanDetails(scan) {
         </div>`;
     }
     
+    // Use enhanced scan data from ScanStatusUpdate if available
+    const filesScanned = scan.files_scanned || 0;
+    const filesDiscovered = scan.files_discovered || scan.files_scanned || 0;
+    const threatsFound = scan.threats_found !== undefined ? scan.threats_found : (scan.issues_found || 0);
+    const criticalThreats = scan.critical_threats || 0;
+    const highThreats = scan.high_threats || 0;
+    
     document.getElementById('completedSection').innerHTML = `
         <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 20px;">
             <div class="stat-card" style="padding: 20px;">
                 <div class="stat-card-icon info" style="width: 40px; height: 40px; font-size: 18px; margin-bottom: 10px;">
                     <i class="fas fa-file"></i>
                 </div>
-                <h4 style="margin: 0; font-size: 24px; font-weight: 700;">${scan.files_scanned || 0}</h4>
+                <h4 style="margin: 0; font-size: 24px; font-weight: 700;">${filesScanned}${filesDiscovered > filesScanned ? `/${filesDiscovered}` : ''}</h4>
                 <p style="margin: 5px 0 0 0; font-size: 13px;">Files Scanned</p>
             </div>
             <div class="stat-card" style="padding: 20px;">
-                <div class="stat-card-icon ${scan.issues_found > 0 ? 'danger' : 'success'}" style="width: 40px; height: 40px; font-size: 18px; margin-bottom: 10px;">
-                    <i class="fas ${scan.issues_found > 0 ? 'fa-exclamation-triangle' : 'fa-check'}"></i>
+                <div class="stat-card-icon ${threatsFound > 0 ? 'danger' : 'success'}" style="width: 40px; height: 40px; font-size: 18px; margin-bottom: 10px;">
+                    <i class="fas ${threatsFound > 0 ? 'fa-exclamation-triangle' : 'fa-check'}"></i>
                 </div>
-                <h4 style="margin: 0; font-size: 24px; font-weight: 700;">${scan.issues_found || 0}</h4>
-                <p style="margin: 5px 0 0 0; font-size: 13px;">Issues Found</p>
+                <h4 style="margin: 0; font-size: 24px; font-weight: 700;">${threatsFound}</h4>
+                <p style="margin: 5px 0 0 0; font-size: 13px;">Threats Found</p>
+                ${(criticalThreats > 0 || highThreats > 0) ? `<small style="color: #ef4444; font-size: 11px;">${criticalThreats > 0 ? `${criticalThreats} Critical` : ''}${criticalThreats > 0 && highThreats > 0 ? ', ' : ''}${highThreats > 0 ? `${highThreats} High` : ''}</small>` : ''}
             </div>
             <div class="stat-card" style="padding: 20px;">
                 <div class="stat-card-icon info" style="width: 40px; height: 40px; font-size: 18px; margin-bottom: 10px;">
@@ -1239,6 +1279,11 @@ function displayCompletedScanDetails(scan) {
             </div>
         </div>
         ${findingsHtml}
+        <div style="margin-top: 20px; text-align: center;">
+            <button class="btn-primary" onclick="viewOnPlatform('${scan.scan_id}')" style="padding: 0.75rem 2rem;">
+                <i class="fas fa-external-link-alt"></i> View Full AI Analysis on Platform
+            </button>
+        </div>
     `;
 }
 

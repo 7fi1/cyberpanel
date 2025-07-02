@@ -15,6 +15,7 @@ urlpatterns = [
     # Scan management
     path('scan-history/', views.getScanHistory, name='aiScannerHistory'),
     path('scan-details/<str:scan_id>/', views.getScanDetails, name='aiScannerDetails'),
+    path('platform-monitor-url/<str:scan_id>/', views.getPlatformMonitorUrl, name='aiScannerPlatformMonitorUrl'),
     path('platform-status/<str:scan_id>/', views.getPlatformScanStatus, name='aiScannerPlatformStatus'),
     
     # Note: RESTful API endpoints are in /api/urls.py for external access

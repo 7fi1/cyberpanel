@@ -560,6 +560,33 @@ def scan_callback(request):
             
             scan_record.save()
             
+            # Also update the ScanStatusUpdate record with final statistics
+            try:
+                from .status_models import ScanStatusUpdate
+                status_update, _ = ScanStatusUpdate.objects.get_or_create(scan_id=scan_id)
+                status_update.phase = 'completed'
+                status_update.progress = 100
+                status_update.files_discovered = summary.get('files_scanned', 0)  # Use files_scanned as approximation
+                status_update.files_scanned = summary.get('files_scanned', 0)
+                status_update.files_remaining = 0
+                status_update.threats_found = summary.get('total_findings', 0)
+                # Extract critical and high threats from findings if available
+                critical_count = 0
+                high_count = 0
+                for finding in findings:
+                    severity = finding.get('severity', '').lower()
+                    if severity == 'critical':
+                        critical_count += 1
+                    elif severity == 'high':
+                        high_count += 1
+                status_update.critical_threats = critical_count
+                status_update.high_threats = high_count
+                status_update.activity_description = f"Scan completed - {summary.get('total_findings', 0)} threats found"
+                status_update.save()
+                logging.writeToFile(f"[API] Updated ScanStatusUpdate for completed scan {scan_id}")
+            except Exception as e:
+                logging.writeToFile(f"[API] Error updating ScanStatusUpdate: {str(e)}")
+            
             # Update user balance if scan cost money
             if scan_record.cost_usd > 0:
                 try:

@@ -129,12 +129,14 @@ def getScanHistory(request):
         return JsonResponse({'success': False, 'error': str(e)})
 
 
+@require_http_methods(['GET'])
 def getScanDetails(request, scan_id):
     """Get detailed scan results"""
     try:
         userID = request.session['userID']
         from loginSystem.models import Administrator
         from .models import ScanHistory
+        from .status_models import ScanStatusUpdate
         from plogical.acl import ACLManager
         
         admin = Administrator.objects.get(pk=userID)
@@ -153,6 +155,23 @@ def getScanDetails(request, scan_id):
         except ScanHistory.DoesNotExist:
             return JsonResponse({'success': False, 'error': 'Scan not found'})
         
+        # Get the status update for more detailed information
+        try:
+            status_update = ScanStatusUpdate.objects.get(scan_id=scan_id)
+            # Use detailed information from status update if available
+            files_scanned = status_update.files_scanned if status_update.files_scanned > 0 else scan.files_scanned
+            files_discovered = status_update.files_discovered
+            threats_found = status_update.threats_found
+            critical_threats = status_update.critical_threats
+            high_threats = status_update.high_threats
+        except ScanStatusUpdate.DoesNotExist:
+            # Fall back to basic information from scan history
+            files_scanned = scan.files_scanned
+            files_discovered = scan.files_scanned  # Approximate
+            threats_found = scan.issues_found
+            critical_threats = 0
+            high_threats = 0
+        
         scan_data = {
             'scan_id': scan.scan_id,
             'domain': scan.domain,
@@ -161,8 +180,12 @@ def getScanDetails(request, scan_id):
             'started_at': scan.started_at.strftime('%Y-%m-%d %H:%M:%S'),
             'completed_at': scan.completed_at.strftime('%Y-%m-%d %H:%M:%S') if scan.completed_at else None,
             'cost_usd': float(scan.cost_usd) if scan.cost_usd else 0,
-            'files_scanned': scan.files_scanned,
+            'files_scanned': files_scanned,
+            'files_discovered': files_discovered,
             'issues_found': scan.issues_found,
+            'threats_found': threats_found,
+            'critical_threats': critical_threats,
+            'high_threats': high_threats,
             'findings': scan.findings,
             'summary': scan.summary,
             'error_message': scan.error_message
@@ -175,6 +198,86 @@ def getScanDetails(request, scan_id):
     except ScanHistory.DoesNotExist:
         return JsonResponse({'success': False, 'error': 'Scan not found'})
     except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
+
+
+@require_http_methods(['GET'])
+def getPlatformMonitorUrl(request, scan_id):
+    """Get the platform monitor URL for a scan"""
+    try:
+        userID = request.session['userID']
+        from loginSystem.models import Administrator
+        from .models import ScanHistory, AIScannerSettings
+        from plogical.CyberCPLogFileWriter import CyberCPLogFileWriter as logging
+        import requests
+        
+        # Get scan to verify ownership
+        try:
+            scan = ScanHistory.objects.get(scan_id=scan_id)
+            admin = Administrator.objects.get(pk=userID)
+            
+            # Verify access
+            from plogical.acl import ACLManager
+            currentACL = ACLManager.loadedACL(userID)
+            if currentACL['admin'] != 1:
+                user_admins = ACLManager.loadUserObjects(userID)
+                if scan.admin not in user_admins:
+                    return JsonResponse({'success': False, 'error': 'Access denied'})
+        except ScanHistory.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Scan not found'})
+        
+        # Get API key for the scan owner
+        try:
+            scanner_settings = scan.admin.ai_scanner_settings
+            if not scanner_settings.api_key:
+                return JsonResponse({'success': False, 'error': 'API key not configured'})
+            api_key = scanner_settings.api_key
+        except:
+            return JsonResponse({'success': False, 'error': 'Scanner not configured'})
+        
+        # Call platform API to get monitor URL
+        try:
+            url = f"https://platform.cyberpersons.com/ai-scanner/api/ai-scanner/scan/{scan_id}/monitor-url/"
+            headers = {
+                'Authorization': f'Bearer {api_key}',
+                'Content-Type': 'application/json'
+            }
+            
+            logging.writeToFile(f"[AI Scanner] Fetching platform monitor URL for scan {scan_id}")
+            
+            response = requests.get(url, headers=headers, timeout=10)
+            data = response.json()
+            
+            if response.status_code == 200 and data.get('success'):
+                logging.writeToFile(f"[AI Scanner] Got monitor URL: {data.get('monitor_url')}")
+                return JsonResponse({
+                    'success': True,
+                    'monitor_url': data.get('monitor_url'),
+                    'platform_scan_id': data.get('platform_scan_id')
+                })
+            else:
+                error_msg = data.get('error', 'Failed to get monitor URL')
+                logging.writeToFile(f"[AI Scanner] Failed to get monitor URL: {error_msg}")
+                return JsonResponse({
+                    'success': False,
+                    'error': error_msg,
+                    'scan_exists': data.get('scan_exists', False)
+                })
+                
+        except requests.exceptions.Timeout:
+            logging.writeToFile(f"[AI Scanner] Platform request timeout for scan {scan_id}")
+            return JsonResponse({'success': False, 'error': 'Platform request timeout'})
+        except requests.exceptions.RequestException as e:
+            logging.writeToFile(f"[AI Scanner] Platform request error: {str(e)}")
+            return JsonResponse({'success': False, 'error': f'Platform error: {str(e)}'})
+        except Exception as e:
+            logging.writeToFile(f"[AI Scanner] Unexpected error: {str(e)}")
+            return JsonResponse({'success': False, 'error': f'Error: {str(e)}'})
+            
+    except KeyError:
+        return JsonResponse({'success': False, 'error': 'Not authenticated'})
+    except Exception as e:
+        logging.writeToFile(f"[AI Scanner] getPlatformMonitorUrl error: {str(e)}")
         return JsonResponse({'success': False, 'error': str(e)})
 
 
