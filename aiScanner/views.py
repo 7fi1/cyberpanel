@@ -226,27 +226,73 @@ def getPlatformMonitorUrl(request, scan_id):
         except ScanHistory.DoesNotExist:
             return JsonResponse({'success': False, 'error': 'Scan not found'})
         
-        # Get API key for the scan owner
+        # Get API key - first try current user, then scan owner
+        api_key = None
+        
+        # Try current user's API key first
         try:
-            scanner_settings = scan.admin.ai_scanner_settings
-            if not scanner_settings.api_key:
-                return JsonResponse({'success': False, 'error': 'API key not configured'})
-            api_key = scanner_settings.api_key
-        except:
-            return JsonResponse({'success': False, 'error': 'Scanner not configured'})
+            current_user_settings = admin.ai_scanner_settings
+            if current_user_settings and current_user_settings.api_key:
+                api_key = current_user_settings.api_key
+        except AIScannerSettings.DoesNotExist:
+            pass
+        except Exception as e:
+            pass
+        
+        # If current user doesn't have API key, try scan owner's
+        if not api_key:
+            try:
+                scanner_settings = scan.admin.ai_scanner_settings
+                if scanner_settings and scanner_settings.api_key:
+                    api_key = scanner_settings.api_key
+            except AIScannerSettings.DoesNotExist:
+                pass
+            except Exception as e:
+                pass
+        
+        # If still no API key, check if this might be a VPS free scan
+        if not api_key:
+            try:
+                from plogical.acl import ACLManager
+                from .aiScannerManager import AIScannerManager
+                
+                server_ip = ACLManager.fetchIP()
+                sm = AIScannerManager()
+                vps_info = sm.check_vps_free_scans(server_ip)
+                
+                if (vps_info.get('success') and 
+                    vps_info.get('is_vps') and 
+                    vps_info.get('free_scans_available', 0) > 0):
+                    
+                    vps_key_data = sm.get_or_create_vps_api_key(server_ip)
+                    
+                    if vps_key_data and vps_key_data.get('api_key'):
+                        api_key = vps_key_data.get('api_key')
+            except Exception as e:
+                pass
+        
+        # If still no API key, return error
+        if not api_key:
+            logging.writeToFile(f"[AI Scanner] No API key found for scan {scan_id}")
+            return JsonResponse({'success': False, 'error': 'API key not configured. Please configure your AI Scanner API key.'})
         
         # Call platform API to get monitor URL
         try:
-            url = f"https://platform.cyberpersons.com/ai-scanner/api/ai-scanner/scan/{scan_id}/monitor-url/"
+            url = f"https://platform.cyberpersons.com/ai-scanner/api/scan/{scan_id}/monitor-url/"
             headers = {
-                'Authorization': f'Bearer {api_key}',
+                'X-API-Key': api_key,
                 'Content-Type': 'application/json'
             }
             
             logging.writeToFile(f"[AI Scanner] Fetching platform monitor URL for scan {scan_id}")
             
             response = requests.get(url, headers=headers, timeout=10)
-            data = response.json()
+            
+            try:
+                data = response.json()
+            except json.JSONDecodeError as e:
+                logging.writeToFile(f"[AI Scanner] JSON decode error: {str(e)}")
+                return JsonResponse({'success': False, 'error': 'Invalid response from platform'})
             
             if response.status_code == 200 and data.get('success'):
                 logging.writeToFile(f"[AI Scanner] Got monitor URL: {data.get('monitor_url')}")
