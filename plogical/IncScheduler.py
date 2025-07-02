@@ -660,6 +660,9 @@ Automatic backup failed for %s on %s.
                         print(str(msg))
                         continue
 
+                    # Always try SSH commands first
+                    ssh_commands_supported = True
+                    
                     try:
                         command = f'find cpbackups -type f -mtime +{jobConfig["retention"]} -exec rm -f {{}} \\;'
                         logging.writeToFile(command)
@@ -673,18 +676,67 @@ Automatic backup failed for %s on %s.
 
                     # Execute the command to create the remote directory
                     command = f'mkdir -p {finalPath}'
-                    stdin, stdout, stderr = ssh.exec_command(command)
-
-                    # Wait for the command to finish and check for any errors
-                    stdout.channel.recv_exit_status()
-                    error_message = stderr.read().decode('utf-8')
-                    print(error_message)
-                    if error_message:
-                        NormalBackupJobLogs(owner=backupjob, status=backupSchedule.INFO,
-                                            message=f'Error while creating directory on remote server {error_message.strip()}').save()
-                        continue
-                    else:
-                        pass
+                    try:
+                        stdin, stdout, stderr = ssh.exec_command(command, timeout=10)
+                        # Wait for the command to finish and check for any errors
+                        exit_status = stdout.channel.recv_exit_status()
+                        error_message = stderr.read().decode('utf-8')
+                        print(error_message)
+                        
+                        # Check if command was rejected (SFTP-only server)
+                        if exit_status != 0 or "not allowed" in error_message.lower() or "channel closed" in error_message.lower():
+                            ssh_commands_supported = False
+                            logging.writeToFile(f'SSH command failed on {destinationConfig["ip"]}, falling back to pure SFTP mode')
+                            
+                            # Try creating directory via SFTP
+                            try:
+                                sftp = ssh.open_sftp()
+                                # Try to create the directory structure
+                                path_parts = finalPath.strip('/').split('/')
+                                current_path = ''
+                                for part in path_parts:
+                                    current_path = current_path + '/' + part if current_path else part
+                                    try:
+                                        sftp.stat(current_path)
+                                    except FileNotFoundError:
+                                        try:
+                                            sftp.mkdir(current_path)
+                                        except:
+                                            pass
+                                sftp.close()
+                            except BaseException as msg:
+                                logging.writeToFile(f'Failed to create directory via SFTP: {str(msg)}')
+                                pass
+                        elif error_message:
+                            NormalBackupJobLogs(owner=backupjob, status=backupSchedule.INFO,
+                                                message=f'Error while creating directory on remote server {error_message.strip()}').save()
+                            continue
+                        else:
+                            pass
+                    except BaseException as msg:
+                        # SSH command failed, try SFTP
+                        ssh_commands_supported = False
+                        logging.writeToFile(f'SSH command failed: {str(msg)}, falling back to pure SFTP mode')
+                        
+                        # Try creating directory via SFTP
+                        try:
+                            sftp = ssh.open_sftp()
+                            # Try to create the directory structure
+                            path_parts = finalPath.strip('/').split('/')
+                            current_path = ''
+                            for part in path_parts:
+                                current_path = current_path + '/' + part if current_path else part
+                                try:
+                                    sftp.stat(current_path)
+                                except FileNotFoundError:
+                                    try:
+                                        sftp.mkdir(current_path)
+                                    except:
+                                        pass
+                            sftp.close()
+                        except BaseException as msg:
+                            logging.writeToFile(f'Failed to create directory via SFTP: {str(msg)}')
+                            pass
 
 
                     ### Check if an old job prematurely killed, then start from there.
@@ -788,10 +840,30 @@ Automatic backup failed for %s on %s.
                         else:
                             backupPath = retValues[1] + ".tar.gz"
 
+                            # Always try scp first
                             command = "scp -o StrictHostKeyChecking=no -P " + destinationConfig[
                                 'port'] + " -i /root/.ssh/cyberpanel " + backupPath + " " + destinationConfig[
                                           'username'] + "@" + destinationConfig['ip'] + ":%s" % (finalPath)
-                            ProcessUtilities.executioner(command)
+                            
+                            try:
+                                result = ProcessUtilities.executioner(command)
+                                # Check if scp failed (common with SFTP-only servers)
+                                if not ssh_commands_supported or result != 0:
+                                    raise Exception("SCP failed, trying SFTP")
+                            except:
+                                # If scp fails or SSH commands are not supported, use SFTP
+                                logging.writeToFile(f'SCP failed for {destinationConfig["ip"]}, falling back to SFTP transfer')
+                                try:
+                                    sftp = ssh.open_sftp()
+                                    remote_path = os.path.join(finalPath, os.path.basename(backupPath))
+                                    sftp.put(backupPath, remote_path)
+                                    sftp.close()
+                                    logging.writeToFile(f'Successfully transferred {backupPath} to {remote_path} via SFTP')
+                                except BaseException as msg:
+                                    logging.writeToFile(f'Failed to transfer backup via SFTP: {str(msg)}')
+                                    NormalBackupJobLogs(owner=backupjob, status=backupSchedule.ERROR,
+                                                        message='Backup transfer failed for %s: %s' % (domain, str(msg))).save()
+                                    continue
 
                             try:
                                 os.remove(backupPath)
@@ -832,11 +904,27 @@ Automatic backup failed for %s on %s.
                             # Command to list directories under the specified path
                             command = f"ls -d {finalPath}/*"
 
-                            # Execute the command
-                            stdin, stdout, stderr = ssh.exec_command(command)
+                            # Try SSH command first
+                            directories = []
+                            try:
+                                # Execute the command
+                                stdin, stdout, stderr = ssh.exec_command(command, timeout=10)
 
-                            # Read the results
-                            directories = stdout.read().decode().splitlines()
+                                # Read the results
+                                directories = stdout.read().decode().splitlines()
+                            except:
+                                # If SSH command fails, try using SFTP
+                                logging.writeToFile(f'SSH ls command failed for {destinationConfig["ip"]}, trying SFTP listdir')
+                                try:
+                                    sftp = ssh.open_sftp()
+                                    # List files in the directory
+                                    files = sftp.listdir(finalPath)
+                                    # Format them similar to ls -d output
+                                    directories = [f"{finalPath}/{f}" for f in files]
+                                    sftp.close()
+                                except BaseException as msg:
+                                    logging.writeToFile(f'Failed to list directory via SFTP: {str(msg)}')
+                                    directories = []
 
                             if os.path.exists(ProcessUtilities.debugPath):
                                 logging.writeToFile(str(directories))

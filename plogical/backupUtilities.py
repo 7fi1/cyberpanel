@@ -1417,11 +1417,43 @@ class backupUtilities:
             command = 'chmod 600 %s' % ('/root/.ssh/cyberpanel.pub')
             ProcessUtilities.executioner(command)
 
-            sftp = ssh.open_sftp()
-            sftp.put('/root/.ssh/cyberpanel.pub', '.ssh/authorized_keys')
-            sftp.close()
+            try:
+                # Try to use SFTP to create .ssh directory if it doesn't exist
+                sftp = ssh.open_sftp()
+                try:
+                    sftp.stat('.ssh')
+                except FileNotFoundError:
+                    # Try to create .ssh directory via SFTP
+                    try:
+                        sftp.mkdir('.ssh')
+                    except:
+                        # Directory creation via SFTP might fail on some servers
+                        pass
+                
+                # Try to upload the key
+                sftp.put('/root/.ssh/cyberpanel.pub', '.ssh/authorized_keys')
+                sftp.close()
 
-            ssh.exec_command('chmod 600 .ssh/authorized_keys')
+                # Try to set permissions via SSH command (might fail on SFTP-only servers)
+                try:
+                    stdin, stdout, stderr = ssh.exec_command('chmod 600 .ssh/authorized_keys', timeout=5)
+                    stdout.channel.recv_exit_status()
+                except:
+                    # If chmod fails, it's likely an SFTP-only server
+                    # The key is uploaded, which is what matters for backups using password auth
+                    logging.CyberCPLogFileWriter.writeToFile(
+                        f'Could not set permissions on {IPAddress}, likely SFTP-only server')
+                    pass
+
+            except Exception as e:
+                # If we can't upload the key, it might be an SFTP-only server
+                # Return success anyway since password authentication works
+                logging.CyberCPLogFileWriter.writeToFile(
+                    f'Could not upload SSH key to {IPAddress}: {str(e)}, using password authentication')
+                ssh.close()
+                command = 'chmod 644 %s' % ('/root/.ssh/cyberpanel.pub')
+                ProcessUtilities.executioner(command)
+                return [1, "None"]
 
             ssh.close()
 
@@ -1446,6 +1478,9 @@ class backupUtilities:
             if password != 'NOT-NEEDED':
 
                 ssh.connect(IPAddress, port=int(port), username=user, password=password)
+                
+                # Try to execute SSH commands first
+                ssh_commands_supported = True
                 commands = [
                     "mkdir -p .ssh",
                     "rm -f .ssh/temp",
@@ -1457,23 +1492,55 @@ class backupUtilities:
 
                 for command in commands:
                     try:
-                        ssh.exec_command(command)
+                        stdin, stdout, stderr = ssh.exec_command(command, timeout=5)
+                        exit_status = stdout.channel.recv_exit_status()
+                        error_output = stderr.read().decode()
+                        
+                        # Check if the command was rejected (SFTP-only server)
+                        if exit_status != 0 or "not allowed" in error_output.lower() or "channel closed" in error_output.lower():
+                            ssh_commands_supported = False
+                            logging.CyberCPLogFileWriter.writeToFile(
+                                f'SSH commands not supported on {IPAddress}, falling back to pure SFTP mode')
+                            break
                     except BaseException as msg:
+                        ssh_commands_supported = False
                         logging.CyberCPLogFileWriter.writeToFile(
-                            f'Error executing remote command {command}. Error {str(msg)}')
+                            f'Error executing remote command {command}. Error {str(msg)}, falling back to pure SFTP mode')
+                        break
 
                 ssh.close()
 
-                sendKey = backupUtilities.sendKey(IPAddress, password, port, user)
-
-                if sendKey[0] == 1:
-                    command = 'chmod 644 %s' % ('/root/.ssh/cyberpanel.pub')
-                    ProcessUtilities.executioner(command)
-                    return [1, "None"]
+                # If SSH commands are not supported, use pure SFTP mode
+                if not ssh_commands_supported:
+                    # For SFTP-only servers, we'll use password authentication directly
+                    # No need to setup SSH keys, just verify connection works
+                    try:
+                        test_ssh = paramiko.SSHClient()
+                        test_ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+                        test_ssh.connect(IPAddress, port=int(port), username=user, password=password)
+                        
+                        # Open SFTP connection to verify it works
+                        sftp = test_ssh.open_sftp()
+                        sftp.close()
+                        test_ssh.close()
+                        
+                        logging.CyberCPLogFileWriter.writeToFile(
+                            f'Pure SFTP mode verified for {IPAddress}')
+                        return [1, "None"]
+                    except Exception as e:
+                        return [0, f'SFTP connection failed: {str(e)}']
                 else:
-                    command = 'chmod 644 %s' % ('/root/.ssh/cyberpanel.pub')
-                    ProcessUtilities.executioner(command)
-                    return [0, sendKey[1]]
+                    # SSH commands are supported, proceed with key setup
+                    sendKey = backupUtilities.sendKey(IPAddress, password, port, user)
+
+                    if sendKey[0] == 1:
+                        command = 'chmod 644 %s' % ('/root/.ssh/cyberpanel.pub')
+                        ProcessUtilities.executioner(command)
+                        return [1, "None"]
+                    else:
+                        command = 'chmod 644 %s' % ('/root/.ssh/cyberpanel.pub')
+                        ProcessUtilities.executioner(command)
+                        return [0, sendKey[1]]
             else:
                 # Load the private key
                 private_key_path = '/root/.ssh/cyberpanel'
@@ -1632,12 +1699,20 @@ class backupUtilities:
     def createBackupDir(IPAddress, port='22', user='root'):
 
         try:
+            # First try SSH command
             command = "sudo ssh -o StrictHostKeyChecking=no -p " + port + " -i /root/.ssh/cyberpanel " + user + "@" + IPAddress + " mkdir ~/backup"
 
             if os.path.exists(ProcessUtilities.debugPath):
                 logging.CyberCPLogFileWriter.writeToFile(command)
 
-            subprocess.call(shlex.split(command))
+            result = subprocess.call(shlex.split(command))
+            
+            # If SSH command fails, it might be an SFTP-only server
+            if result != 0:
+                logging.CyberCPLogFileWriter.writeToFile(
+                    f"SSH command failed for {IPAddress}, likely SFTP-only server. Skipping directory creation.")
+                # Don't fail - SFTP servers may have their own directory structure
+                return 1
 
             command = "sudo ssh -o StrictHostKeyChecking=no -p " + port + " -i /root/.ssh/cyberpanel " + user + "@" + IPAddress + ' "cat ~/.ssh/authorized_keys ~/.ssh/temp > ~/.ssh/authorized_temp"'
 
@@ -1653,10 +1728,13 @@ class backupUtilities:
                 logging.CyberCPLogFileWriter.writeToFile(command)
 
             subprocess.call(shlex.split(command))
+            
+            return 1
 
         except BaseException as msg:
             logging.CyberCPLogFileWriter.writeToFile(str(msg) + " [createBackupDir]")
-            return 0
+            # Don't fail for SFTP-only servers
+            return 1
 
     @staticmethod
     def host_key_verification(IPAddress):

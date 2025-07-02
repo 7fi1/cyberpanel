@@ -318,11 +318,63 @@ class backupSchedule:
             ##
 
             writeToFile = open(backupLogPath, "a")
-            command = "scp -o StrictHostKeyChecking=no -P "+port+" -i /root/.ssh/cyberpanel " + backupPath + " " + user + "@" + IPAddress+":~/backup/" + ipAddressLocal + "/" + time.strftime("%m.%d.%Y_%H-%M-%S") + "/"
-            subprocess.call(shlex.split(command), stdout=writeToFile)
+            remote_dir = "~/backup/" + ipAddressLocal + "/" + time.strftime("%m.%d.%Y_%H-%M-%S") + "/"
+            command = "scp -o StrictHostKeyChecking=no -P "+port+" -i /root/.ssh/cyberpanel " + backupPath + " " + user + "@" + IPAddress+":" + remote_dir
+            
+            # Try scp first
+            result = subprocess.call(shlex.split(command), stdout=writeToFile)
 
             if os.path.exists(ProcessUtilities.debugPath):
                 logging.CyberCPLogFileWriter.writeToFile(command)
+
+            # If scp fails, try SFTP
+            if result != 0:
+                writeToFile.write("SCP failed, attempting SFTP transfer...\n")
+                try:
+                    import paramiko
+                    ssh = paramiko.SSHClient()
+                    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+                    
+                    # Try key-based auth first
+                    try:
+                        private_key = paramiko.RSAKey.from_private_key_file('/root/.ssh/cyberpanel')
+                        ssh.connect(IPAddress, port=int(port), username=user, pkey=private_key)
+                    except:
+                        # If key auth fails, connection setup failed
+                        raise Exception("Failed to connect with SSH key")
+                    
+                    # Create remote directory structure via SFTP
+                    sftp = ssh.open_sftp()
+                    
+                    # Convert ~ to actual home directory
+                    home_dir = sftp.normalize('.')
+                    remote_full_path = os.path.join(home_dir, 'backup', ipAddressLocal, time.strftime("%m.%d.%Y_%H-%M-%S"))
+                    
+                    # Create directory structure
+                    path_parts = remote_full_path.strip('/').split('/')
+                    current_path = '/'
+                    for part in path_parts:
+                        current_path = os.path.join(current_path, part)
+                        try:
+                            sftp.stat(current_path)
+                        except FileNotFoundError:
+                            try:
+                                sftp.mkdir(current_path)
+                            except:
+                                pass
+                    
+                    # Transfer file
+                    remote_file = os.path.join(remote_full_path, os.path.basename(backupPath))
+                    sftp.put(backupPath, remote_file)
+                    sftp.close()
+                    ssh.close()
+                    
+                    writeToFile.write(f"Successfully transferred {backupPath} to {remote_file} via SFTP\n")
+                    logging.CyberCPLogFileWriter.writeToFile(f"Successfully transferred backup via SFTP to {IPAddress}")
+                except BaseException as msg:
+                    writeToFile.write(f"SFTP transfer failed: {str(msg)}\n")
+                    logging.CyberCPLogFileWriter.writeToFile(f"SFTP transfer failed: {str(msg)}")
+                    raise
 
             ## Remove backups already sent to remote destinations
 
