@@ -3739,8 +3739,8 @@ pm.max_spare_servers = 3
                         try:
                             shutil.copy(backup_file, file)
                             print(f"Restored: {file}")
-                        except:
-                            pass
+                        except Exception as e:
+                            print(f"Failed to restore {file}: {str(e)}")
                     else:
                         print(f"Backup not found for: {file}")
 
@@ -3750,17 +3750,19 @@ pm.max_spare_servers = 3
 
             execPath = "sudo /usr/local/CyberCP/bin/python /usr/local/CyberCP/plogical/csf.py"
             execPath = execPath + " removeCSF"
-            Upgrade.executioner(execPath, 'fix csf if there', 0)
+            Upgrade.executioner(execPath, 'Remove CSF before reinstall', 0)
 
             execPath = "sudo /usr/local/CyberCP/bin/python /usr/local/CyberCP/plogical/csf.py"
             execPath = execPath + " installCSF"
+            Upgrade.executioner(execPath, 'Install CSF', 0)
 
-            # Restore the files
-            print("Restoring files...")
+            # Restore the files AFTER installation
+            print("Restoring CSF configuration files...")
             restore_files()
-
-
-            Upgrade.executioner(execPath, 'fix csf if there', 0)
+            
+            # Restart CSF to apply restored configuration
+            command = 'csf -r'
+            Upgrade.executioner(command, 'Restart CSF with restored config', 0)
 
 
 
