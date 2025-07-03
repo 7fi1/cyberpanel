@@ -164,11 +164,11 @@ class secMiddleware:
                             return HttpResponse(final_json)
 
                     # Allow JSON structure characters for API endpoints but keep security checks for dangerous characters
-                    isAPIEndpoint = (FinalURL.find('api/remoteTransfer') > -1 or FinalURL.find('api/verifyConn') > -1 or 
-                                   FinalURL.find('webhook') > -1 or FinalURL.find('saveSpamAssassinConfigurations') > -1 or 
-                                   FinalURL.find('docker') > -1 or FinalURL.find('cloudAPI') > -1 or 
-                                   FinalURL.find('verifyLogin') > -1 or FinalURL.find('submitUserCreation') > -1 or 
-                                   FinalURL.find('/api/') > -1)
+                    isAPIEndpoint = (pathActual.find('api/remoteTransfer') > -1 or pathActual.find('api/verifyConn') > -1 or 
+                                   pathActual.find('saveSpamAssassinConfigurations') > -1 or 
+                                   pathActual.find('docker') > -1 or pathActual.find('cloudAPI') > -1 or 
+                                   pathActual.find('verifyLogin') > -1 or pathActual.find('submitUserCreation') > -1 or 
+                                   pathActual.find('/api/') > -1)
                     
                     if isAPIEndpoint:
                         # For API endpoints, still check for the most dangerous command injection characters
