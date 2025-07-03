@@ -67,7 +67,8 @@ class DatabaseManager:
             result = mysqlUtilities.submitDBCreation(dbName, dbUsername, dbPassword, databaseWebsite)
 
             if result[0] == 1:
-                data_ret = {'status': 1, 'createDBStatus': 1, 'error_message': "None"}
+                data_ret = {'status': 1, 'createDBStatus': 1, 'error_message': "None", 
+                           'dbName': dbName, 'dbUsername': dbUsername}
                 json_data = json.dumps(data_ret)
                 return HttpResponse(json_data)
             else:

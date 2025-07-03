@@ -75,9 +75,15 @@ app.controller('createDatabase', function ($scope, $http) {
 
                 $scope.createDatabaseLoading = true;
                 $scope.dbDetails = false;
+                var successMessage = 'Database successfully created.';
+                if (response.data.dbName && response.data.dbUsername) {
+                    successMessage = 'Database successfully created.\n' +
+                                   'Database Name: ' + response.data.dbName + '\n' +
+                                   'Database User: ' + response.data.dbUsername;
+                }
                 new PNotify({
                     title: 'Success!',
-                    text: 'Database successfully created.',
+                    text: successMessage,
                     type: 'success'
                 });
             } else {
