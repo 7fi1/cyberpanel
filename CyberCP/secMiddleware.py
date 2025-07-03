@@ -35,8 +35,12 @@ class secMiddleware:
             logging.writeToFile(f'Path vs the final url : {pathActual}')
             logging.writeToFile(FinalURL)
 
+        # Define webhook pattern for secure matching
+        import re
+        webhook_pattern = re.compile(r'^/websites/[^/]+/(webhook|gitNotify)/?$')
+        
         if pathActual == "/backup/localInitiate" or  pathActual == '/' or pathActual == '/verifyLogin' or pathActual == '/logout' or pathActual.startswith('/api')\
-                or pathActual.endswith('/webhook') or pathActual.startswith('/cloudAPI') or pathActual.endswith('/gitNotify'):
+                or webhook_pattern.match(pathActual) or pathActual.startswith('/cloudAPI'):
             pass
         else:
             if os.path.exists(ProcessUtilities.debugPath):
@@ -102,6 +106,13 @@ class secMiddleware:
                     logging.writeToFile('Request body detected.. scanning')
                     logging.writeToFile(str(request.body))
 
+                # Skip validation entirely for webhook endpoints
+                # Webhook URLs are: /websites/<domain>/webhook or /websites/<domain>/gitNotify
+                # Use the same webhook pattern defined above
+                if webhook_pattern.match(pathActual):
+                    response = self.get_response(request)
+                    return response
+
                 # logging.writeToFile(request.body)
                 try:
                     data = json.loads(request.body)
@@ -114,9 +125,6 @@ class secMiddleware:
                     if os.path.exists(ProcessUtilities.debugPath):
                         logging.writeToFile(f'Key being scanned {str(key)}')
                         logging.writeToFile(f'Value being scanned {str(value)}')
-
-                    if pathActual.find('gitNotify') > -1 or pathActual.endswith('/webhook') or pathActual.endswith('/gitNotify'):
-                        break
 
                     # Skip validation for ports key to allow port ranges with colons
                     if key == 'ports':
