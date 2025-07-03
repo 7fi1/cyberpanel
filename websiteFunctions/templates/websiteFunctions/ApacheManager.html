@@ -217,6 +217,21 @@
             background-color: white;
         }
         
+        /* Windows selectbox fix */
+        select.form-control {
+            color: #333 !important;
+            background-image: none !important;
+            -webkit-appearance: none !important;
+            -moz-appearance: none !important;
+            appearance: none !important;
+        }
+
+        select.form-control:focus,
+        select.form-control:active {
+            color: #333 !important;
+            background-color: white !important;
+        }
+        
         textarea.form-control {
             resize: vertical;
             font-family: 'Courier New', monospace;
