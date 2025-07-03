@@ -3656,6 +3656,9 @@ pm.max_spare_servers = 3
         Upgrade.someDirectories()
         Upgrade.installLSCPD(branch)
         Upgrade.FixCurrentQuoatasSystem()
+        
+        ## Fix Apache configuration issues after upgrade
+        Upgrade.fixApacheConfiguration()
 
         ### General migrations are not needed any more
 
@@ -3832,6 +3835,107 @@ pm.max_spare_servers = 3
             time.sleep(30)
             if os.path.exists(Upgrade.LogPathNew):
                 os.remove(Upgrade.LogPathNew)
+
+    @staticmethod
+    def fixApacheConfigurationOld():
+        """OLD VERSION - DO NOT USE - Fix Apache configuration issues after upgrade"""
+        try:
+            # Check if Apache is installed
+            if Upgrade.FindOperatingSytem() == CENTOS7 or Upgrade.FindOperatingSytem() == CENTOS8 \
+                    or Upgrade.FindOperatingSytem() == openEuler20 or Upgrade.FindOperatingSytem() == openEuler22:
+                apache_service = 'httpd'
+                apache_config_dir = '/etc/httpd'
+            else:
+                apache_service = 'apache2'
+                apache_config_dir = '/etc/apache2'
+            
+            # Check if Apache is installed
+            check_apache = f'systemctl is-enabled {apache_service} 2>/dev/null'
+            result = subprocess.run(check_apache, shell=True, capture_output=True, text=True)
+            
+            if result.returncode == 0:
+                Upgrade.stdOut("Fixing Apache configuration...")
+                
+                # 1. Ensure Apache ports are correctly configured
+                command = 'grep -q "Listen 8083" /usr/local/lsws/conf/httpd_config.xml || echo "Apache port configuration might need manual check"'
+                Upgrade.executioner(command, 'Check Apache ports', 1)
+                
+                # 2. Fix proxy rewrite rules for all vhosts
+                # The issue: Both rewrite rules execute, causing incorrect proxying
+                # Fix: Add proper HTTPS condition for SSL proxy rule
+                command = '''find /usr/local/lsws/conf/vhosts/ -name "vhost.conf" -exec sed -i '
+                    /^REWRITERULE.*proxyApacheBackendSSL/i\\
+RewriteCond %{HTTPS}  =on
+                ' {} \;'''
+                Upgrade.executioner(command, 'Fix Apache SSL proxy condition', 1)
+                
+                # Also ensure the proxy backends are properly configured
+                command = '''grep -q "extprocessor apachebackend" /usr/local/lsws/conf/httpd_config.conf || echo "
+extprocessor apachebackend {
+  type                    proxy
+  address                 http://127.0.0.1:8083
+  maxConns                100
+  initTimeout             60
+  retryTimeout            30
+  respBuffer              0
+}
+
+extprocessor proxyApacheBackendSSL {
+  type                    proxy
+  address                 https://127.0.0.1:8082
+  maxConns                100
+  initTimeout             60
+  retryTimeout            30
+  respBuffer              0
+}" >> /usr/local/lsws/conf/httpd_config.conf'''
+                Upgrade.executioner(command, 'Ensure Apache proxy backends exist', 1)
+                
+                # 3. Ensure Apache is configured to listen on correct ports
+                if Upgrade.FindOperatingSytem() in [CENTOS7, CENTOS8, openEuler20, openEuler22]:
+                    apache_port_conf = '/etc/httpd/conf.d/00-port.conf'
+                else:
+                    apache_port_conf = '/etc/apache2/ports.conf'
+                
+                command = f'''
+                grep -q "Listen 8082" {apache_port_conf} || echo "Listen 8082" >> {apache_port_conf}
+                grep -q "Listen 8083" {apache_port_conf} || echo "Listen 8083" >> {apache_port_conf}
+                '''
+                Upgrade.executioner(command, 'Ensure Apache listens on 8082/8083', 1)
+                
+                # 4. Restart Apache service
+                command = f'systemctl restart {apache_service}'
+                Upgrade.executioner(command, f'Restart {apache_service}', 1)
+                
+                # 5. Fix PHP-FPM socket permissions and restart services
+                for version in ['5.4', '5.5', '5.6', '7.0', '7.1', '7.2', '7.3', '7.4', '8.0', '8.1', '8.2', '8.3']:
+                    if Upgrade.FindOperatingSytem() in [CENTOS7, CENTOS8, openEuler20, openEuler22]:
+                        php_service = f'php{version.replace(".", "")}-php-fpm'
+                        socket_dir = '/var/run/php-fpm'
+                    else:
+                        php_service = f'php{version}-fpm'
+                        socket_dir = '/var/run/php'
+                    
+                    # Ensure socket directory exists with correct permissions
+                    command = f'''
+                    if systemctl is-active {php_service} >/dev/null 2>&1; then
+                        mkdir -p {socket_dir}
+                        chmod 755 {socket_dir}
+                        systemctl restart {php_service}
+                    fi
+                    '''
+                    Upgrade.executioner(command, f'Fix and restart {php_service}', 1)
+                
+                # 6. Reload LiteSpeed to apply proxy changes
+                command = '/usr/local/lsws/bin/lswsctrl reload'
+                Upgrade.executioner(command, 'Reload LiteSpeed', 1)
+                
+                Upgrade.stdOut("Apache configuration fixes completed.")
+            else:
+                Upgrade.stdOut("Apache not detected, skipping Apache fixes.")
+                
+        except Exception as e:
+            Upgrade.stdOut(f"Error fixing Apache configuration: {str(e)}")
+            pass
 
     @staticmethod
     def installQuota():
@@ -4122,6 +4226,367 @@ pm.max_spare_servers = 3
 
         command = f'chmod +x {filePath}'
         Upgrade.executioner(command, command, 0, True)
+
+    @staticmethod
+    def fixApacheConfiguration():
+        """
+        Fix Apache configuration issues after upgrade, particularly for 503 errors
+        when Apache is used as reverse proxy to OpenLiteSpeed
+        """
+        try:
+            print("Starting Apache configuration fix...")
+            
+            # Check if Apache is installed
+            osType = Upgrade.FindOperatingSytem()
+            if osType in [CENTOS7, CENTOS8, CloudLinux7, CloudLinux8]:
+                configBasePath = '/etc/httpd/conf.d/'
+                serviceName = 'httpd'
+            else:
+                configBasePath = '/etc/apache2/sites-enabled/'
+                serviceName = 'apache2'
+            
+            if not os.path.exists(configBasePath):
+                print("Apache not installed, skipping Apache fixes.")
+                return
+            
+            # Import required modules
+            from websiteFunctions.models import Websites
+            import re
+            
+            # Fix 1: Update Apache proxy configurations for domains actually using Apache
+            print("Fixing Apache proxy configurations...")
+            fixed_count = 0
+            apache_domains = []
+            
+            # First, identify which domains are using Apache by checking for Apache vhost configs
+            for config_file in os.listdir(configBasePath):
+                if config_file.endswith('.conf'):
+                    # Extract domain name from config file
+                    domain_name = config_file.replace('.conf', '')
+                    config_path = os.path.join(configBasePath, config_file)
+                    
+                    try:
+                        # Read the configuration to verify it's an Apache proxy setup
+                        with open(config_path, 'r') as f:
+                            content = f.read()
+                        
+                        # Check if this is actually an Apache proxy configuration
+                        # Look for common Apache proxy indicators
+                        is_apache_proxy = False
+                        if 'ProxyPass' in content and ('127.0.0.1:8082' in content or '127.0.0.1:8083' in content):
+                            is_apache_proxy = True
+                        elif 'RewriteRule' in content and 'apachebackend' in content:
+                            is_apache_proxy = True
+                        elif '<FilesMatch' in content and 'SetHandler' in content and 'proxy:unix:' in content:
+                            is_apache_proxy = True
+                        
+                        if is_apache_proxy:
+                            apache_domains.append(domain_name)
+                            modified = False
+                            
+                            # Fix the proxy rewrite rules - add missing HTTPS condition
+                            if 'RewriteRule ^/(.*)$ http://apachebackend/$1 [P,L]' in content and 'RewriteCond %{HTTPS} off' not in content:
+                                # Find the RewriteRule for HTTP proxy
+                                lines = content.split('\n')
+                                new_lines = []
+                                i = 0
+                                while i < len(lines):
+                                    line = lines[i]
+                                    if 'RewriteRule ^/(.*)$ http://apachebackend/$1 [P,L]' in line:
+                                        # Add the missing HTTPS condition before the rule
+                                        indent = len(line) - len(line.lstrip())
+                                        new_lines.append(' ' * indent + 'RewriteCond %{HTTPS} off')
+                                        new_lines.append(line)
+                                        modified = True
+                                    else:
+                                        new_lines.append(line)
+                                    i += 1
+                                
+                                if modified:
+                                    content = '\n'.join(new_lines)
+                            
+                            # Write back if modified
+                            if modified:
+                                with open(config_path, 'w') as f:
+                                    f.write(content)
+                                fixed_count += 1
+                                print(f"Fixed Apache configuration for: {config_file}")
+                    
+                    except Exception as e:
+                        print(f"Error processing {config_file}: {str(e)}")
+            
+            print(f"Found {len(apache_domains)} domains using Apache")
+            print(f"Fixed {fixed_count} Apache configurations.")
+            
+            # If no domains are using Apache, skip the rest of the fixes
+            if len(apache_domains) == 0:
+                print("No domains found using Apache as reverse proxy. Skipping remaining Apache fixes.")
+                return
+            
+            # Fix 2: Ensure Apache proxy backends are configured in OLS/LSWS
+            print("Checking OpenLiteSpeed proxy backend configurations...")
+            lsws_config = "/usr/local/lsws/conf/httpd_config.conf"
+            
+            if os.path.exists(lsws_config):
+                with open(lsws_config, 'r') as f:
+                    lsws_content = f.read()
+                
+                modified = False
+                
+                # Check for apachebackend extprocessor
+                if 'extprocessor apachebackend' not in lsws_content:
+                    # Add apachebackend configuration
+                    backend_config = '''
+extprocessor apachebackend {
+  type                    proxy
+  address                 127.0.0.1:8082
+  maxConns                100
+  initTimeout             60
+  retryTimeout            60
+  respBuffer              0
+}
+'''
+                    lsws_content += backend_config
+                    modified = True
+                    print("Added apachebackend extprocessor configuration")
+                
+                # Check for proxyApacheBackendSSL extprocessor
+                if 'extprocessor proxyApacheBackendSSL' not in lsws_content:
+                    # Add proxyApacheBackendSSL configuration
+                    ssl_backend_config = '''
+extprocessor proxyApacheBackendSSL {
+  type                    proxy
+  address                 https://127.0.0.1:8083
+  maxConns                100
+  initTimeout             60
+  retryTimeout            60
+  respBuffer              0
+}
+'''
+                    lsws_content += ssl_backend_config
+                    modified = True
+                    print("Added proxyApacheBackendSSL extprocessor configuration")
+                
+                if modified:
+                    with open(lsws_config, 'w') as f:
+                        f.write(lsws_content)
+                    print("Updated OpenLiteSpeed configuration with Apache proxy backends")
+            
+            # Fix 3: Create/Update .htaccess files ONLY for domains actually using Apache
+            print("Creating/Updating .htaccess files for Apache domains...")
+            htaccess_fixed = 0
+            htaccess_created = 0
+            
+            # Only process domains that we confirmed are using Apache
+            for domain in apache_domains:
+                try:
+                    htaccess_path = f'/home/{domain}/public_html/.htaccess'
+                    
+                    # Check if .htaccess exists
+                    if os.path.exists(htaccess_path):
+                        with open(htaccess_path, 'r') as f:
+                            htaccess_content = f.read()
+                        
+                        # Check if it's an Apache proxy configuration (case insensitive)
+                        if 'apachebackend' in htaccess_content.lower():
+                            # Check if it has proper HTTP/HTTPS handling
+                            needs_update = False
+                            
+                            # Check for old style single rule
+                            if 'REWRITERULE ^(.*)$ HTTP://apachebackend/$1 [P]' in htaccess_content:
+                                needs_update = True
+                            # Check if missing HTTPS conditions
+                            elif 'RewriteCond %{HTTPS} off' not in htaccess_content or 'proxyApacheBackendSSL' not in htaccess_content:
+                                needs_update = True
+                            
+                            if needs_update:
+                                # Create proper .htaccess with both HTTP and HTTPS handling
+                                new_htaccess = '''RewriteEngine On
+
+# HTTP to backend
+RewriteCond %{HTTPS} off
+RewriteRule ^(.*)$ http://apachebackend/$1 [P,L]
+
+# HTTPS to SSL backend  
+RewriteCond %{HTTPS} on
+RewriteRule ^(.*)$ https://proxyApacheBackendSSL/$1 [P,L]
+'''
+                                with open(htaccess_path, 'w') as f:
+                                    f.write(new_htaccess)
+                                htaccess_fixed += 1
+                                print(f"Fixed .htaccess for: {domain}")
+                    else:
+                        # .htaccess doesn't exist - this domain might be missing it!
+                        # Create the proper .htaccess file
+                        print(f"Creating missing .htaccess for Apache domain: {domain}")
+                        
+                        # Ensure public_html exists
+                        public_html_path = f'/home/{domain}/public_html'
+                        if os.path.exists(public_html_path):
+                            new_htaccess = '''RewriteEngine On
+
+# HTTP to backend
+RewriteCond %{HTTPS} off
+RewriteRule ^(.*)$ http://apachebackend/$1 [P,L]
+
+# HTTPS to SSL backend  
+RewriteCond %{HTTPS} on
+RewriteRule ^(.*)$ https://proxyApacheBackendSSL/$1 [P,L]
+'''
+                            with open(htaccess_path, 'w') as f:
+                                f.write(new_htaccess)
+                            
+                            # Set proper permissions
+                            try:
+                                website = Websites.objects.get(domain=domain)
+                                command = f'chown {website.externalApp}:{website.externalApp} {htaccess_path}'
+                                Upgrade.executioner(command, command, 0, True)
+                            except:
+                                pass
+                            
+                            htaccess_created += 1
+                            print(f"Created .htaccess for: {domain}")
+                        else:
+                            print(f"Warning: public_html not found for domain: {domain}")
+                            
+                except Exception as e:
+                    print(f"Error updating .htaccess for {domain}: {str(e)}")
+            
+            print(f"Fixed {htaccess_fixed} .htaccess files.")
+            print(f"Created {htaccess_created} missing .htaccess files.")
+            
+            # Fix 3b: Also fix OpenLiteSpeed vhost configurations that might have incorrect rewrite rules
+            print("Fixing OpenLiteSpeed vhost configurations for Apache domains...")
+            ols_fixed = 0
+            
+            for domain in apache_domains:
+                try:
+                    ols_vhost_path = f'/usr/local/lsws/conf/vhosts/{domain}/vhost.conf'
+                    
+                    if os.path.exists(ols_vhost_path):
+                        with open(ols_vhost_path, 'r') as f:
+                            vhost_content = f.read()
+                        
+                        # Check if it has the incorrect rewrite rules
+                        if 'RewriteCond %{HTTPS}  !=on' in vhost_content and 'HTTP://proxyApacheBackendSSL' in vhost_content:
+                            # This has the buggy configuration where HTTPS rule doesn't have proper condition
+                            modified = False
+                            
+                            # Replace the buggy rewrite section
+                            buggy_pattern = r'rewrite\s*{\s*enable\s*1\s*rules\s*<<<END_rules\s*RewriteEngine On\s*RewriteCond %{HTTPS}\s*!=on\s*REWRITERULE \^\(\.\*\)\$ HTTP://apachebackend/\$1 \[P,L\]\s*REWRITERULE \^\(\.\*\)\$ HTTP://proxyApacheBackendSSL/\$1 \[P,L\]\s*END_rules\s*}'
+                            
+                            correct_rewrite = '''rewrite  {
+  enable                  1
+  rules                   <<<END_rules
+RewriteEngine On
+RewriteCond %{HTTPS} off
+RewriteRule ^(.*)$ http://apachebackend/$1 [P,L]
+RewriteCond %{HTTPS} on
+RewriteRule ^(.*)$ https://proxyApacheBackendSSL/$1 [P,L]
+  END_rules
+}'''
+                            
+                            # Use a simpler approach - find and replace the section
+                            import re
+                            new_content = re.sub(
+                                r'rewrite\s*{[^}]+}',
+                                correct_rewrite,
+                                vhost_content,
+                                count=1
+                            )
+                            
+                            if new_content != vhost_content:
+                                with open(ols_vhost_path, 'w') as f:
+                                    f.write(new_content)
+                                ols_fixed += 1
+                                print(f"Fixed OLS vhost configuration for: {domain}")
+                        
+                except Exception as e:
+                    print(f"Error fixing OLS vhost for {domain}: {str(e)}")
+            
+            if ols_fixed > 0:
+                print(f"Fixed {ols_fixed} OpenLiteSpeed vhost configurations.")
+            
+            # Fix 4: Ensure Apache is listening on correct ports
+            if osType in [CENTOS7, CENTOS8, CloudLinux7, CloudLinux8]:
+                apache_conf = '/etc/httpd/conf/httpd.conf'
+            else:
+                ports_conf = '/etc/apache2/ports.conf'
+                apache_conf = ports_conf if os.path.exists(ports_conf) else '/etc/apache2/apache2.conf'
+            
+            if os.path.exists(apache_conf):
+                with open(apache_conf, 'r') as f:
+                    conf_content = f.read()
+                
+                # Check if Apache is configured to listen on 8082 and 8083
+                if 'Listen 8082' not in conf_content or 'Listen 8083' not in conf_content:
+                    print("Fixing Apache listen ports...")
+                    
+                    # For Ubuntu/Debian, update ports.conf
+                    if osType not in [CENTOS7, CENTOS8, CloudLinux7, CloudLinux8]:
+                        if os.path.exists('/etc/apache2/ports.conf'):
+                            with open('/etc/apache2/ports.conf', 'w') as f:
+                                f.write('Listen 8082\nListen 8083\n')
+                    else:
+                        # For CentOS, update httpd.conf
+                        lines = conf_content.split('\n')
+                        new_lines = []
+                        listen_added = False
+                        
+                        for line in lines:
+                            if line.strip().startswith('Listen') and '80' in line and not listen_added:
+                                new_lines.append('Listen 8082')
+                                new_lines.append('Listen 8083')
+                                listen_added = True
+                            elif 'Listen 8082' not in line and 'Listen 8083' not in line:
+                                new_lines.append(line)
+                        
+                        with open(apache_conf, 'w') as f:
+                            f.write('\n'.join(new_lines))
+                    
+                    print("Fixed Apache listen ports")
+            
+            # Fix 5: Fix PHP-FPM socket permissions
+            print("Fixing PHP-FPM socket permissions...")
+            if osType in [CENTOS7, CENTOS8, CloudLinux7, CloudLinux8]:
+                sock_path = '/var/run/php-fpm/'
+            else:
+                sock_path = '/var/run/php/'
+            
+            if os.path.exists(sock_path):
+                # Set proper permissions
+                command = f'chmod 755 {sock_path}'
+                Upgrade.executioner(command, command, 0, True)
+                
+                # Fix ownership
+                command = f'chown apache:apache {sock_path}' if osType in [CENTOS7, CENTOS8, CloudLinux7, CloudLinux8] else f'chown www-data:www-data {sock_path}'
+                Upgrade.executioner(command, command, 0, True)
+            
+            # Restart services
+            print("Restarting services...")
+            
+            # Restart Apache
+            command = f'systemctl restart {serviceName}'
+            Upgrade.executioner(command, command, 0, True)
+            
+            # Restart OpenLiteSpeed
+            command = 'systemctl restart lsws'
+            Upgrade.executioner(command, command, 0, True)
+            
+            # Restart PHP-FPM services
+            if osType in [CENTOS7, CENTOS8, CloudLinux7, CloudLinux8]:
+                for version in ['54', '55', '56', '70', '71', '72', '73', '74', '80', '81', '82', '83', '84']:
+                    command = f'systemctl restart php{version}-php-fpm'
+                    Upgrade.executioner(command, command, 0, True)
+            else:
+                for version in ['5.6', '7.0', '7.1', '7.2', '7.3', '7.4', '8.0', '8.1', '8.2', '8.3']:
+                    command = f'systemctl restart php{version}-fpm'
+                    Upgrade.executioner(command, command, 0, True)
+            
+            print("Apache configuration fix completed successfully!")
+            
+        except Exception as e:
+            print(f"Error during Apache configuration fix: {str(e)}")
 
 
 
