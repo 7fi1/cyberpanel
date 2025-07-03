@@ -10,6 +10,16 @@ app.controller('createDatabase', function ($scope, $http) {
         $(".dbDetails").hide();
         $(".generatedPasswordDetails").hide();
         $('#create-database-select').select2();
+        
+        // Initialize preview if website is already selected
+        setTimeout(function() {
+            if ($scope.databaseWebsite) {
+                var truncatedName = $scope.getTruncatedWebName($scope.databaseWebsite);
+                $("#domainDatabase").text(truncatedName);
+                $("#domainUsername").text(truncatedName);
+                $(".dbDetails").show();
+            }
+        }, 100);
     });
 
     // Helper function to get truncated website name
@@ -45,8 +55,27 @@ app.controller('createDatabase', function ($scope, $http) {
     $scope.showDetailsBoxes = function () {
         $scope.dbDetails = false;
     }
+    
+    // Function called when website selection changes
+    $scope.websiteChanged = function() {
+        if ($scope.databaseWebsite) {
+            $(".dbDetails").show();
+            var truncatedName = $scope.getTruncatedWebName($scope.databaseWebsite);
+            $("#domainDatabase").text(truncatedName);
+            $("#domainUsername").text(truncatedName);
+        }
+    }
 
     $scope.createDatabaseLoading = true;
+    
+    // Watch for changes to databaseWebsite to update preview
+    $scope.$watch('databaseWebsite', function(newValue, oldValue) {
+        if (newValue && newValue !== oldValue) {
+            var truncatedName = $scope.getTruncatedWebName(newValue);
+            $("#domainDatabase").text(truncatedName);
+            $("#domainUsername").text(truncatedName);
+        }
+    });
 
     $scope.createDatabase = function () {
 
