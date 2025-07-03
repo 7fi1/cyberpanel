@@ -115,7 +115,7 @@ class secMiddleware:
                         logging.writeToFile(f'Key being scanned {str(key)}')
                         logging.writeToFile(f'Value being scanned {str(value)}')
 
-                    if request.path.find('gitNotify') > -1 or pathActual.endswith('/webhook') or pathActual.endswith('/gitNotify'):
+                    if pathActual.find('gitNotify') > -1 or pathActual.endswith('/webhook') or pathActual.endswith('/gitNotify'):
                         break
 
                     # Skip validation for ports key to allow port ranges with colons
