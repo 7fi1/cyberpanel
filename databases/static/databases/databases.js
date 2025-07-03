@@ -12,12 +12,33 @@ app.controller('createDatabase', function ($scope, $http) {
         $('#create-database-select').select2();
     });
 
+    // Helper function to get truncated website name
+    $scope.getTruncatedWebName = function(domain) {
+        if (!domain) return '';
+        
+        // Remove hyphens and get first part before dot
+        var webName = domain.replace(/-/g, '').split('.')[0];
+        
+        // Truncate to 4 characters if longer than 5
+        if (webName.length > 5) {
+            webName = webName.substring(0, 4);
+        }
+        
+        return webName;
+    };
+
     $('#create-database-select').on('select2:select', function (e) {
         var data = e.params.data;
         $scope.databaseWebsite = data.text;
         $(".dbDetails").show();
-        $("#domainDatabase").text(getWebsiteName(data.text));
-        $("#domainUsername").text(getWebsiteName(data.text));
+        
+        // Use local truncation function to ensure consistency
+        var truncatedName = $scope.getTruncatedWebName(data.text);
+        $("#domainDatabase").text(truncatedName);
+        $("#domainUsername").text(truncatedName);
+        
+        // Apply scope to update Angular bindings
+        $scope.$apply();
     });
 
 
@@ -39,14 +60,8 @@ app.controller('createDatabase', function ($scope, $http) {
         var dbPassword = $scope.dbPassword;
         var webUserName = "";
 
-        // getting website username
-
-        webUserName = databaseWebsite.replace(/-/g, '');
-        webUserName = webUserName.split(".")[0];
-
-        if (webUserName.length > 5) {
-            webUserName = webUserName.substring(0, 4);
-        }
+        // getting website username - use the same truncation function for consistency
+        webUserName = $scope.getTruncatedWebName(databaseWebsite);
 
         var url = "/dataBases/submitDBCreation";
 
