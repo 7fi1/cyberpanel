@@ -1431,9 +1431,16 @@ if ! grep -q "pid_max" /etc/rc.local 2>/dev/null ; then
 
 cp /etc/resolv.conf /etc/resolv.conf-tmp
 
+# Find the line containing nameserver 8.8.8.8 pattern
 Line1="$(grep -n "f.write('nameserver 8.8.8.8')" installCyberPanel.py | head -n 1 | cut -d: -f1)"
-sed -i "${Line1}i\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ subprocess.call\(command, shell=True)" installCyberPanel.py
-sed -i "${Line1}i\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ command = 'cat /etc/resolv.conf-tmp > /etc/resolv.conf'" installCyberPanel.py
+
+# Only modify the file if the pattern was found
+if [[ -n "$Line1" ]] && [[ "$Line1" =~ ^[0-9]+$ ]]; then
+    sed -i "${Line1}i\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ subprocess.call\(command, shell=True)" installCyberPanel.py
+    sed -i "${Line1}i\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ command = 'cat /etc/resolv.conf-tmp > /etc/resolv.conf'" installCyberPanel.py
+else
+    echo "Warning: Could not find 'nameserver 8.8.8.8' pattern in installCyberPanel.py - skipping resolv.conf modification"
+fi
 }
 
 License_Validation() {
@@ -1452,7 +1459,8 @@ tar xzvf "lsws-$LSWS_Stable_Version-ent-x86_64-linux.tar.gz" >/dev/null
 cd "/root/cyberpanel-tmp/lsws-$LSWS_Stable_Version/conf"  || exit
 if [[ "$License_Key" = "Trial" ]]; then
   Retry_Command "wget -q https://cyberpanel.sh/license.litespeedtech.com/reseller/trial.key"
-  sed -i "s|writeSerial = open('lsws-6.0/serial.no', 'w')|command = 'wget -q --output-document=./lsws-$LSWS_Stable_Version/trial.key https://cyberpanel.sh/license.litespeedtech.com/reseller/trial.key'|g" "$Current_Dir/installCyberPanel.py"
+  # Update the serial number handling to use trial key
+  sed -i "s|writeSerial = open('lsws-[0-9.]\+/serial.no', 'w')|command = 'wget -q --output-document=./lsws-$LSWS_Stable_Version/trial.key https://cyberpanel.sh/license.litespeedtech.com/reseller/trial.key'|g" "$Current_Dir/installCyberPanel.py"
   sed -i 's|writeSerial.writelines(self.serial)|subprocess.call(command, shell=True)|g' "$Current_Dir/installCyberPanel.py"
   sed -i 's|writeSerial.close()||g' "$Current_Dir/installCyberPanel.py"
 else
