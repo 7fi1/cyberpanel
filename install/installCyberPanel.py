@@ -674,17 +674,20 @@ gpgcheck=1
                 self.manage_service('systemd-resolved.service', 'disable')
 
                 try:
-                    os.rename('/etc/resolv.conf', 'etc/resolved.conf')
+                    os.rename('/etc/resolv.conf', '/etc/resolv.conf.bak')
                 except OSError as e:
                     if e.errno != errno.EEXIST and e.errno != errno.ENOENT:
                         InstallCyberPanel.stdOut("[ERROR] Unable to rename /etc/resolv.conf to install PowerDNS: " +
                                                  str(e), 1, 1, os.EX_OSERR)
-                    try:
-                        os.remove('/etc/resolv.conf')
-                    except OSError as e1:
-                        InstallCyberPanel.stdOut(
-                            "[ERROR] Unable to remove existing /etc/resolv.conf to install PowerDNS: " +
-                            str(e1), 1, 1, os.EX_OSERR)
+                
+                # Create a temporary resolv.conf with Google DNS for package installation
+                try:
+                    with open('/etc/resolv.conf', 'w') as f:
+                        f.write('nameserver 8.8.8.8\n')
+                        f.write('nameserver 8.8.4.4\n')
+                    InstallCyberPanel.stdOut("Created temporary /etc/resolv.conf with Google DNS", 1)
+                except IOError as e:
+                    InstallCyberPanel.stdOut("[ERROR] Unable to create /etc/resolv.conf: " + str(e), 1, 1, os.EX_OSERR)
 
             # Install PowerDNS packages
             if self.distro == ubuntu:
