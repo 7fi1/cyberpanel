@@ -355,10 +355,7 @@ class InstallCyberPanel:
 
         if self.distro == ubuntu:
 
-            command = 'DEBIAN_FRONTEND=noninteractive apt-get install software-properties-common -y'
-            install.preFlightsChecks.call(command, self.distro, command, command, 1, 1, os.EX_OSERR, True)
-
-            command = "DEBIAN_FRONTEND=noninteractive apt-get install apt-transport-https curl -y"
+            command = 'DEBIAN_FRONTEND=noninteractive apt-get install software-properties-common apt-transport-https curl -y'
             install.preFlightsChecks.call(command, self.distro, command, command, 1, 1, os.EX_OSERR, True)
 
             command = "mkdir -p /etc/apt/keyrings"

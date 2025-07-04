@@ -309,7 +309,15 @@ do
     echo "command $1 failed for 50 times, exit..."
     exit 2
   else
-    $1  && break || echo -e "\n$1 has failed for $i times\nWait for 3 seconds and try again...\n"; sleep 3;
+    $1  && break || {
+      echo -e "\n$1 has failed for $i times\nWait and try again...\n"
+      # Exponential backoff: 1s, 2s, 4s, 8s, then cap at 10s
+      if [[ $i -le 4 ]]; then
+        sleep $((2**($i-1)))
+      else
+        sleep 10
+      fi
+    }
   fi
 done
 }
@@ -1142,8 +1150,8 @@ for i in {1..50} ;
     break
   else
     echo -e "\n Requirement list has failed to download for $i times..."
-    echo -e "Wait for 30 seconds and try again...\n"
-    sleep 30
+    echo -e "Wait for 5 seconds and try again...\n"
+    sleep 5
   fi
 done
 #special made function for Gitee.com , for whatever reason , sometimes it fails to download this file
@@ -1154,6 +1162,8 @@ Pre_Install_Required_Components() {
 Debug_Log2 "Installing necessary components..,3"
 
 if [[ "$Server_OS" = "CentOS" ]] || [[ "$Server_OS" = "openEuler" ]] ; then
+  # System-wide update - consider making this optional for faster installs
+  # Could add a --skip-system-update flag to bypass this
   yum update -y
   if [[ "$Server_OS_Version" = "7" ]] ; then
     yum install -y wget strace net-tools curl which bc telnet htop libevent-devel gcc libattr-devel xz-devel gpgme-devel curl-devel git socat openssl-devel MariaDB-shared mariadb-devel yum-utils python36u python36u-pip python36u-devel zip unzip bind-utils
@@ -1161,9 +1171,7 @@ if [[ "$Server_OS" = "CentOS" ]] || [[ "$Server_OS" = "openEuler" ]] ; then
     yum -y groupinstall development
       Check_Return
   elif [[ "$Server_OS_Version" = "8" ]] ; then
-    dnf install -y libnsl zip wget strace net-tools curl which bc telnet htop libevent-devel gcc libattr-devel xz-devel mariadb-devel curl-devel git platform-python-devel tar socat python3 zip unzip bind-utils
-      Check_Return
-    dnf install -y gpgme-devel
+    dnf install -y libnsl zip wget strace net-tools curl which bc telnet htop libevent-devel gcc libattr-devel xz-devel mariadb-devel curl-devel git platform-python-devel tar socat python3 zip unzip bind-utils gpgme-devel
       Check_Return
   elif [[ "$Server_OS_Version" = "9" ]] ; then
 
@@ -1173,14 +1181,15 @@ if [[ "$Server_OS" = "CentOS" ]] || [[ "$Server_OS" = "openEuler" ]] ; then
     dnf install -y libnsl zip wget strace net-tools curl which bc telnet htop libevent-devel gcc libattr-devel xz-devel MariaDB-server MariaDB-client MariaDB-devel curl-devel git platform-python-devel tar socat python3 zip unzip bind-utils gpgme-devel openssl-devel
       Check_Return
   elif [[ "$Server_OS_Version" = "20" ]] || [[ "$Server_OS_Version" = "22" ]] ; then
-    dnf install -y libnsl zip wget strace net-tools curl which bc telnet htop libevent-devel gcc libattr-devel xz-devel mariadb-devel curl-devel git python3-devel tar socat python3 zip unzip bind-utils
-      Check_Return
-    dnf install -y gpgme-devel
+    dnf install -y libnsl zip wget strace net-tools curl which bc telnet htop libevent-devel gcc libattr-devel xz-devel mariadb-devel curl-devel git python3-devel tar socat python3 zip unzip bind-utils gpgme-devel
       Check_Return
   fi
   ln -s /usr/bin/pip3 /usr/bin/pip
 else
+  # Update package lists (required for installations)
   apt update -y
+  # System-wide upgrade - consider making this optional for faster installs
+  # Could add a --skip-system-upgrade flag to bypass this
   DEBIAN_FRONTEND=noninteractive apt upgrade -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold"
 	if [[ "$Server_Provider" = "Alibaba Cloud" ]] ; then
     apt install -y --allow-downgrades libgnutls30=3.6.13-2ubuntu1.3
@@ -1194,19 +1203,11 @@ else
      Check_Return
   fi
 
-  DEBIAN_FRONTEND=noninteractive apt install -y python3-pip
+  DEBIAN_FRONTEND=noninteractive apt install -y python3-pip build-essential libssl-dev libffi-dev python3-dev python3-venv cron inetutils-ping
     Check_Return
 
   ln -s /usr/bin/pip3 /usr/bin/pip3.6
   ln -s /usr/bin/pip3.6 /usr/bin/pip
-
-  DEBIAN_FRONTEND=noninteractive apt install -y build-essential libssl-dev libffi-dev python3-dev
-    Check_Return
-  DEBIAN_FRONTEND=noninteractive apt install -y python3-venv
-    Check_Return
-
-  DEBIAN_FRONTEND=noninteractive apt install -y cron inetutils-ping
-    Check_Return
 # Oracle Ubuntu ARM misses ping and cron 
 
   DEBIAN_FRONTEND=noninteractive apt install -y locales
@@ -1244,10 +1245,6 @@ Debug_Log2 "Installing requirments..,3"
 
 Retry_Command "pip install --default-timeout=3600 -r /usr/local/requirments.txt"
   Check_Return "requirments" "no_exit"
-
-if [[ "$Server_OS" = "Ubuntu" ]] && [[ "$Server_OS_Version" = "22" ]] ; then
-  cp /usr/bin/python3.10 /usr/local/CyberCP/bin/python3
-fi
 
 rm -rf cyberpanel
 echo -e "\nFetching files from ${Git_Clone_URL}...\n"
@@ -1411,8 +1408,14 @@ if ! grep -q "pid_max" /etc/rc.local 2>/dev/null ; then
   fi
 
   systemctl restart systemd-networkd >/dev/null 2>&1
-  sleep 3
-  #take a break ,or installer will break
+  # Wait for network to come up, but check more frequently
+  for j in {1..6}; do
+    sleep 0.5
+    # Check if network is ready by trying to resolve DNS
+    if ping -c 1 -W 1 8.8.8.8 >/dev/null 2>&1 || nslookup cyberpanel.sh >/dev/null 2>&1; then
+      break
+    fi
+  done
 
   # Check Connectivity
   if ping -q -c 1 -W 1 cyberpanel.sh >/dev/null; then
@@ -1426,7 +1429,8 @@ if ! grep -q "pid_max" /etc/rc.local 2>/dev/null ; then
     systemctl restart systemd-networkd >/dev/null 2>&1
     echo -e "\nReturns the nameservers settings to default..\n"
     echo -e "\nContinue installation..\n"
-    sleep 3
+    # Brief pause for network stabilization
+    sleep 1
   fi
 
 cp /etc/resolv.conf /etc/resolv.conf-tmp

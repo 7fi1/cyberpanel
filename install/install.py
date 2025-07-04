@@ -128,6 +128,7 @@ class preFlightsChecks:
     cyberPanelMirror = "mirror.cyberpanel.net/pip"
     cdn = 'cyberpanel.sh'
     SnappyVersion = '2.38.2'
+    apt_updated = False  # Track if apt update has been run
     
     def install_package(self, package_name, options="", silent=False):
         """Unified package installation across distributions"""
@@ -224,9 +225,7 @@ class preFlightsChecks:
 
             if self.distro == ubuntu:
                 self.stdOut("Install Quota on Ubuntu")
-                command = 'apt update -y'
-                preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
-
+                # Skip apt update as it was already done in cyberpanel.sh
                 self.install_package("quota", silent=True)
 
                 command = "find /lib/modules/ -type f -name '*quota_v*.ko*'"
@@ -2202,10 +2201,10 @@ $cfg['Servers'][$i]['LogoutURL'] = 'phpmyadminsignin.php?logout';
 
     def installOpenDKIM(self):
         try:
-            self.install_package('opendkim')
-
             if self.distro == cent8 or self.distro == openeuler or self.distro == ubuntu:
-                self.install_package('opendkim-tools')
+                self.install_package('opendkim opendkim-tools')
+            else:
+                self.install_package('opendkim')
 
                 command = 'mkdir -p /etc/opendkim/keys/'
                 preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
@@ -2461,9 +2460,8 @@ milter_default_action = accept
                 preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
 
             else:
-                command = 'DEBIAN_FRONTEND=noninteractive apt-get update -y'
-                preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR, True)
-
+                # Skip apt-get update as it was already done in cyberpanel.sh
+                # Just install the package directly
                 command = 'DEBIAN_FRONTEND=noninteractive apt-get install restic -y'
                 preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR, True)
                 
