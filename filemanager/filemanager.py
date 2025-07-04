@@ -716,7 +716,9 @@ class FileManager:
                 if self.data['fileName'].find(pathCheck) == -1 or self.data['fileName'].find('..') > -1:
                     return self.ajaxPre(0, 'Not allowed.')
 
-                command = 'cat ' + self.returnPathEnclosed(self.data['fileName'])
+                # Ensure proper UTF-8 handling for file reading
+                # Use explicit UTF-8 locale for the cat command
+                command = 'LANG=C.UTF-8 LC_ALL=C.UTF-8 cat ' + self.returnPathEnclosed(self.data['fileName'])
                 finalData['fileContents'] = ProcessUtilities.outputExecutioner(command, website.externalApp)
             except:
                 pathCheck = '/'
@@ -724,12 +726,15 @@ class FileManager:
                 if self.data['fileName'].find(pathCheck) == -1 or self.data['fileName'].find('..') > -1:
                     return self.ajaxPre(0, 'Not allowed.')
 
-                command = 'cat ' + self.returnPathEnclosed(self.data['fileName'])
+                # Ensure proper UTF-8 handling for file reading
+                # Use explicit UTF-8 locale for the cat command
+                command = 'LANG=C.UTF-8 LC_ALL=C.UTF-8 cat ' + self.returnPathEnclosed(self.data['fileName'])
                 finalData['fileContents'] = ProcessUtilities.outputExecutioner(command)
 
 
-            json_data = json.dumps(finalData)
-            return HttpResponse(json_data)
+            # Ensure proper UTF-8 encoding in JSON response
+            json_data = json.dumps(finalData, ensure_ascii=False)
+            return HttpResponse(json_data, content_type='application/json; charset=utf-8')
 
         except BaseException as msg:
             return self.ajaxPre(0, str(msg))

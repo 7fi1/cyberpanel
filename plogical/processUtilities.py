@@ -324,10 +324,15 @@ class ProcessUtilities(multi.Thread):
                 if user!=None:
                     if not command.startswith('sudo'):
                         command = f'sudo -u {user} {command}'
+                # Ensure UTF-8 environment for proper character handling
+                env = os.environ.copy()
+                env['LC_ALL'] = 'en_US.UTF-8'
+                env['LANG'] = 'en_US.UTF-8'
+                
                 if shell == None or shell == True:
-                    p = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+                    p = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=env)
                 else:
-                    p = subprocess.Popen(shlex.split(command),  stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+                    p = subprocess.Popen(shlex.split(command),  stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=env)
 
                 if retRequired:
                     return 1, p.communicate()[0].decode("utf-8")
