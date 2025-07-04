@@ -102,21 +102,38 @@ class InstallCyberPanel:
             logging.InstallLog.writeToFile(f'[ERROR] {str(e)} [modify_file_content]')
             return False
 
-    def copy_config_file(self, source_dir, dest_path, mysql_mode='Two'):
+    def copy_config_file(self, source_dir, dest_path, mysql_mode='One'):
         """Handle configuration file copying with mode selection"""
-        source_suffix = '' if mysql_mode == 'Two' else '-one'
-        source_path = f"{source_dir}{source_suffix}"
+        # For directories like 'dns' vs 'dns-one', 'pure-ftpd' vs 'pure-ftpd-one'
+        # Default mode is 'One' which uses the -one directories
+        if mysql_mode == 'Two':
+            source_path = source_dir
+        else:
+            # Default mode 'One' uses directories with -one suffix
+            source_path = f"{source_dir}-one"
         
-        if os.path.exists(dest_path):
-            if os.path.isdir(dest_path):
-                shutil.rmtree(dest_path)
-            else:
-                os.remove(dest_path)
-        
+        # Determine the actual file to copy
         if os.path.isdir(source_path):
+            # If it's a directory, we need to copy the whole directory
+            if os.path.exists(dest_path):
+                if os.path.isdir(dest_path):
+                    shutil.rmtree(dest_path)
             shutil.copytree(source_path, dest_path)
         else:
-            shutil.copy(source_path, dest_path)
+            # If source is a directory but dest is a file, find the config file
+            if os.path.isdir(source_dir) or os.path.isdir(f"{source_dir}-one"):
+                # Look for pdns.conf or similar config file
+                if dest_path.endswith('pdns.conf'):
+                    source_file = os.path.join(source_path, 'pdns.conf')
+                elif dest_path.endswith('pureftpd-mysql.conf'):
+                    source_file = os.path.join(source_path, 'pureftpd-mysql.conf')
+                else:
+                    # Generic case - use basename of dest
+                    source_file = os.path.join(source_path, os.path.basename(dest_path))
+                
+                if os.path.exists(dest_path):
+                    os.remove(dest_path)
+                shutil.copy(source_file, dest_path)
 
     @staticmethod
     def ISARM():
@@ -690,7 +707,7 @@ gpgcheck=1
             else:
                 dnsPath = "/etc/powerdns/pdns.conf"
 
-            self.copy_config_file("dns/pdns.conf", dnsPath, mysql)
+            self.copy_config_file("dns", dnsPath, mysql)
 
             data = open(dnsPath, "r").readlines()
 
