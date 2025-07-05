@@ -271,16 +271,21 @@ class ProcessUtilities(multi.Thread):
 
                 sock.sendall(command.encode('utf-8'))
 
-            data = ""
+            # Collect all raw bytes first, then decode as a complete unit
+            raw_data = b""
 
             while (1):
                 currentData = sock.recv(32)
                 if len(currentData) == 0 or currentData == None:
                     break
-                try:
-                    data = data + currentData.decode('utf-8', errors='replace')
-                except BaseException as msg:
-                    logging.writeToFile('Some data could not be decoded to str, error message: %s' % str(msg))
+                raw_data += currentData
+
+            # Decode all data at once to prevent UTF-8 character boundary issues
+            try:
+                data = raw_data.decode('utf-8', errors='replace')
+            except BaseException as msg:
+                logging.writeToFile('Some data could not be decoded to str, error message: %s' % str(msg))
+                data = ""
 
             sock.close()
             #logging.writeToFile('Final data: %s.' % (str(data)))
@@ -434,6 +439,3 @@ class ProcessUtilities(multi.Thread):
             print("An error occurred:", e)
             logging.writeToFile(f"[fetch_latest_prestashop_version] An error occurred: {str(e)}")
         return None
-
-
-
