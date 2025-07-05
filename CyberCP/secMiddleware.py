@@ -127,8 +127,38 @@ class secMiddleware:
                         logging.writeToFile(f'Value being scanned {str(value)}')
 
                     # Skip validation for ports key to allow port ranges with colons
-                    if key == 'ports':
+                    # but only for CSF modifyPorts endpoint
+                    if key == 'ports' and pathActual == '/firewall/modifyPorts':
+                        # Validate that ports only contain numbers, commas, and colons
+                        if type(value) == str:
+                            import re
+                            # Allow only: digits, commas, colons, and whitespace
+                            if re.match(r'^[\d,:,\s]+$', value):
+                                continue
+                            else:
+                                logging.writeToFile(f"Invalid port format in CSF configuration: {value}")
+                                final_dic = {
+                                    'error_message': "Invalid port format. Only numbers, commas, and colons are allowed for port ranges.",
+                                    "errorMessage": "Invalid port format. Only numbers, commas, and colons are allowed for port ranges."}
+                                final_json = json.dumps(final_dic)
+                                return HttpResponse(final_json)
                         continue
+                    elif key == 'ports':
+                        # For other endpoints, ports key continues to skip validation
+                        continue
+                    
+                    # Allow protocol parameter for CSF modifyPorts endpoint
+                    if key == 'protocol' and pathActual == '/firewall/modifyPorts':
+                        # Validate protocol values
+                        if value in ['TCP_IN', 'TCP_OUT', 'UDP_IN', 'UDP_OUT']:
+                            continue
+                        else:
+                            logging.writeToFile(f"Invalid protocol in CSF configuration: {value}")
+                            final_dic = {
+                                'error_message': "Invalid protocol. Only TCP_IN, TCP_OUT, UDP_IN, UDP_OUT are allowed.",
+                                "errorMessage": "Invalid protocol. Only TCP_IN, TCP_OUT, UDP_IN, UDP_OUT are allowed."}
+                            final_json = json.dumps(final_dic)
+                            return HttpResponse(final_json)
 
                     if type(value) == str or type(value) == bytes:
                         pass

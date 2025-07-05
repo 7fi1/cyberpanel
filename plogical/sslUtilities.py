@@ -701,7 +701,8 @@ context /.well-known/acme-challenge {
                     
                     command = acmePath + " --issue" + domain_list \
                               + ' --cert-file ' + existingCertPath + '/cert.pem' + ' --key-file ' + existingCertPath + '/privkey.pem' \
-                              + ' --fullchain-file ' + existingCertPath + '/fullchain.pem' + ' -w /usr/local/lsws/Example/html -k ec-256 --force --staging'
+                              + ' --fullchain-file ' + existingCertPath + '/fullchain.pem' + ' -w /usr/local/lsws/Example/html -k ec-256 --force --staging' \
+                              + ' --webroot-path /usr/local/lsws/Example/html'
                     
                     if ProcessUtilities.decideServer() == ProcessUtilities.OLS:
                         result = subprocess.run(command, capture_output=True, universal_newlines=True, shell=True)
@@ -711,7 +712,8 @@ context /.well-known/acme-challenge {
                     if result.returncode == 0:
                         command = acmePath + " --issue" + domain_list \
                                   + ' --cert-file ' + existingCertPath + '/cert.pem' + ' --key-file ' + existingCertPath + '/privkey.pem' \
-                                  + ' --fullchain-file ' + existingCertPath + '/fullchain.pem' + ' -w /usr/local/lsws/Example/html -k ec-256 --force --server letsencrypt'
+                                  + ' --fullchain-file ' + existingCertPath + '/fullchain.pem' + ' -w /usr/local/lsws/Example/html -k ec-256 --force --server letsencrypt' \
+                                  + ' --webroot-path /usr/local/lsws/Example/html'
                         
                         result = subprocess.run(command, capture_output=True, universal_newlines=True, shell=True)
                         
@@ -765,6 +767,34 @@ context /.well-known/acme-challenge {
 
 def issueSSLForDomain(domain, adminEmail, sslpath, aliasDomain=None):
     try:
+        # Check if certificate already exists and try to renew it first
+        existingCertPath = '/etc/letsencrypt/live/' + domain + '/fullchain.pem'
+        if os.path.exists(existingCertPath):
+            logging.CyberCPLogFileWriter.writeToFile(f"Certificate exists for {domain}, attempting renewal...")
+            
+            # Try to renew using acme.sh
+            acmePath = '/root/.acme.sh/acme.sh'
+            if os.path.exists(acmePath):
+                # First set the webroot path for the domain
+                command = f'{acmePath} --update-account --accountemail {adminEmail}'
+                subprocess.call(command, shell=True)
+                
+                # Build domain list for renewal
+                renewal_domains = f'-d {domain}'
+                if sslUtilities.checkDNSRecords(f'www.{domain}'):
+                    renewal_domains += f' -d www.{domain}'
+                
+                # Try to renew with explicit webroot
+                command = f'{acmePath} --renew {renewal_domains} --webroot /usr/local/lsws/Example/html --force'
+                result = subprocess.run(command, capture_output=True, text=True, shell=True)
+                
+                if result.returncode == 0:
+                    logging.CyberCPLogFileWriter.writeToFile(f"Successfully renewed SSL for {domain}")
+                    if sslUtilities.installSSLForDomain(domain, adminEmail) == 1:
+                        return [1, "None"]
+                else:
+                    logging.CyberCPLogFileWriter.writeToFile(f"Renewal failed for {domain}, falling back to new issuance")
+        
         if sslUtilities.obtainSSLForADomain(domain, adminEmail, sslpath, aliasDomain) == 1:
             if sslUtilities.installSSLForDomain(domain, adminEmail) == 1:
                 return [1, "None"]
