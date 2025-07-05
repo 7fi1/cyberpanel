@@ -439,3 +439,4 @@ class ProcessUtilities(multi.Thread):
             print("An error occurred:", e)
             logging.writeToFile(f"[fetch_latest_prestashop_version] An error occurred: {str(e)}")
         return None
+    
