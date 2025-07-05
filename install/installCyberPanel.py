@@ -3,57 +3,26 @@ import subprocess
 import os
 from mysqlUtilities import mysqlUtilities
 import installLog as logging
-import randomPassword
 import errno
 import MySQLdb as mariadb
 import install
 from os.path import exists
 import time
+import install_utils
 
-# distros
-centos = 0
-ubuntu = 1
-cent8 = 2
-openeuler = 3
+# distros - using from install_utils
+centos = install_utils.centos
+ubuntu = install_utils.ubuntu
+cent8 = install_utils.cent8
+openeuler = install_utils.openeuler
 
 
 def get_Ubuntu_release():
-    release = -1
-    if exists("/etc/lsb-release"):
-        distro_file = "/etc/lsb-release"
-        with open(distro_file) as f:
-            for line in f:
-                if line[:16] == "DISTRIB_RELEASE=":
-                    release = float(line[16:])
-
-        if release == -1:
-            print("Can't find distro release name in " + distro_file + " - fatal error")
-
-    else:
-        logging.InstallLog.writeToFile("Can't find linux release file - fatal error")
-        print("Can't find linux release file - fatal error")
-        os._exit(os.EX_UNAVAILABLE)
-
-    return release
+    return install_utils.get_Ubuntu_release(use_print=True, exit_on_error=True)
 
 
-def FetchCloudLinuxAlmaVersionVersion():
-    if os.path.exists('/etc/os-release'):
-        data = open('/etc/os-release', 'r').read()
-        if (data.find('CloudLinux') > -1 or data.find('cloudlinux') > -1) and (data.find('8.9') > -1 or data.find('Anatoly Levchenko') > -1 or data.find('VERSION="8.') > -1):
-            return 'cl-89'
-        elif (data.find('CloudLinux') > -1 or data.find('cloudlinux') > -1) and (data.find('8.8') > -1 or data.find('Anatoly Filipchenko') > -1):
-            return 'cl-88'
-        elif (data.find('CloudLinux') > -1 or data.find('cloudlinux') > -1) and (data.find('9.4') > -1 or data.find('VERSION="9.') > -1):
-            return 'cl-88'
-        elif (data.find('AlmaLinux') > -1 or data.find('almalinux') > -1) and (data.find('8.9') > -1 or data.find('Midnight Oncilla') > -1 or data.find('VERSION="8.') > -1):
-            return 'al-88'
-        elif (data.find('AlmaLinux') > -1 or data.find('almalinux') > -1) and (data.find('8.7') > -1 or data.find('Stone Smilodon') > -1):
-            return 'al-87'
-        elif (data.find('AlmaLinux') > -1 or data.find('almalinux') > -1) and (data.find('9.4') > -1 or data.find('9.3') > -1 or data.find('Shamrock Pampas') > -1 or data.find('Seafoam Ocelot') > -1 or data.find('VERSION="9.') > -1):
-            return 'al-93'
-    else:
-        return -1
+# Using shared function from install_utils
+FetchCloudLinuxAlmaVersionVersion = install_utils.FetchCloudLinuxAlmaVersionVersion
 
 class InstallCyberPanel:
     mysql_Root_password = ""
@@ -62,14 +31,14 @@ class InstallCyberPanel:
 
     def install_package(self, package_name, options=""):
         """Unified package installation across distributions"""
+        command, shell = install_utils.get_package_install_command(self.distro, package_name, options)
+        
+        # InstallCyberPanel always uses verbose mode (no silent option)
         if self.distro == ubuntu:
-            command = f"DEBIAN_FRONTEND=noninteractive apt-get -y install {package_name} {options}"
-            return install.preFlightsChecks.call(command, self.distro, command, command, 1, 1, os.EX_OSERR, True)
-        elif self.distro == centos:
-            command = f"yum install -y {package_name} {options}"
-        else:  # cent8, openeuler
-            command = f"dnf install -y {package_name} {options}"
-        return install.preFlightsChecks.call(command, self.distro, command, command, 1, 1, os.EX_OSERR)
+            return install_utils.call(command, self.distro, command, command, 1, 1, os.EX_OSERR, shell)
+        else:
+            # For non-Ubuntu, original code didn't pass shell parameter
+            return install_utils.call(command, self.distro, command, command, 1, 1, os.EX_OSERR)
 
     def manage_service(self, service_name, action="start"):
         """Unified service management"""
@@ -81,7 +50,7 @@ class InstallCyberPanel:
         
         actual_service = service_map.get(service_name, service_name)
         command = f'systemctl {action} {actual_service}'
-        return install.preFlightsChecks.call(command, self.distro, command, command, 1, 1, os.EX_OSERR)
+        return install_utils.call(command, self.distro, command, command, 1, 1, os.EX_OSERR)
 
     def modify_file_content(self, file_path, replacements):
         """Generic file content modification"""
@@ -184,7 +153,7 @@ class InstallCyberPanel:
 
     @staticmethod
     def stdOut(message, log=0, exit=0, code=os.EX_OK):
-        install.preFlightsChecks.stdOut(message, log, exit, code)
+        install_utils.stdOut(message, log, exit, code)
 
     def installLiteSpeed(self):
         if self.ent == 0:
@@ -194,13 +163,13 @@ class InstallCyberPanel:
             try:
                 try:
                     command = 'groupadd nobody'
-                    install.preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
+                    install_utils.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
                 except:
                     pass
 
                 try:
                     command = 'usermod -a -G nobody nobody'
-                    install.preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
+                    install_utils.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
                 except:
                     pass
 
@@ -209,20 +178,20 @@ class InstallCyberPanel:
                 else:
                     command = 'wget https://www.litespeedtech.com/packages/6.0/lsws-6.2-ent-x86_64-linux.tar.gz'
 
-                install.preFlightsChecks.call(command, self.distro, command, command, 1, 1, os.EX_OSERR)
+                install_utils.call(command, self.distro, command, command, 1, 1, os.EX_OSERR)
 
                 if InstallCyberPanel.ISARM():
                     command = 'tar zxf lsws-6.2-ent-aarch64-linux.tar.gz'
                 else:
                     command = 'tar zxf lsws-6.2-ent-x86_64-linux.tar.gz'
 
-                install.preFlightsChecks.call(command, self.distro, command, command, 1, 1, os.EX_OSERR)
+                install_utils.call(command, self.distro, command, command, 1, 1, os.EX_OSERR)
 
                 if str.lower(self.serial) == 'trial':
                     command = 'wget -q --output-document=lsws-6.2/trial.key http://license.litespeedtech.com/reseller/trial.key'
                 if self.serial == '1111-2222-3333-4444':
                     command = 'wget -q --output-document=/root/cyberpanel/install/lsws-6.2/trial.key http://license.litespeedtech.com/reseller/trial.key'
-                    install.preFlightsChecks.call(command, self.distro, command, command, 1, 1, os.EX_OSERR)
+                    install_utils.call(command, self.distro, command, command, 1, 1, os.EX_OSERR)
                 else:
                     writeSerial = open('lsws-6.2/serial.no', 'w')
                     writeSerial.writelines(self.serial)
@@ -234,13 +203,13 @@ class InstallCyberPanel:
                 os.chdir('lsws-6.2')
 
                 command = 'chmod +x install.sh'
-                install.preFlightsChecks.call(command, self.distro, command, command, 1, 1, os.EX_OSERR)
+                install_utils.call(command, self.distro, command, command, 1, 1, os.EX_OSERR)
 
                 command = 'chmod +x functions.sh'
-                install.preFlightsChecks.call(command, self.distro, command, command, 1, 1, os.EX_OSERR)
+                install_utils.call(command, self.distro, command, command, 1, 1, os.EX_OSERR)
 
                 command = './install.sh'
-                install.preFlightsChecks.call(command, self.distro, command, command, 1, 1, os.EX_OSERR)
+                install_utils.call(command, self.distro, command, command, 1, 1, os.EX_OSERR)
 
                 os.chdir(self.cwd)
                 confPath = '/usr/local/lsws/conf/'
@@ -249,7 +218,7 @@ class InstallCyberPanel:
                 shutil.copy('litespeed/httpd.conf', confPath)
 
                 command = 'chown -R lsadm:lsadm ' + confPath
-                install.preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
+                install_utils.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
 
             except BaseException as msg:
                 logging.InstallLog.writeToFile('[ERROR] ' + str(msg) + " [installLiteSpeed]")
@@ -258,8 +227,8 @@ class InstallCyberPanel:
             return 1
 
     def reStartLiteSpeed(self):
-        command = self.server_root_path + "bin/lswsctrl restart"
-        install.preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
+        command = install_utils.format_restart_litespeed_command(self.server_root_path)
+        install_utils.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
 
     def fix_ols_configs(self):
         try:
@@ -321,7 +290,7 @@ class InstallCyberPanel:
         elif self.distro == centos:
             # First install the group
             command = 'yum -y groupinstall lsphp-all'
-            install.preFlightsChecks.call(command, self.distro, command, command, 1, 1, os.EX_OSERR)
+            install_utils.call(command, self.distro, command, command, 1, 1, os.EX_OSERR)
             
             InstallCyberPanel.stdOut("LiteSpeed PHPs successfully installed!", 1)
             
@@ -356,13 +325,13 @@ class InstallCyberPanel:
         if self.distro == ubuntu:
 
             command = 'DEBIAN_FRONTEND=noninteractive apt-get install software-properties-common apt-transport-https curl -y'
-            install.preFlightsChecks.call(command, self.distro, command, command, 1, 1, os.EX_OSERR, True)
+            install_utils.call(command, self.distro, command, command, 1, 1, os.EX_OSERR, True)
 
             command = "mkdir -p /etc/apt/keyrings"
-            install.preFlightsChecks.call(command, self.distro, command, command, 1, 1, os.EX_OSERR)
+            install_utils.call(command, self.distro, command, command, 1, 1, os.EX_OSERR)
 
             command = "curl -o /etc/apt/keyrings/mariadb-keyring.pgp 'https://mariadb.org/mariadb_release_signing_key.pgp'"
-            install.preFlightsChecks.call(command, self.distro, command, command, 1, 1, os.EX_OSERR)
+            install_utils.call(command, self.distro, command, command, 1, 1, os.EX_OSERR)
             RepoPath = '/etc/apt/sources.list.d/mariadb.sources'
             RepoContent = f"""
 # MariaDB 10.11 repository list - created 2023-12-11 07:53 UTC
@@ -379,7 +348,7 @@ Signed-By: /etc/apt/keyrings/mariadb-keyring.pgp
 
             if get_Ubuntu_release() > 21.00:
                 command = 'curl -LsS https://downloads.mariadb.com/MariaDB/mariadb_repo_setup | sudo bash -s -- --mariadb-server-version=10.11'
-                install.preFlightsChecks.call(command, self.distro, command, command, 1, 1, os.EX_OSERR, True)
+                install_utils.call(command, self.distro, command, command, 1, 1, os.EX_OSERR, True)
             #     WriteToFile = open(RepoPath, 'w')
             #     WriteToFile.write(RepoContent)
             #     WriteToFile.close()
@@ -387,7 +356,7 @@ Signed-By: /etc/apt/keyrings/mariadb-keyring.pgp
 
 
             command = 'DEBIAN_FRONTEND=noninteractive apt-get update -y'
-            install.preFlightsChecks.call(command, self.distro, command, command, 1, 1, os.EX_OSERR, True)
+            install_utils.call(command, self.distro, command, command, 1, 1, os.EX_OSERR, True)
 
 
             command = "DEBIAN_FRONTEND=noninteractive apt-get install mariadb-server -y"
@@ -417,34 +386,34 @@ gpgcheck=1
             if type == 'cl' and version >= 88:
 
                 command = 'yum remove db-governor db-governor-mysql -y'
-                install.preFlightsChecks.call(command, self.distro, command, command, 1, 1, os.EX_OSERR, True)
+                install_utils.call(command, self.distro, command, command, 1, 1, os.EX_OSERR, True)
 
                 command = 'yum install governor-mysql -y'
-                install.preFlightsChecks.call(command, self.distro, command, command, 1, 1, os.EX_OSERR, True)
+                install_utils.call(command, self.distro, command, command, 1, 1, os.EX_OSERR, True)
 
                 command = '/usr/share/lve/dbgovernor/mysqlgovernor.py --mysql-version=mariadb106'
-                install.preFlightsChecks.call(command, self.distro, command, command, 1, 1, os.EX_OSERR, True)
+                install_utils.call(command, self.distro, command, command, 1, 1, os.EX_OSERR, True)
 
                 command = '/usr/share/lve/dbgovernor/mysqlgovernor.py --install --yes'
 
             else:
 
                 command = 'curl -LsS https://downloads.mariadb.com/MariaDB/mariadb_repo_setup | sudo bash -s -- --mariadb-server-version=10.11'
-                install.preFlightsChecks.call(command, self.distro, command, command, 1, 1, os.EX_OSERR, True)
+                install_utils.call(command, self.distro, command, command, 1, 1, os.EX_OSERR, True)
 
                 command = 'yum remove mariadb* -y'
-                install.preFlightsChecks.call(command, self.distro, command, command, 1, 1, os.EX_OSERR, True)
+                install_utils.call(command, self.distro, command, command, 1, 1, os.EX_OSERR, True)
 
                 command = 'sudo dnf -qy module disable mariadb'
-                install.preFlightsChecks.call(command, self.distro, command, command, 1, 1, os.EX_OSERR, True)
+                install_utils.call(command, self.distro, command, command, 1, 1, os.EX_OSERR, True)
 
                 command = 'sudo dnf module reset mariadb -y'
-                install.preFlightsChecks.call(command, self.distro, command, command, 1, 1, os.EX_OSERR, True)
+                install_utils.call(command, self.distro, command, command, 1, 1, os.EX_OSERR, True)
 
 
                 command = 'dnf install MariaDB-server MariaDB-client MariaDB-backup -y'
 
-        install.preFlightsChecks.call(command, self.distro, command, command, 1, 1, os.EX_OSERR, True)
+        install_utils.call(command, self.distro, command, command, 1, 1, os.EX_OSERR, True)
 
         ############## Start mariadb ######################
 
@@ -461,7 +430,7 @@ gpgcheck=1
 
             command = 'mariadb -u root -e "' + passwordCMD + '"'
 
-            install.preFlightsChecks.call(command, self.distro, command, command, 0, 0, os.EX_OSERR)
+            install_utils.call(command, self.distro, command, command, 0, 0, os.EX_OSERR)
 
     def startMariaDB(self):
 
@@ -519,24 +488,24 @@ gpgcheck=1
                 ]
                 
                 for filename, wget_cmd in packages:
-                    install.preFlightsChecks.call(wget_cmd, self.distro, wget_cmd, wget_cmd, 1, 1, os.EX_OSERR)
+                    install_utils.call(wget_cmd, self.distro, wget_cmd, wget_cmd, 1, 1, os.EX_OSERR)
                     command = f'dpkg --install --force-confold {filename}'
-                    install.preFlightsChecks.call(command, self.distro, command, command, 1, 1, os.EX_OSERR)
+                    install_utils.call(command, self.distro, command, command, 1, 1, os.EX_OSERR)
         else:
             self.install_package('pure-ftpd')
 
         ####### Install pureftpd to system startup
 
         command = "systemctl enable " + install.preFlightsChecks.pureFTPDServiceName(self.distro)
-        install.preFlightsChecks.call(command, self.distro, command, command, 1, 1, os.EX_OSERR)
+        install_utils.call(command, self.distro, command, command, 1, 1, os.EX_OSERR)
 
         ###### FTP Groups and user settings settings
 
         command = 'groupadd -g 2001 ftpgroup'
-        install.preFlightsChecks.call(command, self.distro, command, command, 1, 1, os.EX_OSERR)
+        install_utils.call(command, self.distro, command, command, 1, 1, os.EX_OSERR)
 
         command = 'useradd -u 2001 -s /bin/false -d /bin/null -c "pureftpd user" -g ftpgroup ftpuser'
-        install.preFlightsChecks.call(command, self.distro, command, command, 1, 1, os.EX_OSERR)
+        install_utils.call(command, self.distro, command, command, 1, 1, os.EX_OSERR)
 
     def startPureFTPD(self):
         ############## Start pureftpd ######################
@@ -559,7 +528,7 @@ gpgcheck=1
             else:
                 command = 'openssl req -x509 -nodes -days 7300 -newkey rsa:2048 -subj "/C=US/ST=Denial/L=Sprinal-ield/O=Dis/CN=www.example.com" -keyout /etc/ssl/private/pure-ftpd.pem -out /etc/ssl/private/pure-ftpd.pem'
 
-            install.preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
+            install_utils.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
 
             os.chdir(self.cwd)
             ftpdPath = "/etc/pure-ftpd"
@@ -591,13 +560,13 @@ gpgcheck=1
 
             if self.remotemysql == 'ON':
                 command = "sed -i 's|localhost|%s|g' %s" % (self.mysqlhost, ftpConfPath)
-                install.preFlightsChecks.call(command, self.distro, command, command, 1, 1, os.EX_OSERR)
+                install_utils.call(command, self.distro, command, command, 1, 1, os.EX_OSERR)
 
                 command = "sed -i 's|3306|%s|g' %s" % (self.mysqlport, ftpConfPath)
-                install.preFlightsChecks.call(command, self.distro, command, command, 1, 1, os.EX_OSERR)
+                install_utils.call(command, self.distro, command, command, 1, 1, os.EX_OSERR)
 
                 command = "sed -i 's|MYSQLSocket /var/lib/mysql/mysql.sock||g' %s" % (ftpConfPath)
-                install.preFlightsChecks.call(command, self.distro, command, command, 1, 1, os.EX_OSERR)
+                install_utils.call(command, self.distro, command, command, 1, 1, os.EX_OSERR)
 
             if self.distro == ubuntu:
 
@@ -623,13 +592,13 @@ gpgcheck=1
                 subprocess.call(command, shell=True)
 
                 command = 'ln -s /etc/pure-ftpd/conf/MySQLConfigFile /etc/pure-ftpd/auth/30mysql'
-                install.preFlightsChecks.call(command, self.distro, command, command, 1, 1, os.EX_OSERR)
+                install_utils.call(command, self.distro, command, command, 1, 1, os.EX_OSERR)
 
                 command = 'ln -s /etc/pure-ftpd/conf/UnixAuthentication /etc/pure-ftpd/auth/65unix'
-                install.preFlightsChecks.call(command, self.distro, command, command, 1, 1, os.EX_OSERR)
+                install_utils.call(command, self.distro, command, command, 1, 1, os.EX_OSERR)
 
                 command = 'systemctl restart pure-ftpd-mysql.service'
-                install.preFlightsChecks.call(command, self.distro, command, command, 1, 1, os.EX_OSERR)
+                install_utils.call(command, self.distro, command, command, 1, 1, os.EX_OSERR)
 
 
 
@@ -638,10 +607,10 @@ gpgcheck=1
                     ### change mysql md5 to crypt
 
                     command = "sed -i 's/MYSQLCrypt md5/MYSQLCrypt crypt/g' /etc/pure-ftpd/db/mysql.conf"
-                    install.preFlightsChecks.call(command, self.distro, command, command, 1, 1, os.EX_OSERR)
+                    install_utils.call(command, self.distro, command, command, 1, 1, os.EX_OSERR)
 
                     command = "systemctl restart pure-ftpd-mysql.service"
-                    install.preFlightsChecks.call(command, self.distro, command, command, 1, 1, os.EX_OSERR)
+                    install_utils.call(command, self.distro, command, command, 1, 1, os.EX_OSERR)
             else:
 
                 try:
@@ -651,7 +620,7 @@ gpgcheck=1
 
                     if type == 'al' and version >= 90:
                         command = "sed -i 's/MYSQLCrypt md5/MYSQLCrypt crypt/g' /etc/pure-ftpd/pureftpd-mysql.conf"
-                        install.preFlightsChecks.call(command, self.distro, command, command, 1, 1, os.EX_OSERR)
+                        install_utils.call(command, self.distro, command, command, 1, 1, os.EX_OSERR)
                 except:
                     pass
 
@@ -728,10 +697,10 @@ gpgcheck=1
 
             if self.remotemysql == 'ON':
                 command = "sed -i 's|gmysql-host=localhost|gmysql-host=%s|g' %s" % (self.mysqlhost, dnsPath)
-                install.preFlightsChecks.call(command, self.distro, command, command, 1, 1, os.EX_OSERR)
+                install_utils.call(command, self.distro, command, command, 1, 1, os.EX_OSERR)
 
                 command = "sed -i 's|gmysql-port=3306|gmysql-port=%s|g' %s" % (self.mysqlport, dnsPath)
-                install.preFlightsChecks.call(command, self.distro, command, command, 1, 1, os.EX_OSERR)
+                install_utils.call(command, self.distro, command, command, 1, 1, os.EX_OSERR)
 
             InstallCyberPanel.stdOut("PowerDNS configured!", 1)
 
@@ -750,8 +719,8 @@ gpgcheck=1
 
 def Main(cwd, mysql, distro, ent, serial=None, port="8090", ftp=None, dns=None, publicip=None, remotemysql=None,
          mysqlhost=None, mysqldb=None, mysqluser=None, mysqlpassword=None, mysqlport=None):
-    InstallCyberPanel.mysqlPassword = randomPassword.generate_pass()
-    InstallCyberPanel.mysql_Root_password = randomPassword.generate_pass()
+    InstallCyberPanel.mysqlPassword = install_utils.generate_pass()
+    InstallCyberPanel.mysql_Root_password = install_utils.generate_pass()
 
     file_name = '/etc/cyberpanel/mysqlPassword'
 
@@ -778,18 +747,18 @@ def Main(cwd, mysql, distro, ent, serial=None, port="8090", ftp=None, dns=None, 
 
     try:
         command = 'chmod 640 %s' % (file_name)
-        install.preFlightsChecks.call(command, distro, '[chmod]',
+        install_utils.call(command, distro, '[chmod]',
                                       '',
                                       1, 0, os.EX_OSERR)
         command = 'chown root:cyberpanel %s' % (file_name)
-        install.preFlightsChecks.call(command, distro, '[chmod]',
+        install_utils.call(command, distro, '[chmod]',
                                       '',
                                       1, 0, os.EX_OSERR)
     except:
         pass
 
     if distro == centos:
-        InstallCyberPanel.mysqlPassword = randomPassword.generate_pass()
+        InstallCyberPanel.mysqlPassword = install_utils.generate_pass()
     else:
         InstallCyberPanel.mysqlPassword = InstallCyberPanel.mysql_Root_password
 

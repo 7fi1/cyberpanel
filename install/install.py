@@ -14,112 +14,42 @@ from os.path import *
 from stat import *
 import stat
 import secrets
+import install_utils
 
 VERSION = '2.4'
 BUILD = 2
 
-char_set = {'small': 'abcdefghijklmnopqrstuvwxyz', 'nums': '0123456789', 'big': 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'}
+# Using shared char_set from install_utils
+char_set = install_utils.char_set
 
 
-def generate_pass(length=14):
-    chars = string.ascii_uppercase + string.ascii_lowercase + string.digits
-    size = length
-    return ''.join(random.choice(chars) for x in range(size))
+# Using shared function from install_utils
+generate_pass = install_utils.generate_pass
 
 
 # There can not be peace without first a great suffering.
 
-# distros
+# distros - using from install_utils
+centos = install_utils.centos
+ubuntu = install_utils.ubuntu
+cent8 = install_utils.cent8
+openeuler = install_utils.openeuler
+cent9 = 4  # Not in install_utils yet
+CloudLinux8 = 0  # Not in install_utils yet
 
-centos = 0
-ubuntu = 1
-cent8 = 2
-cent9 = 4
-openeuler = 3
-CloudLinux8 = 0
-
-def FetchCloudLinuxAlmaVersionVersion():
-    if os.path.exists('/etc/os-release'):
-        data = open('/etc/os-release', 'r').read()
-        if (data.find('CloudLinux') > -1 or data.find('cloudlinux') > -1) and (data.find('8.9') > -1 or data.find('Anatoly Levchenko') > -1 or data.find('VERSION="8.') > -1):
-            return 'cl-89'
-        elif (data.find('CloudLinux') > -1 or data.find('cloudlinux') > -1) and (data.find('8.8') > -1 or data.find('Anatoly Filipchenko') > -1):
-            return 'cl-88'
-        elif (data.find('CloudLinux') > -1 or data.find('cloudlinux') > -1) and (data.find('9.4') > -1 or data.find('VERSION="9.') > -1):
-            return 'cl-88'
-        elif (data.find('AlmaLinux') > -1 or data.find('almalinux') > -1) and (data.find('8.9') > -1 or data.find('Midnight Oncilla') > -1 or data.find('VERSION="8.') > -1):
-            return 'al-88'
-        elif (data.find('AlmaLinux') > -1 or data.find('almalinux') > -1) and (data.find('8.7') > -1 or data.find('Stone Smilodon') > -1):
-            return 'al-87'
-        elif (data.find('AlmaLinux') > -1 or data.find('almalinux') > -1) and (data.find('9.4') > -1 or data.find('9.3') > -1 or data.find('Shamrock Pampas') > -1 or data.find('Seafoam Ocelot') > -1 or data.find('VERSION="9.') > -1):
-            return 'al-93'
-    else:
-        return -1
+# Using shared function from install_utils
+FetchCloudLinuxAlmaVersionVersion = install_utils.FetchCloudLinuxAlmaVersionVersion
 
 
-def get_distro():
-    distro = -1
-    distro_file = ""
-    if exists("/etc/lsb-release"):
-        distro_file = "/etc/lsb-release"
-        with open(distro_file) as f:
-            for line in f:
-                if line == "DISTRIB_ID=Ubuntu\n":
-                    distro = ubuntu
-
-    elif exists("/etc/redhat-release"):
-        distro_file = "/etc/redhat-release"
-        distro = centos
-
-        data = open('/etc/redhat-release', 'r').read()
-
-
-        if data.find('CentOS Linux release 8') > -1:
-            return cent8
-        ## if almalinux 9 then pretty much same as cent8
-        if data.find('AlmaLinux release 8') > -1 or data.find('AlmaLinux release 9') > -1:
-            return cent8
-        if data.find('Rocky Linux release 8') > -1 or data.find('Rocky Linux 8') > -1 or data.find('rocky:8') > -1:
-            return cent8
-        if data.find('CloudLinux 8') or data.find('cloudlinux 8'):
-            return cent8
-
-    else:
-        if exists("/etc/openEuler-release"):
-            distro_file = "/etc/openEuler-release"
-            distro = openeuler
-
-        else:
-            logging.InstallLog.writeToFile("Can't find linux release file - fatal error")
-            preFlightsChecks.stdOut("Can't find linux release file - fatal error")
-            os._exit(os.EX_UNAVAILABLE)
-
-    if distro == -1:
-        logging.InstallLog.writeToFile("Can't find distro name in " + distro_file + " - fatal error")
-        preFlightsChecks.stdOut("Can't find distro name in " + distro_file + " - fatal error")
-        os._exit(os.EX_UNAVAILABLE)
-
-    return distro
+# Using shared function from install_utils
+get_distro = install_utils.get_distro
 
 
 def get_Ubuntu_release():
-    release = -1
-    if exists("/etc/lsb-release"):
-        distro_file = "/etc/lsb-release"
-        with open(distro_file) as f:
-            for line in f:
-                if line[:16] == "DISTRIB_RELEASE=":
-                    release = float(line[16:])
-
-        if release == -1:
-            preFlightsChecks.stdOut("Can't find distro release name in " + distro_file + " - fatal error", 1, 1,
-                                    os.EX_UNAVAILABLE)
-
-    else:
-        logging.InstallLog.writeToFile("Can't find linux release file - fatal error")
-        preFlightsChecks.stdOut("Can't find linux release file - fatal error")
-        os._exit(os.EX_UNAVAILABLE)
-
+    release = install_utils.get_Ubuntu_release(use_print=False, exit_on_error=True)
+    if release == -1:
+        preFlightsChecks.stdOut("Can't find distro release name in /etc/lsb-release - fatal error", 1, 1,
+                                os.EX_UNAVAILABLE)
     return release
 
 
@@ -132,15 +62,7 @@ class preFlightsChecks:
     
     def install_package(self, package_name, options="", silent=False):
         """Unified package installation across distributions"""
-        if self.distro == ubuntu:
-            command = f"DEBIAN_FRONTEND=noninteractive apt-get -y install {package_name} {options}"
-            shell = True
-        elif self.distro == centos:
-            command = f"yum install -y {package_name} {options}"
-            shell = False
-        else:  # cent8, openeuler
-            command = f"dnf install -y {package_name} {options}"
-            shell = False
+        command, shell = install_utils.get_package_install_command(self.distro, package_name, options)
         
         if not silent:
             return preFlightsChecks.call(command, self.distro, command, command, 1, 1, os.EX_OSERR, shell)
@@ -158,15 +80,7 @@ class preFlightsChecks:
     
     def remove_package(self, package_name, silent=False):
         """Unified package removal across distributions"""
-        if self.distro == ubuntu:
-            command = f"DEBIAN_FRONTEND=noninteractive apt-get -y remove {package_name}"
-            shell = True
-        elif self.distro == centos:
-            command = f"yum remove -y {package_name}"
-            shell = False
-        else:  # cent8, openeuler
-            command = f"dnf remove -y {package_name}"
-            shell = False
+        command, shell = install_utils.get_package_remove_command(self.distro, package_name)
         
         if not silent:
             return preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR, shell)
@@ -371,18 +285,7 @@ class preFlightsChecks:
 
     @staticmethod
     def stdOut(message, log=0, do_exit=0, code=os.EX_OK):
-        print("\n\n")
-        print(("[" + time.strftime(
-            "%m.%d.%Y_%H-%M-%S") + "] #########################################################################\n"))
-        print(("[" + time.strftime("%m.%d.%Y_%H-%M-%S") + "] " + message + "\n"))
-        print(("[" + time.strftime(
-            "%m.%d.%Y_%H-%M-%S") + "] #########################################################################\n"))
-
-        if log:
-            logging.InstallLog.writeToFile(message)
-        if do_exit:
-            logging.InstallLog.writeToFile(message)
-            sys.exit(code)
+        install_utils.stdOut(message, log, do_exit, code)
 
     def mountTemp(self):
         try:
@@ -471,42 +374,15 @@ class preFlightsChecks:
             return 'pure-ftpd-mysql'
         return 'pure-ftpd'
 
+    # Using shared function from install_utils
     @staticmethod
     def resFailed(distro, res):
-        if distro == ubuntu and res != 0:
-            return True
-        elif distro == centos and res != 0:
-            return True
-        return False
+        return install_utils.resFailed(distro, res)
 
+    # Using shared function from install_utils
     @staticmethod
     def call(command, distro, bracket, message, log=0, do_exit=0, code=os.EX_OK, shell=False):
-        finalMessage = 'Running: %s' % (message)
-        preFlightsChecks.stdOut(finalMessage, log)
-        count = 0
-        while True:
-            if shell == False:
-                res = subprocess.call(shlex.split(command))
-            else:
-                res = subprocess.call(command, shell=True)
-
-            if preFlightsChecks.resFailed(distro, res):
-                count = count + 1
-                finalMessage = 'Running %s failed. Running again, try number %s' % (message, str(count))
-                preFlightsChecks.stdOut(finalMessage)
-                if count == 3:
-                    fatal_message = ''
-                    if do_exit:
-                        fatal_message = '.  Fatal error, see /var/log/installLogs.txt for full details'
-
-                    preFlightsChecks.stdOut("[ERROR] We are not able to run " + message + ' return code: ' + str(res) +
-                                            fatal_message + ".", 1, do_exit, code)
-                    return False
-            else:
-                preFlightsChecks.stdOut('Successfully ran: %s.' % (message), log)
-                break
-
-        return True
+        return install_utils.call(command, distro, bracket, message, log, do_exit, code, shell)
 
     def checkIfSeLinuxDisabled(self):
         try:
@@ -994,7 +870,7 @@ password="%s"
 
             ## Write secret phrase
 
-            rString = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+            rString = install_utils.generate_random_string(32)
 
             data = open('/usr/local/CyberCP/public/phpmyadmin/config.sample.inc.php', 'r').readlines()
 
@@ -1653,7 +1529,7 @@ $cfg['Servers'][$i]['LogoutURL'] = 'phpmyadminsignin.php?logout';
     ###################################################### Email setup ends!
 
     def reStartLiteSpeed(self):
-        command = '%sbin/lswsctrl restart' % (self.server_root_path)
+        command = install_utils.format_restart_litespeed_command(self.server_root_path)
         preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
 
     def removeUfw(self):
@@ -2793,8 +2669,6 @@ admin_password = "12345"
 """)
         writeToFile.close()
 
-        import randomPassword
-
         content = """<?php
 
 $_ENV['snappymail_INCLUDE_AS_API'] = true;
@@ -2804,7 +2678,7 @@ $oConfig = \snappymail\Api::Config();
 $oConfig->SetPassword('%s');
 echo $oConfig->Save() ? 'Done' : 'Error';
 
-?>""" % (randomPassword.generate_pass())
+?>""" % (generate_pass())
 
         writeToFile = open('/usr/local/CyberCP/public/snappymail.php', 'w')
         writeToFile.write(content)
