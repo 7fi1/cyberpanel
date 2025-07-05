@@ -278,7 +278,7 @@ class ProcessUtilities(multi.Thread):
                 if len(currentData) == 0 or currentData == None:
                     break
                 try:
-                    data = data + currentData.decode(errors = 'ignore')
+                    data = data + currentData.decode('utf-8', errors='replace')
                 except BaseException as msg:
                     logging.writeToFile('Some data could not be decoded to str, error message: %s' % str(msg))
 
@@ -326,18 +326,19 @@ class ProcessUtilities(multi.Thread):
                         command = f'sudo -u {user} {command}'
                 # Ensure UTF-8 environment for proper character handling
                 env = os.environ.copy()
-                env['LC_ALL'] = 'en_US.UTF-8'
-                env['LANG'] = 'en_US.UTF-8'
+                env['LC_ALL'] = 'C.UTF-8'
+                env['LANG'] = 'C.UTF-8'
+                env['PYTHONIOENCODING'] = 'utf-8'
                 
                 if shell == None or shell == True:
-                    p = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=env)
+                    p = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=env, encoding='utf-8', errors='replace')
                 else:
-                    p = subprocess.Popen(shlex.split(command),  stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=env)
+                    p = subprocess.Popen(shlex.split(command),  stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=env, encoding='utf-8', errors='replace')
 
                 if retRequired:
-                    return 1, p.communicate()[0].decode("utf-8")
+                    return 1, p.communicate()[0]
                 else:
-                    return p.communicate()[0].decode("utf-8")
+                    return p.communicate()[0]
 
             if type(command) == list:
                 command = " ".join(command)
