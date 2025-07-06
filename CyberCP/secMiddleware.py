@@ -225,14 +225,15 @@ class secMiddleware:
                         continue
 
                     if valueAlreadyChecked == 0:
-                        if value.find('- -') > -1 or value.find('\n') > -1 or value.find(';') > -1 or value.find(
+                        # Only check string values, skip lists and other types
+                        if (type(value) == str or type(value) == bytes) and (value.find('- -') > -1 or value.find('\n') > -1 or value.find(';') > -1 or value.find(
                                 '&&') > -1 or value.find('|') > -1 or value.find('...') > -1 \
                                 or value.find("`") > -1 or value.find("$") > -1 or value.find("(") > -1 or value.find(
                             ")") > -1 \
                                 or value.find("'") > -1 or value.find("[") > -1 or value.find("]") > -1 or value.find(
                             "{") > -1 or value.find("}") > -1 \
                                 or value.find(":") > -1 or value.find("<") > -1 or value.find(">") > -1 or value.find(
-                            "&") > -1:
+                            "&") > -1):
                             logging.writeToFile(request.body)
                             final_dic = {
                                 'error_message': "Data supplied is not accepted, following characters are not allowed in the input ` $ & ( ) [ ] { } ; : ‘ < >.",
