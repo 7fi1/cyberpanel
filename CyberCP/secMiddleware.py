@@ -198,7 +198,7 @@ class secMiddleware:
                                    pathActual.find('saveSpamAssassinConfigurations') > -1 or 
                                    pathActual.find('docker') > -1 or pathActual.find('cloudAPI') > -1 or 
                                    pathActual.find('verifyLogin') > -1 or pathActual.find('submitUserCreation') > -1 or 
-                                   pathActual.find('/api/') > -1)
+                                   pathActual.find('/api/') > -1 or pathActual.find('aiscanner/scheduled-scans') > -1)
                     
                     if isAPIEndpoint:
                         # For API endpoints, still check for the most dangerous command injection characters
@@ -220,7 +220,8 @@ class secMiddleware:
                             or key == 'imageByPass' or key == 'passwordByPass' or key == 'PasswordByPass' or key == 'cronCommand' \
                             or key == 'emailMessage' or key == 'configData' or key == 'rewriteRules' \
                             or key == 'modSecRules' or key == 'recordContentTXT' or key == 'SecAuditLogRelevantStatus' \
-                            or key == 'fileContent' or key == 'commands' or key == 'gitHost' or key == 'ipv6' or key == 'contentNow':
+                            or key == 'fileContent' or key == 'commands' or key == 'gitHost' or key == 'ipv6' or key == 'contentNow' \
+                            or key == 'time_of_day' or key == 'notification_emails' or key == 'domains':
                         continue
 
                     if valueAlreadyChecked == 0:
