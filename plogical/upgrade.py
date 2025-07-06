@@ -894,6 +894,63 @@ $cfg['Servers'][$i]['LogoutURL'] = 'phpmyadminsignin.php?logout';
             except:
                 pass
 
+            # AI Scanner Scheduled Scans Tables
+            try:
+                cursor.execute('''
+                    CREATE TABLE `ai_scanner_scheduled_scans` (
+                        `id` integer AUTO_INCREMENT NOT NULL PRIMARY KEY,
+                        `admin_id` integer NOT NULL,
+                        `name` varchar(200) NOT NULL,
+                        `domains` longtext NOT NULL,
+                        `frequency` varchar(20) NOT NULL DEFAULT 'weekly',
+                        `scan_type` varchar(20) NOT NULL DEFAULT 'full',
+                        `time_of_day` time NOT NULL,
+                        `day_of_week` integer DEFAULT NULL,
+                        `day_of_month` integer DEFAULT NULL,
+                        `status` varchar(20) NOT NULL DEFAULT 'active',
+                        `last_run` datetime(6) DEFAULT NULL,
+                        `next_run` datetime(6) DEFAULT NULL,
+                        `created_at` datetime(6) NOT NULL,
+                        `updated_at` datetime(6) NOT NULL,
+                        `email_notifications` bool NOT NULL DEFAULT 1,
+                        `notification_emails` longtext NOT NULL DEFAULT '',
+                        `notify_on_threats` bool NOT NULL DEFAULT 1,
+                        `notify_on_completion` bool NOT NULL DEFAULT 0,
+                        `notify_on_failure` bool NOT NULL DEFAULT 1,
+                        KEY `ai_scanner_scheduled_scans_admin_id_idx` (`admin_id`),
+                        KEY `ai_scanner_scheduled_scans_status_next_run_idx` (`status`, `next_run`),
+                        CONSTRAINT `ai_scanner_scheduled_scans_admin_id_fk` FOREIGN KEY (`admin_id`) 
+                        REFERENCES `loginSystem_administrator` (`id`) ON DELETE CASCADE
+                    )
+                ''')
+            except:
+                pass
+
+            try:
+                cursor.execute('''
+                    CREATE TABLE `ai_scanner_scheduled_executions` (
+                        `id` integer AUTO_INCREMENT NOT NULL PRIMARY KEY,
+                        `scheduled_scan_id` integer NOT NULL,
+                        `execution_time` datetime(6) NOT NULL,
+                        `status` varchar(20) NOT NULL DEFAULT 'pending',
+                        `domains_scanned` longtext NOT NULL DEFAULT '',
+                        `total_scans` integer NOT NULL DEFAULT 0,
+                        `successful_scans` integer NOT NULL DEFAULT 0,
+                        `failed_scans` integer NOT NULL DEFAULT 0,
+                        `total_cost` decimal(10,6) NOT NULL DEFAULT 0.000000,
+                        `scan_ids` longtext NOT NULL DEFAULT '',
+                        `error_message` longtext DEFAULT NULL,
+                        `started_at` datetime(6) DEFAULT NULL,
+                        `completed_at` datetime(6) DEFAULT NULL,
+                        KEY `ai_scanner_scheduled_executions_scheduled_scan_id_idx` (`scheduled_scan_id`),
+                        KEY `ai_scanner_scheduled_executions_execution_time_idx` (`execution_time` DESC),
+                        CONSTRAINT `ai_scanner_scheduled_executions_scheduled_scan_id_fk` FOREIGN KEY (`scheduled_scan_id`) 
+                        REFERENCES `ai_scanner_scheduled_scans` (`id`) ON DELETE CASCADE
+                    )
+                ''')
+            except:
+                pass
+
             try:
                 cursor.execute(
                     'CREATE TABLE `loginSystem_acl` (`id` integer AUTO_INCREMENT NOT NULL PRIMARY KEY, `name` varchar(50) NOT NULL UNIQUE, `adminStatus` integer NOT NULL DEFAULT 0, `versionManagement` integer NOT NULL DEFAULT 0, `createNewUser` integer NOT NULL DEFAULT 0, `deleteUser` integer NOT NULL DEFAULT 0, `resellerCenter` integer NOT NULL DEFAULT 0, `changeUserACL` integer NOT NULL DEFAULT 0, `createWebsite` integer NOT NULL DEFAULT 0, `modifyWebsite` integer NOT NULL DEFAULT 0, `suspendWebsite` integer NOT NULL DEFAULT 0, `deleteWebsite` integer NOT NULL DEFAULT 0, `createPackage` integer NOT NULL DEFAULT 0, `deletePackage` integer NOT NULL DEFAULT 0, `modifyPackage` integer NOT NULL DEFAULT 0, `createDatabase` integer NOT NULL DEFAULT 0, `deleteDatabase` integer NOT NULL DEFAULT 0, `listDatabases` integer NOT NULL DEFAULT 0, `createNameServer` integer NOT NULL DEFAULT 0, `createDNSZone` integer NOT NULL DEFAULT 0, `deleteZone` integer NOT NULL DEFAULT 0, `addDeleteRecords` integer NOT NULL DEFAULT 0, `createEmail` integer NOT NULL DEFAULT 0, `deleteEmail` integer NOT NULL DEFAULT 0, `emailForwarding` integer NOT NULL DEFAULT 0, `changeEmailPassword` integer NOT NULL DEFAULT 0, `dkimManager` integer NOT NULL DEFAULT 0, `createFTPAccount` integer NOT NULL DEFAULT 0, `deleteFTPAccount` integer NOT NULL DEFAULT 0, `listFTPAccounts` integer NOT NULL DEFAULT 0, `createBackup` integer NOT NULL DEFAULT 0, `restoreBackup` integer NOT NULL DEFAULT 0, `addDeleteDestinations` integer NOT NULL DEFAULT 0, `scheduleBackups` integer NOT NULL DEFAULT 0, `remoteBackups` integer NOT NULL DEFAULT 0, `manageSSL` integer NOT NULL DEFAULT 0, `hostnameSSL` integer NOT NULL DEFAULT 0, `mailServerSSL` integer NOT NULL DEFAULT 0)')
@@ -3076,6 +3133,13 @@ vmail
         command = """sed -i '/CyberCP/d' /etc/crontab"""
         Upgrade.executioner(command, command, 0, True)
 
+        # Ensure log directory exists for scheduled scans
+        if not os.path.exists('/usr/local/lscp/logs'):
+            try:
+                os.makedirs('/usr/local/lscp/logs', mode=0o755)
+            except:
+                pass
+
         if os.path.exists('/usr/local/lsws/conf/httpd.conf'):
             # Setup /usr/local/lsws/conf/httpd.conf to use new Logformat standard for better stats and accesslogs
             command = """sed -i "s|^LogFormat.*|LogFormat '%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"' combined|g" /usr/local/lsws/conf/httpd.conf"""
@@ -3109,6 +3173,7 @@ vmail
 0 0 * * 4 /usr/local/CyberCP/bin/python /usr/local/CyberCP/plogical/renew.py >/dev/null 2>&1
 7 0 * * * "/root/.acme.sh"/acme.sh --cron --home "/root/.acme.sh" > /dev/null
 */3 * * * * if ! find /home/*/public_html/ -maxdepth 2 -type f -newer /usr/local/lsws/cgid -name '.htaccess' -exec false {} +; then /usr/local/lsws/bin/lswsctrl restart; fi
+* * * * * /usr/local/CyberCP/bin/python /usr/local/CyberCP/manage.py run_scheduled_scans >/usr/local/lscp/logs/scheduled_scans.log 2>&1
 """
 
                 writeToFile = open(cronPath, 'w')
@@ -3138,6 +3203,15 @@ vmail
                 writeToFile.write(content)
                 writeToFile.close()
 
+            # Add AI Scanner scheduled scans cron job if missing
+            if data.find('run_scheduled_scans') == -1:
+                content = """
+* * * * * /usr/local/CyberCP/bin/python /usr/local/CyberCP/manage.py run_scheduled_scans >/usr/local/lscp/logs/scheduled_scans.log 2>&1
+"""
+                writeToFile = open(cronPath, 'a')
+                writeToFile.write(content)
+                writeToFile.close()
+
 
         else:
             content = """
@@ -3149,6 +3223,7 @@ vmail
 7 0 * * * "/root/.acme.sh"/acme.sh --cron --home "/root/.acme.sh" > /dev/null
 0 0 * * * /usr/local/CyberCP/bin/python /usr/local/CyberCP/IncBackups/IncScheduler.py Daily
 0 0 * * 0 /usr/local/CyberCP/bin/python /usr/local/CyberCP/IncBackups/IncScheduler.py Weekly
+* * * * * /usr/local/CyberCP/bin/python /usr/local/CyberCP/manage.py run_scheduled_scans >/usr/local/lscp/logs/scheduled_scans.log 2>&1
 """
             writeToFile = open(cronPath, 'w')
             writeToFile.write(content)

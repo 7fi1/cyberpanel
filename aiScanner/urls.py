@@ -1,5 +1,5 @@
 from django.urls import path
-from . import views, api
+from . import views, api, scheduled_views
 
 urlpatterns = [
     # Main AI Scanner pages
@@ -17,6 +17,12 @@ urlpatterns = [
     path('scan-details/<str:scan_id>/', views.getScanDetails, name='aiScannerDetails'),
     path('platform-monitor-url/<str:scan_id>/', views.getPlatformMonitorUrl, name='aiScannerPlatformMonitorUrl'),
     path('platform-status/<str:scan_id>/', views.getPlatformScanStatus, name='aiScannerPlatformStatus'),
+    
+    # Scheduled scans management
+    path('scheduled-scans/', scheduled_views.scheduledScans, name='aiScannerScheduledScans'),
+    path('scheduled-scans/<int:scan_id>/', scheduled_views.scheduledScanDetail, name='aiScannerScheduledScanDetail'),
+    path('scheduled-scans/<int:scan_id>/toggle/', scheduled_views.toggleScheduledScan, name='aiScannerToggleScheduledScan'),
+    path('scheduled-scans/<int:scan_id>/executions/', scheduled_views.scheduledScanExecutions, name='aiScannerScheduledScanExecutions'),
     
     # Note: RESTful API endpoints are in /api/urls.py for external access
     
