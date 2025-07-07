@@ -167,14 +167,14 @@ class secMiddleware:
                         if os.path.exists(ProcessUtilities.debugPath):
                             logging.writeToFile(f'Item type detected as list')
                         for items in value:
-                            if items.find('- -') > -1 or items.find('\n') > -1 or items.find(';') > -1 or items.find(
+                            if isinstance(items, str) and (items.find('- -') > -1 or items.find('\n') > -1 or items.find(';') > -1 or items.find(
                                     '&&') > -1 or items.find('|') > -1 or items.find('...') > -1 \
                                     or items.find("`") > -1 or items.find("$") > -1 or items.find(
                                 "(") > -1 or items.find(")") > -1 \
                                     or items.find("'") > -1 or items.find("[") > -1 or items.find(
                                 "]") > -1 or items.find("{") > -1 or items.find("}") > -1 \
                                     or items.find(":") > -1 or items.find("<") > -1 or items.find(
-                                ">") > -1 or items.find("&") > -1:
+                                ">") > -1 or items.find("&") > -1):
                                 logging.writeToFile(request.body)
                                 final_dic = {
                                     'error_message': "Data supplied is not accepted, following characters are not allowed in the input ` $ & ( ) [ ] { } ; : ‘ < >.",
@@ -202,7 +202,7 @@ class secMiddleware:
                     
                     if isAPIEndpoint:
                         # For API endpoints, still check for the most dangerous command injection characters
-                        if (value.find('- -') > -1 or value.find('\n') > -1 or value.find(';') > -1 or 
+                        if isinstance(value, (str, bytes)) and (value.find('- -') > -1 or value.find('\n') > -1 or value.find(';') > -1 or 
                             value.find('&&') > -1 or value.find('||') > -1 or value.find('|') > -1 or 
                             value.find('...') > -1 or value.find("`") > -1 or value.find("$") > -1 or
                             value.find('../') > -1 or value.find('../../') > -1):

@@ -81,7 +81,7 @@ class AIScannerManager:
             # Get user's websites for scan selection using ACL-aware method
             try:
                 websites = ACLManager.findWebsiteObjects(currentACL, userID)
-                self.logger.writeToFile(f'[AIScannerManager.scannerHome] Found {websites.count()} websites for {admin.userName}')
+                self.logger.writeToFile(f'[AIScannerManager.scannerHome] Found {len(websites)} websites for {admin.userName}')
             except Exception as e:
                 self.logger.writeToFile(f'[AIScannerManager.scannerHome] Error fetching websites: {str(e)}')
                 websites = []

@@ -1563,6 +1563,19 @@ setInterval(() => {
 
 // Scheduled Scans Functions
 function showScheduleModal() {
+    // Reset form for new schedule
+    document.getElementById('scheduleForm').reset();
+    document.getElementById('scheduleId').value = '';
+    
+    // Uncheck all domain checkboxes
+    document.querySelectorAll('input[name="domains"]').forEach(cb => cb.checked = false);
+    
+    // Reset checkboxes to their defaults
+    document.getElementById('emailNotifications').checked = true;
+    document.getElementById('notifyOnThreats').checked = true;
+    document.getElementById('notifyOnCompletion').checked = false;
+    document.getElementById('notifyOnFailure').checked = true;
+    
     $('#scheduleModal').modal('show');
 }
 
@@ -1631,8 +1644,16 @@ function displayScheduledScans(scans) {
 }
 
 function saveScheduledScan() {
-    const formData = new FormData(document.getElementById('scheduleForm'));
-    const data = Object.fromEntries(formData);
+    const form = document.getElementById('scheduleForm');
+    const formData = new FormData(form);
+    const data = {};
+    
+    // Process form data, excluding checkboxes and multi-select fields
+    for (let [key, value] of formData.entries()) {
+        if (!['email_notifications', 'notify_on_threats', 'notify_on_completion', 'notify_on_failure', 'domains'].includes(key)) {
+            data[key] = value;
+        }
+    }
     
     // Get selected domains
     const selectedDomains = Array.from(document.querySelectorAll('input[name="domains"]:checked'))
@@ -1651,6 +1672,12 @@ function saveScheduledScan() {
         .filter(email => email.length > 0);
     
     data.notification_emails = notificationEmails;
+    
+    // Convert checkbox values to booleans explicitly
+    data.email_notifications = document.getElementById('emailNotifications').checked;
+    data.notify_on_threats = document.getElementById('notifyOnThreats').checked;
+    data.notify_on_completion = document.getElementById('notifyOnCompletion').checked;
+    data.notify_on_failure = document.getElementById('notifyOnFailure').checked;
     
     fetch('/aiscanner/scheduled-scans/', {
         method: 'POST',
