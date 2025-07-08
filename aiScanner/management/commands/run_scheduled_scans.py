@@ -19,8 +19,15 @@ class Command(BaseCommand):
             type=int,
             help='Run a specific scheduled scan by ID',
         )
+        parser.add_argument(
+            '--verbose',
+            action='store_true',
+            help='Show detailed information about all scheduled scans',
+        )
 
     def handle(self, *args, **options):
+        self.verbose = options.get('verbose', False)
+        
         if options['daemon']:
             self.stdout.write('Starting scheduled scan daemon...')
             self.run_daemon()
@@ -35,20 +42,81 @@ class Command(BaseCommand):
         """Run as daemon, checking for scans every minute"""
         while True:
             try:
+                self.stdout.write(f'\n[{timezone.now().strftime("%Y-%m-%d %H:%M:%S UTC")}] Checking for scheduled scans...')
                 self.check_and_run_scans()
                 time.sleep(60)  # Check every minute
             except KeyboardInterrupt:
-                self.stdout.write('Daemon stopped by user')
+                self.stdout.write('\nDaemon stopped by user')
                 break
             except Exception as e:
                 self.stderr.write(f'Error in daemon: {str(e)}')
+                from plogical.CyberCPLogFileWriter import CyberCPLogFileWriter as logging
+                logging.writeToFile(f'[Scheduled Scan Daemon] Error: {str(e)}')
                 time.sleep(60)  # Continue after error
 
     def check_and_run_scans(self):
         """Check for scheduled scans that need to run"""
         from aiScanner.models import ScheduledScan
+        from plogical.CyberCPLogFileWriter import CyberCPLogFileWriter as logging
         
         now = timezone.now()
+        
+        # Log all scheduled scans and their status
+        all_scans = ScheduledScan.objects.all()
+        self.stdout.write(f'Total scheduled scans: {all_scans.count()}')
+        logging.writeToFile(f'[Scheduled Scan Check] Total scheduled scans: {all_scans.count()}')
+        
+        for scan in all_scans:
+            if self.verbose:
+                self.stdout.write(f'\n--- Scan Details: {scan.name} (ID: {scan.id}) ---')
+                self.stdout.write(f'  Owner: {scan.admin.userName}')
+                self.stdout.write(f'  Frequency: {scan.frequency}')
+                self.stdout.write(f'  Scan Type: {scan.scan_type}')
+                self.stdout.write(f'  Status: {scan.status}')
+                self.stdout.write(f'  Domains: {", ".join(scan.domain_list)}')
+                self.stdout.write(f'  Created: {scan.created_at.strftime("%Y-%m-%d %H:%M:%S UTC")}')
+                if scan.last_run:
+                    self.stdout.write(f'  Last Run: {scan.last_run.strftime("%Y-%m-%d %H:%M:%S UTC")}')
+                else:
+                    self.stdout.write(f'  Last Run: Never')
+            
+            if scan.status != 'active':
+                reason = f'Scan "{scan.name}" (ID: {scan.id}) is not active (status: {scan.status})'
+                self.stdout.write(f'  ❌ {reason}')
+                logging.writeToFile(f'[Scheduled Scan Check] {reason}')
+                continue
+            
+            if scan.next_run is None:
+                reason = f'Scan "{scan.name}" (ID: {scan.id}) has no next_run scheduled'
+                self.stdout.write(f'  ❌ {reason}')
+                logging.writeToFile(f'[Scheduled Scan Check] {reason}')
+                # Try to calculate next run
+                if self.verbose:
+                    self.stdout.write(f'  🔧 Attempting to calculate next run time...')
+                    try:
+                        scan.next_run = scan.calculate_next_run()
+                        scan.save()
+                        self.stdout.write(f'  ✅ Next run set to: {scan.next_run.strftime("%Y-%m-%d %H:%M:%S UTC")}')
+                    except Exception as e:
+                        self.stdout.write(f'  ❌ Failed to calculate next run: {str(e)}')
+                continue
+            
+            if scan.next_run > now:
+                time_until_run = scan.next_run - now
+                days = int(time_until_run.total_seconds() // 86400)
+                hours = int((time_until_run.total_seconds() % 86400) // 3600)
+                minutes = int((time_until_run.total_seconds() % 3600) // 60)
+                
+                time_str = ""
+                if days > 0:
+                    time_str = f"{days}d {hours}h {minutes}m"
+                else:
+                    time_str = f"{hours}h {minutes}m"
+                
+                reason = f'Scan "{scan.name}" (ID: {scan.id}) scheduled to run in {time_str} at {scan.next_run.strftime("%Y-%m-%d %H:%M:%S UTC")}'
+                self.stdout.write(f'  ⏰ {reason}')
+                logging.writeToFile(f'[Scheduled Scan Check] {reason}')
+                continue
         
         # Find scans that are due to run
         due_scans = ScheduledScan.objects.filter(
@@ -56,8 +124,16 @@ class Command(BaseCommand):
             next_run__lte=now
         )
         
+        if due_scans.count() == 0:
+            self.stdout.write('No scheduled scans are due to run at this time')
+            logging.writeToFile('[Scheduled Scan Check] No scheduled scans are due to run at this time')
+        else:
+            self.stdout.write(f'Found {due_scans.count()} scans due to run')
+            logging.writeToFile(f'[Scheduled Scan Check] Found {due_scans.count()} scans due to run')
+        
         for scan in due_scans:
             self.stdout.write(f'Running scheduled scan: {scan.name} (ID: {scan.id})')
+            logging.writeToFile(f'[Scheduled Scan Check] Running scheduled scan: {scan.name} (ID: {scan.id})')
             self.execute_scheduled_scan(scan)
 
     def run_scheduled_scan_by_id(self, scan_id):
