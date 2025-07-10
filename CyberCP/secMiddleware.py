@@ -224,7 +224,8 @@ class secMiddleware:
                             or key == 'time_of_day' or key == 'notification_emails' or key == 'domains':
                         continue
 
-                    if valueAlreadyChecked == 0:
+                    # Skip validation for API endpoints that need JSON structure characters
+                    if not isAPIEndpoint and valueAlreadyChecked == 0:
                         # Only check string values, skip lists and other types
                         if (type(value) == str or type(value) == bytes) and (value.find('- -') > -1 or value.find('\n') > -1 or value.find(';') > -1 or value.find(
                                 '&&') > -1 or value.find('|') > -1 or value.find('...') > -1 \
@@ -240,11 +241,12 @@ class secMiddleware:
                                 "errorMessage": "Data supplied is not accepted, following characters are not allowed in the input ` $ & ( ) [ ] { } ; : ‘ < >."}
                             final_json = json.dumps(final_dic)
                             return HttpResponse(final_json)
-                    if key.find(';') > -1 or key.find('&&') > -1 or key.find('|') > -1 or key.find('...') > -1 \
+                    # Skip key validation for API endpoints that need JSON structure characters
+                    if not isAPIEndpoint and (key.find(';') > -1 or key.find('&&') > -1 or key.find('|') > -1 or key.find('...') > -1 \
                             or key.find("`") > -1 or key.find("$") > -1 or key.find("(") > -1 or key.find(")") > -1 \
                             or key.find("'") > -1 or key.find("[") > -1 or key.find("]") > -1 or key.find(
                         "{") > -1 or key.find("}") > -1 \
-                            or key.find(":") > -1 or key.find("<") > -1 or key.find(">") > -1 or key.find("&") > -1:
+                            or key.find(":") > -1 or key.find("<") > -1 or key.find(">") > -1 or key.find("&") > -1):
                         logging.writeToFile(request.body)
                         final_dic = {'error_message': "Data supplied is not accepted.",
                                      "errorMessage": "Data supplied is not accepted following characters are not allowed in the input ` $ & ( ) [ ] { } ; : ‘ < >."}
