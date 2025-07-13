@@ -24,9 +24,15 @@ class Command(BaseCommand):
             action='store_true',
             help='Show detailed information about all scheduled scans',
         )
+        parser.add_argument(
+            '--force',
+            action='store_true',
+            help='Force run all active scheduled scans immediately, ignoring schedule',
+        )
 
     def handle(self, *args, **options):
         self.verbose = options.get('verbose', False)
+        self.force = options.get('force', False)
         
         if options['daemon']:
             self.stdout.write('Starting scheduled scan daemon...')
@@ -34,6 +40,9 @@ class Command(BaseCommand):
         elif options['scan_id']:
             self.stdout.write(f'Running scheduled scan ID {options["scan_id"]}...')
             self.run_scheduled_scan_by_id(options['scan_id'])
+        elif options['force']:
+            self.stdout.write('Force running all active scheduled scans...')
+            self.force_run_all_scans()
         else:
             self.stdout.write('Checking for scheduled scans to run...')
             self.check_and_run_scans()
@@ -53,6 +62,27 @@ class Command(BaseCommand):
                 from plogical.CyberCPLogFileWriter import CyberCPLogFileWriter as logging
                 logging.writeToFile(f'[Scheduled Scan Daemon] Error: {str(e)}')
                 time.sleep(60)  # Continue after error
+
+    def force_run_all_scans(self):
+        """Force run all active scheduled scans immediately"""
+        from aiScanner.models import ScheduledScan
+        from plogical.CyberCPLogFileWriter import CyberCPLogFileWriter as logging
+        
+        # Find all active scheduled scans
+        active_scans = ScheduledScan.objects.filter(status='active')
+        
+        if active_scans.count() == 0:
+            self.stdout.write('No active scheduled scans found')
+            logging.writeToFile('[Scheduled Scan Force] No active scheduled scans found')
+            return
+        
+        self.stdout.write(f'Found {active_scans.count()} active scheduled scans to force run')
+        logging.writeToFile(f'[Scheduled Scan Force] Found {active_scans.count()} active scheduled scans to force run')
+        
+        for scan in active_scans:
+            self.stdout.write(f'Force running scheduled scan: {scan.name} (ID: {scan.id})')
+            logging.writeToFile(f'[Scheduled Scan Force] Force running scheduled scan: {scan.name} (ID: {scan.id})')
+            self.execute_scheduled_scan(scan)
 
     def check_and_run_scans(self):
         """Check for scheduled scans that need to run"""
