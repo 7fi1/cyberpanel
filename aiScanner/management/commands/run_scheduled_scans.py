@@ -401,7 +401,8 @@ View detailed results in your CyberPanel AI Scanner dashboard.
             
             # Send email using CyberPanel's email system
             from plogical.mailUtilities import mailUtilities
-            mailUtilities.sendEmail(notification_emails[0], subject, message)
+            sender = 'noreply@cyberpanel.local'
+            mailUtilities.SendEmail(sender, notification_emails, message)
             
             # Log notification sent
             from plogical.CyberCPLogFileWriter import CyberCPLogFileWriter as logging
@@ -440,7 +441,8 @@ Please check your CyberPanel AI Scanner configuration and try again.
             
             # Send email using CyberPanel's email system
             from plogical.mailUtilities import mailUtilities
-            mailUtilities.sendEmail(notification_emails[0], subject, message)
+            sender = 'noreply@cyberpanel.local'
+            mailUtilities.SendEmail(sender, notification_emails, message)
             
             # Log notification sent
             from plogical.CyberCPLogFileWriter import CyberCPLogFileWriter as logging
