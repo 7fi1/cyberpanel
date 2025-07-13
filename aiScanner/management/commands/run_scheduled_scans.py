@@ -207,15 +207,30 @@ class Command(BaseCommand):
                     
                     # Create a fake request object for the scanner manager
                     class FakeRequest:
-                        def __init__(self, admin_id):
+                        def __init__(self, admin_id, domain, scan_type):
                             self.session = {'userID': admin_id}
                             self.method = 'POST'
                             self.POST = {
                                 'domain': domain,
-                                'scan_type': scheduled_scan.scan_type
+                                'scan_type': scan_type
                             }
+                            # Create JSON body that startScan expects
+                            import json
+                            self.body = json.dumps({
+                                'domain': domain,
+                                'scan_type': scan_type
+                            }).encode('utf-8')
+                            
+                        def get_host(self):
+                            # Get the hostname from CyberPanel settings
+                            try:
+                                from plogical.acl import ACLManager
+                                server_ip = ACLManager.fetchIP()
+                                return f"{server_ip}:8090"  # Default CyberPanel port
+                            except:
+                                return "localhost:8090"  # Fallback
                     
-                    fake_request = FakeRequest(admin.pk)
+                    fake_request = FakeRequest(admin.pk, domain, scheduled_scan.scan_type)
                     
                     # Start the scan
                     result = sm.startScan(fake_request, admin.pk)
