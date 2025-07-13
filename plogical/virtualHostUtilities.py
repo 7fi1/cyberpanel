@@ -966,7 +966,7 @@ local_name %s {
 
             adminEmail = "email@" + virtualHost
 
-            retValues = sslUtilities.issueSSLForDomain(virtualHost, adminEmail, path)
+            retValues = sslUtilities.issueSSLForDomain(virtualHost, adminEmail, path, None, isHostname=True)
 
             if retValues[0] == 0:
                 print("0," + str(retValues[1]))
@@ -1042,7 +1042,7 @@ local_name %s {
             srcPrivKey = '/etc/letsencrypt/live/' + virtualHost + '/privkey.pem'
 
             adminEmail = "email@" + virtualHost
-            retValues = sslUtilities.issueSSLForDomain(virtualHost, adminEmail, path)
+            retValues = sslUtilities.issueSSLForDomain(virtualHost, adminEmail, path, None, isHostname=True)
 
             if retValues[0] == 0:
                 print("0," + str(retValues[1]))
