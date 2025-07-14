@@ -14,112 +14,42 @@ from os.path import *
 from stat import *
 import stat
 import secrets
+import install_utils
 
 VERSION = '2.4'
 BUILD = 2
 
-char_set = {'small': 'abcdefghijklmnopqrstuvwxyz', 'nums': '0123456789', 'big': 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'}
+# Using shared char_set from install_utils
+char_set = install_utils.char_set
 
 
-def generate_pass(length=14):
-    chars = string.ascii_uppercase + string.ascii_lowercase + string.digits
-    size = length
-    return ''.join(random.choice(chars) for x in range(size))
+# Using shared function from install_utils
+generate_pass = install_utils.generate_pass
 
 
 # There can not be peace without first a great suffering.
 
-# distros
+# distros - using from install_utils
+centos = install_utils.centos
+ubuntu = install_utils.ubuntu
+cent8 = install_utils.cent8
+openeuler = install_utils.openeuler
+cent9 = 4  # Not in install_utils yet
+CloudLinux8 = 0  # Not in install_utils yet
 
-centos = 0
-ubuntu = 1
-cent8 = 2
-cent9 = 4
-openeuler = 3
-CloudLinux8 = 0
-
-def FetchCloudLinuxAlmaVersionVersion():
-    if os.path.exists('/etc/os-release'):
-        data = open('/etc/os-release', 'r').read()
-        if (data.find('CloudLinux') > -1 or data.find('cloudlinux') > -1) and (data.find('8.9') > -1 or data.find('Anatoly Levchenko') > -1 or data.find('VERSION="8.') > -1):
-            return 'cl-89'
-        elif (data.find('CloudLinux') > -1 or data.find('cloudlinux') > -1) and (data.find('8.8') > -1 or data.find('Anatoly Filipchenko') > -1):
-            return 'cl-88'
-        elif (data.find('CloudLinux') > -1 or data.find('cloudlinux') > -1) and (data.find('9.4') > -1 or data.find('VERSION="9.') > -1):
-            return 'cl-88'
-        elif (data.find('AlmaLinux') > -1 or data.find('almalinux') > -1) and (data.find('8.9') > -1 or data.find('Midnight Oncilla') > -1 or data.find('VERSION="8.') > -1):
-            return 'al-88'
-        elif (data.find('AlmaLinux') > -1 or data.find('almalinux') > -1) and (data.find('8.7') > -1 or data.find('Stone Smilodon') > -1):
-            return 'al-87'
-        elif (data.find('AlmaLinux') > -1 or data.find('almalinux') > -1) and (data.find('9.4') > -1 or data.find('9.3') > -1 or data.find('Shamrock Pampas') > -1 or data.find('Seafoam Ocelot') > -1 or data.find('VERSION="9.') > -1):
-            return 'al-93'
-    else:
-        return -1
+# Using shared function from install_utils
+FetchCloudLinuxAlmaVersionVersion = install_utils.FetchCloudLinuxAlmaVersionVersion
 
 
-def get_distro():
-    distro = -1
-    distro_file = ""
-    if exists("/etc/lsb-release"):
-        distro_file = "/etc/lsb-release"
-        with open(distro_file) as f:
-            for line in f:
-                if line == "DISTRIB_ID=Ubuntu\n":
-                    distro = ubuntu
-
-    elif exists("/etc/redhat-release"):
-        distro_file = "/etc/redhat-release"
-        distro = centos
-
-        data = open('/etc/redhat-release', 'r').read()
-
-
-        if data.find('CentOS Linux release 8') > -1:
-            return cent8
-        ## if almalinux 9 then pretty much same as cent8
-        if data.find('AlmaLinux release 8') > -1 or data.find('AlmaLinux release 9') > -1:
-            return cent8
-        if data.find('Rocky Linux release 8') > -1 or data.find('Rocky Linux 8') > -1 or data.find('rocky:8') > -1:
-            return cent8
-        if data.find('CloudLinux 8') or data.find('cloudlinux 8'):
-            return cent8
-
-    else:
-        if exists("/etc/openEuler-release"):
-            distro_file = "/etc/openEuler-release"
-            distro = openeuler
-
-        else:
-            logging.InstallLog.writeToFile("Can't find linux release file - fatal error")
-            preFlightsChecks.stdOut("Can't find linux release file - fatal error")
-            os._exit(os.EX_UNAVAILABLE)
-
-    if distro == -1:
-        logging.InstallLog.writeToFile("Can't find distro name in " + distro_file + " - fatal error")
-        preFlightsChecks.stdOut("Can't find distro name in " + distro_file + " - fatal error")
-        os._exit(os.EX_UNAVAILABLE)
-
-    return distro
+# Using shared function from install_utils
+get_distro = install_utils.get_distro
 
 
 def get_Ubuntu_release():
-    release = -1
-    if exists("/etc/lsb-release"):
-        distro_file = "/etc/lsb-release"
-        with open(distro_file) as f:
-            for line in f:
-                if line[:16] == "DISTRIB_RELEASE=":
-                    release = float(line[16:])
-
-        if release == -1:
-            preFlightsChecks.stdOut("Can't find distro release name in " + distro_file + " - fatal error", 1, 1,
-                                    os.EX_UNAVAILABLE)
-
-    else:
-        logging.InstallLog.writeToFile("Can't find linux release file - fatal error")
-        preFlightsChecks.stdOut("Can't find linux release file - fatal error")
-        os._exit(os.EX_UNAVAILABLE)
-
+    release = install_utils.get_Ubuntu_release(use_print=False, exit_on_error=True)
+    if release == -1:
+        preFlightsChecks.stdOut("Can't find distro release name in /etc/lsb-release - fatal error", 1, 1,
+                                os.EX_UNAVAILABLE)
     return release
 
 
@@ -128,6 +58,34 @@ class preFlightsChecks:
     cyberPanelMirror = "mirror.cyberpanel.net/pip"
     cdn = 'cyberpanel.sh'
     SnappyVersion = '2.38.2'
+    apt_updated = False  # Track if apt update has been run
+    
+    def install_package(self, package_name, options="", silent=False):
+        """Unified package installation across distributions"""
+        command, shell = install_utils.get_package_install_command(self.distro, package_name, options)
+        
+        if not silent:
+            return preFlightsChecks.call(command, self.distro, command, command, 1, 1, os.EX_OSERR, shell)
+        else:
+            return preFlightsChecks.call(command, self.distro, command, command, 0, 0, os.EX_OSERR, shell)
+    
+    def is_centos_family(self):
+        """Check if distro is CentOS, CentOS 8, or OpenEuler"""
+        return self.distro in [centos, cent8, openeuler]
+    
+    def manage_service(self, service_name, action="start"):
+        """Unified service management"""
+        command = f'systemctl {action} {service_name}'
+        return preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
+    
+    def remove_package(self, package_name, silent=False):
+        """Unified package removal across distributions"""
+        command, shell = install_utils.get_package_remove_command(self.distro, package_name)
+        
+        if not silent:
+            return preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR, shell)
+        else:
+            return preFlightsChecks.call(command, self.distro, command, command, 0, 0, os.EX_OSERR, shell)
 
     def __init__(self, rootPath, ip, path, cwd, cyberPanelPath, distro, remotemysql=None, mysqlhost=None, mysqldb=None,
                  mysqluser=None, mysqlpassword=None, mysqlport=None):
@@ -148,11 +106,8 @@ class preFlightsChecks:
     def installQuota(self,):
         try:
 
-            if self.distro == centos or self.distro == cent8 or self.distro == openeuler:
-                command = "yum install quota -y"
-                preFlightsChecks.call(command, self.distro, command,
-                                      command,
-                                      1, 0, os.EX_OSERR)
+            if self.is_centos_family():
+                self.install_package("quota", silent=True)
 
                 if self.edit_fstab('/', '/') == 0:
                     preFlightsChecks.stdOut("Quotas will not be abled as we failed to modify fstab file.")
@@ -184,18 +139,14 @@ class preFlightsChecks:
 
             if self.distro == ubuntu:
                 self.stdOut("Install Quota on Ubuntu")
-                command = 'apt update -y'
-                preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
-
-                command = 'DEBIAN_FRONTEND=noninteractive apt install quota -y'
-                preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR, True)
+                # Skip apt update as it was already done in cyberpanel.sh
+                self.install_package("quota", silent=True)
 
                 command = "find /lib/modules/ -type f -name '*quota_v*.ko*'"
 
 
                 if subprocess.check_output(command,shell=True).decode("utf-8").find("quota/") == -1:
-                    command = "DEBIAN_FRONTEND=noninteractive apt install linux-image-extra-virtual -y"
-                    preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR, True)
+                    self.install_package("linux-image-extra-virtual", silent=True)
 
                 if self.edit_fstab('/', '/') == 0:
                     preFlightsChecks.stdOut("Quotas will not be abled as we are are failed to modify fstab file.")
@@ -334,18 +285,7 @@ class preFlightsChecks:
 
     @staticmethod
     def stdOut(message, log=0, do_exit=0, code=os.EX_OK):
-        print("\n\n")
-        print(("[" + time.strftime(
-            "%m.%d.%Y_%H-%M-%S") + "] #########################################################################\n"))
-        print(("[" + time.strftime("%m.%d.%Y_%H-%M-%S") + "] " + message + "\n"))
-        print(("[" + time.strftime(
-            "%m.%d.%Y_%H-%M-%S") + "] #########################################################################\n"))
-
-        if log:
-            logging.InstallLog.writeToFile(message)
-        if do_exit:
-            logging.InstallLog.writeToFile(message)
-            sys.exit(code)
+        install_utils.stdOut(message, log, do_exit, code)
 
     def mountTemp(self):
         try:
@@ -357,10 +297,7 @@ class preFlightsChecks:
 
             if result.stdout.find('openvz') > -1:
                 if self.distro == ubuntu:
-                    command = 'DEBIAN_FRONTEND=noninteractive apt install inetutils-inetd -y'
-                    preFlightsChecks.call(command, self.distro, command,
-                                          command,
-                                          1, 0, os.EX_OSERR)
+                    self.install_package("inetutils-inetd")
 
             # ## On OpenVZ there is an issue using .tempdisk for /tmp as it breaks network on container after reboot.
             #
@@ -437,42 +374,15 @@ class preFlightsChecks:
             return 'pure-ftpd-mysql'
         return 'pure-ftpd'
 
+    # Using shared function from install_utils
     @staticmethod
     def resFailed(distro, res):
-        if distro == ubuntu and res != 0:
-            return True
-        elif distro == centos and res != 0:
-            return True
-        return False
+        return install_utils.resFailed(distro, res)
 
+    # Using shared function from install_utils
     @staticmethod
     def call(command, distro, bracket, message, log=0, do_exit=0, code=os.EX_OK, shell=False):
-        finalMessage = 'Running: %s' % (message)
-        preFlightsChecks.stdOut(finalMessage, log)
-        count = 0
-        while True:
-            if shell == False:
-                res = subprocess.call(shlex.split(command))
-            else:
-                res = subprocess.call(command, shell=True)
-
-            if preFlightsChecks.resFailed(distro, res):
-                count = count + 1
-                finalMessage = 'Running %s failed. Running again, try number %s' % (message, str(count))
-                preFlightsChecks.stdOut(finalMessage)
-                if count == 3:
-                    fatal_message = ''
-                    if do_exit:
-                        fatal_message = '.  Fatal error, see /var/log/installLogs.txt for full details'
-
-                    preFlightsChecks.stdOut("[ERROR] We are not able to run " + message + ' return code: ' + str(res) +
-                                            fatal_message + ".", 1, do_exit, code)
-                    return False
-            else:
-                preFlightsChecks.stdOut('Successfully ran: %s.' % (message), log)
-                break
-
-        return True
+        return install_utils.call(command, distro, bracket, message, log, do_exit, code, shell)
 
     def checkIfSeLinuxDisabled(self):
         try:
@@ -505,11 +415,8 @@ class preFlightsChecks:
     def setup_account_cyberpanel(self):
         try:
 
-            if self.distro == centos or self.distro == cent8 or self.distro == openeuler:
-                command = "yum install sudo -y"
-                preFlightsChecks.call(command, self.distro, command,
-                                      command,
-                                      1, 0, os.EX_OSERR)
+            if self.is_centos_family():
+                self.install_package("sudo", silent=True)
 
             ##
 
@@ -595,13 +502,7 @@ class preFlightsChecks:
 
     def install_psmisc(self):
         self.stdOut("Install psmisc")
-
-        if self.distro == centos or self.distro == cent8 or self.distro == openeuler:
-            command = "yum -y install psmisc"
-        else:
-            command = "DEBIAN_FRONTEND=noninteractive apt-get -y install psmisc"
-
-        preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR, True)
+        self.install_package("psmisc")
 
     def download_install_CyberPanel(self, mysqlPassword, mysql):
         ##
@@ -879,7 +780,7 @@ password="%s"
         command = "find /usr/local/CyberCP/ -name '*.pyc' -delete"
         preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
 
-        if self.distro == cent8 or self.distro == centos or self.distro == openeuler:
+        if self.is_centos_family():
             command = 'chown root:pdns /etc/pdns/pdns.conf'
             preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
 
@@ -934,24 +835,14 @@ password="%s"
     def install_unzip(self):
         self.stdOut("Install unzip")
         try:
-            if self.distro == centos or self.distro == cent8 or self.distro == openeuler:
-                command = 'yum -y install unzip'
-            else:
-                command = 'DEBIAN_FRONTEND=noninteractive apt-get -y install unzip'
-
-            preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR, True)
+            self.install_package("unzip")
         except BaseException as msg:
             logging.InstallLog.writeToFile('[ERROR] ' + str(msg) + " [install_unzip]")
 
     def install_zip(self):
         self.stdOut("Install zip")
         try:
-            if self.distro == centos or self.distro == cent8 or self.distro == openeuler:
-                command = 'yum -y install zip'
-            else:
-                command = 'DEBIAN_FRONTEND=noninteractive apt-get -y install zip'
-
-            preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR, True)
+            self.install_package("zip")
         except BaseException as msg:
             logging.InstallLog.writeToFile('[ERROR] ' + str(msg) + " [install_zip]")
 
@@ -979,7 +870,7 @@ password="%s"
 
             ## Write secret phrase
 
-            rString = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+            rString = install_utils.generate_random_string(32)
 
             data = open('/usr/local/CyberCP/public/phpmyadmin/config.sample.inc.php', 'r').readlines()
 
@@ -1044,11 +935,9 @@ $cfg['Servers'][$i]['LogoutURL'] = 'phpmyadminsignin.php?logout';
 
         try:
             if self.distro == centos:
-                command = 'yum remove postfix -y'
-                preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
+                self.remove_package("postfix")
             elif self.distro == ubuntu:
-                command = 'DEBIAN_FRONTEND=noninteractive apt-get -y remove postfix'
-                preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR, True)
+                self.remove_package("postfix")
 
             self.stdOut("Install dovecot - do the install")
 
@@ -1075,8 +964,7 @@ $cfg['Servers'][$i]['LogoutURL'] = 'phpmyadminsignin.php?logout';
                 preFlightsChecks.call(command, self.distro, command, command, 1, 1, os.EX_OSERR)
 
             else:
-                command = 'DEBIAN_FRONTEND=noninteractive apt-get -y install debconf-utils'
-                preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR, True)
+                self.install_package("debconf-utils", silent=True)
                 file_name = self.cwd + '/pf.unattend.text'
                 pf = open(file_name, 'w')
                 pf.write('postfix postfix/mailname string ' + str(socket.getfqdn() + '\n'))
@@ -1413,13 +1301,8 @@ $cfg['Servers'][$i]['LogoutURL'] = 'phpmyadminsignin.php?logout';
 
             ################################### Restart postix
 
-            command = 'systemctl enable postfix.service'
-            preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
-
-            ##
-
-            command = 'systemctl start postfix.service'
-            preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
+            self.manage_service('postfix', 'enable')
+            self.manage_service('postfix', 'start')
 
             ######################################## Permissions
 
@@ -1433,18 +1316,12 @@ $cfg['Servers'][$i]['LogoutURL'] = 'phpmyadminsignin.php?logout';
 
             ################################### Restart dovecot
 
-            command = 'systemctl enable dovecot.service'
-            preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
+            self.manage_service('dovecot', 'enable')
+            self.manage_service('dovecot', 'start')
 
             ##
 
-            command = 'systemctl start dovecot.service'
-            preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
-
-            ##
-
-            command = 'systemctl restart  postfix.service'
-            preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
+            self.manage_service('postfix', 'restart')
 
             ## chaging permissions for main.cf
 
@@ -1479,8 +1356,7 @@ $cfg['Servers'][$i]['LogoutURL'] = 'phpmyadminsignin.php?logout';
                             writeToFile.writelines(items)
                     writeToFile.close()
 
-                command = "systemctl restart dovecot"
-                preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
+                self.manage_service('dovecot', 'restart')
 
             logging.InstallLog.writeToFile("Postfix and Dovecot configured")
         except BaseException as msg:
@@ -1653,7 +1529,7 @@ $cfg['Servers'][$i]['LogoutURL'] = 'phpmyadminsignin.php?logout';
     ###################################################### Email setup ends!
 
     def reStartLiteSpeed(self):
-        command = '%sbin/lswsctrl restart' % (self.server_root_path)
+        command = install_utils.format_restart_litespeed_command(self.server_root_path)
         preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
 
     def removeUfw(self):
@@ -1695,29 +1571,17 @@ $cfg['Servers'][$i]['LogoutURL'] = 'phpmyadminsignin.php?logout';
         try:
             preFlightsChecks.stdOut("Enabling Firewall!")
 
-            if self.distro == ubuntu:
-                command = 'DEBIAN_FRONTEND=noninteractive apt-get -y install firewalld'
-            else:
-                command = 'yum -y install firewalld'
-
-            preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR, True)
+            self.install_package("firewalld")
 
             ######
             if self.distro == centos:
                 # Not available in ubuntu
-                command = 'systemctl restart dbus'
-                preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
+                self.manage_service('dbus', 'restart')
 
-            command = 'systemctl restart systemd-logind'
-            preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
+            self.manage_service('systemd-logind', 'restart')
 
-            command = 'systemctl start firewalld'
-            preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
-
-            ##########
-
-            command = 'systemctl enable firewalld'
-            preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
+            self.manage_service('firewalld', 'start')
+            self.manage_service('firewalld', 'enable')
 
             FirewallUtilities.addRule("tcp", "8090")
             FirewallUtilities.addRule("tcp", "7080")
@@ -1768,19 +1632,14 @@ $cfg['Servers'][$i]['LogoutURL'] = 'phpmyadminsignin.php?logout';
             os.chdir(self.cwd)
 
             if self.distro == ubuntu:
-                command = "DEBIAN_FRONTEND=noninteractive apt-get -y install gcc g++ make autoconf rcs"
+                self.install_package("gcc g++ make autoconf rcs")
             else:
-                command = 'yum -y install gcc gcc-c++ make autoconf glibc'
-
-            preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR, True)
+                self.install_package("gcc gcc-c++ make autoconf glibc")
 
             if self.distro == ubuntu:
-                command = "DEBIAN_FRONTEND=noninteractive apt-get -y install libpcre3 libpcre3-dev openssl libexpat1 libexpat1-dev libgeoip-dev" \
-                          " zlib1g zlib1g-dev libudns-dev whichman curl"
+                self.install_package("libpcre3 libpcre3-dev openssl libexpat1 libexpat1-dev libgeoip-dev zlib1g zlib1g-dev libudns-dev whichman curl")
             else:
-                command = 'yum -y install pcre-devel openssl-devel expat-devel geoip-devel zlib-devel udns-devel'
-
-            preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR, True)
+                self.install_package("pcre-devel openssl-devel expat-devel geoip-devel zlib-devel udns-devel")
 
             command = 'tar zxf lscp.tar.gz -C /usr/local/'
             preFlightsChecks.call(command, self.distro, command, command, 1, 1, os.EX_OSERR)
@@ -1847,14 +1706,14 @@ $cfg['Servers'][$i]['LogoutURL'] = 'phpmyadminsignin.php?logout';
             except:
                 pass
 
-            if self.distro == centos or self.distro == cent8 or self.distro == openeuler:
+            if self.is_centos_family():
                 command = 'adduser lscpd -M -d /usr/local/lscp'
             else:
                 command = 'useradd lscpd -M -d /usr/local/lscp'
 
             preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
 
-            if self.distro == centos or self.distro == cent8 or self.distro == openeuler:
+            if self.is_centos_family():
                 command = 'groupadd lscpd'
                 preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
                 # Added group in useradd for Ubuntu
@@ -2044,8 +1903,7 @@ $cfg['Servers'][$i]['LogoutURL'] = 'phpmyadminsignin.php?logout';
             preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
 
             ##
-            command = 'systemctl enable lscpd.service'
-            preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
+            self.manage_service('lscpd', 'enable')
 
             ##
             count = 0
@@ -2075,26 +1933,17 @@ $cfg['Servers'][$i]['LogoutURL'] = 'phpmyadminsignin.php?logout';
         try:
             ## first install crontab
 
-            if self.distro == centos or self.distro == cent8 or self.distro == openeuler:
-                command = 'yum install cronie -y'
+            if self.is_centos_family():
+                self.install_package('cronie')
             else:
-                command = 'DEBIAN_FRONTEND=noninteractive apt-get -y install cron'
+                self.install_package('cron')
 
-            preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR, True)
-
-            if self.distro == centos or self.distro == cent8 or self.distro == openeuler:
-                command = 'systemctl enable crond'
+            if self.is_centos_family():
+                self.manage_service('crond', 'enable')
+                self.manage_service('crond', 'start')
             else:
-                command = 'systemctl enable cron'
-
-            preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
-
-            if self.distro == centos or self.distro == cent8 or self.distro == openeuler:
-                command = 'systemctl start crond'
-            else:
-                command = 'systemctl start cron'
-
-            preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
+                self.manage_service('cron', 'enable')
+                self.manage_service('cron', 'start')
 
             ##
 
@@ -2152,12 +2001,10 @@ $cfg['Servers'][$i]['LogoutURL'] = 'phpmyadminsignin.php?logout';
                 command = 'chmod 600 %s' % (cronPath)
                 preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
 
-            if self.distro == centos or self.distro == cent8 or self.distro == openeuler:
-                command = 'systemctl restart crond.service'
+            if self.is_centos_family():
+                self.manage_service('crond', 'restart')
             else:
-                command = 'systemctl restart cron.service'
-
-            preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
+                self.manage_service('cron', 'restart')
 
         except BaseException as msg:
             logging.InstallLog.writeToFile('[ERROR] ' + str(msg) + " [setup_cron]")
@@ -2179,12 +2026,7 @@ $cfg['Servers'][$i]['LogoutURL'] = 'phpmyadminsignin.php?logout';
 
     def install_rsync(self):
         try:
-            if self.distro == centos or self.distro == cent8 or self.distro == openeuler:
-                command = 'yum -y install rsync'
-            else:
-                command = 'DEBIAN_FRONTEND=noninteractive apt-get -y install rsync'
-
-            preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR, True)
+            self.install_package('rsync')
 
         except BaseException as msg:
             logging.InstallLog.writeToFile('[ERROR] ' + str(msg) + " [install_rsync]")
@@ -2235,22 +2077,10 @@ $cfg['Servers'][$i]['LogoutURL'] = 'phpmyadminsignin.php?logout';
 
     def installOpenDKIM(self):
         try:
-            if self.distro == centos:
-                command = 'yum -y install opendkim'
-            elif self.distro == cent8 or self.distro == openeuler:
-                command = 'dnf install opendkim -y'
+            if self.distro == cent8 or self.distro == openeuler or self.distro == ubuntu:
+                self.install_package('opendkim opendkim-tools')
             else:
-                command = 'DEBIAN_FRONTEND=noninteractive apt-get -y install opendkim'
-
-            preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR, True)
-
-            if self.distro == cent8 or self.distro == openeuler:
-                command = 'dnf install opendkim-tools -y'
-                preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
-
-            if self.distro == ubuntu:
-                command = 'apt install opendkim-tools -y'
-                preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
+                self.install_package('opendkim')
 
                 command = 'mkdir -p /etc/opendkim/keys/'
                 preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
@@ -2307,16 +2137,9 @@ milter_default_action = accept
 
             #### Restarting Postfix and OpenDKIM
 
-            command = "systemctl start opendkim"
-            preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
-
-            command = "systemctl enable opendkim"
-            preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
-
-            ##
-
-            command = "systemctl start postfix"
-            preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
+            self.manage_service('opendkim', 'start')
+            self.manage_service('opendkim', 'enable')
+            self.manage_service('postfix', 'start')
 
         except BaseException as msg:
             logging.InstallLog.writeToFile('[ERROR] ' + str(msg) + " [configureOpenDKIM]")
@@ -2513,9 +2336,8 @@ milter_default_action = accept
                 preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
 
             else:
-                command = 'DEBIAN_FRONTEND=noninteractive apt-get update -y'
-                preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR, True)
-
+                # Skip apt-get update as it was already done in cyberpanel.sh
+                # Just install the package directly
                 command = 'DEBIAN_FRONTEND=noninteractive apt-get install restic -y'
                 preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR, True)
                 
@@ -2847,8 +2669,6 @@ admin_password = "12345"
 """)
         writeToFile.close()
 
-        import randomPassword
-
         content = """<?php
 
 $_ENV['snappymail_INCLUDE_AS_API'] = true;
@@ -2858,7 +2678,7 @@ $oConfig = \snappymail\Api::Config();
 $oConfig->SetPassword('%s');
 echo $oConfig->Save() ? 'Done' : 'Error';
 
-?>""" % (randomPassword.generate_pass())
+?>""" % (generate_pass())
 
         writeToFile = open('/usr/local/CyberCP/public/snappymail.php', 'w')
         writeToFile.write(content)

@@ -579,7 +579,7 @@ context /.well-known/acme-challenge {
                 return 1
 
     @staticmethod
-    def obtainSSLForADomain(virtualHostName, adminEmail, sslpath, aliasDomain=None):
+    def obtainSSLForADomain(virtualHostName, adminEmail, sslpath, aliasDomain=None, isHostname=False):
         from plogical.acl import ACLManager
         from plogical.sslv2 import sslUtilities as sslv2
         from plogical.customACME import CustomACME
@@ -609,11 +609,11 @@ context /.well-known/acme-challenge {
             # Start with just the main domain
             domains = [virtualHostName]
             
-            # Check if www subdomain has DNS records before adding it
-            if sslUtilities.checkDNSRecords(f'www.{virtualHostName}'):
+            # Check if www subdomain has DNS records before adding it (skip for hostnames)
+            if not isHostname and sslUtilities.checkDNSRecords(f'www.{virtualHostName}'):
                 domains.append(f'www.{virtualHostName}')
                 logging.CyberCPLogFileWriter.writeToFile(f"www.{virtualHostName} has DNS records, including in SSL request")
-            else:
+            elif not isHostname:
                 logging.CyberCPLogFileWriter.writeToFile(f"www.{virtualHostName} has no DNS records, excluding from SSL request")
             
             if aliasDomain:
@@ -648,11 +648,11 @@ context /.well-known/acme-challenge {
             # Start with just the main domain
             domains = [virtualHostName]
             
-            # Check if www subdomain has DNS records before adding it
-            if sslUtilities.checkDNSRecords(f'www.{virtualHostName}'):
+            # Check if www subdomain has DNS records before adding it (skip for hostnames)
+            if not isHostname and sslUtilities.checkDNSRecords(f'www.{virtualHostName}'):
                 domains.append(f'www.{virtualHostName}')
                 logging.CyberCPLogFileWriter.writeToFile(f"www.{virtualHostName} has DNS records, including in SSL request")
-            else:
+            elif not isHostname:
                 logging.CyberCPLogFileWriter.writeToFile(f"www.{virtualHostName} has no DNS records, excluding from SSL request")
             
             if aliasDomain:
@@ -692,16 +692,17 @@ context /.well-known/acme-challenge {
                     # Build domain list for acme.sh
                     domain_list = " -d " + virtualHostName
                     
-                    # Check if www subdomain has DNS records
-                    if sslUtilities.checkDNSRecords(f'www.{virtualHostName}'):
+                    # Check if www subdomain has DNS records (skip for hostnames)
+                    if not isHostname and sslUtilities.checkDNSRecords(f'www.{virtualHostName}'):
                         domain_list += " -d www." + virtualHostName
                         logging.CyberCPLogFileWriter.writeToFile(f"www.{virtualHostName} has DNS records, including in acme.sh SSL request")
-                    else:
+                    elif not isHostname:
                         logging.CyberCPLogFileWriter.writeToFile(f"www.{virtualHostName} has no DNS records, excluding from acme.sh SSL request")
                     
                     command = acmePath + " --issue" + domain_list \
                               + ' --cert-file ' + existingCertPath + '/cert.pem' + ' --key-file ' + existingCertPath + '/privkey.pem' \
-                              + ' --fullchain-file ' + existingCertPath + '/fullchain.pem' + ' -w /usr/local/lsws/Example/html -k ec-256 --force --staging'
+                              + ' --fullchain-file ' + existingCertPath + '/fullchain.pem' + ' -w /usr/local/lsws/Example/html -k ec-256 --force --staging' \
+                              + ' --webroot-path /usr/local/lsws/Example/html'
                     
                     if ProcessUtilities.decideServer() == ProcessUtilities.OLS:
                         result = subprocess.run(command, capture_output=True, universal_newlines=True, shell=True)
@@ -711,7 +712,8 @@ context /.well-known/acme-challenge {
                     if result.returncode == 0:
                         command = acmePath + " --issue" + domain_list \
                                   + ' --cert-file ' + existingCertPath + '/cert.pem' + ' --key-file ' + existingCertPath + '/privkey.pem' \
-                                  + ' --fullchain-file ' + existingCertPath + '/fullchain.pem' + ' -w /usr/local/lsws/Example/html -k ec-256 --force --server letsencrypt'
+                                  + ' --fullchain-file ' + existingCertPath + '/fullchain.pem' + ' -w /usr/local/lsws/Example/html -k ec-256 --force --server letsencrypt' \
+                                  + ' --webroot-path /usr/local/lsws/Example/html'
                         
                         result = subprocess.run(command, capture_output=True, universal_newlines=True, shell=True)
                         
@@ -763,9 +765,37 @@ context /.well-known/acme-challenge {
             return 0
 
 
-def issueSSLForDomain(domain, adminEmail, sslpath, aliasDomain=None):
+def issueSSLForDomain(domain, adminEmail, sslpath, aliasDomain=None, isHostname=False):
     try:
-        if sslUtilities.obtainSSLForADomain(domain, adminEmail, sslpath, aliasDomain) == 1:
+        # Check if certificate already exists and try to renew it first
+        existingCertPath = '/etc/letsencrypt/live/' + domain + '/fullchain.pem'
+        if os.path.exists(existingCertPath):
+            logging.CyberCPLogFileWriter.writeToFile(f"Certificate exists for {domain}, attempting renewal...")
+            
+            # Try to renew using acme.sh
+            acmePath = '/root/.acme.sh/acme.sh'
+            if os.path.exists(acmePath):
+                # First set the webroot path for the domain
+                command = f'{acmePath} --update-account --accountemail {adminEmail}'
+                subprocess.call(command, shell=True)
+                
+                # Build domain list for renewal
+                renewal_domains = f'-d {domain}'
+                if not isHostname and sslUtilities.checkDNSRecords(f'www.{domain}'):
+                    renewal_domains += f' -d www.{domain}'
+                
+                # Try to renew with explicit webroot
+                command = f'{acmePath} --renew {renewal_domains} --webroot /usr/local/lsws/Example/html --force'
+                result = subprocess.run(command, capture_output=True, text=True, shell=True)
+                
+                if result.returncode == 0:
+                    logging.CyberCPLogFileWriter.writeToFile(f"Successfully renewed SSL for {domain}")
+                    if sslUtilities.installSSLForDomain(domain, adminEmail) == 1:
+                        return [1, "None"]
+                else:
+                    logging.CyberCPLogFileWriter.writeToFile(f"Renewal failed for {domain}, falling back to new issuance")
+        
+        if sslUtilities.obtainSSLForADomain(domain, adminEmail, sslpath, aliasDomain, isHostname) == 1:
             if sslUtilities.installSSLForDomain(domain, adminEmail) == 1:
                 return [1, "None"]
             else:

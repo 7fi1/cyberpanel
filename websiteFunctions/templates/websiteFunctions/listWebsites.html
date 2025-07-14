@@ -681,7 +681,7 @@
                         <div class="website-details" ng-if="isExpanded(web.domain)">
                             <div class="details-content">
                                 <div class="screenshot-section">
-                                    <img ng-src="https://api.microlink.io/?url=https://{$ web.domain $}&screenshot=true&meta=false&embed=screenshot.url" 
+                                    <img ng-src="https://api.microlink.io/?url=https://{$ web.domain $}&screenshot=true&meta=false&embed=screenshot.url&ttl=86400000" 
                                          alt="{$ web.domain $}" 
                                          class="website-screenshot" 
                                          onerror="this.onerror=null; this.src='{% static 'baseTemplate/assets/image-resources/webPanel.png' %}';">
