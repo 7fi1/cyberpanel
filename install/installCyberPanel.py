@@ -348,10 +348,22 @@ Signed-By: /etc/apt/keyrings/mariadb-keyring.pgp
 
             if get_Ubuntu_release() > 21.00:
                 command = 'curl -LsS https://downloads.mariadb.com/MariaDB/mariadb_repo_setup | sudo bash -s -- --mariadb-server-version=10.11'
-                install_utils.call(command, self.distro, command, command, 1, 1, os.EX_OSERR, True)
-            #     WriteToFile = open(RepoPath, 'w')
-            #     WriteToFile.write(RepoContent)
-            #     WriteToFile.close()
+                result = install_utils.call(command, self.distro, command, command, 1, 0, os.EX_OSERR, True)
+                
+                # If the download fails, use manual repo configuration as fallback
+                if result != 1:
+                    install_utils.writeToFile("MariaDB repo setup script failed, using manual configuration...")
+                    RepoPath = '/etc/apt/sources.list.d/mariadb.list'
+                    RepoContent = f"""# MariaDB 10.11 repository list - manual fallback
+deb [arch=amd64,arm64,ppc64el,s390x signed-by=/usr/share/keyrings/mariadb-keyring.pgp] https://mirror.mariadb.org/repo/10.11/ubuntu {get_Ubuntu_code_name()} main
+"""
+                    # Download and add MariaDB signing key
+                    command = 'mkdir -p /usr/share/keyrings && curl -fsSL https://mariadb.org/mariadb_release_signing_key.pgp | gpg --dearmor -o /usr/share/keyrings/mariadb-keyring.pgp'
+                    install_utils.call(command, self.distro, command, command, 1, 1, os.EX_OSERR, True)
+                    
+                    WriteToFile = open(RepoPath, 'w')
+                    WriteToFile.write(RepoContent)
+                    WriteToFile.close()
 
 
 

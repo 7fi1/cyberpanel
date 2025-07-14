@@ -195,6 +195,17 @@ baseurl = http://yum.mariadb.org/10.4/centos7-amd64
 gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
 gpgcheck=1
 EOF
+    elif [[ "$Server_OS_Version" = "8" ]]; then
+        cat <<EOF >/etc/yum.repos.d/MariaDB.repo
+# MariaDB 10.11 RHEL8 repository list
+# http://downloads.mariadb.org/mariadb/repositories/
+[mariadb]
+name = MariaDB
+baseurl = http://yum.mariadb.org/10.11/rhel8-amd64
+module_hotfixes=1
+gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
+gpgcheck=1
+EOF
     elif [[ "$Server_OS_Version" = "9" ]] && uname -m | grep -q 'x86_64'; then
         cat <<EOF >/etc/yum.repos.d/MariaDB.repo
 # MariaDB 10.11 CentOS repository list - created 2021-08-06 02:01 UTC
