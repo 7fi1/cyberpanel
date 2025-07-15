@@ -244,8 +244,8 @@ extprocessor docker{port} {{
   type                    proxy
   address                 127.0.0.1:{port}
   maxConns                100
-  pcKeepAliveTimeout      60
-  initTimeout             60
+  pcKeepAliveTimeout      3600
+  initTimeout             300
   retryTimeout            0
   respBuffer              0
 }}    
@@ -272,10 +272,10 @@ extprocessor docker{port} {{
             ET.SubElement(new_ext_processor, 'type').text = 'proxy'
             ET.SubElement(new_ext_processor, 'name').text = f'docker{port}'
             ET.SubElement(new_ext_processor, 'address').text = f'127.0.0.1:{port}'
-            ET.SubElement(new_ext_processor, 'maxConns').text = '35'
-            ET.SubElement(new_ext_processor, 'pcKeepAliveTimeout').text = '60'
-            ET.SubElement(new_ext_processor, 'initTimeout').text = '60'
-            ET.SubElement(new_ext_processor, 'retryTimeout').text = '60'
+            ET.SubElement(new_ext_processor, 'maxConns').text = '100'
+            ET.SubElement(new_ext_processor, 'pcKeepAliveTimeout').text = '3600'
+            ET.SubElement(new_ext_processor, 'initTimeout').text = '300'
+            ET.SubElement(new_ext_processor, 'retryTimeout').text = '0'
             ET.SubElement(new_ext_processor, 'respBuffer').text = '0'
 
             # Append the new <extProcessor> to the <extProcessorList>
@@ -289,6 +289,56 @@ extprocessor docker{port} {{
             ET.dump(root)
 
 
+    @staticmethod
+    def SetupN8NVhost(domain, port):
+        """Setup n8n vhost with proper proxy configuration including Origin header"""
+        try:
+            vhost_path = f'/usr/local/lsws/conf/vhosts/{domain}/vhost.conf'
+            
+            if not os.path.exists(vhost_path):
+                logging.writeToFile(f"Error: Vhost file not found at {vhost_path}")
+                return False
+            
+            # Read existing vhost configuration
+            with open(vhost_path, 'r') as f:
+                content = f.read()
+            
+            # Check if context already exists
+            if 'context / {' in content:
+                logging.writeToFile("Context already exists, skipping...")
+                return True
+            
+            # Add proxy context with proper headers for n8n
+            proxy_context = f'''
+
+# N8N Proxy Configuration
+context / {{
+  type                    proxy
+  handler                 docker{port}
+  addDefaultCharset       off
+  websocket               1
+
+  extraHeaders            <<<END_extraHeaders
+  RequestHeader set X-Forwarded-For $ip
+  RequestHeader set X-Forwarded-Proto https
+  RequestHeader set X-Forwarded-Host "{domain}"
+  RequestHeader set Origin "{domain}, {domain}"
+  RequestHeader set Host "{domain}"
+  END_extraHeaders
+}}
+'''
+            
+            # Append at the end of file
+            with open(vhost_path, 'a') as f:
+                f.write(proxy_context)
+            
+            logging.writeToFile(f"Successfully updated vhost for {domain}")
+            return True
+            
+        except Exception as e:
+            logging.writeToFile(f'Error setting up n8n vhost: {str(e)}')
+            return False
+    
     @staticmethod
     def SetupHTAccess(port, htaccess):
         ### Update htaccess
@@ -1245,11 +1295,11 @@ services:
                 ProcessUtilities.executioner(execPath)
                 logging.statusWriter(self.JobID, 'Proxy configured...,80')
 
-                # Setup ht access
+                # Setup n8n vhost configuration instead of htaccess
                 execPath = "/usr/local/CyberCP/bin/python /usr/local/CyberCP/plogical/DockerSites.py"
-                execPath = execPath + f" SetupHTAccess --port {self.data['port']} --htaccess {self.data['htaccessPath']}"
-                ProcessUtilities.executioner(execPath, self.data['externalApp'])
-                logging.statusWriter(self.JobID, 'HTAccess configured...,90')
+                execPath = execPath + f" SetupN8NVhost --domain {self.data['finalURL']} --port {self.data['port']}"
+                ProcessUtilities.executioner(execPath)
+                logging.statusWriter(self.JobID, 'N8N vhost configured...,90')
 
                 # Restart web server
                 from plogical.installUtilities import installUtilities
@@ -1318,14 +1368,19 @@ services:
                 'DB_POSTGRESDB_DATABASE': self.data['MySQLDBName'],
                 'DB_POSTGRESDB_USER': 'postgres',
                 'DB_POSTGRESDB_PASSWORD': self.data['MySQLPassword'],
-                'N8N_HOST': self.data['finalURL'],
+                'N8N_HOST': '0.0.0.0',
+                'N8N_PORT': '5678',
                 'NODE_ENV': 'production',
+                'N8N_EDITOR_BASE_URL': f"https://{self.data['finalURL']}",
                 'WEBHOOK_URL': f"https://{self.data['finalURL']}",
+                'WEBHOOK_TUNNEL_URL': f"https://{self.data['finalURL']}",
                 'N8N_PUSH_BACKEND': 'sse',
                 'GENERIC_TIMEZONE': 'UTC',
                 'N8N_ENCRYPTION_KEY': 'auto',
                 'N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS': 'true',
-                'DB_POSTGRESDB_SCHEMA': 'public'
+                'DB_POSTGRESDB_SCHEMA': 'public',
+                'N8N_PROTOCOL': 'https',
+                'N8N_SECURE_COOKIE': 'true'
             }
         }
 
@@ -1380,12 +1435,17 @@ services:
       - DB_POSTGRESDB_PASSWORD={n8n_config['environment']['DB_POSTGRESDB_PASSWORD']}
       - DB_POSTGRESDB_SCHEMA={n8n_config['environment']['DB_POSTGRESDB_SCHEMA']}
       - N8N_HOST={n8n_config['environment']['N8N_HOST']}
+      - N8N_PORT={n8n_config['environment']['N8N_PORT']}
       - NODE_ENV={n8n_config['environment']['NODE_ENV']}
+      - N8N_EDITOR_BASE_URL={n8n_config['environment']['N8N_EDITOR_BASE_URL']}
       - WEBHOOK_URL={n8n_config['environment']['WEBHOOK_URL']}
+      - WEBHOOK_TUNNEL_URL={n8n_config['environment']['WEBHOOK_TUNNEL_URL']}
       - N8N_PUSH_BACKEND={n8n_config['environment']['N8N_PUSH_BACKEND']}
       - GENERIC_TIMEZONE={n8n_config['environment']['GENERIC_TIMEZONE']}
       - N8N_ENCRYPTION_KEY={n8n_config['environment']['N8N_ENCRYPTION_KEY']}
       - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS={n8n_config['environment']['N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS']}
+      - N8N_PROTOCOL={n8n_config['environment']['N8N_PROTOCOL']}
+      - N8N_SECURE_COOKIE={n8n_config['environment']['N8N_SECURE_COOKIE']}
     ports:
       - "{self.data['port']}:5678"
     depends_on:
@@ -1421,6 +1481,8 @@ def Main():
             Docker_Sites.SetupProxy(args.port)
         elif args.function == 'SetupHTAccess':
             Docker_Sites.SetupHTAccess(args.port, args.htaccess)
+        elif args.function == 'SetupN8NVhost':
+            Docker_Sites.SetupN8NVhost(args.domain, args.port)
         elif args.function == 'DeployWPDocker':
             # Takes
             # ComposePath, MySQLPath, MySQLRootPass, MySQLDBName, MySQLDBNUser, MySQLPassword, CPUsMySQL, MemoryMySQL,
