@@ -9,7 +9,7 @@
 
     <style>
         body {
-            background-color: #f0f0ff;
+            background-color: var(--bg-primary, #f0f0ff);
         }
         .page-wrapper {
             background: transparent;
@@ -20,20 +20,20 @@
             margin: 0 auto;
         }
         .content-card {
-            background: white;
+            background: var(--bg-secondary, white);
             border-radius: 12px;
             padding: 2.5rem;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-            border: 1px solid #e8e9ff;
+            box-shadow: 0 2px 8px var(--shadow-color, rgba(0,0,0,0.08));
+            border: 1px solid var(--border-color, #e8e9ff);
             margin-bottom: 25px;
         }
         .section-title {
             font-size: 2rem;
             font-weight: 700;
-            color: #2f3640;
+            color: var(--text-primary, #2f3640);
             margin-bottom: 2.5rem;
             padding-bottom: 1rem;
-            border-bottom: 3px solid #5b5fcf;
+            border-bottom: 3px solid var(--accent-color, #5b5fcf);
             text-transform: uppercase;
             letter-spacing: 0.5px;
             text-align: center;
@@ -54,27 +54,29 @@
             margin-right: 0;
         }
         .form-label {
-            color: #2f3640;
+            color: var(--text-primary, #2f3640);
             font-weight: 600;
             margin-bottom: 0.5rem;
             display: block;
         }
         .form-control {
-            border: 1px solid #e8e9ff;
+            border: 1px solid var(--border-color, #e8e9ff);
             border-radius: 8px;
             padding: 0.75rem 1rem;
             font-size: 1rem;
             transition: all 0.3s ease;
             width: 100%;
             box-sizing: border-box;
+            background: var(--bg-secondary, white);
+            color: var(--text-primary, #2f3640);
         }
         .form-control:focus {
-            border-color: #5b5fcf;
+            border-color: var(--accent-color, #5b5fcf);
             box-shadow: 0 0 0 3px rgba(91, 95, 207, 0.1);
             outline: none;
         }
         .btn-primary {
-            background: linear-gradient(135deg, #5b5fcf 0%, #7b7fd0 100%);
+            background: linear-gradient(135deg, var(--accent-color, #5b5fcf) 0%, var(--accent-hover, #7b7fd0) 100%);
             border: none;
             border-radius: 8px;
             padding: 0.75rem 2rem;
@@ -87,12 +89,12 @@
             cursor: pointer;
         }
         .btn-primary:hover {
-            background: linear-gradient(135deg, #4b4fbf 0%, #6b6fc0 100%);
+            background: linear-gradient(135deg, var(--accent-hover, #4b4fbf) 0%, var(--accent-hover, #6b6fc0) 100%);
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(91, 95, 207, 0.4);
         }
         .btn-generate {
-            background: #10b981;
+            background: var(--success-text, #10b981);
             border: none;
             color: white;
             border-radius: 8px;
@@ -102,7 +104,7 @@
             cursor: pointer;
         }
         .btn-generate:hover {
-            background: #0ea271;
+            background: var(--success-text, #0ea271);
             transform: translateY(-2px);
         }
         .btn-row {
@@ -124,15 +126,15 @@
             border: none;
         }
         .alert-success {
-            background: rgba(16, 185, 129, 0.1);
-            color: #065f46;
+            background: var(--success-bg, rgba(16, 185, 129, 0.1));
+            color: var(--success-text, #065f46);
         }
         .alert-danger {
-            background: rgba(239, 68, 68, 0.1);
-            color: #991b1b;
+            background: var(--danger-bg, rgba(239, 68, 68, 0.1));
+            color: var(--danger-text, #991b1b);
         }
         .error-text {
-            color: #ef4444;
+            color: var(--danger-text, #ef4444);
             font-size: 0.875rem;
             margin-top: 0.5rem;
         }
@@ -142,27 +144,28 @@
             margin-left: 10px;
         }
         .help-text {
-            color: #8893a7;
+            color: var(--text-secondary, #8893a7);
             font-size: 0.875rem;
             margin-top: 0.25rem;
         }
         .security-info {
-            background: #f8f9ff;
-            border-left: 4px solid #5b5fcf;
+            background: var(--bg-hover, #f8f9ff);
+            border-left: 4px solid var(--accent-color, #5b5fcf);
             padding: 0.75rem 1rem;
             border-radius: 0 8px 8px 0;
-            color: #5b5fcf;
+            color: var(--accent-color, #5b5fcf);
             font-weight: 600;
         }
         .checkbox-wrapper {
-            background: #f8f9ff;
+            background: var(--bg-hover, #f8f9ff);
             padding: 1rem;
             border-radius: 8px;
             margin-top: 0.5rem;
+            border: 1px solid var(--border-color, #e8e9ff);
         }
         .checkbox-wrapper label {
             font-weight: 500;
-            color: #2f3640;
+            color: var(--text-primary, #2f3640);
             margin-bottom: 0;
             cursor: pointer;
         }
@@ -174,9 +177,27 @@
         }
         #qr {
             margin-top: 1rem;
-            border: 2px solid #e8e9ff;
+            border: 2px solid var(--border-color, #e8e9ff);
             border-radius: 8px;
             padding: 10px;
+            background: var(--bg-secondary, white);
+        }
+        .text-muted {
+            color: var(--text-secondary, #8893a7);
+        }
+        .btn-outline-secondary {
+            background: transparent;
+            border: 1px solid var(--border-color, #e8e9ff);
+            color: var(--text-secondary, #8893a7);
+            padding: 0.75rem 1rem;
+            border-radius: 0 8px 8px 0;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .btn-outline-secondary:hover {
+            background: var(--bg-hover, #f8f9ff);
+            color: var(--accent-color, #5b5fcf);
+            border-color: var(--accent-color, #5b5fcf);
         }
         @media (max-width: 768px) {
             .page-container {

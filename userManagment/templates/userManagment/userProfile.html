@@ -9,7 +9,7 @@
 
 <style>
     body {
-        background-color: #f0f0ff;
+        background-color: var(--bg-primary, #f0f0ff);
     }
     
     .page-wrapper {
@@ -29,28 +29,28 @@
     .page-title {
         font-size: 28px;
         font-weight: 700;
-        color: #2f3640;
+        color: var(--text-heading, #2f3640);
         margin-bottom: 8px;
     }
     
     .page-subtitle {
         font-size: 14px;
-        color: #8893a7;
+        color: var(--text-secondary, #8893a7);
     }
     
     .content-card {
-        background: white;
+        background: var(--bg-secondary, white);
         border-radius: 12px;
         padding: 30px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        border: 1px solid #e8e9ff;
+        box-shadow: 0 2px 8px var(--shadow-color, rgba(0,0,0,0.08));
+        border: 1px solid var(--border-color, #e8e9ff);
         margin-bottom: 25px;
     }
     
     .card-title {
         font-size: 18px;
         font-weight: 700;
-        color: #2f3640;
+        color: var(--text-primary, #2f3640);
         margin-bottom: 25px;
         display: flex;
         align-items: center;
@@ -61,12 +61,12 @@
         content: '';
         width: 4px;
         height: 24px;
-        background: #5b5fcf;
+        background: var(--accent-color, #5b5fcf);
         border-radius: 2px;
     }
     
     .profile-intro {
-        background: linear-gradient(135deg, #5b5fcf 0%, #7b7fd0 100%);
+        background: linear-gradient(135deg, var(--accent-color, #5b5fcf) 0%, var(--accent-hover, #7b7fd0) 100%);
         color: white;
         padding: 2.5rem;
         border-radius: 12px 12px 0 0;
@@ -79,7 +79,7 @@
     .profile-avatar {
         width: 80px;
         height: 80px;
-        background: white;
+        background: var(--bg-secondary, white);
         border-radius: 50%;
         display: inline-block;
         float: left;
@@ -91,7 +91,7 @@
     
     .profile-avatar i {
         font-size: 32px;
-        color: #5b5fcf;
+        color: var(--accent-color, #5b5fcf);
         vertical-align: middle;
         line-height: 1;
     }
@@ -125,17 +125,17 @@
     .info-section h3 {
         font-size: 16px;
         font-weight: 700;
-        color: #2f3640;
+        color: var(--text-primary, #2f3640);
         margin-bottom: 1.5rem;
         padding-bottom: 0.75rem;
-        border-bottom: 2px solid #e8e9ff;
+        border-bottom: 2px solid var(--border-color, #e8e9ff);
         text-transform: uppercase;
         letter-spacing: 0.5px;
     }
     
     .info-row {
         padding: 1rem 0;
-        border-bottom: 1px solid #f0f0ff;
+        border-bottom: 1px solid var(--border-color, #f0f0ff);
         overflow: hidden;
     }
     
@@ -146,7 +146,7 @@
     .info-label {
         float: left;
         width: 200px;
-        color: #8893a7;
+        color: var(--text-secondary, #8893a7);
         font-weight: 600;
         font-size: 13px;
         line-height: 1.5;
@@ -156,7 +156,7 @@
     
     .info-value {
         margin-left: 220px;
-        color: #2f3640;
+        color: var(--text-primary, #2f3640);
         font-weight: 500;
         font-size: 14px;
         line-height: 1.5;
@@ -171,15 +171,15 @@
     }
     
     .status-active {
-        background: #f0fdf4;
-        border: 1px solid #bbf7d0;
-        color: #166534;
+        background: var(--success-bg, #f0fdf4);
+        border: 1px solid var(--success-border, #bbf7d0);
+        color: var(--success-text, #166534);
     }
     
     .limit-badge {
-        background: #f8f9ff;
-        border: 1px solid #e8e9ff;
-        color: #5b5fcf;
+        background: var(--bg-hover, #f8f9ff);
+        border: 1px solid var(--border-color, #e8e9ff);
+        color: var(--accent-color, #5b5fcf);
     }
     
     .info-icon {
@@ -187,7 +187,7 @@
         height: 20px;
         display: inline-block;
         margin-right: 0.5rem;
-        color: #5b5fcf;
+        color: var(--accent-color, #5b5fcf);
         text-align: center;
     }
     
@@ -203,11 +203,11 @@
     }
     
     .stat-card {
-        background: #f8f9ff;
+        background: var(--bg-hover, #f8f9ff);
         padding: 1.5rem;
         border-radius: 8px;
         text-align: center;
-        border: 1px solid #e8e9ff;
+        border: 1px solid var(--border-color, #e8e9ff);
         transition: all 0.3s ease;
         float: left;
         width: 30%;
@@ -226,19 +226,19 @@
     
     .stat-icon {
         font-size: 2rem;
-        color: #5b5fcf;
+        color: var(--accent-color, #5b5fcf);
         margin-bottom: 0.5rem;
     }
     
     .stat-value {
         font-size: 1.8rem;
         font-weight: 700;
-        color: #2f3640;
+        color: var(--text-primary, #2f3640);
         margin-bottom: 0.25rem;
     }
     
     .stat-label {
-        color: #8893a7;
+        color: var(--text-secondary, #8893a7);
         font-size: 13px;
         text-transform: uppercase;
         letter-spacing: 0.5px;

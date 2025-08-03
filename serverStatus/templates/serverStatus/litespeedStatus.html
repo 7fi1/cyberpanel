@@ -8,6 +8,66 @@
 <!-- Current language: {{ LANGUAGE_CODE }} -->
 
 <style>
+    /* CSS Variables for Dark Mode Support */
+    :root {
+        /* LiteSpeed-specific gradient colors */
+        --ls-gradient-start: #667eea;
+        --ls-gradient-end: #764ba2;
+        
+        /* Text colors */
+        --text-primary: #1e293b;
+        --text-secondary: #475569;
+        --text-muted: #64748b;
+        --text-on-gradient: rgba(255, 255, 255, 0.9);
+        
+        /* Background colors */
+        --bg-primary: #ffffff;
+        --bg-secondary: #f8f9ff;
+        --bg-light: #f3f4f6;
+        --bg-hover: #f8f9ff;
+        --bg-gradient: linear-gradient(135deg, var(--ls-gradient-start) 0%, var(--ls-gradient-end) 100%);
+        
+        /* Border colors */
+        --border-color: #e8e9ff;
+        --border-light: #f1f5f9;
+        
+        /* Accent colors */
+        --accent-color: #667eea;
+        --accent-hover: #764ba2;
+        --accent-bg: #f3e8ff;
+        --accent-focus: rgba(102, 126, 234, 0.1);
+        --accent-shadow: rgba(102, 126, 234, 0.3);
+        
+        /* Status colors */
+        --success-bg: #d1fae5;
+        --success-color: #065f46;
+        --success-border: #a7f3d0;
+        --success-accent: #4ade80;
+        --success-dark: #10b981;
+        
+        --danger-bg: #fee2e2;
+        --danger-color: #991b1b;
+        --danger-border: #fecaca;
+        --danger-accent: #dc2626;
+        --danger-hover: #b91c1c;
+        
+        --warning-bg: #fef3c7;
+        --warning-color: #92400e;
+        --warning-border: #fde68a;
+        
+        --info-bg: #dbeafe;
+        --info-color: #1e40af;
+        --info-border: #bfdbfe;
+        
+        /* Shadow colors */
+        --shadow-light: rgba(0,0,0,0.05);
+        --shadow-medium: rgba(0,0,0,0.08);
+        --shadow-color: rgba(0,0,0,0.1);
+        
+        /* Console colors */
+        --console-bg: #1e293b;
+        --console-text: #10b981;
+    }
     .modern-container {
         max-width: 1200px;
         margin: 0 auto;
@@ -18,12 +78,12 @@
         text-align: center;
         margin-bottom: 3rem;
         padding: 3rem 0;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: var(--bg-gradient);
         border-radius: 20px;
         animation: fadeInDown 0.5s ease-out;
         position: relative;
         overflow: hidden;
-        color: white;
+        color: var(--bg-primary);
     }
     
     .page-header::before {
@@ -66,7 +126,7 @@
     
     .page-subtitle {
         font-size: 1.125rem;
-        color: rgba(255, 255, 255, 0.9);
+        color: var(--text-on-gradient);
         max-width: 600px;
         margin: 0 auto;
     }
@@ -86,7 +146,7 @@
         width: 10px;
         height: 10px;
         border-radius: 50%;
-        background: #4ade80;
+        background: var(--success-accent);
         animation: pulse 2s infinite;
     }
     
@@ -98,10 +158,10 @@
     }
     
     .info-card {
-        background: white;
+        background: var(--bg-primary);
         border-radius: 16px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 10px 40px rgba(0,0,0,0.08);
-        border: 1px solid #e8e9ff;
+        box-shadow: 0 1px 3px var(--shadow-light), 0 10px 40px var(--shadow-medium);
+        border: 1px solid var(--border-color);
         overflow: hidden;
         transition: all 0.3s ease;
         animation: fadeInUp 0.5s ease-out;
@@ -109,12 +169,12 @@
     
     .info-card:hover {
         transform: translateY(-5px);
-        box-shadow: 0 4px 6px rgba(0,0,0,0.05), 0 20px 60px rgba(0,0,0,0.1);
+        box-shadow: 0 4px 6px var(--shadow-light), 0 20px 60px var(--shadow-color);
     }
     
     .card-header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
+        background: var(--bg-gradient);
+        color: var(--bg-primary);
         padding: 1.5rem;
         display: flex;
         align-items: center;
@@ -152,24 +212,24 @@
         padding: 1rem;
         text-align: left;
         font-weight: 600;
-        color: #475569;
+        color: var(--text-secondary);
         font-size: 0.875rem;
         text-transform: uppercase;
         letter-spacing: 0.05em;
-        border-bottom: 2px solid #e8e9ff;
+        border-bottom: 2px solid var(--border-color);
     }
     
     .process-table td {
         padding: 1rem;
         font-size: 0.875rem;
-        color: #1e293b;
-        border-bottom: 1px solid #f1f5f9;
+        color: var(--text-primary);
+        border-bottom: 1px solid var(--border-light);
     }
     
     .process-id {
         font-family: 'Monaco', 'Consolas', monospace;
         font-weight: 600;
-        color: #667eea;
+        color: var(--accent-color);
     }
     
     .process-badge {
@@ -181,18 +241,18 @@
     }
     
     .badge-main {
-        background: #d1fae5;
-        color: #065f46;
+        background: var(--success-bg);
+        color: var(--success-color);
     }
     
     .badge-worker {
-        background: #dbeafe;
-        color: #1e40af;
+        background: var(--info-bg);
+        color: var(--info-color);
     }
     
     .badge-lscgid {
-        background: #fef3c7;
-        color: #92400e;
+        background: var(--warning-bg);
+        color: var(--warning-color);
     }
     
     .action-buttons {
@@ -220,18 +280,18 @@
     }
     
     .btn-primary:hover {
-        background: #764ba2;
+        background: var(--accent-hover);
         transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        box-shadow: 0 4px 12px var(--accent-shadow);
     }
     
     .btn-danger {
-        background: #dc2626;
+        background: var(--danger-accent);
         color: white;
     }
     
     .btn-danger:hover {
-        background: #b91c1c;
+        background: var(--danger-hover);
         transform: translateY(-2px);
         box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
     }
@@ -243,7 +303,7 @@
     }
     
     .version-info {
-        background: #f8f9ff;
+        background: var(--bg-secondary);
         border-radius: 12px;
         padding: 1.5rem;
         margin-bottom: 1rem;
@@ -252,7 +312,7 @@
     .version-header {
         font-size: 1.125rem;
         font-weight: 600;
-        color: #1e293b;
+        color: var(--text-primary);
         margin-bottom: 1rem;
         display: flex;
         align-items: center;
@@ -266,19 +326,19 @@
     }
     
     .module-item {
-        background: white;
+        background: var(--bg-primary);
         padding: 0.5rem 1rem;
         border-radius: 6px;
-        border: 1px solid #e8e9ff;
+        border: 1px solid var(--border-color);
         font-size: 0.875rem;
-        color: #475569;
+        color: var(--text-secondary);
         transition: all 0.2s ease;
     }
     
     .module-item:hover {
         background: #667eea;
         color: white;
-        border-color: #667eea;
+        border-color: var(--accent-color);
     }
     
     .alert {
@@ -307,38 +367,38 @@
     
     .alert-message {
         font-size: 0.875rem;
-        color: #475569;
+        color: var(--text-secondary);
     }
     
     .alert-success {
-        background: #d1fae5;
-        border: 1px solid #a7f3d0;
-        color: #065f46;
+        background: var(--success-bg);
+        border: 1px solid var(--success-border);
+        color: var(--success-color);
     }
     
     .alert-error {
-        background: #fee2e2;
-        border: 1px solid #fecaca;
-        color: #991b1b;
+        background: var(--danger-bg);
+        border: 1px solid var(--danger-border);
+        color: var(--danger-color);
     }
     
     .alert-warning {
-        background: #fef3c7;
-        border: 1px solid #fde68a;
-        color: #92400e;
+        background: var(--warning-bg);
+        border: 1px solid var(--warning-border);
+        color: var(--warning-color);
     }
     
     .alert-info {
-        background: #dbeafe;
-        border: 1px solid #bfdbfe;
-        color: #1e40af;
+        background: var(--info-bg);
+        border: 1px solid var(--info-border);
+        color: var(--info-color);
     }
     
     .license-panel {
-        background: white;
+        background: var(--bg-primary);
         border-radius: 16px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 10px 40px rgba(0,0,0,0.08);
-        border: 1px solid #e8e9ff;
+        box-shadow: 0 1px 3px var(--shadow-light), 0 10px 40px var(--shadow-medium);
+        border: 1px solid var(--border-color);
         overflow: hidden;
         animation: fadeInUp 0.5s ease-out 0.2s;
         animation-fill-mode: both;
@@ -361,26 +421,26 @@
     }
     
     .license-option:hover {
-        border-color: #667eea;
-        background: #f3e8ff;
+        border-color: var(--accent-color);
+        background: var(--accent-bg);
     }
     
     .license-icon {
         width: 60px;
         height: 60px;
-        background: #f3e8ff;
+        background: var(--accent-bg);
         border-radius: 12px;
         display: flex;
         align-items: center;
         justify-content: center;
         margin: 0 auto 1rem;
-        color: #667eea;
+        color: var(--accent-color);
         font-size: 1.5rem;
     }
     
     .license-label {
         font-weight: 600;
-        color: #1e293b;
+        color: var(--text-primary);
     }
     
     .form-group {
@@ -390,7 +450,7 @@
     .form-label {
         display: block;
         font-weight: 500;
-        color: #475569;
+        color: var(--text-secondary);
         font-size: 0.875rem;
         margin-bottom: 0.5rem;
     }
@@ -398,24 +458,24 @@
     .form-control {
         width: 100%;
         padding: 0.75rem 1rem;
-        border: 1px solid #e8e9ff;
+        border: 1px solid var(--border-color);
         border-radius: 8px;
         font-size: 0.875rem;
         transition: all 0.3s ease;
-        background: #fff;
+        background: var(--bg-primary);
     }
     
     .form-control:focus {
         outline: none;
-        border-color: #667eea;
-        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        border-color: var(--accent-color);
+        box-shadow: 0 0 0 3px var(--accent-focus);
     }
     
     .loading-spinner {
         width: 20px;
         height: 20px;
         border: 2px solid #f3f3f3;
-        border-top: 2px solid #667eea;
+        border-top: 2px solid var(--accent-color);
         border-radius: 50%;
         animation: spin 1s linear infinite;
         display: inline-block;
@@ -423,8 +483,8 @@
     }
     
     .console-output {
-        background: #1e293b;
-        color: #10b981;
+        background: var(--console-bg);
+        color: var(--console-text);
         font-family: 'Monaco', 'Consolas', monospace;
         font-size: 0.875rem;
         padding: 1.5rem;
@@ -643,7 +703,7 @@
                     </div>
                 </div>
                 
-                <h4 style="font-size: 0.875rem; font-weight: 600; color: #475569; margin: 1.5rem 0 1rem 0; text-transform: uppercase; letter-spacing: 0.05em;">
+                <h4 style="font-size: 0.875rem; font-weight: 600; color: var(--text-secondary); margin: 1.5rem 0 1rem 0; text-transform: uppercase; letter-spacing: 0.05em;">
                     {{ modules }}
                 </h4>
                 <div class="module-list">
@@ -779,7 +839,7 @@
                     <div class="alert alert-warning">
                         <i class="fas fa-exclamation-triangle alert-icon"></i>
                         <div class="alert-content">
-                            <div class="alert-title" style="color: #dc2626;">{% trans "Important Warning" %}</div>
+                            <div class="alert-title" style="color: var(--danger-accent);">{% trans "Important Warning" %}</div>
                             <div class="alert-message">
                                 {% trans "You cannot revert back to OpenLiteSpeed if you choose not to purchase a LiteSpeed Enterprise license after the 15 day trial period. We recommend you test the Enterprise trial on a separate server." %}
                             </div>

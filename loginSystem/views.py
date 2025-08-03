@@ -17,7 +17,7 @@ from django.utils import translation
 # Create your views here.
 
 VERSION = '2.4'
-BUILD = 2
+BUILD = 3
 
 
 def verifyLogin(request):
@@ -121,12 +121,10 @@ def verifyLogin(request):
                     ipAddr = request.META.get('REMOTE_ADDR')
 
                 if ipAddr.find(':') > -1:
-                    ipAddr = ipAddr.split(':')[:3]
+                    ipAddr = ':'.join(ipAddr.split(':')[:3])
                     request.session['ipAddr'] = ipAddr
                 else:
-                    request.session['ipAddr'] = request.META.get('HTTP_CF_CONNECTING_IP')
-                    if request.session['ipAddr'] is None:
-                        request.session['ipAddr'] = request.META.get('REMOTE_ADDR')
+                    request.session['ipAddr'] = ipAddr
 
                 request.session.set_expiry(43200)
                 data = {'userID': admin.pk, 'loginStatus': 1, 'error_message': "None"}

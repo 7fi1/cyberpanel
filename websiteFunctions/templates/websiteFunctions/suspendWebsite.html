@@ -22,29 +22,29 @@
     .page-title {
         font-size: 28px;
         font-weight: 700;
-        color: #2f3640;
+        color: var(--text-primary, #2f3640);
         margin-bottom: 8px;
     }
     
     .page-subtitle {
         font-size: 14px;
-        color: #8893a7;
+        color: var(--text-secondary, #8893a7);
     }
     
     /* Card styles */
     .content-card {
-        background: white;
+        background: var(--bg-secondary, white);
         border-radius: 12px;
         padding: 30px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        border: 1px solid #e8e9ff;
+        box-shadow: 0 2px 8px var(--shadow-color, rgba(0,0,0,0.08));
+        border: 1px solid var(--border-color, #e8e9ff);
         margin-bottom: 25px;
     }
     
     .card-title {
         font-size: 18px;
         font-weight: 700;
-        color: #2f3640;
+        color: var(--text-primary, #2f3640);
         margin-bottom: 25px;
         display: flex;
         align-items: center;
@@ -55,7 +55,7 @@
         content: '';
         width: 4px;
         height: 24px;
-        background: #5b5fcf;
+        background: var(--accent-color, #5b5fcf);
         border-radius: 2px;
     }
     
@@ -77,11 +77,11 @@
     .form-control {
         width: 100%;
         padding: 10px 14px;
-        border: 1px solid #e8e9ff;
+        border: 1px solid var(--border-color, #e8e9ff);
         border-radius: 8px;
         font-size: 14px;
-        color: #2f3640;
-        background: white;
+        color: var(--text-primary, #2f3640);
+        background: var(--bg-secondary, white);
         transition: all 0.2s ease;
     }
     
@@ -90,13 +90,13 @@
         -webkit-appearance: none;
         -moz-appearance: none;
         appearance: none;
-        background-color: white;
+        background-color: var(--bg-secondary, white);
         background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%235b5fcf' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
         background-repeat: no-repeat;
         background-position: right 10px center;
         background-size: 20px;
         padding-right: 40px;
-        color: #2f3640 !important;
+        color: var(--text-primary, #2f3640) !important;
         font-size: 14px !important;
         line-height: 1.5;
         height: auto;
@@ -105,8 +105,8 @@
     
     /* Ensure option text is visible */
     select.form-control option {
-        color: #2f3640;
-        background-color: white;
+        color: var(--text-primary, #2f3640);
+        background-color: var(--bg-secondary, white);
         padding: 8px;
         font-size: 14px;
     }
@@ -117,31 +117,31 @@
             border: 2px solid;
         }
         select.form-control option {
-            background: white;
-            color: black;
+            background: var(--bg-secondary, white);
+            color: var(--text-primary, black);
         }
     }
     
     .form-control:hover {
-        border-color: #5b5fcf;
+        border-color: var(--accent-color, #5b5fcf);
     }
     
     .form-control:focus {
         outline: none;
-        border-color: #5b5fcf;
+        border-color: var(--accent-color, #5b5fcf);
         box-shadow: 0 0 0 3px rgba(91,95,207,0.1);
     }
     
     /* Specific focus styles for select */
     select.form-control:focus {
-        background-color: white;
-        color: #2f3640;
+        background-color: var(--bg-secondary, white);
+        color: var(--text-primary, #2f3640);
     }
     
     /* Website selector card */
     .website-selector-card {
-        background: #f8f9ff;
-        border: 1px solid #e8e9ff;
+        background: var(--bg-hover, #f8f9ff);
+        border: 1px solid var(--border-color, #e8e9ff);
         border-radius: 10px;
         padding: 20px;
         margin-bottom: 25px;
@@ -169,15 +169,15 @@
     }
     
     .state-badge.active {
-        background: #e8f5e9;
-        color: #2e7d32;
-        border: 1px solid #c8e6c9;
+        background: var(--success-bg, #e8f5e9);
+        color: var(--success-text, #2e7d32);
+        border: 1px solid var(--success-border, #c8e6c9);
     }
     
     .state-badge.suspended {
-        background: #ffebee;
-        color: #c62828;
-        border: 1px solid #ffcdd2;
+        background: var(--danger-bg, #ffebee);
+        color: var(--danger-text, #c62828);
+        border: 1px solid var(--danger-border, #ffcdd2);
     }
     
     /* State selection */
@@ -190,22 +190,22 @@
     .state-option {
         flex: 1;
         padding: 20px;
-        border: 2px solid #e8e9ff;
+        border: 2px solid var(--border-color, #e8e9ff);
         border-radius: 10px;
         text-align: center;
         cursor: pointer;
         transition: all 0.2s ease;
-        background: white;
+        background: var(--bg-secondary, white);
     }
     
     .state-option:hover {
-        border-color: #5b5fcf;
-        background: #f8f9ff;
+        border-color: var(--accent-color, #5b5fcf);
+        background: var(--bg-hover, #f8f9ff);
     }
     
     .state-option.selected {
-        border-color: #5b5fcf;
-        background: #f8f9ff;
+        border-color: var(--accent-color, #5b5fcf);
+        background: var(--bg-hover, #f8f9ff);
     }
     
     .state-option.suspend {
@@ -244,13 +244,13 @@
     .state-option-title {
         font-size: 16px;
         font-weight: 700;
-        color: #2f3640;
+        color: var(--text-primary, #2f3640);
         margin-bottom: 5px;
     }
     
     .state-option-desc {
         font-size: 12px;
-        color: #8893a7;
+        color: var(--text-secondary, #8893a7);
     }
     
     /* Button styles */
@@ -269,12 +269,12 @@
     }
     
     .btn-primary {
-        background: #5b5fcf;
+        background: var(--accent-color, #5b5fcf);
         color: white;
     }
     
     .btn-primary:hover {
-        background: #4a4fc4;
+        background: var(--accent-hover, #4a4fc4);
         box-shadow: 0 4px 12px rgba(91,95,207,0.3);
         transform: translateY(-1px);
     }
@@ -325,21 +325,21 @@
     }
     
     .alert-danger {
-        background: #ffebee;
-        border: 1px solid #ffcdd2;
-        color: #c62828;
+        background: var(--danger-bg, #ffebee);
+        border: 1px solid var(--danger-border, #ffcdd2);
+        color: var(--danger-text, #c62828);
     }
     
     .alert-success {
-        background: #e8f5e9;
-        border: 1px solid #c8e6c9;
-        color: #2e7d32;
+        background: var(--success-bg, #e8f5e9);
+        border: 1px solid var(--success-border, #c8e6c9);
+        color: var(--success-text, #2e7d32);
     }
     
     .alert-warning {
-        background: #fff3e0;
-        border: 1px solid #ffe0b2;
-        color: #f57c00;
+        background: var(--warning-bg, #fff3e0);
+        border: 1px solid var(--warning-border, #ffe0b2);
+        color: var(--warning-text, #f57c00);
     }
     
     /* Loading spinner */
@@ -348,7 +348,7 @@
         width: 16px;
         height: 16px;
         border: 2px solid #f3f3f3;
-        border-top: 2px solid #5b5fcf;
+        border-top: 2px solid var(--accent-color, #5b5fcf);
         border-radius: 50%;
         animation: spin 1s linear infinite;
         margin-left: 10px;
@@ -361,8 +361,8 @@
     
     /* Info box */
     .info-box {
-        background: #f8f9ff;
-        border: 1px solid #e8e9ff;
+        background: var(--bg-hover, #f8f9ff);
+        border: 1px solid var(--border-color, #e8e9ff);
         border-radius: 8px;
         padding: 16px;
         margin-bottom: 20px;
@@ -372,7 +372,7 @@
     }
     
     .info-box i {
-        color: #5b5fcf;
+        color: var(--accent-color, #5b5fcf);
         font-size: 18px;
     }
     
@@ -383,7 +383,7 @@
     .info-box-title {
         font-size: 13px;
         font-weight: 600;
-        color: #2f3640;
+        color: var(--text-primary, #2f3640);
         margin-bottom: 4px;
     }
     
@@ -401,7 +401,7 @@
     }
     
     .current-state strong {
-        color: #2f3640;
+        color: var(--text-primary, #2f3640);
         font-weight: 600;
     }
     
@@ -409,7 +409,7 @@
     .button-container {
         margin-top: 30px;
         padding-top: 30px;
-        border-top: 1px solid #e8e9ff;
+        border-top: 1px solid var(--border-color, #e8e9ff);
     }
     
     
@@ -417,28 +417,28 @@
     @supports (-ms-ime-align: auto) {
         /* Edge/IE specific styles */
         select.form-control {
-            color: #2f3640 !important;
-            background-color: white !important;
+            color: var(--text-primary, #2f3640) !important;
+            background-color: var(--bg-secondary, white) !important;
         }
     }
     
     /* Fix for Firefox on Windows */
     @-moz-document url-prefix() {
         select.form-control {
-            color: #2f3640 !important;
+            color: var(--text-primary, #2f3640) !important;
             text-shadow: none;
         }
     }
     
     /* Ensure selected option is always visible */
     select.form-control::-ms-value {
-        color: #2f3640;
-        background-color: white;
+        color: var(--text-primary, #2f3640);
+        background-color: var(--bg-secondary, white);
     }
     
     /* Fix for Chrome on Windows */
     select.form-control:not(:focus):not(:hover) {
-        color: #2f3640 !important;
+        color: var(--text-primary, #2f3640) !important;
     }
     
     @media (max-width: 768px) {

@@ -23,7 +23,7 @@
             text-align: center;
             margin-bottom: 3rem;
             padding: 3rem 0;
-            background: linear-gradient(135deg, #f8f9ff 0%, #f0f1ff 100%);
+            background: linear-gradient(135deg, var(--bg-hover, #f8f9ff) 0%, var(--bg-gradient, #f0f1ff) 100%);
             border-radius: 20px;
             animation: fadeInDown 0.5s ease-out;
         }
@@ -31,7 +31,7 @@
         .page-title {
             font-size: 3rem;
             font-weight: 700;
-            color: #1e293b;
+            color: var(--text-primary, #1e293b);
             margin-bottom: 1rem;
             display: flex;
             align-items: center;
@@ -41,7 +41,7 @@
         
         .page-subtitle {
             font-size: 1.25rem;
-            color: #64748b;
+            color: var(--text-secondary, #64748b);
             margin-bottom: 1.5rem;
             max-width: 600px;
             margin-left: auto;
@@ -56,7 +56,7 @@
         }
         
         .btn-primary {
-            background: #5b5fcf;
+            background: var(--accent-color, #5b5fcf);
             color: white;
             border: none;
             padding: 0.875rem 2.25rem;
@@ -72,7 +72,7 @@
         }
         
         .btn-primary:hover {
-            background: #4547a9;
+            background: var(--accent-hover, #4547a9);
             transform: translateY(-2px);
             box-shadow: 0 8px 20px rgba(91, 95, 207, 0.4);
             color: white;
@@ -80,8 +80,8 @@
         
         .btn-secondary {
             background: #fff;
-            color: #5b5fcf;
-            border: 1px solid #e8e9ff;
+            color: var(--accent-color, #5b5fcf);
+            border: 1px solid var(--border-color, #e8e9ff);
             padding: 0.875rem 2.25rem;
             border-radius: 10px;
             font-weight: 500;
@@ -95,14 +95,14 @@
         }
         
         .btn-secondary:hover {
-            background: #f8f9ff;
-            border-color: #5b5fcf;
+            background: var(--bg-hover, #f8f9ff);
+            border-color: var(--accent-color, #5b5fcf);
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(91, 95, 207, 0.2);
         }
         
         .btn-danger {
-            background: #ef4444;
+            background: var(--danger-color, #ef4444);
             color: white;
             border: none;
             padding: 0.625rem 1.25rem;
@@ -114,13 +114,13 @@
         }
         
         .btn-danger:hover {
-            background: #dc2626;
+            background: var(--danger-hover, #dc2626);
             transform: translateY(-1px);
             box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
         }
         
         .btn-gray {
-            background: #6b7280;
+            background: var(--text-secondary, #6b7280);
             color: white;
             border: none;
             padding: 0.625rem 1.25rem;
@@ -132,7 +132,7 @@
         }
         
         .btn-gray:hover {
-            background: #4b5563;
+            background: var(--text-secondary, #4b5563);
             transform: translateY(-1px);
             box-shadow: 0 4px 12px rgba(107, 114, 128, 0.3);
         }
@@ -141,22 +141,22 @@
             background: white;
             border-radius: 16px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 10px 40px rgba(0,0,0,0.08);
-            border: 1px solid #e8e9ff;
+            border: 1px solid var(--border-color, #e8e9ff);
             overflow: hidden;
             margin-bottom: 2rem;
             animation: fadeInUp 0.5s ease-out;
         }
         
         .card-header {
-            background: linear-gradient(135deg, #f8f9ff 0%, #f0f1ff 100%);
+            background: linear-gradient(135deg, var(--bg-hover, #f8f9ff) 0%, var(--bg-gradient, #f0f1ff) 100%);
             padding: 1.5rem 2rem;
-            border-bottom: 1px solid #e8e9ff;
+            border-bottom: 1px solid var(--border-color, #e8e9ff);
         }
         
         .card-title {
             font-size: 1.25rem;
             font-weight: 600;
-            color: #1e293b;
+            color: var(--text-primary, #1e293b);
             margin: 0;
             display: flex;
             align-items: center;
@@ -181,14 +181,14 @@
         .form-label {
             flex: 0 0 200px;
             font-weight: 500;
-            color: #1e293b;
+            color: var(--text-primary, #1e293b);
             font-size: 1.0625rem;
         }
         
         .form-control {
             flex: 1;
             padding: 1rem 1.125rem;
-            border: 1px solid #e8e9ff;
+            border: 1px solid var(--border-color, #e8e9ff);
             border-radius: 10px;
             font-size: 1.0625rem;
             transition: all 0.3s ease;
@@ -197,7 +197,7 @@
         
         .form-control:focus {
             outline: none;
-            border-color: #5b5fcf;
+            border-color: var(--accent-color, #5b5fcf);
             box-shadow: 0 0 0 3px rgba(91, 95, 207, 0.1);
         }
         
@@ -206,34 +206,34 @@
             background: white;
             border-radius: 12px;
             overflow: hidden;
-            border: 1px solid #e8e9ff;
+            border: 1px solid var(--border-color, #e8e9ff);
         }
         
         .data-table thead {
-            background: linear-gradient(135deg, #f8f9ff 0%, #f0f1ff 100%);
+            background: linear-gradient(135deg, var(--bg-hover, #f8f9ff) 0%, var(--bg-gradient, #f0f1ff) 100%);
         }
         
         .data-table th {
             padding: 1.125rem;
             text-align: left;
             font-weight: 600;
-            color: #1e293b;
+            color: var(--text-primary, #1e293b);
             font-size: 1.0625rem;
             text-transform: uppercase;
             letter-spacing: 0.05em;
-            border-bottom: 1px solid #e8e9ff;
+            border-bottom: 1px solid var(--border-color, #e8e9ff);
         }
         
         .data-table td {
             padding: 1.125rem;
-            color: #475569;
+            color: var(--text-secondary, #475569);
             font-size: 1.125rem;
-            border-bottom: 1px solid #f3f4f6;
+            border-bottom: 1px solid var(--border-light, #f3f4f6);
             font-weight: 400;
         }
         
         .data-table tbody tr:hover {
-            background: #f8f9ff;
+            background: var(--bg-hover, #f8f9ff);
         }
         
         .data-table tbody tr:last-child td {
@@ -241,7 +241,7 @@
         }
         
         .sites-section {
-            background: #f8f9ff;
+            background: var(--bg-hover, #f8f9ff);
             border-radius: 12px;
             padding: 1.5rem;
             margin-top: 2rem;
@@ -250,7 +250,7 @@
         .section-title {
             font-size: 1.125rem;
             font-weight: 600;
-            color: #1e293b;
+            color: var(--text-primary, #1e293b);
             margin-bottom: 1rem;
             display: flex;
             align-items: center;
@@ -258,8 +258,8 @@
         }
         
         .info-box {
-            background: #f0f9ff;
-            border: 1px solid #bae6fd;
+            background: var(--info-bg, #f0f9ff);
+            border: 1px solid var(--info-border, #bae6fd);
             border-radius: 12px;
             padding: 1.5rem;
             margin-bottom: 1.5rem;
@@ -279,7 +279,7 @@
         
         .info-label {
             font-size: 0.875rem;
-            color: #64748b;
+            color: var(--text-secondary, #64748b);
             text-transform: uppercase;
             letter-spacing: 0.05em;
         }
@@ -287,7 +287,7 @@
         .info-value {
             font-size: 1.125rem;
             font-weight: 600;
-            color: #1e293b;
+            color: var(--text-primary, #1e293b);
         }
         
         @keyframes fadeInDown {
@@ -320,16 +320,16 @@
         }
         
         .modal-header {
-            background: linear-gradient(135deg, #f8f9ff 0%, #f0f1ff 100%);
+            background: linear-gradient(135deg, var(--bg-hover, #f8f9ff) 0%, var(--bg-gradient, #f0f1ff) 100%);
             border-radius: 16px 16px 0 0;
             padding: 1.5rem;
-            border-bottom: 1px solid #e8e9ff;
+            border-bottom: 1px solid var(--border-color, #e8e9ff);
         }
         
         .modal-title {
             font-size: 1.25rem;
             font-weight: 600;
-            color: #1e293b;
+            color: var(--text-primary, #1e293b);
         }
         
         .modal-body {
@@ -340,7 +340,7 @@
         input[type="number"] {
             width: 100px;
             padding: 0.875rem 1rem;
-            border: 1px solid #e8e9ff;
+            border: 1px solid var(--border-color, #e8e9ff);
             border-radius: 10px;
             font-size: 0.875rem;
             transition: all 0.3s ease;
@@ -349,7 +349,7 @@
         
         input[type="number"]:focus {
             outline: none;
-            border-color: #5b5fcf;
+            border-color: var(--accent-color, #5b5fcf);
             box-shadow: 0 0 0 3px rgba(91, 95, 207, 0.1);
         }
         
@@ -423,7 +423,7 @@
                             <label class="form-label">{% trans "Backup Retention" %}</label>
                             <div style="display: flex; align-items: center; gap: 1rem;">
                                 <input ng-model="backupRetention" type="number" value="0" min="0">
-                                <span style="color: #64748b; font-size: 0.875rem;">{% trans "days (0 for no limit)" %}</span>
+                                <span style="color: var(--text-secondary, #64748b); font-size: 0.875rem;">{% trans "days (0 for no limit)" %}</span>
                             </div>
                         </div>
 
@@ -555,7 +555,7 @@
 
                             <div style="margin-top: 1.5rem; text-align: right;">
                                 <div style="display: inline-flex; align-items: center; gap: 1rem;">
-                                    <span style="color: #64748b; font-size: 0.875rem;">{% trans "Page" %}</span>
+                                    <span style="color: var(--text-secondary, #64748b); font-size: 0.875rem;">{% trans "Page" %}</span>
                                     <select ng-model="currentPage" class="form-control" ng-change="fetchWebsites()" style="width: 80px;">
                                         <option ng-repeat="page in pagination">{$ $index + 1 $}</option>
                                     </select>
@@ -604,7 +604,7 @@
 
                             <div style="margin-top: 1.5rem; text-align: right;">
                                 <div style="display: inline-flex; align-items: center; gap: 1rem;">
-                                    <span style="color: #64748b; font-size: 0.875rem;">{% trans "Page" %}</span>
+                                    <span style="color: var(--text-secondary, #64748b); font-size: 0.875rem;">{% trans "Page" %}</span>
                                     <select ng-model="currentPageLogs" class="form-control" ng-change="fetchLogs()" style="width: 80px;">
                                         <option ng-repeat="page in paginationLogs">{$ $index + 1 $}</option>
                                     </select>

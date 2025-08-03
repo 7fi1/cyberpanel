@@ -18,7 +18,7 @@
         text-align: center;
         margin-bottom: 3rem;
         padding: 3rem 0;
-        background: linear-gradient(135deg, #f8f9ff 0%, #f0f1ff 100%);
+        background: linear-gradient(135deg, var(--bg-hover, #f8f9ff) 0%, var(--bg-gradient, #f0f1ff) 100%);
         border-radius: 20px;
         animation: fadeInDown 0.5s ease-out;
         position: relative;
@@ -32,14 +32,14 @@
         right: -50%;
         width: 200%;
         height: 200%;
-        background: radial-gradient(circle at 70% 30%, rgba(91, 95, 207, 0.15) 0%, transparent 50%);
+        background: radial-gradient(circle at 70% 30%, var(--accent-shadow-light, rgba(91, 95, 207, 0.15)) 0%, transparent 50%);
         animation: rotate 30s linear infinite;
     }
     
     .page-title {
         font-size: 3rem;
         font-weight: 700;
-        color: #1e293b;
+        color: var(--text-primary, #1e293b);
         margin-bottom: 1rem;
         display: flex;
         align-items: center;
@@ -52,17 +52,17 @@
     .docker-icon {
         width: 60px;
         height: 60px;
-        background: white;
+        background: var(--bg-secondary, white);
         border-radius: 12px;
         display: flex;
         align-items: center;
         justify-content: center;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        box-shadow: 0 4px 12px var(--shadow-medium, rgba(0,0,0,0.1));
     }
     
     .page-subtitle {
         font-size: 1.25rem;
-        color: #64748b;
+        color: var(--text-secondary, #64748b);
         margin-bottom: 1.5rem;
         position: relative;
         z-index: 1;
@@ -78,8 +78,8 @@
     }
     
     .btn-primary {
-        background: #5b5fcf;
-        color: white;
+        background: var(--accent-color, #5b5fcf);
+        color: var(--bg-secondary, white);
         border: none;
         padding: 0.75rem 2rem;
         border-radius: 10px;
@@ -94,16 +94,16 @@
     }
     
     .btn-primary:hover {
-        background: #4547a9;
+        background: var(--accent-hover, #4547a9);
         transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(91, 95, 207, 0.4);
-        color: white;
+        box-shadow: 0 8px 20px var(--accent-shadow-hover, rgba(91, 95, 207, 0.4));
+        color: var(--bg-secondary, white);
     }
     
     .btn-secondary {
-        background: #fff;
-        color: #5b5fcf;
-        border: 1px solid #e8e9ff;
+        background: var(--bg-secondary, #fff);
+        color: var(--accent-color, #5b5fcf);
+        border: 1px solid var(--border-color, #e8e9ff);
         padding: 0.75rem 2rem;
         border-radius: 10px;
         font-weight: 500;
@@ -117,15 +117,15 @@
     }
     
     .btn-secondary:hover {
-        background: #f8f9ff;
-        border-color: #5b5fcf;
+        background: var(--bg-hover, #f8f9ff);
+        border-color: var(--accent-color, #5b5fcf);
         transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(91, 95, 207, 0.2);
+        box-shadow: 0 4px 12px var(--accent-shadow-soft, rgba(91, 95, 207, 0.2));
     }
     
     .btn-warning {
-        background: #f59e0b;
-        color: white;
+        background: var(--warning-color, #f59e0b);
+        color: var(--bg-secondary, white);
         border: none;
         padding: 0.75rem 2rem;
         border-radius: 10px;
@@ -139,14 +139,14 @@
     }
     
     .btn-warning:hover {
-        background: #d97706;
+        background: var(--warning-hover, #d97706);
         transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(245, 158, 11, 0.4);
+        box-shadow: 0 8px 20px var(--warning-shadow, rgba(245, 158, 11, 0.4));
     }
     
     .btn-danger {
-        background: #ef4444;
-        color: white;
+        background: var(--danger-color, #ef4444);
+        color: var(--bg-secondary, white);
         border: none;
         padding: 0.5rem 1rem;
         border-radius: 8px;
@@ -160,14 +160,14 @@
     }
     
     .btn-danger:hover {
-        background: #dc2626;
+        background: var(--danger-hover, #dc2626);
         transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+        box-shadow: 0 4px 12px var(--danger-shadow, rgba(239, 68, 68, 0.4));
     }
     
     .btn-info {
-        background: #3b82f6;
-        color: white;
+        background: var(--info-color, #3b82f6);
+        color: var(--bg-secondary, white);
         border: none;
         padding: 0.5rem 1rem;
         border-radius: 8px;
@@ -181,25 +181,25 @@
     }
     
     .btn-info:hover {
-        background: #2563eb;
+        background: var(--info-hover, #2563eb);
         transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+        box-shadow: 0 4px 12px var(--info-shadow, rgba(59, 130, 246, 0.4));
     }
     
     .main-card {
-        background: white;
+        background: var(--bg-secondary, white);
         border-radius: 16px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 10px 40px rgba(0,0,0,0.08);
-        border: 1px solid #e8e9ff;
+        box-shadow: 0 1px 3px var(--shadow-light, rgba(0,0,0,0.05)), 0 10px 40px var(--shadow-color, rgba(0,0,0,0.08));
+        border: 1px solid var(--border-color, #e8e9ff);
         overflow: hidden;
         margin-bottom: 2rem;
         animation: fadeInUp 0.5s ease-out;
     }
     
     .card-header {
-        background: linear-gradient(135deg, #f8f9ff 0%, #f0f1ff 100%);
+        background: linear-gradient(135deg, var(--bg-hover, #f8f9ff) 0%, var(--bg-gradient, #f0f1ff) 100%);
         padding: 1.5rem 2rem;
-        border-bottom: 1px solid #e8e9ff;
+        border-bottom: 1px solid var(--border-color, #e8e9ff);
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -208,7 +208,7 @@
     .card-title {
         font-size: 1.25rem;
         font-weight: 600;
-        color: #1e293b;
+        color: var(--text-primary, #1e293b);
         margin: 0;
         display: flex;
         align-items: center;
@@ -220,8 +220,8 @@
     }
     
     .search-section {
-        background: #f8f9ff;
-        border: 1px solid #e8e9ff;
+        background: var(--bg-hover, #f8f9ff);
+        border: 1px solid var(--border-color, #e8e9ff);
         border-radius: 12px;
         padding: 1.5rem;
         margin-bottom: 2rem;
@@ -235,55 +235,55 @@
         display: block;
         margin-bottom: 0.5rem;
         font-weight: 500;
-        color: #1e293b;
+        color: var(--text-primary, #1e293b);
         font-size: 0.875rem;
     }
     
     .form-control {
         width: 100%;
         padding: 0.875rem 1rem;
-        border: 1px solid #e8e9ff;
+        border: 1px solid var(--border-color, #e8e9ff);
         border-radius: 10px;
         font-size: 0.875rem;
         transition: all 0.3s ease;
-        background: #fff;
+        background: var(--bg-secondary, #fff);
     }
     
     .form-control:focus {
         outline: none;
-        border-color: #5b5fcf;
-        box-shadow: 0 0 0 3px rgba(91, 95, 207, 0.1);
+        border-color: var(--accent-color, #5b5fcf);
+        box-shadow: 0 0 0 3px var(--accent-focus, rgba(91, 95, 207, 0.1));
     }
     
     .images-table {
         width: 100%;
-        background: white;
+        background: var(--bg-secondary, white);
         border-radius: 12px;
         overflow: hidden;
-        border: 1px solid #e8e9ff;
+        border: 1px solid var(--border-color, #e8e9ff);
         margin-bottom: 2rem;
     }
     
     .images-table thead {
-        background: linear-gradient(135deg, #f8f9ff 0%, #f0f1ff 100%);
+        background: linear-gradient(135deg, var(--bg-hover, #f8f9ff) 0%, var(--bg-gradient, #f0f1ff) 100%);
     }
     
     .images-table th {
         padding: 1rem;
         text-align: left;
         font-weight: 600;
-        color: #1e293b;
+        color: var(--text-primary, #1e293b);
         font-size: 0.875rem;
         text-transform: uppercase;
         letter-spacing: 0.05em;
-        border-bottom: 2px solid #e8e9ff;
+        border-bottom: 2px solid var(--border-color, #e8e9ff);
     }
     
     .images-table td {
         padding: 1rem;
-        color: #64748b;
+        color: var(--text-secondary, #64748b);
         font-size: 0.875rem;
-        border-bottom: 1px solid #f3f4f6;
+        border-bottom: 1px solid var(--border-light, #f3f4f6);
     }
     
     .images-table tbody tr {
@@ -291,7 +291,7 @@
     }
     
     .images-table tbody tr:hover {
-        background: #f8f9ff;
+        background: var(--bg-hover, #f8f9ff);
     }
     
     .images-table tbody tr:last-child td {
@@ -307,18 +307,18 @@
     .image-icon {
         width: 32px;
         height: 32px;
-        background: #e0e7ff;
+        background: var(--accent-bg, #e0e7ff);
         border-radius: 8px;
         display: flex;
         align-items: center;
         justify-content: center;
         font-size: 0.875rem;
-        color: #5b5fcf;
+        color: var(--accent-color, #5b5fcf);
     }
     
     .official-badge {
-        background: #d1fae5;
-        color: #065f46;
+        background: var(--success-bg, #d1fae5);
+        color: var(--success-text, #065f46);
         padding: 0.25rem 0.75rem;
         border-radius: 20px;
         font-size: 0.75rem;
@@ -338,7 +338,7 @@
         width: 20px;
         height: 20px;
         border: 3px solid #e8e9ff;
-        border-top-color: #5b5fcf;
+        border-top-color: var(--accent-color, #5b5fcf);
         border-radius: 50%;
         animation: spin 1s linear infinite;
         display: inline-block;
@@ -349,19 +349,19 @@
         border-radius: 16px;
         overflow: hidden;
         border: none;
-        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        box-shadow: 0 25px 50px -12px var(--shadow-dark, rgba(0, 0, 0, 0.25));
     }
     
     .modal-header {
-        background: linear-gradient(135deg, #f8f9ff 0%, #f0f1ff 100%);
-        border-bottom: 1px solid #e8e9ff;
+        background: linear-gradient(135deg, var(--bg-hover, #f8f9ff) 0%, var(--bg-gradient, #f0f1ff) 100%);
+        border-bottom: 1px solid var(--border-color, #e8e9ff);
         padding: 1.5rem 2rem;
     }
     
     .modal-title {
         font-size: 1.25rem;
         font-weight: 600;
-        color: #1e293b;
+        color: var(--text-primary, #1e293b);
         margin: 0;
     }
     
@@ -370,32 +370,32 @@
     }
     
     .modal-footer {
-        background: #f8f9ff;
-        border-top: 1px solid #e8e9ff;
+        background: var(--bg-hover, #f8f9ff);
+        border-top: 1px solid var(--border-color, #e8e9ff);
         padding: 1rem 2rem;
     }
     
     .history-table {
         width: 100%;
-        background: #f8f9ff;
+        background: var(--bg-hover, #f8f9ff);
         border-radius: 8px;
         overflow: hidden;
     }
     
     .history-table th {
-        background: #e8e9ff;
+        background: var(--border-color, #e8e9ff);
         padding: 0.75rem;
         text-align: left;
         font-weight: 600;
-        color: #1e293b;
+        color: var(--text-primary, #1e293b);
         font-size: 0.875rem;
     }
     
     .history-table td {
         padding: 0.75rem;
-        color: #64748b;
+        color: var(--text-secondary, #64748b);
         font-size: 0.875rem;
-        border-bottom: 1px solid #e8e9ff;
+        border-bottom: 1px solid var(--border-color, #e8e9ff);
         word-break: break-all;
     }
     
@@ -458,7 +458,7 @@
     <div class="page-header">
         <h1 class="page-title">
             <div class="docker-icon">
-                <i class="fab fa-docker" style="color: #5b5fcf; font-size: 1.75rem;"></i>
+                <i class="fab fa-docker" style="color: var(--accent-color, #5b5fcf); font-size: 1.75rem;"></i>
             </div>
             {% trans "Manage Docker Images" %}
         </h1>
@@ -611,7 +611,7 @@
                         {% trans "Image History" %}
                     </h4>
                     <button type="button" class="close" data-dismiss="modal" 
-                            style="font-size: 1.5rem; background: none; border: none;">&times;</button>
+                            style="font-size: 1.5rem; background: transparent; border: none;">&times;</button>
                 </div>
                 <div class="modal-body">
                     <table class="history-table">

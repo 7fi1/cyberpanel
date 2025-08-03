@@ -18,7 +18,7 @@ import random
 import string
 
 VERSION = '2.4'
-BUILD = 2
+BUILD = 3
 
 CENTOS7 = 0
 CENTOS8 = 1
@@ -93,8 +93,7 @@ class Upgrade:
                     data.find('9.4') > -1 or data.find('9.3') > -1 or data.find('Shamrock Pampas') > -1 or data.find(
                     'Seafoam Ocelot') > -1 or data.find('VERSION="9.') > -1):
                 return 'al-93'
-        else:
-            return -1
+        return None
 
     @staticmethod
     def decideCentosVersion():
@@ -182,6 +181,28 @@ class Upgrade:
                     Upgrade.stdOut(component + ' successful.', 0)
                     break
             return True
+        except:
+            return False
+    
+    @staticmethod
+    def executioner_silent(command, component, do_exit=0, shell=False):
+        """Silent version of executioner that suppresses all output"""
+        try:
+            FNULL = open(os.devnull, 'w')
+            count = 0
+            while True:
+                if shell == False:
+                    res = subprocess.call(shlex.split(command), stdout=FNULL, stderr=FNULL)
+                else:
+                    res = subprocess.call(command, stdout=FNULL, stderr=FNULL, shell=True)
+                if res != 0:
+                    count = count + 1
+                    if count == 3:
+                        FNULL.close()
+                        return False
+                else:
+                    FNULL.close()
+                    return True
         except:
             return False
 
@@ -335,17 +356,21 @@ class Upgrade:
             except:
                 pass
 
-            command = 'wget -O /usr/local/CyberCP/public/phpmyadmin.zip https://github.com/usmannasir/cyberpanel/raw/stable/phpmyadmin.zip'
-            Upgrade.executioner(command, 0)
+            Upgrade.stdOut("Installing phpMyAdmin...", 0)
+            
+            command = 'wget -q -O /usr/local/CyberCP/public/phpmyadmin.zip https://github.com/usmannasir/cyberpanel/raw/stable/phpmyadmin.zip'
+            Upgrade.executioner_silent(command, 'Download phpMyAdmin')
 
-            command = 'unzip /usr/local/CyberCP/public/phpmyadmin.zip -d /usr/local/CyberCP/public/'
-            Upgrade.executioner(command, 0)
+            command = 'unzip -q /usr/local/CyberCP/public/phpmyadmin.zip -d /usr/local/CyberCP/public/'
+            Upgrade.executioner_silent(command, 'Extract phpMyAdmin')
 
             command = 'mv /usr/local/CyberCP/public/phpMyAdmin-*-all-languages /usr/local/CyberCP/public/phpmyadmin'
-            subprocess.call(command, shell=True)
+            subprocess.call(command, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
             command = 'rm -f /usr/local/CyberCP/public/phpmyadmin.zip'
-            Upgrade.executioner(command, 0)
+            Upgrade.executioner_silent(command, 'Cleanup phpMyAdmin zip')
+            
+            Upgrade.stdOut("phpMyAdmin installation completed.", 0)
 
             ## Write secret phrase
 
@@ -468,11 +493,13 @@ $cfg['Servers'][$i]['LogoutURL'] = 'phpmyadminsignin.php?logout';
 
             count = 1
 
+            Upgrade.stdOut("Installing SnappyMail...", 0)
+            
             while (1):
-                command = 'wget https://github.com/the-djmaze/snappymail/releases/download/v%s/snappymail-%s.zip' % (
+                command = 'wget -q https://github.com/the-djmaze/snappymail/releases/download/v%s/snappymail-%s.zip' % (
                     Upgrade.SnappyVersion, Upgrade.SnappyVersion)
                 cmd = shlex.split(command)
-                res = subprocess.call(cmd)
+                res = subprocess.call(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
                 if res != 0:
                     count = count + 1
                     if count == 3:
@@ -488,10 +515,10 @@ $cfg['Servers'][$i]['LogoutURL'] = 'phpmyadminsignin.php?logout';
                 shutil.rmtree('/usr/local/CyberCP/public/snappymail')
 
             while (1):
-                command = 'unzip snappymail-%s.zip -d /usr/local/CyberCP/public/snappymail' % (Upgrade.SnappyVersion)
+                command = 'unzip -q snappymail-%s.zip -d /usr/local/CyberCP/public/snappymail' % (Upgrade.SnappyVersion)
 
                 cmd = shlex.split(command)
-                res = subprocess.call(cmd)
+                res = subprocess.call(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
                 if res != 0:
                     count = count + 1
                     if count == 3:
@@ -512,7 +539,7 @@ $cfg['Servers'][$i]['LogoutURL'] = 'phpmyadminsignin.php?logout';
             while (1):
                 command = 'find . -type d -exec chmod 755 {} \;'
                 cmd = shlex.split(command)
-                res = subprocess.call(cmd)
+                res = subprocess.call(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
                 if res != 0:
                     count = count + 1
                     if count == 3:
@@ -527,7 +554,7 @@ $cfg['Servers'][$i]['LogoutURL'] = 'phpmyadminsignin.php?logout';
             while (1):
                 command = 'find . -type f -exec chmod 644 {} \;'
                 cmd = shlex.split(command)
-                res = subprocess.call(cmd)
+                res = subprocess.call(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
                 if res != 0:
                     count = count + 1
                     if count == 3:
@@ -553,13 +580,13 @@ $cfg['Servers'][$i]['LogoutURL'] = 'phpmyadminsignin.php?logout';
             writeToFile.close()
 
             command = "mkdir -p /usr/local/lscp/cyberpanel/rainloop/data/_data_/_default_/configs/"
-            Upgrade.executioner(command, 'mkdir snappymail configs', 0)
+            Upgrade.executioner_silent(command, 'mkdir snappymail configs', 0)
 
-            command = f'wget -O /usr/local/CyberCP/snappymail_cyberpanel.php  https://raw.githubusercontent.com/the-djmaze/snappymail/master/integrations/cyberpanel/install.php'
-            Upgrade.executioner(command, 'verify certificate', 0)
+            command = f'wget -q -O /usr/local/CyberCP/snappymail_cyberpanel.php  https://raw.githubusercontent.com/the-djmaze/snappymail/master/integrations/cyberpanel/install.php'
+            Upgrade.executioner_silent(command, 'verify certificate', 0)
 
             command = f'/usr/local/lsws/lsphp80/bin/php /usr/local/CyberCP/snappymail_cyberpanel.php'
-            Upgrade.executioner(command, 'verify certificate', 0)
+            Upgrade.executioner_silent(command, 'verify certificate', 0)
 
             # labsPath = '/usr/local/lscp/cyberpanel/rainloop/data/_data_/_default_/configs/application.ini'
 
@@ -681,6 +708,8 @@ $cfg['Servers'][$i]['LogoutURL'] = 'phpmyadminsignin.php?logout';
             #             Upgrade.executioner(command, 'verify certificate', 0)
 
             os.chdir(cwd)
+            
+            Upgrade.stdOut("SnappyMail installation completed.", 0)
 
         except BaseException as msg:
             Upgrade.stdOut(str(msg) + " [downoad_and_install_raindloop]", 0)
@@ -1360,12 +1389,13 @@ CREATE TABLE `websiteFunctions_backupsv2` (`id` integer AUTO_INCREMENT NOT NULL 
 
             try:
                 clAPVersion = Upgrade.FetchCloudLinuxAlmaVersionVersion()
-                type = clAPVersion.split('-')[0]
-                version = int(clAPVersion.split('-')[1])
+                if isinstance(clAPVersion, str) and '-' in clAPVersion:
+                    type = clAPVersion.split('-')[0]
+                    version = int(clAPVersion.split('-')[1])
 
-                if type == 'al' and version >= 90:
-                    command = "sed -i 's/MYSQLCrypt md5/MYSQLCrypt crypt/g' /etc/pure-ftpd/pureftpd-mysql.conf"
-                    Upgrade.executioner(command, command, 0)
+                    if type == 'al' and version >= 90:
+                        command = "sed -i 's/MYSQLCrypt md5/MYSQLCrypt crypt/g' /etc/pure-ftpd/pureftpd-mysql.conf"
+                        Upgrade.executioner(command, command, 0)
             except:
                 pass
 
@@ -2343,7 +2373,11 @@ CREATE TABLE `websiteFunctions_backupsv2` (`id` integer AUTO_INCREMENT NOT NULL 
                 return 0, 'Failed to execute %s' % (command)
 
             command = 'git status'
-            currentBranch = subprocess.check_output(shlex.split(command)).decode()
+            try:
+                currentBranch = subprocess.check_output(shlex.split(command)).decode()
+            except Exception as e:
+                Upgrade.stdOut(f"Error checking git status: {str(e)}")
+                currentBranch = ""
 
             if currentBranch.find('On branch %s' % (branch)) > -1 and currentBranch.find(
                     'On branch %s-dev' % (branch)) == -1:
@@ -2748,10 +2782,10 @@ echo $oConfig->Save() ? 'Done' : 'Error';
             Upgrade.executioner(command, 0)
 
             command = '/usr/local/lsws/lsphp72/bin/php /usr/local/CyberCP/public/snappymail.php'
-            Upgrade.executioner(command, 0)
+            Upgrade.executioner_silent(command, 'Configure SnappyMail')
 
             command = 'chmod 600 /usr/local/CyberCP/public/snappymail.php'
-            Upgrade.executioner(command, 0)
+            Upgrade.executioner_silent(command, 'Secure SnappyMail config')
 
             ###
 
@@ -2923,7 +2957,11 @@ echo $oConfig->Save() ? 'Done' : 'Error';
                     if items.password.find('CRYPT') > -1:
                         continue
                     command = 'doveadm pw -p %s' % (items.password)
-                    items.password = subprocess.check_output(shlex.split(command)).decode("utf-8").strip('\n')
+                    try:
+                        items.password = subprocess.check_output(shlex.split(command)).decode("utf-8").strip('\n')
+                    except Exception as e:
+                        Upgrade.stdOut(f"Error hashing password for {items.email}: {str(e)}")
+                        continue
                     items.save()
 
                 command = "systemctl restart dovecot"
@@ -2984,9 +3022,13 @@ echo $oConfig->Save() ? 'Done' : 'Error';
 
             dovecotConf = '/etc/dovecot/dovecot.conf'
 
-            dovecotContent = open(dovecotConf, 'r').read()
+            try:
+                dovecotContent = open(dovecotConf, 'r').read()
+            except Exception as e:
+                Upgrade.stdOut(f"Error reading dovecot config: {str(e)}")
+                dovecotContent = ""
 
-            if dovecotContent.find('service stats') == -1:
+            if dovecotContent and dovecotContent.find('service stats') == -1:
                 writeToFile = open(dovecotConf, 'a')
 
                 content = """\nservice stats {
@@ -3006,18 +3048,23 @@ echo $oConfig->Save() ? 'Done' : 'Error';
                 writeToFile.close()
 
             # Fix mailbox auto-creation issue
-            if dovecotContent.find('lda_mailbox_autocreate') == -1:
+            if dovecotContent and dovecotContent.find('lda_mailbox_autocreate') == -1:
                 Upgrade.stdOut("Enabling mailbox auto-creation in dovecot...")
                 
                 # Add mailbox auto-creation settings to protocol lda section
-                dovecotContent = open(dovecotConf, 'r').read()
+                try:
+                    dovecotContent = open(dovecotConf, 'r').read()
+                except Exception as e:
+                    Upgrade.stdOut(f"Error reading dovecot config: {str(e)}")
+                    dovecotContent = ""
                 
-                if dovecotContent.find('protocol lda') > -1:
+                if dovecotContent and dovecotContent.find('protocol lda') > -1:
                     # Update existing protocol lda section
                     import re
                     pattern = r'(protocol lda\s*{[^}]*)'
                     replacement = r'\1\n    lda_mailbox_autocreate = yes\n    lda_mailbox_autosubscribe = yes'
-                    dovecotContent = re.sub(pattern, replacement, dovecotContent)
+                    if isinstance(dovecotContent, str):
+                        dovecotContent = re.sub(pattern, replacement, dovecotContent)
                     
                     writeToFile = open(dovecotConf, 'w')
                     writeToFile.write(dovecotContent)
@@ -3602,8 +3649,8 @@ pm.max_spare_servers = 3
             if os.path.exists('/usr/bin/php'):
                 os.remove('/usr/bin/php')
 
-            # Create symlink to PHP 8.0
-            command = 'ln -s /usr/local/lsws/lsphp80/bin/php /usr/bin/php'
+            # Create symlink to PHP 8.1
+            command = 'ln -s /usr/local/lsws/lsphp81/bin/php /usr/bin/php'
             Upgrade.executioner(command, 'Setup PHP Symlink', 0)
 
             Upgrade.stdOut("PHP symlink created successfully.")
@@ -3626,10 +3673,18 @@ pm.max_spare_servers = 3
 
         if os.path.exists(Upgrade.CentOSPath) or os.path.exists(Upgrade.openEulerPath):
             command = 'yum list installed'
-            Upgrade.installedOutput = subprocess.check_output(shlex.split(command)).decode()
+            try:
+                Upgrade.installedOutput = subprocess.check_output(shlex.split(command)).decode()
+            except Exception as e:
+                Upgrade.stdOut(f"Error getting installed packages: {str(e)}")
+                Upgrade.installedOutput = ""
         else:
             command = 'apt list'
-            Upgrade.installedOutput = subprocess.check_output(shlex.split(command)).decode()
+            try:
+                Upgrade.installedOutput = subprocess.check_output(shlex.split(command)).decode()
+            except Exception as e:
+                Upgrade.stdOut(f"Error getting installed packages: {str(e)}")
+                Upgrade.installedOutput = ""
 
         # command = 'systemctl stop cpssh'
         # Upgrade.executioner(command, 'fix csf if there', 0)
@@ -4057,10 +4112,13 @@ extprocessor proxyApacheBackendSSL {
 
                 command = "find /lib/modules/ -type f -name '*quota_v*.ko*'"
 
-
-                if subprocess.check_output(command,shell=True).decode("utf-8").find("quota/") == -1:
-                    command = "sudo apt install linux-image-extra-virtual -y"
-                    Upgrade.executioner(command, command, 0, True)
+                try:
+                    output = subprocess.check_output(command, shell=True)
+                    if output and output.decode("utf-8").find("quota/") == -1:
+                        command = "sudo apt install linux-image-extra-virtual -y"
+                        Upgrade.executioner(command, command, 0, True)
+                except Exception as e:
+                    Upgrade.stdOut(f"Error checking quota modules: {str(e)}")
 
                 if Upgrade.edit_fstab('/', '/') == 0:
                     print("Quotas will not be abled as we are are failed to modify fstab file.")
@@ -4563,12 +4621,15 @@ RewriteRule ^(.*)$ https://proxyApacheBackendSSL/$1 [P,L]
                             
                             # Use a simpler approach - find and replace the section
                             import re
-                            new_content = re.sub(
-                                r'rewrite\s*{[^}]+}',
-                                correct_rewrite,
-                                vhost_content,
-                                count=1
-                            )
+                            if isinstance(vhost_content, str) and vhost_content:
+                                new_content = re.sub(
+                                    r'rewrite\s*{[^}]+}',
+                                    correct_rewrite,
+                                    vhost_content,
+                                    count=1
+                                )
+                            else:
+                                new_content = vhost_content
                             
                             if new_content != vhost_content:
                                 with open(ols_vhost_path, 'w') as f:

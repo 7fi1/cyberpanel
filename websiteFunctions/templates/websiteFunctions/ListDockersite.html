@@ -25,7 +25,7 @@
         }
 
         .page-header h1 {
-            color: #1e293b;
+            color: var(--text-heading, #1e293b);
             font-size: 32px;
             font-weight: 700;
             margin: 0;
@@ -37,7 +37,7 @@
         .page-header .docker-icon {
             width: 48px;
             height: 48px;
-            background: linear-gradient(135deg, #5856d6 0%, #7c7ff2 100%);
+            background: linear-gradient(135deg, var(--accent-color, #5856d6) 0%, #7c7ff2 100%);
             border-radius: 12px;
             display: flex;
             align-items: center;
@@ -48,14 +48,14 @@
         }
 
         .page-header p {
-            color: #64748b;
+            color: var(--text-secondary, #64748b);
             font-size: 16px;
             margin: 0;
             flex: 1 1 100%;
         }
 
         .create-docker-btn {
-            background: linear-gradient(135deg, #5856d6 0%, #7c7ff2 100%);
+            background: linear-gradient(135deg, var(--accent-color, #5856d6) 0%, #7c7ff2 100%);
             color: white;
             border: none;
             padding: 12px 24px;
@@ -93,17 +93,18 @@
         .search-box input {
             width: 100%;
             padding: 14px 20px 14px 50px;
-            border: 2px solid #e8e9ff;
+            border: 2px solid var(--border-color, #e8e9ff);
             border-radius: 12px;
             font-size: 15px;
             transition: all 0.3s ease;
-            background: white;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            background: var(--bg-secondary, white);
+            box-shadow: 0 2px 8px var(--shadow-color, rgba(0,0,0,0.04));
+            color: var(--text-primary, #333);
         }
 
         .search-box input:focus {
             outline: none;
-            border-color: #5856d6;
+            border-color: var(--accent-color, #5856d6);
             box-shadow: 0 4px 12px rgba(88,86,214,0.15);
         }
 
@@ -112,7 +113,7 @@
             left: 18px;
             top: 50%;
             transform: translateY(-50%);
-            color: #94a3b8;
+            color: var(--text-secondary, #94a3b8);
             font-size: 18px;
         }
 
@@ -122,30 +123,31 @@
 
         .records-select select {
             padding: 14px 20px;
-            border: 2px solid #e8e9ff;
+            border: 2px solid var(--border-color, #e8e9ff);
             border-radius: 12px;
             font-size: 15px;
-            background: white;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            background: var(--bg-secondary, white);
+            color: var(--text-primary, #333);
+            box-shadow: 0 2px 8px var(--shadow-color, rgba(0,0,0,0.04));
             cursor: pointer;
             transition: all 0.3s ease;
         }
 
         .records-select select:focus {
             outline: none;
-            border-color: #5856d6;
+            border-color: var(--accent-color, #5856d6);
         }
 
         /* Docker Site Cards */
         .docker-site-card {
-            background: white;
+            background: var(--bg-secondary, white);
             border-radius: 16px;
             padding: 0;
             margin-bottom: 20px;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+            box-shadow: 0 2px 12px var(--shadow-color, rgba(0,0,0,0.06));
             transition: all 0.3s ease;
             overflow: hidden;
-            border: 1px solid #f1f3f5;
+            border: 1px solid var(--border-color, #f1f3f5);
         }
 
         .docker-site-card:hover {
@@ -154,12 +156,12 @@
         }
 
         .site-header {
-            background: linear-gradient(135deg, #f8f9ff 0%, #f3f1ff 100%);
+            background: linear-gradient(135deg, var(--bg-hover, #f8f9ff) 0%, #f3f1ff 100%);
             padding: 20px 24px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 1px solid #e8e9ff;
+            border-bottom: 1px solid var(--border-color, #e8e9ff);
         }
 
         .site-title {
@@ -172,7 +174,7 @@
             margin: 0;
             font-size: 22px;
             font-weight: 600;
-            color: #1e293b;
+            color: var(--text-heading, #1e293b);
         }
 
         .site-title a {
@@ -182,17 +184,17 @@
         }
 
         .site-title a:hover {
-            color: #5856d6;
+            color: var(--accent-color, #5856d6);
         }
 
         .external-link {
-            color: #94a3b8;
+            color: var(--text-secondary, #94a3b8);
             font-size: 16px;
             margin-left: 8px;
         }
 
         .manage-btn {
-            background: #5856d6;
+            background: var(--accent-color, #5856d6);
             color: white;
             border: none;
             padding: 10px 20px;
@@ -207,7 +209,7 @@
         }
 
         .manage-btn:hover {
-            background: #4845d2;
+            background: var(--accent-hover, #4845d2);
             color: white;
             transform: translateY(-1px);
             box-shadow: 0 4px 12px rgba(88,86,214,0.25);
@@ -233,12 +235,12 @@
         .detail-icon {
             width: 40px;
             height: 40px;
-            background: #f8f9ff;
+            background: var(--bg-hover, #f8f9ff);
             border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #5856d6;
+            color: var(--accent-color, #5856d6);
             font-size: 18px;
             flex-shrink: 0;
         }
@@ -249,7 +251,7 @@
 
         .detail-label {
             font-size: 12px;
-            color: #94a3b8;
+            color: var(--text-secondary, #94a3b8);
             text-transform: uppercase;
             letter-spacing: 0.5px;
             margin-bottom: 2px;
@@ -258,7 +260,7 @@
 
         .detail-value {
             font-size: 15px;
-            color: #2f3640;
+            color: var(--text-primary, #2f3640);
             font-weight: 500;
         }
 
@@ -275,14 +277,14 @@
 
         .state-badge.running,
         .state-badge.active {
-            background: #d4f8e8;
-            color: #065f46;
+            background: var(--success-bg, #d4f8e8);
+            color: var(--success-text, #065f46);
         }
 
         .state-badge.stopped,
         .state-badge.inactive {
-            background: #fee2e2;
-            color: #991b1b;
+            background: var(--danger-bg, #fee2e2);
+            color: var(--danger-text, #991b1b);
         }
 
         .state-badge.paused {
@@ -306,8 +308,8 @@
         }
 
         .delete-btn {
-            background: #fee2e2;
-            color: #dc2626;
+            background: var(--danger-bg, #fee2e2);
+            color: var(--danger-text, #dc2626);
             border: none;
             padding: 10px 20px;
             border-radius: 8px;
@@ -321,7 +323,7 @@
         }
 
         .delete-btn:hover {
-            background: #dc2626;
+            background: var(--danger-text, #dc2626);
             color: white;
             transform: translateY(-1px);
             box-shadow: 0 4px 12px rgba(220,38,38,0.25);
@@ -331,7 +333,7 @@
         .loading-container {
             text-align: center;
             padding: 60px;
-            color: #94a3b8;
+            color: var(--text-secondary, #94a3b8);
         }
 
         .loading-spinner {
@@ -351,7 +353,7 @@
         }
 
         .pagination-info {
-            color: #64748b;
+            color: var(--text-secondary, #64748b);
             font-size: 14px;
         }
 
@@ -361,10 +363,11 @@
 
         .pagination-select select {
             padding: 10px 16px;
-            border: 2px solid #e8e9ff;
+            border: 2px solid var(--border-color, #e8e9ff);
             border-radius: 8px;
             font-size: 14px;
-            background: white;
+            background: var(--bg-secondary, white);
+            color: var(--text-primary, #333);
             cursor: pointer;
         }
 
@@ -373,16 +376,17 @@
             border-radius: 16px;
             border: none;
             overflow: hidden;
+            background: var(--bg-secondary, white);
         }
 
         .modal-header {
-            background: #f8f9ff;
-            border-bottom: 1px solid #e8e9ff;
+            background: var(--bg-hover, #f8f9ff);
+            border-bottom: 1px solid var(--border-color, #e8e9ff);
             padding: 20px 24px;
         }
 
         .modal-title {
-            color: #1e293b;
+            color: var(--text-heading, #1e293b);
             font-weight: 600;
             font-size: 20px;
         }
@@ -392,14 +396,14 @@
         }
 
         .modal-body h4 {
-            color: #64748b;
+            color: var(--text-secondary, #64748b);
             font-weight: 500;
             margin: 0;
         }
 
         .modal-footer {
-            background: #f8f9ff;
-            border-top: 1px solid #e8e9ff;
+            background: var(--bg-hover, #f8f9ff);
+            border-top: 1px solid var(--border-color, #e8e9ff);
             padding: 16px 24px;
             gap: 12px;
         }
@@ -412,18 +416,18 @@
         }
 
         .modal-footer .btn-default {
-            background: white;
-            border: 1px solid #e8e9ff;
-            color: #64748b;
+            background: var(--bg-secondary, white);
+            border: 1px solid var(--border-color, #e8e9ff);
+            color: var(--text-secondary, #64748b);
         }
 
         .modal-footer .btn-default:hover {
-            background: #f8f9ff;
+            background: var(--bg-hover, #f8f9ff);
             border-color: #d8d9ff;
         }
 
         .modal-footer .btn-warning {
-            background: #dc2626;
+            background: var(--danger-text, #dc2626);
             border: none;
             color: white;
         }
@@ -438,9 +442,9 @@
         .empty-state {
             text-align: center;
             padding: 80px 20px;
-            background: white;
+            background: var(--bg-secondary, white);
             border-radius: 16px;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+            box-shadow: 0 2px 12px var(--shadow-color, rgba(0,0,0,0.06));
         }
 
         .empty-state-icon {
@@ -452,18 +456,18 @@
             align-items: center;
             justify-content: center;
             margin: 0 auto 24px;
-            color: #5856d6;
+            color: var(--accent-color, #5856d6);
             font-size: 48px;
         }
 
         .empty-state h3 {
-            color: #1e293b;
+            color: var(--text-heading, #1e293b);
             font-size: 24px;
             margin-bottom: 12px;
         }
 
         .empty-state p {
-            color: #64748b;
+            color: var(--text-secondary, #64748b);
             font-size: 16px;
             margin-bottom: 24px;
         }
@@ -480,13 +484,13 @@
         }
 
         .alert-success {
-            background: #d4f8e8;
-            color: #065f46;
+            background: var(--success-bg, #d4f8e8);
+            color: var(--success-text, #065f46);
         }
 
         .alert-danger {
-            background: #fee2e2;
-            color: #991b1b;
+            background: var(--danger-bg, #fee2e2);
+            color: var(--danger-text, #991b1b);
         }
 
         .alert .close {

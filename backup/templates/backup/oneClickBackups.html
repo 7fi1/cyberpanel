@@ -23,7 +23,7 @@
             text-align: center;
             margin-bottom: 3rem;
             padding: 3rem 0;
-            background: linear-gradient(135deg, #f8f9ff 0%, #f0f1ff 100%);
+            background: linear-gradient(135deg, var(--bg-hover, #f8f9ff) 0%, var(--bg-gradient, #f0f1ff) 100%);
             border-radius: 20px;
             animation: fadeInDown 0.5s ease-out;
         }
@@ -31,7 +31,7 @@
         .page-title {
             font-size: 3rem;
             font-weight: 700;
-            color: #1e293b;
+            color: var(--text-primary, #1e293b);
             margin-bottom: 1rem;
             display: flex;
             align-items: center;
@@ -41,7 +41,7 @@
         
         .page-subtitle {
             font-size: 1.25rem;
-            color: #64748b;
+            color: var(--text-secondary, #64748b);
             margin-bottom: 1.5rem;
             max-width: 600px;
             margin-left: auto;
@@ -56,7 +56,7 @@
         }
         
         .btn-primary {
-            background: #5b5fcf;
+            background: var(--accent-color, #5b5fcf);
             color: white;
             border: none;
             padding: 0.875rem 2.25rem;
@@ -72,7 +72,7 @@
         }
         
         .btn-primary:hover {
-            background: #4547a9;
+            background: var(--accent-hover, #4547a9);
             transform: translateY(-2px);
             box-shadow: 0 8px 20px rgba(91, 95, 207, 0.4);
             color: white;
@@ -80,8 +80,8 @@
         
         .btn-secondary {
             background: #fff;
-            color: #5b5fcf;
-            border: 1px solid #e8e9ff;
+            color: var(--accent-color, #5b5fcf);
+            border: 1px solid var(--border-color, #e8e9ff);
             padding: 0.875rem 2.25rem;
             border-radius: 10px;
             font-weight: 500;
@@ -95,16 +95,16 @@
         }
         
         .btn-secondary:hover {
-            background: #f8f9ff;
-            border-color: #5b5fcf;
+            background: var(--bg-hover, #f8f9ff);
+            border-color: var(--accent-color, #5b5fcf);
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(91, 95, 207, 0.2);
         }
         
         .btn-outline {
             background: transparent;
-            color: #5b5fcf;
-            border: 2px solid #5b5fcf;
+            color: var(--accent-color, #5b5fcf);
+            border: 2px solid var(--accent-color, #5b5fcf);
             padding: 0.75rem 2rem;
             border-radius: 10px;
             font-weight: 500;
@@ -118,7 +118,7 @@
         }
         
         .btn-outline:hover {
-            background: #5b5fcf;
+            background: var(--accent-color, #5b5fcf);
             color: white;
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(91, 95, 207, 0.4);
@@ -128,22 +128,22 @@
             background: white;
             border-radius: 16px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 10px 40px rgba(0,0,0,0.08);
-            border: 1px solid #e8e9ff;
+            border: 1px solid var(--border-color, #e8e9ff);
             overflow: hidden;
             margin-bottom: 2rem;
             animation: fadeInUp 0.5s ease-out;
         }
         
         .card-header {
-            background: linear-gradient(135deg, #f8f9ff 0%, #f0f1ff 100%);
+            background: linear-gradient(135deg, var(--bg-hover, #f8f9ff) 0%, var(--bg-gradient, #f0f1ff) 100%);
             padding: 1.5rem 2rem;
-            border-bottom: 1px solid #e8e9ff;
+            border-bottom: 1px solid var(--border-color, #e8e9ff);
         }
         
         .card-title {
             font-size: 1.25rem;
             font-weight: 600;
-            color: #1e293b;
+            color: var(--text-primary, #1e293b);
             margin: 0;
             display: flex;
             align-items: center;
@@ -163,7 +163,7 @@
         .section-title {
             font-size: 2rem;
             font-weight: 700;
-            color: #1e293b;
+            color: var(--text-primary, #1e293b);
             margin-bottom: 0.5rem;
             position: relative;
             display: inline-block;
@@ -177,7 +177,7 @@
             transform: translateX(-50%);
             width: 60px;
             height: 4px;
-            background: linear-gradient(90deg, #5b5fcf 0%, #8187ff 100%);
+            background: linear-gradient(90deg, var(--accent-color, #5b5fcf) 0%, var(--accent-light, #8187ff) 100%);
             border-radius: 2px;
         }
         
@@ -192,27 +192,27 @@
         }
         
         .alert-success {
-            background: #d1fae5;
-            color: #065f46;
-            border: 1px solid #a7f3d0;
+            background: var(--success-bg, #d1fae5);
+            color: var(--success-text, #065f46);
+            border: 1px solid var(--success-border, #a7f3d0);
         }
         
         .alert-danger {
-            background: #fee2e2;
-            color: #991b1b;
-            border: 1px solid #fecaca;
+            background: var(--danger-bg, #fee2e2);
+            color: var(--danger-text, #991b1b);
+            border: 1px solid var(--danger-border, #fecaca);
         }
         
         .alert-info {
-            background: #dbeafe;
-            color: #1e40af;
-            border: 1px solid #bfdbfe;
+            background: var(--info-bg, #dbeafe);
+            color: var(--info-text, #1e40af);
+            border: 1px solid var(--info-border, #bfdbfe);
         }
         
         .fetch-plans-section {
             text-align: center;
             padding: 4rem 2rem;
-            background: linear-gradient(135deg, #5b5fcf 0%, #8187ff 100%);
+            background: linear-gradient(135deg, var(--accent-color, #5b5fcf) 0%, var(--accent-light, #8187ff) 100%);
             border-radius: 20px;
             margin-bottom: 3rem;
             position: relative;
@@ -232,7 +232,7 @@
         
         .fetch-plans-btn {
             background: white;
-            color: #5b5fcf;
+            color: var(--accent-color, #5b5fcf);
             padding: 1rem 3rem;
             border-radius: 50px;
             font-weight: 600;
@@ -263,14 +263,14 @@
             display: block;
             margin-bottom: 0.5rem;
             font-weight: 500;
-            color: #1e293b;
+            color: var(--text-primary, #1e293b);
             font-size: 1rem;
         }
         
         .form-control {
             width: 100%;
             padding: 0.875rem 1rem;
-            border: 1px solid #e8e9ff;
+            border: 1px solid var(--border-color, #e8e9ff);
             border-radius: 10px;
             font-size: 1rem;
             transition: all 0.3s ease;
@@ -279,7 +279,7 @@
         
         .form-control:focus {
             outline: none;
-            border-color: #5b5fcf;
+            border-color: var(--accent-color, #5b5fcf);
             box-shadow: 0 0 0 3px rgba(91, 95, 207, 0.1);
         }
         
@@ -288,34 +288,34 @@
             background: white;
             border-radius: 12px;
             overflow: hidden;
-            border: 1px solid #e8e9ff;
+            border: 1px solid var(--border-color, #e8e9ff);
         }
         
         .data-table thead {
-            background: linear-gradient(135deg, #f8f9ff 0%, #f0f1ff 100%);
+            background: linear-gradient(135deg, var(--bg-hover, #f8f9ff) 0%, var(--bg-gradient, #f0f1ff) 100%);
         }
         
         .data-table th {
             padding: 1rem;
             text-align: left;
             font-weight: 600;
-            color: #1e293b;
+            color: var(--text-primary, #1e293b);
             font-size: 1rem;
             text-transform: uppercase;
             letter-spacing: 0.05em;
-            border-bottom: 1px solid #e8e9ff;
+            border-bottom: 1px solid var(--border-color, #e8e9ff);
         }
         
         .data-table td {
             padding: 1.125rem;
-            color: #475569;
+            color: var(--text-secondary, #475569);
             font-size: 1.125rem;
-            border-bottom: 1px solid #f3f4f6;
+            border-bottom: 1px solid var(--border-light, #f3f4f6);
             font-weight: 400;
         }
         
         .data-table tbody tr:hover {
-            background: #f8f9ff;
+            background: var(--bg-hover, #f8f9ff);
         }
         
         .data-table tbody tr:last-child td {
@@ -335,13 +335,13 @@
         }
         
         .status-badge.active {
-            background: #d1fae5;
-            color: #065f46;
+            background: var(--success-bg, #d1fae5);
+            color: var(--success-text, #065f46);
         }
         
         .status-badge.inactive {
-            background: #fee2e2;
-            color: #991b1b;
+            background: var(--danger-bg, #fee2e2);
+            color: var(--danger-text, #991b1b);
         }
         
         .plan-grid {
@@ -355,7 +355,7 @@
             background: white;
             border-radius: 20px;
             padding: 2rem;
-            border: 2px solid #e8e9ff;
+            border: 2px solid var(--border-color, #e8e9ff);
             transition: all 0.3s ease;
             position: relative;
             overflow: hidden;
@@ -364,12 +364,12 @@
         .plan-card:hover {
             transform: translateY(-5px);
             box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            border-color: #5b5fcf;
+            border-color: var(--accent-color, #5b5fcf);
         }
         
         .plan-card.featured {
-            border-color: #5b5fcf;
-            background: linear-gradient(135deg, #f8f9ff 0%, #fff 100%);
+            border-color: var(--accent-color, #5b5fcf);
+            background: linear-gradient(135deg, var(--bg-hover, #f8f9ff) 0%, var(--bg-secondary, #fff) 100%);
         }
         
         .plan-card.featured::before {
@@ -377,7 +377,7 @@
             position: absolute;
             top: 20px;
             right: -30px;
-            background: #5b5fcf;
+            background: var(--accent-color, #5b5fcf);
             color: white;
             padding: 0.25rem 3rem;
             font-size: 0.875rem;
@@ -394,19 +394,19 @@
         .plan-name {
             font-size: 1.5rem;
             font-weight: 700;
-            color: #1e293b;
+            color: var(--text-primary, #1e293b);
             margin-bottom: 0.5rem;
         }
         
         .plan-storage {
             font-size: 3rem;
             font-weight: 700;
-            color: #5b5fcf;
+            color: var(--accent-color, #5b5fcf);
             margin-bottom: 1rem;
         }
         
         .price-container {
-            background: #f8f9ff;
+            background: var(--bg-hover, #f8f9ff);
             border-radius: 12px;
             padding: 1.5rem;
             margin-bottom: 1.5rem;
@@ -416,18 +416,18 @@
         .price-amount {
             font-size: 2.5rem;
             font-weight: 700;
-            color: #1e293b;
+            color: var(--text-primary, #1e293b);
             line-height: 1;
         }
         
         .price-currency {
             font-size: 1.5rem;
-            color: #64748b;
+            color: var(--text-secondary, #64748b);
         }
         
         .price-period {
             font-size: 1rem;
-            color: #64748b;
+            color: var(--text-secondary, #64748b);
             font-weight: 500;
         }
         
@@ -615,7 +615,7 @@
                         </thead>
                         <tbody>
                             <tr ng-repeat="sub in subscriptions">
-                                <td><code style="background: #f3f4f6; padding: 0.25rem 0.5rem; border-radius: 4px;">{$ sub.subscription_id $}</code></td>
+                                <td><code style="background: var(--border-light, #f3f4f6); padding: 0.25rem 0.5rem; border-radius: 4px;">{$ sub.subscription_id $}</code></td>
                                 <td>
                                     <span class="status-badge" 
                                           ng-class="{'active': sub.status === 'active', 'inactive': sub.status !== 'active'}">
@@ -682,13 +682,13 @@
                             {% for plan in bPlans %}
                                 <tr>
                                     <td>
-                                        <i class="fas fa-user-circle" style="color: #5b5fcf; margin-right: 0.5rem;"></i>
+                                        <i class="fas fa-user-circle" style="color: var(--accent-color, #5b5fcf); margin-right: 0.5rem;"></i>
                                         {{ plan.sftpUser }}
                                     </td>
                                     <td><strong>{{ plan.planName }}</strong></td>
                                     <td>{{ plan.subscription }}</td>
                                     <td>
-                                        <span style="background: #e0e7ff; color: #5b5fcf; padding: 0.375rem 1rem; border-radius: 20px; font-size: 1rem; font-weight: 500;">
+                                        <span style="background: var(--accent-bg, #e0e7ff); color: var(--accent-color, #5b5fcf); padding: 0.375rem 1rem; border-radius: 20px; font-size: 1rem; font-weight: 500;">
                                             {% if plan.months == '1' %}
                                                 ${{ plan.price }}/month
                                             {% else %}
@@ -744,7 +744,7 @@
                         <span class="price-amount">{{ plans.0.monthlyPrice }}</span>
                         <span class="price-period">/month</span>
                     </div>
-                    <div class="price-container" style="background: #e0e7ff;">
+                    <div class="price-container" style="background: var(--accent-bg, #e0e7ff);">
                         <span class="price-currency">$</span>
                         <span class="price-amount">{{ plans.0.yearlyPrice }}</span>
                         <span class="price-period">/year</span>
@@ -769,7 +769,7 @@
                         <span class="price-amount">{{ plans.1.monthlyPrice }}</span>
                         <span class="price-period">/month</span>
                     </div>
-                    <div class="price-container" style="background: #e0e7ff;">
+                    <div class="price-container" style="background: var(--accent-bg, #e0e7ff);">
                         <span class="price-currency">$</span>
                         <span class="price-amount">{{ plans.1.yearlyPrice }}</span>
                         <span class="price-period">/year</span>
@@ -800,7 +800,7 @@
                         <span class="price-amount">{{ plans.2.monthlyPrice }}</span>
                         <span class="price-period">/month</span>
                     </div>
-                    <div class="price-container" style="background: #e0e7ff;">
+                    <div class="price-container" style="background: var(--accent-bg, #e0e7ff);">
                         <span class="price-currency">$</span>
                         <span class="price-amount">{{ plans.2.yearlyPrice }}</span>
                         <span class="price-period">/year</span>
@@ -831,7 +831,7 @@
                         <span class="price-amount">{{ plans.3.monthlyPrice }}</span>
                         <span class="price-period">/month</span>
                     </div>
-                    <div class="price-container" style="background: #e0e7ff;">
+                    <div class="price-container" style="background: var(--accent-bg, #e0e7ff);">
                         <span class="price-currency">$</span>
                         <span class="price-amount">{{ plans.3.yearlyPrice }}</span>
                         <span class="price-period">/year</span>
@@ -862,7 +862,7 @@
                         <span class="price-amount">{{ plans.4.monthlyPrice }}</span>
                         <span class="price-period">/month</span>
                     </div>
-                    <div class="price-container" style="background: #e0e7ff;">
+                    <div class="price-container" style="background: var(--accent-bg, #e0e7ff);">
                         <span class="price-currency">$</span>
                         <span class="price-amount">{{ plans.4.yearlyPrice }}</span>
                         <span class="price-period">/year</span>

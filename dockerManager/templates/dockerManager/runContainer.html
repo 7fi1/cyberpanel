@@ -18,7 +18,7 @@
         text-align: center;
         margin-bottom: 3rem;
         padding: 3rem 0;
-        background: linear-gradient(135deg, #f8f9ff 0%, #f0f1ff 100%);
+        background: linear-gradient(135deg, var(--bg-hover, #f8f9ff) 0%, var(--bg-gradient, #f0f1ff) 100%);
         border-radius: 20px;
         animation: fadeInDown 0.5s ease-out;
         position: relative;
@@ -32,7 +32,7 @@
         right: -50%;
         width: 200%;
         height: 200%;
-        background: radial-gradient(circle at 70% 30%, rgba(91, 95, 207, 0.15) 0%, transparent 50%);
+        background: radial-gradient(circle at 70% 30%, var(--accent-shadow-light, rgba(91, 95, 207, 0.15)) 0%, transparent 50%);
         animation: rotate 30s linear infinite;
     }
     
@@ -44,7 +44,7 @@
     .page-title {
         font-size: 2.5rem;
         font-weight: 700;
-        color: #1e293b;
+        color: var(--text-primary, #1e293b);
         margin-bottom: 1rem;
         display: flex;
         align-items: center;
@@ -55,12 +55,12 @@
     .docker-icon {
         width: 60px;
         height: 60px;
-        background: white;
+        background: var(--bg-secondary, white);
         border-radius: 12px;
         display: flex;
         align-items: center;
         justify-content: center;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        box-shadow: 0 4px 12px var(--shadow-medium, rgba(0,0,0,0.1));
     }
     
     .image-info {
@@ -70,12 +70,12 @@
         gap: 0.5rem;
         margin-top: 1rem;
         font-size: 1.125rem;
-        color: #64748b;
+        color: var(--text-secondary, #64748b);
     }
     
     .image-badge {
-        background: #e0e7ff;
-        color: #5b5fcf;
+        background: var(--accent-bg, #e0e7ff);
+        color: var(--accent-color, #5b5fcf);
         padding: 0.5rem 1rem;
         border-radius: 8px;
         font-weight: 600;
@@ -105,7 +105,7 @@
         left: 60px;
         width: 100%;
         height: 2px;
-        background: #e8e9ff;
+        background: var(--border-color, #e8e9ff);
     }
     
     .progress-step:last-child::after {
@@ -115,12 +115,12 @@
     .step-icon {
         width: 40px;
         height: 40px;
-        background: #e8e9ff;
+        background: var(--border-color, #e8e9ff);
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        color: #64748b;
+        color: var(--text-secondary, #64748b);
         font-size: 1rem;
         position: relative;
         z-index: 1;
@@ -128,40 +128,40 @@
     }
     
     .progress-step.active .step-icon {
-        background: #5b5fcf;
-        color: white;
-        box-shadow: 0 0 0 4px rgba(91, 95, 207, 0.2);
+        background: var(--accent-color, #5b5fcf);
+        color: var(--bg-secondary, white);
+        box-shadow: 0 0 0 4px var(--accent-shadow-soft, rgba(91, 95, 207, 0.2));
     }
     
     .progress-step.completed .step-icon {
-        background: #10b981;
-        color: white;
+        background: var(--success-color, #10b981);
+        color: var(--bg-secondary, white);
     }
     
     .step-label {
         margin-top: 0.5rem;
         font-size: 0.875rem;
-        color: #64748b;
+        color: var(--text-secondary, #64748b);
         font-weight: 500;
     }
     
     .progress-step.active .step-label {
-        color: #5b5fcf;
+        color: var(--accent-color, #5b5fcf);
         font-weight: 600;
     }
     
     .form-container {
-        background: white;
+        background: var(--bg-secondary, white);
         border-radius: 16px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 10px 40px rgba(0,0,0,0.08);
-        border: 1px solid #e8e9ff;
+        box-shadow: 0 1px 3px var(--shadow-light, rgba(0,0,0,0.05)), 0 10px 40px var(--shadow-color, rgba(0,0,0,0.08));
+        border: 1px solid var(--border-color, #e8e9ff);
         overflow: hidden;
         animation: fadeInUp 0.5s ease-out;
     }
     
     .form-section {
         padding: 2rem;
-        border-bottom: 1px solid #e8e9ff;
+        border-bottom: 1px solid var(--border-color, #e8e9ff);
     }
     
     .form-section:last-child {
@@ -178,24 +178,24 @@
     .section-icon {
         width: 40px;
         height: 40px;
-        background: #e0e7ff;
+        background: var(--accent-bg, #e0e7ff);
         border-radius: 10px;
         display: flex;
         align-items: center;
         justify-content: center;
-        color: #5b5fcf;
+        color: var(--accent-color, #5b5fcf);
     }
     
     .section-title {
         font-size: 1.125rem;
         font-weight: 600;
-        color: #1e293b;
+        color: var(--text-primary, #1e293b);
         margin: 0;
     }
     
     .section-subtitle {
         font-size: 0.875rem;
-        color: #64748b;
+        color: var(--text-secondary, #64748b);
         margin-top: 0.25rem;
     }
     
@@ -209,7 +209,7 @@
     
     .form-label {
         font-weight: 500;
-        color: #1e293b;
+        color: var(--text-primary, #1e293b);
         font-size: 0.875rem;
         display: flex;
         align-items: center;
@@ -217,29 +217,29 @@
     }
     
     .required-star {
-        color: #ef4444;
+        color: var(--danger-color, #ef4444);
     }
     
     .form-control {
         width: 100%;
         padding: 0.75rem 1rem;
-        border: 1px solid #e8e9ff;
+        border: 1px solid var(--border-color, #e8e9ff);
         border-radius: 8px;
         font-size: 0.875rem;
         transition: all 0.3s ease;
-        background: #fff;
+        background: var(--bg-secondary, #fff);
     }
     
     .form-control:focus {
         outline: none;
-        border-color: #5b5fcf;
-        box-shadow: 0 0 0 3px rgba(91, 95, 207, 0.1);
+        border-color: var(--accent-color, #5b5fcf);
+        box-shadow: 0 0 0 3px var(--accent-focus, rgba(91, 95, 207, 0.1));
     }
     
     .form-control:disabled {
-        background: #f8f9ff;
+        background: var(--bg-hover, #f8f9ff);
         cursor: not-allowed;
-        color: #64748b;
+        color: var(--text-secondary, #64748b);
     }
     
     .input-group {
@@ -250,7 +250,7 @@
     
     .input-addon {
         font-size: 0.875rem;
-        color: #64748b;
+        color: var(--text-secondary, #64748b);
         font-weight: 500;
     }
     
@@ -261,19 +261,19 @@
         align-items: center;
         margin-bottom: 1rem;
         padding: 1rem;
-        background: #f8f9ff;
+        background: var(--bg-hover, #f8f9ff);
         border-radius: 8px;
-        border: 1px solid #e8e9ff;
+        border: 1px solid var(--border-color, #e8e9ff);
     }
     
     .port-arrow {
-        color: #5b5fcf;
+        color: var(--accent-color, #5b5fcf);
         font-size: 1.25rem;
     }
     
     .port-label {
         font-size: 0.75rem;
-        color: #64748b;
+        color: var(--text-secondary, #64748b);
         margin-bottom: 0.25rem;
         font-weight: 600;
         text-transform: uppercase;
@@ -281,7 +281,7 @@
     }
     
     .dynamic-section {
-        background: #f8f9ff;
+        background: var(--bg-hover, #f8f9ff);
         border-radius: 12px;
         padding: 1.5rem;
         margin-top: 1.5rem;
@@ -297,7 +297,7 @@
     .dynamic-title {
         font-size: 0.875rem;
         font-weight: 600;
-        color: #1e293b;
+        color: var(--text-primary, #1e293b);
         text-transform: uppercase;
         letter-spacing: 0.05em;
     }
@@ -309,9 +309,9 @@
         align-items: center;
         margin-bottom: 1rem;
         padding: 1rem;
-        background: white;
+        background: var(--bg-secondary, white);
         border-radius: 8px;
-        border: 1px solid #e8e9ff;
+        border: 1px solid var(--border-color, #e8e9ff);
     }
     
     .btn {
@@ -328,31 +328,31 @@
     }
     
     .btn-primary {
-        background: #5b5fcf;
-        color: white;
+        background: var(--accent-color, #5b5fcf);
+        color: var(--bg-secondary, white);
     }
     
     .btn-primary:hover {
-        background: #4547a9;
+        background: var(--accent-hover, #4547a9);
         transform: translateY(-2px);
         box-shadow: 0 4px 12px rgba(91, 95, 207, 0.3);
     }
     
     .btn-secondary {
-        background: white;
-        color: #5b5fcf;
-        border: 1px solid #e8e9ff;
+        background: var(--bg-secondary, white);
+        color: var(--accent-color, #5b5fcf);
+        border: 1px solid var(--border-color, #e8e9ff);
     }
     
     .btn-secondary:hover {
-        background: #f8f9ff;
-        border-color: #5b5fcf;
+        background: var(--bg-hover, #f8f9ff);
+        border-color: var(--accent-color, #5b5fcf);
         transform: translateY(-2px);
     }
     
     .btn-danger {
         background: #fee2e2;
-        color: #ef4444;
+        color: var(--danger-color, #ef4444);
         border: 1px solid #fecaca;
     }
     
@@ -362,8 +362,8 @@
     }
     
     .btn-success {
-        background: #d1fae5;
-        color: #065f46;
+        background: var(--success-bg, #d1fae5);
+        color: var(--success-text, #065f46);
         border: 1px solid #a7f3d0;
     }
     
@@ -382,8 +382,8 @@
         gap: 1rem;
         margin-top: 2rem;
         padding: 2rem;
-        background: #f8f9ff;
-        border-top: 1px solid #e8e9ff;
+        background: var(--bg-hover, #f8f9ff);
+        border-top: 1px solid var(--border-color, #e8e9ff);
     }
     
     .status-message {
@@ -404,8 +404,8 @@
     }
     
     .status-success {
-        background: #d1fae5;
-        color: #065f46;
+        background: var(--success-bg, #d1fae5);
+        color: var(--success-text, #065f46);
     }
     
     .status-error {
@@ -416,12 +416,12 @@
     .status-title {
         font-size: 1.25rem;
         font-weight: 600;
-        color: #1e293b;
+        color: var(--text-primary, #1e293b);
         margin-bottom: 0.5rem;
     }
     
     .status-text {
-        color: #64748b;
+        color: var(--text-secondary, #64748b);
         font-size: 0.875rem;
     }
     
@@ -429,7 +429,7 @@
         width: 40px;
         height: 40px;
         border: 4px solid #e8e9ff;
-        border-top-color: #5b5fcf;
+        border-top-color: var(--accent-color, #5b5fcf);
         border-radius: 50%;
         animation: spin 1s linear infinite;
         margin: 0 auto;
@@ -441,7 +441,7 @@
     }
     
     .tooltip-icon {
-        color: #64748b;
+        color: var(--text-secondary, #64748b);
         font-size: 0.875rem;
     }
     
@@ -455,8 +455,8 @@
         bottom: 100%;
         left: 50%;
         transform: translateX(-50%);
-        background: #1e293b;
-        color: white;
+        background: var(--text-primary, #1e293b);
+        color: var(--bg-secondary, white);
         padding: 0.5rem 1rem;
         border-radius: 6px;
         font-size: 0.75rem;
@@ -471,7 +471,7 @@
         left: 50%;
         transform: translateX(-50%);
         border: 5px solid transparent;
-        border-top-color: #1e293b;
+        border-top-color: var(--text-primary, #1e293b);
     }
     
     @keyframes spin {
@@ -544,7 +544,7 @@
         <div class="header-content">
             <h1 class="page-title">
                 <div class="docker-icon">
-                    <i class="fab fa-docker" style="color: #5b5fcf; font-size: 1.75rem;"></i>
+                    <i class="fab fa-docker" style="color: var(--accent-color, #5b5fcf); font-size: 1.75rem;"></i>
                 </div>
                 {% trans "Create New Container" %}
             </h1>

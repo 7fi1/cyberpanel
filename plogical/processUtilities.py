@@ -127,7 +127,7 @@ class ProcessUtilities(multi.Thread):
                     res = subprocess.call(command, shell=shell, stdout=f, stderr=f)
 
             if os.path.exists(ProcessUtilities.debugPath):
-                logging.writeToFile(command)
+                logging.writeToFile(f"{command} [Exit Code: {res}]")
 
             if res == 0:
                 return 1
@@ -226,18 +226,64 @@ class ProcessUtilities(multi.Thread):
                 time.sleep(2)
 
     @staticmethod
-    def sendCommand(command, user=None, dir=None):
+    def sendCommand(command, user=None, dir=None, retries=3):
+        """
+        Send command to lscpd with retry mechanism
+        
+        :param command: Command to execute
+        :param user: User to run command as
+        :param dir: Directory to run command in
+        :param retries: Number of retry attempts if connection fails
+        """
+        attempt = 0
+        last_error = None
+        ret = None
+        
+        while attempt < retries:
+            try:
+                ret = ProcessUtilities.setupUDSConnection()
+
+                if ret[0] == -1:
+                    attempt += 1
+                    last_error = ret[1]
+                    if attempt < retries:
+                        logging.writeToFile(f"[sendCommand] Connection failed, attempt {attempt}/{retries}. Retrying in 2 seconds...")
+                        time.sleep(2)
+                        # Try to restart lscpd if this is the second attempt
+                        if attempt == 2:
+                            logging.writeToFile("[sendCommand] Attempting to restart lscpd service...")
+                            try:
+                                subprocess.run(['systemctl', 'restart', 'lscpd'], capture_output=True, text=True)
+                                time.sleep(3)  # Give lscpd time to start
+                            except Exception as e:
+                                logging.writeToFile(f"[sendCommand] Failed to restart lscpd: {str(e)}")
+                        continue
+                    else:
+                        logging.writeToFile(f"[sendCommand] All connection attempts failed. Last error: {last_error}")
+                        return f"-1Connection failed after {retries} attempts: {last_error}"
+                
+                # If we get here, connection succeeded
+                break
+                
+            except Exception as e:
+                attempt += 1
+                last_error = str(e)
+                if attempt < retries:
+                    logging.writeToFile(f"[sendCommand] Unexpected error, attempt {attempt}/{retries}: {last_error}")
+                    time.sleep(2)
+                    continue
+                else:
+                    return f"-1Error after {retries} attempts: {last_error}"
+        
         try:
-            ret = ProcessUtilities.setupUDSConnection()
-
-            if ret[0] == -1:
-                return ret[0]
-
+            # At this point, we have a successful connection
+            if ret is None:
+                return "-1Internal error: connection result is None"
+            sock = ret[0]
+            
             if ProcessUtilities.token == "unset":
                 ProcessUtilities.token = os.environ.get('TOKEN')
                 del os.environ['TOKEN']
-
-            sock = ret[0]
 
             if user == None:
                 if command.find('export') > -1:
@@ -246,8 +292,8 @@ class ProcessUtilities(multi.Thread):
                     command = 'sudo %s' % (command)
 
                 if os.path.exists(ProcessUtilities.debugPath):
-                    if command.find('cat') == -1:
-                        logging.writeToFile(ProcessUtilities.token + command)
+                    # Log all commands for debugging
+                    logging.writeToFile(command)
 
                 if dir == None:
                     sock.sendall((ProcessUtilities.token + command).encode('utf-8'))
@@ -266,8 +312,8 @@ class ProcessUtilities(multi.Thread):
 
 
                 if os.path.exists(ProcessUtilities.debugPath):
-                    if command.find('cat') == -1:
-                        logging.writeToFile(command)
+                    # Log all commands for debugging
+                    logging.writeToFile(command)
 
                 sock.sendall(command.encode('utf-8'))
 
@@ -288,6 +334,27 @@ class ProcessUtilities(multi.Thread):
                 data = ""
 
             sock.close()
+            
+            # Log exit code if debug is enabled
+            if os.path.exists(ProcessUtilities.debugPath):
+                if len(data) == 0:
+                    logging.writeToFile(f"    └─ Empty response from lscpd")
+                else:
+                    try:
+                        exit_char = data[-1]
+                        # Log raw data for debugging
+                        logging.writeToFile(f"    └─ Response length: {len(data)}, last char: {repr(exit_char)}")
+                        
+                        if isinstance(exit_char, str):
+                            exit_code = ord(exit_char)
+                        else:
+                            exit_code = "unknown"
+                        # Log the actual command that was executed (without token)
+                        clean_command = command.replace(ProcessUtilities.token, '').replace('-u %s ' % user if user else '', '').replace('-d %s ' % dir if dir else '', '').strip()
+                        logging.writeToFile(f"    └─ {clean_command} [Exit Code: {exit_code}]")
+                    except Exception as e:
+                        logging.writeToFile(f"    └─ Failed to log exit code: {str(e)}")
+            
             #logging.writeToFile('Final data: %s.' % (str(data)))
 
             return data
@@ -298,18 +365,46 @@ class ProcessUtilities(multi.Thread):
     @staticmethod
     def executioner(command, user=None, shell=False):
         try:
+            if os.path.exists(ProcessUtilities.debugPath):
+                logging.writeToFile(f"[executioner] Called with command: {command}, user: {user}, shell: {shell}")
+            
             if getpass.getuser() == 'root':
+                if os.path.exists(ProcessUtilities.debugPath):
+                    logging.writeToFile(f"[executioner] Running as root, using normalExecutioner")
                 ProcessUtilities.normalExecutioner(command, shell, user)
                 return 1
 
+            if os.path.exists(ProcessUtilities.debugPath):
+                logging.writeToFile(f"[executioner] Not root, using sendCommand via lscpd")
+            
             ret = ProcessUtilities.sendCommand(command, user)
 
-            exitCode = ret[len(ret) -1]
-            exitCode = int(codecs.encode(exitCode.encode(), 'hex'))
-
-            if exitCode == 0:
-                return 1
-            else:
+            # Check if we got any response
+            if not ret or len(ret) == 0:
+                logging.writeToFile("Empty response from lscpd for command: %s" % command)
+                return 0
+            
+            # Extract exit code from last character
+            try:
+                exitCode = ret[-1]
+                # Convert the last character to its ASCII value
+                if isinstance(exitCode, str):
+                    exitCode = ord(exitCode)
+                elif isinstance(exitCode, bytes):
+                    exitCode = exitCode[0] if len(exitCode) > 0 else 1
+                else:
+                    # Try the original hex encoding method as fallback
+                    exitCode = int(codecs.encode(exitCode.encode(), 'hex'))
+                
+                if os.path.exists(ProcessUtilities.debugPath):
+                    logging.writeToFile(f'Exit code from lscpd: {exitCode} for command: {command}')
+                
+                if exitCode == 0:
+                    return 1
+                else:
+                    return 0
+            except Exception as e:
+                logging.writeToFile(f"Failed to parse exit code: {str(e)} for command: {command}")
                 return 0
 
         except BaseException as msg:
@@ -319,9 +414,6 @@ class ProcessUtilities(multi.Thread):
     @staticmethod
     def outputExecutioner(command, user=None, shell = None, dir = None, retRequired = None):
         try:
-            if os.path.exists('/usr/local/CyberCP/debug'):
-                logging.writeToFile(command)
-
             if getpass.getuser() == 'root':
                 if os.path.exists(ProcessUtilities.debugPath):
                     logging.writeToFile(command)
@@ -341,9 +433,20 @@ class ProcessUtilities(multi.Thread):
                     p = subprocess.Popen(shlex.split(command),  stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=env, encoding='utf-8', errors='replace')
 
                 if retRequired:
-                    return 1, p.communicate()[0]
+                    output, _ = p.communicate()
+                    exit_code = p.returncode
+                    if os.path.exists(ProcessUtilities.debugPath):
+                        logging.writeToFile(f"    └─ [Exit Code: {exit_code}]")
+                    if exit_code == 0:
+                        return 1, output
+                    else:
+                        return 0, output
                 else:
-                    return p.communicate()[0]
+                    output = p.communicate()[0]
+                    exit_code = p.returncode
+                    if os.path.exists(ProcessUtilities.debugPath):
+                        logging.writeToFile(f"    └─ [Exit Code: {exit_code}]")
+                    return output
 
             if type(command) == list:
                 command = " ".join(command)
@@ -351,17 +454,37 @@ class ProcessUtilities(multi.Thread):
             if retRequired:
                 ret = ProcessUtilities.sendCommand(command, user)
 
-                exitCode = ret[len(ret) - 1]
-
-                if os.path.exists(ProcessUtilities.debugPath):
-                    logging.writeToFile(f'Status of command in outputExecutioner is {str(exitCode)}')
-
-                exitCode = int(codecs.encode(exitCode.encode(), 'hex'))
-
-                if exitCode == 0:
-                    return 1, ret[:-1]
-                else:
-                    return 0, ret[:-1]
+                # Check if we got any response
+                if not ret or len(ret) == 0:
+                    logging.writeToFile("Empty response from lscpd in outputExecutioner for command: %s" % command)
+                    return 0, ""
+                
+                # Extract exit code from last character
+                try:
+                    exitCode = ret[-1]
+                    
+                    if os.path.exists(ProcessUtilities.debugPath):
+                        logging.writeToFile(f'Raw exit code character in outputExecutioner: {repr(exitCode)}')
+                    
+                    # Convert the last character to its ASCII value
+                    if isinstance(exitCode, str):
+                        exitCode = ord(exitCode)
+                    elif isinstance(exitCode, bytes):
+                        exitCode = exitCode[0] if len(exitCode) > 0 else 1
+                    else:
+                        # Try the original hex encoding method as fallback
+                        exitCode = int(codecs.encode(exitCode.encode(), 'hex'))
+                    
+                    if os.path.exists(ProcessUtilities.debugPath):
+                        logging.writeToFile(f'Parsed exit code in outputExecutioner: {exitCode} for command: {command}')
+                    
+                    if exitCode == 0:
+                        return 1, ret[:-1]
+                    else:
+                        return 0, ret[:-1]
+                except Exception as e:
+                    logging.writeToFile(f"Failed to parse exit code in outputExecutioner: {str(e)} for command: {command}")
+                    return 0, ret[:-1] if len(ret) > 1 else ""
             else:
                 return ProcessUtilities.sendCommand(command, user, dir)[:-1]
         except BaseException as msg:

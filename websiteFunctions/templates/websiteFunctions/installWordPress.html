@@ -54,7 +54,7 @@
         margin: 0 auto;
         padding: 20px;
         min-height: 100vh;
-        background: linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%);
+        background: linear-gradient(180deg, var(--bg-primary, #f8fafc) 0%, var(--bg-hover, #e2e8f0) 100%);
     }
     
     /* Page Title Section */
@@ -108,10 +108,10 @@
     
     /* Main Panel */
     .panel {
-        background: var(--bg-card);
+        background: var(--bg-secondary, white);
         border-radius: var(--radius-xl);
         box-shadow: var(--shadow-lg);
-        border: 1px solid var(--border-color);
+        border: 1px solid var(--border-color, #e2e8f0);
         overflow: hidden;
         position: relative;
     }
@@ -122,13 +122,13 @@
     
     /* Content Box Header */
     .title-hero {
-        background: linear-gradient(135deg, var(--primary-light) 0%, var(--bg-light) 100%);
+        background: linear-gradient(135deg, var(--bg-hover, #eef2ff) 0%, var(--bg-primary, #f8fafc) 100%);
         padding: 25px 30px;
         margin: 0;
         font-size: 20px;
         font-weight: 700;
-        color: var(--text-primary);
-        border-bottom: 1px solid var(--border-color);
+        color: var(--text-heading, #2f3640);
+        border-bottom: 1px solid var(--border-color, #e2e8f0);
         letter-spacing: -0.3px;
         display: flex;
         align-items: center;
@@ -141,7 +141,7 @@
     }
     
     .title-hero a {
-        color: var(--primary-color);
+        color: var(--accent-color, #6366f1);
         text-decoration: none;
         font-size: 14px;
         font-weight: 600;
@@ -152,7 +152,7 @@
     }
     
     .title-hero a:hover {
-        color: var(--primary-hover);
+        color: var(--accent-hover, #5558e3);
         text-decoration: underline;
     }
     
@@ -163,10 +163,10 @@
     
     /* Form Styling */
     .form-horizontal {
-        background: var(--bg-light);
+        background: var(--bg-hover, #f8fafc);
         padding: 30px;
         border-radius: var(--radius-lg);
-        border: 1px solid var(--border-color);
+        border: 1px solid var(--border-color, #e2e8f0);
     }
     
     .form-group {
@@ -180,7 +180,7 @@
     
     .control-label {
         font-weight: 600;
-        color: var(--text-primary);
+        color: var(--text-primary, #1e293b);
         margin-bottom: 8px;
         font-size: 14px;
         letter-spacing: 0.3px;
@@ -190,22 +190,22 @@
     }
     
     .form-control {
-        border: 2px solid var(--border-color);
-        border-radius: var(--radius-md);
+        border: 2px solid var(--border-color, #e2e8f0);
+        border-radius: var(--radius-md, 8px);
         padding: 12px 16px;
         font-size: 15px;
         transition: var(--transition-base);
-        background: white;
+        background: var(--bg-secondary, white);
     }
     
     .form-control:focus {
-        border-color: var(--primary-color);
+        border-color: var(--accent-color, #6366f1);
         box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
         outline: none;
     }
     
     .form-control::placeholder {
-        color: var(--text-muted);
+        color: var(--text-secondary, #94a3b8);
         font-size: 14px;
     }
     
@@ -276,11 +276,11 @@
     /* Progress Section */
     .progress {
         height: 12px;
-        border-radius: var(--radius-full);
-        background: var(--border-color);
+        border-radius: var(--radius-full, 9999px);
+        background: var(--border-color, #e2e8f0);
         overflow: hidden;
         margin-top: 15px;
-        box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+        box-shadow: inset 0 1px 3px var(--shadow-color, rgba(0,0,0,0.1));
     }
     
     .progress-bar {
@@ -316,31 +316,31 @@
     }
     
     .alert-success {
-        background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
-        color: #065f46;
-        border: 1px solid #6ee7b7;
+        background: linear-gradient(135deg, var(--success-bg, #d1fae5) 0%, var(--success-light, #a7f3d0) 100%);
+        color: var(--success-text, #065f46);
+        border: 1px solid var(--success-border, #6ee7b7);
     }
     
     .alert-success a {
-        color: #065f46;
+        color: var(--success-text, #065f46);
         font-weight: 600;
         text-decoration: underline;
     }
     
     .alert-danger {
-        background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
-        color: #991b1b;
-        border: 1px solid #fca5a5;
+        background: linear-gradient(135deg, var(--danger-bg, #fee2e2) 0%, var(--danger-light, #fecaca) 100%);
+        color: var(--danger-text, #991b1b);
+        border: 1px solid var(--danger-border, #fca5a5);
     }
     
     /* Info Box */
     .info-box {
-        background: linear-gradient(135deg, #e0e7ff 0%, #cdd4f9 100%);
-        border: 1px solid #c7d2fe;
-        border-radius: var(--radius-lg);
+        background: linear-gradient(135deg, var(--info-bg, #e0e7ff) 0%, var(--info-light, #cdd4f9) 100%);
+        border: 1px solid var(--info-border, #c7d2fe);
+        border-radius: var(--radius-lg, 12px);
         padding: 20px;
         margin-bottom: 25px;
-        color: var(--primary-color);
+        color: var(--accent-color, #6366f1);
         font-size: 14px;
         line-height: 1.6;
         display: flex;

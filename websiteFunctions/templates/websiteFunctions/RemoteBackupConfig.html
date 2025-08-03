@@ -17,18 +17,18 @@
     }
     
     .backup-section {
-        background: white;
+        background: var(--bg-secondary, white);
         border-radius: 12px;
         padding: 25px;
         margin-bottom: 25px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        border: 1px solid #e8e9ff;
+        box-shadow: 0 2px 8px var(--shadow-color, rgba(0,0,0,0.08));
+        border: 1px solid var(--border-color, #e8e9ff);
     }
     
     .section-title {
         font-size: 16px;
         font-weight: 700;
-        color: #2f3640;
+        color: var(--text-heading, #2f3640);
         margin-bottom: 20px;
         display: flex;
         align-items: center;
@@ -41,7 +41,7 @@
         content: '';
         width: 4px;
         height: 24px;
-        background: #5b5fcf;
+        background: var(--accent-color, #5b5fcf);
         border-radius: 2px;
     }
     
@@ -60,7 +60,7 @@
     .form-label {
         font-size: 13px;
         font-weight: 600;
-        color: #2f3640;
+        color: var(--text-primary, #2f3640);
         text-transform: uppercase;
         letter-spacing: 0.5px;
         text-align: right;
@@ -70,17 +70,17 @@
         width: 100%;
         max-width: 400px;
         padding: 12px 16px;
-        border: 1px solid #e8e9ff;
+        border: 1px solid var(--border-color, #e8e9ff);
         border-radius: 8px;
         font-size: 14px;
-        color: #2f3640;
-        background: white;
+        color: var(--text-primary, #2f3640);
+        background: var(--bg-secondary, white);
         transition: all 0.2s ease;
     }
     
     .form-control:focus {
         outline: none;
-        border-color: #5b5fcf;
+        border-color: var(--accent-color, #5b5fcf);
         box-shadow: 0 0 0 3px rgba(91,95,207,0.1);
     }
     
@@ -89,8 +89,8 @@
     }
     
     .btn-primary {
-        background: #5b5fcf;
-        border: 1px solid #5b5fcf;
+        background: var(--accent-color, #5b5fcf);
+        border: 1px solid var(--accent-color, #5b5fcf);
         color: white;
         padding: 12px 24px;
         border-radius: 8px;
@@ -105,8 +105,8 @@
     }
     
     .btn-primary:hover {
-        background: #4b4fbf;
-        border-color: #4b4fbf;
+        background: var(--accent-hover, #4a4fc4);
+        border-color: var(--accent-hover, #4a4fc4);
         box-shadow: 0 3px 8px rgba(91,95,207,0.3);
         transform: translateY(-1px);
     }
@@ -129,8 +129,8 @@
     
     /* Table Styles */
     .table-container {
-        background: #fafbff;
-        border: 1px solid #e8e9ff;
+        background: var(--bg-hover, #f8f9ff);
+        border: 1px solid var(--border-color, #e8e9ff);
         border-radius: 8px;
         overflow: hidden;
     }
@@ -138,11 +138,11 @@
     .table {
         width: 100%;
         margin-bottom: 0;
-        background: white;
+        background: var(--bg-secondary, white);
     }
     
     .table thead {
-        background: #fafbff;
+        background: var(--bg-hover, #f8f9ff);
     }
     
     .table th {
@@ -150,23 +150,23 @@
         padding: 15px;
         font-size: 13px;
         font-weight: 700;
-        color: #8893a7;
+        color: var(--text-secondary, #8893a7);
         text-transform: uppercase;
         letter-spacing: 0.5px;
-        border-bottom: 1px solid #e8e9ff;
+        border-bottom: 1px solid var(--border-color, #e8e9ff);
     }
     
     .table td {
         border: none;
         padding: 15px;
         font-size: 14px;
-        color: #2f3640;
+        color: var(--text-primary, #2f3640);
         border-bottom: 1px solid #f1f3f5;
         vertical-align: middle;
     }
     
     .table tbody tr:hover {
-        background: #fafbff;
+        background: var(--bg-hover, #f8f9ff);
     }
     
     .table tbody tr:last-child td {
@@ -183,13 +183,13 @@
     }
     
     .backup-type.sftp {
-        background: #e0f2fe;
-        color: #0369a1;
+        background: var(--info-bg, #e0f2fe);
+        color: var(--info-text, #0369a1);
     }
     
     .backup-type.s3 {
-        background: #fef3c7;
-        color: #92400e;
+        background: var(--warning-bg, #fef3c7);
+        color: var(--warning-text, #92400e);
     }
     
     /* Action Buttons */
@@ -211,35 +211,35 @@
     }
     
     .btn-schedule {
-        color: #10b981;
+        color: var(--success-text, #065f46);
         border-color: #d1fae5;
-        background: #f0fdf4;
+        background: var(--success-bg, #f0fdf4);
     }
     
     .btn-schedule:hover {
-        background: #10b981;
+        background: var(--success-text, #065f46);
         color: white;
-        border-color: #10b981;
+        border-color: var(--success-text, #065f46);
         text-decoration: none;
     }
     
     .btn-delete {
-        color: #ef4444;
+        color: var(--danger-text, #ef4444);
         border-color: #fee2e2;
-        background: #fef2f2;
+        background: var(--danger-bg, #fef2f2);
     }
     
     .btn-delete:hover {
-        background: #ef4444;
+        background: var(--danger-text, #ef4444);
         color: white;
-        border-color: #ef4444;
+        border-color: var(--danger-text, #ef4444);
     }
     
     /* Empty State */
     .empty-state {
         text-align: center;
         padding: 60px 20px;
-        color: #8893a7;
+        color: var(--text-secondary, #8893a7);
     }
     
     .empty-state svg {
@@ -252,7 +252,7 @@
     .empty-state h3 {
         font-size: 18px;
         font-weight: 600;
-        color: #2f3640;
+        color: var(--text-heading, #2f3640);
         margin-bottom: 10px;
     }
     
@@ -268,12 +268,12 @@
     
     /* Info Alert */
     .info-alert {
-        background: #f0f9ff;
+        background: var(--info-bg, #e0f2fe);
         border: 1px solid #bae6fd;
         border-radius: 8px;
         padding: 15px;
         margin-bottom: 20px;
-        color: #0c4a6e;
+        color: var(--info-text, #0369a1);
         font-size: 14px;
         display: flex;
         align-items: center;
@@ -281,7 +281,7 @@
     }
     
     .info-alert i {
-        color: #0284c7;
+        color: var(--info-text, #0369a1);
     }
     
     /* Responsive */

@@ -430,11 +430,11 @@ function deleteAssignment(url) {
                 </button>
             </div>
             <div class="modal-body">
-                <p style="font-size: 14px; color: #2f3640;">
-                    <i class="fas fa-exclamation-triangle" style="color: #ff9800; margin-right: 8px;"></i>
+                <p style="font-size: 14px; color: var(--text-primary, #2f3640);">
+                    <i class="fas fa-exclamation-triangle" style="color: var(--warning-color, #ff9800); margin-right: 8px;"></i>
                     {% trans "Are you sure you want to delete this package assignment?" %}
                 </p>
-                <p style="font-size: 13px; color: #8893a7; margin-top: 10px;">
+                <p style="font-size: 13px; color: var(--text-secondary, #8893a7); margin-top: 10px;">
                     {% trans "The user will no longer have access to this Docker package." %}
                 </p>
             </div>

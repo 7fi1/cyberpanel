@@ -17,18 +17,18 @@
     }
     
     .ssl-section {
-        background: white;
+        background: var(--bg-secondary, white);
         border-radius: 12px;
         padding: 25px;
         margin-bottom: 25px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        border: 1px solid #e8e9ff;
+        box-shadow: 0 2px 8px var(--shadow-color, rgba(0,0,0,0.08));
+        border: 1px solid var(--border-color, #e8e9ff);
     }
     
     .section-title {
         font-size: 16px;
         font-weight: 700;
-        color: #2f3640;
+        color: var(--text-primary, #2f3640);
         margin-bottom: 20px;
         display: flex;
         align-items: center;
@@ -41,12 +41,12 @@
         content: '';
         width: 4px;
         height: 24px;
-        background: #5b5fcf;
+        background: var(--accent-color, #5b5fcf);
         border-radius: 2px;
     }
     
     .ssl-description {
-        color: #8893a7;
+        color: var(--text-muted, #8893a7);
         font-size: 14px;
         margin-bottom: 25px;
         line-height: 1.5;
@@ -60,8 +60,8 @@
     }
     
     .function-card {
-        background: #fafbff;
-        border: 1px solid #e8e9ff;
+        background: var(--bg-light, #fafbff);
+        border: 1px solid var(--border-color, #e8e9ff);
         border-radius: 12px;
         padding: 25px;
         text-align: center;
@@ -72,8 +72,8 @@
     }
     
     .function-card:hover {
-        background: #f8f9ff;
-        border-color: #5b5fcf;
+        background: var(--bg-hover, #f8f9ff);
+        border-color: var(--accent-color, #5b5fcf);
         box-shadow: 0 6px 20px rgba(91,95,207,0.2);
         transform: translateY(-3px);
         text-decoration: none;
@@ -83,7 +83,7 @@
         width: 60px;
         height: 60px;
         margin: 0 auto 15px;
-        background: #5b5fcf;
+        background: var(--accent-color, #5b5fcf);
         border-radius: 50%;
         display: flex;
         align-items: center;
@@ -92,25 +92,25 @@
     }
     
     .function-card:hover .function-icon {
-        background: #4b4fbf;
-        box-shadow: 0 4px 12px rgba(91,95,207,0.3);
+        background: var(--accent-hover, #4b4fbf);
+        box-shadow: 0 4px 12px var(--accent-shadow, rgba(91,95,207,0.3));
     }
     
     .function-icon i {
         font-size: 24px;
-        color: white;
+        color: var(--bg-secondary, white);
     }
     
     .function-title {
         font-size: 16px;
         font-weight: 700;
-        color: #2f3640;
+        color: var(--text-primary, #2f3640);
         margin-bottom: 8px;
     }
     
     .function-desc {
         font-size: 13px;
-        color: #8893a7;
+        color: var(--text-muted, #8893a7);
         line-height: 1.5;
     }
     

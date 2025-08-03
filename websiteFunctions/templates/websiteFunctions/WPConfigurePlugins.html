@@ -17,18 +17,18 @@
     }
     
     .plugins-section {
-        background: white;
+        background: var(--bg-secondary, white);
         border-radius: 12px;
         padding: 25px;
         margin-bottom: 25px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        border: 1px solid #e8e9ff;
+        box-shadow: 0 2px 8px var(--shadow-color, rgba(0,0,0,0.08));
+        border: 1px solid var(--border-color, #e8e9ff);
     }
     
     .section-title {
         font-size: 16px;
         font-weight: 700;
-        color: #2f3640;
+        color: var(--text-heading, #2f3640);
         margin-bottom: 20px;
         display: flex;
         align-items: center;
@@ -41,12 +41,12 @@
         content: '';
         width: 4px;
         height: 24px;
-        background: #5b5fcf;
+        background: var(--accent-color, #5b5fcf);
         border-radius: 2px;
     }
     
     .plugins-description {
-        color: #8893a7;
+        color: var(--text-secondary, #8893a7);
         font-size: 14px;
         margin-bottom: 25px;
         line-height: 1.5;
@@ -62,8 +62,8 @@
     }
     
     .btn-primary {
-        background: #5b5fcf;
-        border: 1px solid #5b5fcf;
+        background: var(--accent-color, #5b5fcf);
+        border: 1px solid var(--accent-color, #5b5fcf);
         color: white;
         padding: 10px 20px;
         border-radius: 8px;
@@ -78,8 +78,8 @@
     }
     
     .btn-primary:hover {
-        background: #4b4fbf;
-        border-color: #4b4fbf;
+        background: var(--accent-hover, #4b4fbf);
+        border-color: var(--accent-hover, #4b4fbf);
         box-shadow: 0 3px 8px rgba(91,95,207,0.3);
         transform: translateY(-1px);
         text-decoration: none;
@@ -88,8 +88,8 @@
     
     /* Table Styles */
     .table-container {
-        background: #fafbff;
-        border: 1px solid #e8e9ff;
+        background: var(--bg-hover, #fafbff);
+        border: 1px solid var(--border-color, #e8e9ff);
         border-radius: 8px;
         overflow: hidden;
     }
@@ -97,11 +97,11 @@
     .table {
         width: 100%;
         margin-bottom: 0;
-        background: white;
+        background: var(--bg-secondary, white);
     }
     
     .table thead {
-        background: #fafbff;
+        background: var(--bg-hover, #fafbff);
     }
     
     .table th {
@@ -109,23 +109,23 @@
         padding: 15px;
         font-size: 13px;
         font-weight: 700;
-        color: #8893a7;
+        color: var(--text-secondary, #8893a7);
         text-transform: uppercase;
         letter-spacing: 0.5px;
-        border-bottom: 1px solid #e8e9ff;
+        border-bottom: 1px solid var(--border-color, #e8e9ff);
     }
     
     .table td {
         border: none;
         padding: 15px;
         font-size: 14px;
-        color: #2f3640;
-        border-bottom: 1px solid #f1f3f5;
+        color: var(--text-primary, #2f3640);
+        border-bottom: 1px solid var(--border-light, #f1f3f5);
         vertical-align: middle;
     }
     
     .table tbody tr:hover {
-        background: #fafbff;
+        background: var(--bg-hover, #fafbff);
     }
     
     .table tbody tr:last-child td {
@@ -151,35 +151,35 @@
     }
     
     .btn-edit {
-        color: #10b981;
-        border-color: #d1fae5;
-        background: #f0fdf4;
+        color: var(--success-accent, #10b981);
+        border-color: var(--success-border, #d1fae5);
+        background: var(--success-light, #f0fdf4);
     }
     
     .btn-edit:hover {
-        background: #10b981;
+        background: var(--success-accent, #10b981);
         color: white;
-        border-color: #10b981;
+        border-color: var(--success-accent, #10b981);
         text-decoration: none;
     }
     
     .btn-delete {
-        color: #ef4444;
-        border-color: #fee2e2;
-        background: #fef2f2;
+        color: var(--danger-accent, #ef4444);
+        border-color: var(--danger-border, #fee2e2);
+        background: var(--danger-light, #fef2f2);
     }
     
     .btn-delete:hover {
-        background: #ef4444;
+        background: var(--danger-accent, #ef4444);
         color: white;
-        border-color: #ef4444;
+        border-color: var(--danger-accent, #ef4444);
     }
     
     /* Empty State */
     .empty-state {
         text-align: center;
         padding: 60px 20px;
-        color: #8893a7;
+        color: var(--text-secondary, #8893a7);
     }
     
     .empty-state svg {
@@ -192,7 +192,7 @@
     .empty-state h3 {
         font-size: 18px;
         font-weight: 600;
-        color: #2f3640;
+        color: var(--text-heading, #2f3640);
         margin-bottom: 10px;
     }
     
@@ -204,13 +204,13 @@
     /* Modal Styles */
     .modal-content {
         border-radius: 12px;
-        border: 1px solid #e8e9ff;
-        box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        border: 1px solid var(--border-color, #e8e9ff);
+        box-shadow: 0 10px 40px var(--shadow-color, rgba(0,0,0,0.1));
     }
     
     .modal-header {
-        background: #fafbff;
-        border-bottom: 1px solid #e8e9ff;
+        background: var(--bg-hover, #fafbff);
+        border-bottom: 1px solid var(--border-color, #e8e9ff);
         padding: 20px;
         border-radius: 12px 12px 0 0;
     }
@@ -218,7 +218,7 @@
     .modal-title {
         font-size: 18px;
         font-weight: 700;
-        color: #2f3640;
+        color: var(--text-heading, #2f3640);
         margin: 0;
     }
     
@@ -227,16 +227,16 @@
     }
     
     .modal-footer {
-        background: #fafbff;
-        border-top: 1px solid #e8e9ff;
+        background: var(--bg-hover, #fafbff);
+        border-top: 1px solid var(--border-color, #e8e9ff);
         padding: 15px 20px;
         border-radius: 0 0 12px 12px;
     }
     
     .btn-default {
-        background: white;
-        border: 1px solid #e8e9ff;
-        color: #2f3640;
+        background: var(--bg-secondary, white);
+        border: 1px solid var(--border-color, #e8e9ff);
+        color: var(--text-primary, #2f3640);
         padding: 8px 20px;
         border-radius: 6px;
         font-size: 14px;
@@ -246,9 +246,9 @@
     }
     
     .btn-default:hover {
-        background: #f8f9ff;
-        border-color: #5b5fcf;
-        color: #5b5fcf;
+        background: var(--bg-hover, #f8f9ff);
+        border-color: var(--accent-color, #5b5fcf);
+        color: var(--accent-color, #5b5fcf);
     }
     
     .btn-danger {

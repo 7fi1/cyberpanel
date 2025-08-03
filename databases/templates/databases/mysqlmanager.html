@@ -8,6 +8,68 @@
 <!-- Current language: {{ LANGUAGE_CODE }} -->
 
 <style>
+    :root {
+        /* Light mode variables */
+        --bg-primary: #f8f9ff;
+        --bg-secondary: #ffffff;
+        --bg-card: #ffffff;
+        --bg-hover: #f8f9ff;
+        --bg-gradient-primary: linear-gradient(135deg, #f8f9ff 0%, #f0f1ff 100%);
+        --bg-gradient-uptime: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+        --bg-gradient-connections: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+        --bg-gradient-slow-queries: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+        --text-primary: #1e293b;
+        --text-secondary: #64748b;
+        --text-muted: #94a3b8;
+        --border-color: #e8e9ff;
+        --border-light: #f3f4f6;
+        --shadow-color: rgba(0,0,0,0.05);
+        --shadow-color-md: rgba(0,0,0,0.08);
+        --shadow-color-lg: rgba(0,0,0,0.12);
+        --accent-color: #5b5fcf;
+        --accent-hover: #4547a9;
+        --accent-light: #e0e7ff;
+        --success-color: #10b981;
+        --warning-color: #f59e0b;
+        --warning-bg: #fef3c7;
+        --warning-text: #92400e;
+        --info-color: #0ea5e9;
+        --success-bg: #d1fae5;
+        --success-text: #065f46;
+        --icon-color: #cbd5e1;
+    }
+    
+    [data-theme="dark"] {
+        /* Dark mode variables */
+        --bg-primary: #0f0f23;
+        --bg-secondary: #1a1a3e;
+        --bg-card: #1e1e42;
+        --bg-hover: #252550;
+        --bg-gradient-primary: linear-gradient(135deg, #16162e 0%, #1a1a3e 100%);
+        --bg-gradient-uptime: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+        --bg-gradient-connections: linear-gradient(135deg, #064e3b 0%, #022c22 100%);
+        --bg-gradient-slow-queries: linear-gradient(135deg, #78350f 0%, #451a03 100%);
+        --text-primary: #e4e4e7;
+        --text-secondary: #9ca3af;
+        --text-muted: #6b7280;
+        --border-color: #2a2a5e;
+        --border-light: #374151;
+        --shadow-color: rgba(0,0,0,0.3);
+        --shadow-color-md: rgba(0,0,0,0.4);
+        --shadow-color-lg: rgba(0,0,0,0.5);
+        --accent-color: #7c7ff3;
+        --accent-hover: #6b6ee8;
+        --accent-light: #3730a3;
+        --success-color: #34d399;
+        --warning-color: #fbbf24;
+        --warning-bg: #78350f;
+        --warning-text: #fbbf24;
+        --info-color: #60a5fa;
+        --success-bg: #064e3b;
+        --success-text: #34d399;
+        --icon-color: #6b7280;
+    }
+    
     .modern-container {
         max-width: 1400px;
         margin: 0 auto;
@@ -18,7 +80,7 @@
         text-align: center;
         margin-bottom: 3rem;
         padding: 3rem 0;
-        background: linear-gradient(135deg, #f8f9ff 0%, #f0f1ff 100%);
+        background: var(--bg-gradient-primary);
         border-radius: 20px;
         animation: fadeInDown 0.5s ease-out;
         position: relative;
@@ -32,14 +94,14 @@
         right: -50%;
         width: 200%;
         height: 200%;
-        background: radial-gradient(circle at 70% 30%, rgba(91, 95, 207, 0.15) 0%, transparent 50%);
+        background: radial-gradient(circle at 70% 30%, var(--accent-color, rgba(91, 95, 207, 0.15)) 0%, transparent 50%);
         animation: rotate 30s linear infinite;
     }
     
     .page-title {
         font-size: 3rem;
         font-weight: 700;
-        color: #1e293b;
+        color: var(--text-primary);
         margin-bottom: 1rem;
         display: flex;
         align-items: center;
@@ -52,17 +114,17 @@
     .mysql-icon {
         width: 60px;
         height: 60px;
-        background: white;
+        background: var(--bg-secondary);
         border-radius: 12px;
         display: flex;
         align-items: center;
         justify-content: center;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        box-shadow: 0 4px 12px var(--shadow-color-lg);
     }
     
     .page-subtitle {
         font-size: 1.25rem;
-        color: #64748b;
+        color: var(--text-secondary);
         margin-bottom: 1.5rem;
         position: relative;
         z-index: 1;
@@ -78,8 +140,8 @@
     }
     
     .btn-primary {
-        background: #5b5fcf;
-        color: white;
+        background: var(--accent-color);
+        color: var(--bg-secondary);
         border: none;
         padding: 0.75rem 2rem;
         border-radius: 10px;
@@ -94,16 +156,16 @@
     }
     
     .btn-primary:hover {
-        background: #4547a9;
+        background: var(--accent-hover);
         transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(91, 95, 207, 0.4);
-        color: white;
+        box-shadow: 0 8px 20px var(--shadow-color-lg);
+        color: var(--bg-secondary);
     }
     
     .btn-secondary {
-        background: #fff;
-        color: #5b5fcf;
-        border: 1px solid #e8e9ff;
+        background: var(--bg-secondary);
+        color: var(--accent-color);
+        border: 1px solid var(--border-color);
         padding: 0.75rem 2rem;
         border-radius: 10px;
         font-weight: 500;
@@ -117,10 +179,10 @@
     }
     
     .btn-secondary:hover {
-        background: #f8f9ff;
-        border-color: #5b5fcf;
+        background: var(--bg-hover);
+        border-color: var(--accent-color);
         transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(91, 95, 207, 0.2);
+        box-shadow: 0 4px 12px var(--shadow-color-md);
     }
     
     .stats-grid {
@@ -131,11 +193,11 @@
     }
     
     .stat-card {
-        background: white;
+        background: var(--bg-card);
         border-radius: 16px;
         padding: 2rem;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 10px 40px rgba(0,0,0,0.08);
-        border: 1px solid #e8e9ff;
+        box-shadow: 0 1px 3px var(--shadow-color), 0 10px 40px var(--shadow-color-md);
+        border: 1px solid var(--border-color);
         position: relative;
         overflow: hidden;
         transition: all 0.3s ease;
@@ -144,22 +206,22 @@
     
     .stat-card:hover {
         transform: translateY(-5px);
-        box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 20px 60px rgba(0,0,0,0.12);
+        box-shadow: 0 1px 3px var(--shadow-color), 0 20px 60px var(--shadow-color-lg);
     }
     
     .stat-card.uptime {
-        background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
-        border-color: #bae6fd;
+        background: var(--bg-gradient-uptime);
+        border-color: var(--info-color);
     }
     
     .stat-card.connections {
-        background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
-        border-color: #bbf7d0;
+        background: var(--bg-gradient-connections);
+        border-color: var(--success-color);
     }
     
     .stat-card.slow-queries {
-        background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-        border-color: #fcd34d;
+        background: var(--bg-gradient-slow-queries);
+        border-color: var(--warning-color);
     }
     
     .stat-header {
@@ -172,7 +234,7 @@
     .stat-title {
         font-size: 1rem;
         font-weight: 600;
-        color: #64748b;
+        color: var(--text-secondary);
         text-transform: uppercase;
         letter-spacing: 0.05em;
     }
@@ -180,43 +242,43 @@
     .stat-icon {
         width: 48px;
         height: 48px;
-        background: white;
+        background: var(--bg-secondary);
         border-radius: 12px;
         display: flex;
         align-items: center;
         justify-content: center;
         font-size: 1.5rem;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        box-shadow: 0 2px 8px var(--shadow-color-lg);
     }
     
     .stat-value {
         font-size: 2.5rem;
         font-weight: 700;
-        color: #1e293b;
+        color: var(--text-primary);
         margin: 0;
         line-height: 1;
     }
     
     .stat-label {
         font-size: 0.875rem;
-        color: #64748b;
+        color: var(--text-secondary);
         margin-top: 0.5rem;
     }
     
     .main-card {
-        background: white;
+        background: var(--bg-card);
         border-radius: 16px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 10px 40px rgba(0,0,0,0.08);
-        border: 1px solid #e8e9ff;
+        box-shadow: 0 1px 3px var(--shadow-color), 0 10px 40px var(--shadow-color-md);
+        border: 1px solid var(--border-color);
         overflow: hidden;
         margin-bottom: 2rem;
         animation: fadeInUp 0.5s ease-out;
     }
     
     .card-header {
-        background: linear-gradient(135deg, #f8f9ff 0%, #f0f1ff 100%);
+        background: var(--bg-gradient-primary);
         padding: 1.5rem 2rem;
-        border-bottom: 1px solid #e8e9ff;
+        border-bottom: 1px solid var(--border-color);
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -225,7 +287,7 @@
     .card-title {
         font-size: 1.25rem;
         font-weight: 600;
-        color: #1e293b;
+        color: var(--text-primary);
         margin: 0;
         display: flex;
         align-items: center;
@@ -238,30 +300,30 @@
     
     .processes-table {
         width: 100%;
-        background: white;
+        background: var(--bg-card);
     }
     
     .processes-table thead {
-        background: #f8f9ff;
+        background: var(--bg-hover);
     }
     
     .processes-table th {
         padding: 1rem;
         text-align: left;
         font-weight: 600;
-        color: #1e293b;
+        color: var(--text-primary);
         font-size: 0.875rem;
         text-transform: uppercase;
         letter-spacing: 0.05em;
-        border-bottom: 2px solid #e8e9ff;
+        border-bottom: 2px solid var(--border-color);
         white-space: nowrap;
     }
     
     .processes-table td {
         padding: 1rem;
-        color: #64748b;
+        color: var(--text-secondary);
         font-size: 0.875rem;
-        border-bottom: 1px solid #f3f4f6;
+        border-bottom: 1px solid var(--border-light);
     }
     
     .processes-table tbody tr {
@@ -269,7 +331,7 @@
     }
     
     .processes-table tbody tr:hover {
-        background: #f8f9ff;
+        background: var(--bg-hover);
     }
     
     .processes-table tbody tr:last-child td {
@@ -278,7 +340,7 @@
     
     .process-id {
         font-weight: 600;
-        color: #5b5fcf;
+        color: var(--accent-color);
         font-family: monospace;
     }
     
@@ -291,18 +353,18 @@
     .user-icon {
         width: 24px;
         height: 24px;
-        background: #e0e7ff;
+        background: var(--accent-light);
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
         font-size: 0.75rem;
-        color: #5b5fcf;
+        color: var(--accent-color);
     }
     
     .command-badge {
-        background: #f3f4f6;
-        color: #1e293b;
+        background: var(--border-light);
+        color: var(--text-primary);
         padding: 0.25rem 0.75rem;
         border-radius: 6px;
         font-size: 0.75rem;
@@ -311,8 +373,8 @@
     }
     
     .time-badge {
-        background: #fef3c7;
-        color: #92400e;
+        background: var(--warning-bg);
+        color: var(--warning-text);
         padding: 0.25rem 0.75rem;
         border-radius: 6px;
         font-size: 0.75rem;
@@ -327,13 +389,13 @@
     }
     
     .state-active {
-        background: #d1fae5;
-        color: #065f46;
+        background: var(--success-bg);
+        color: var(--success-text);
     }
     
     .state-idle {
-        background: #e0e7ff;
-        color: #5b5fcf;
+        background: var(--accent-light);
+        color: var(--accent-color);
     }
     
     .info-text {
@@ -348,22 +410,22 @@
     .progress-bar {
         width: 100px;
         height: 6px;
-        background: #e8e9ff;
+        background: var(--border-color);
         border-radius: 3px;
         overflow: hidden;
     }
     
     .progress-fill {
         height: 100%;
-        background: #5b5fcf;
+        background: var(--accent-color);
         transition: width 0.3s ease;
     }
     
     .loading-spinner {
         width: 20px;
         height: 20px;
-        border: 3px solid #e8e9ff;
-        border-top-color: #5b5fcf;
+        border: 3px solid var(--border-color);
+        border-top-color: var(--accent-color);
         border-radius: 50%;
         animation: spin 1s linear infinite;
         display: inline-block;
@@ -371,9 +433,9 @@
     }
     
     .refresh-btn {
-        background: #fff;
-        color: #64748b;
-        border: 1px solid #e8e9ff;
+        background: var(--bg-secondary);
+        color: var(--text-secondary);
+        border: 1px solid var(--border-color);
         padding: 0.5rem 1rem;
         border-radius: 8px;
         font-weight: 500;
@@ -386,20 +448,20 @@
     }
     
     .refresh-btn:hover {
-        color: #5b5fcf;
-        border-color: #5b5fcf;
+        color: var(--accent-color);
+        border-color: var(--accent-color);
         transform: rotate(180deg);
     }
     
     .empty-state {
         text-align: center;
         padding: 4rem 2rem;
-        color: #94a3b8;
+        color: var(--text-muted);
     }
     
     .empty-state i {
         font-size: 3rem;
-        color: #cbd5e1;
+        color: var(--icon-color);
         margin-bottom: 1rem;
     }
     
@@ -472,7 +534,7 @@
     <div class="page-header">
         <h1 class="page-title">
             <div class="mysql-icon">
-                <i class="fas fa-database" style="color: #5b5fcf; font-size: 1.75rem;"></i>
+                <i class="fas fa-database" style="color: var(--accent-color); font-size: 1.75rem;"></i>
             </div>
             {% trans "MySQL Manager" %}
         </h1>
@@ -494,7 +556,7 @@
         <div class="stat-card uptime">
             <div class="stat-header">
                 <h3 class="stat-title">{% trans "MySQL Uptime" %}</h3>
-                <div class="stat-icon" style="color: #0ea5e9;">
+                <div class="stat-icon" style="color: var(--info-color);">
                     <i class="fas fa-clock"></i>
                 </div>
             </div>
@@ -505,7 +567,7 @@
         <div class="stat-card connections">
             <div class="stat-header">
                 <h3 class="stat-title">{% trans "Active Connections" %}</h3>
-                <div class="stat-icon" style="color: #10b981;">
+                <div class="stat-icon" style="color: var(--success-color);">
                     <i class="fas fa-link"></i>
                 </div>
             </div>
@@ -516,7 +578,7 @@
         <div class="stat-card slow-queries">
             <div class="stat-header">
                 <h3 class="stat-title">{% trans "Slow Queries" %}</h3>
-                <div class="stat-icon" style="color: #f59e0b;">
+                <div class="stat-icon" style="color: var(--warning-color);">
                     <i class="fas fa-exclamation-triangle"></i>
                 </div>
             </div>
@@ -566,7 +628,7 @@
                                 </div>
                             </td>
                             <td>
-                                <i class="fas fa-database" style="color: #94a3b8; margin-right: 0.5rem;"></i>
+                                <i class="fas fa-database" style="color: var(--text-muted); margin-right: 0.5rem;"></i>
                                 <span ng-bind="process.database || 'None'"></span>
                             </td>
                             <td>

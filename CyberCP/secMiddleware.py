@@ -31,9 +31,7 @@ class secMiddleware:
         from urllib.parse import urlparse
         pathActual = urlparse(FinalURL).path
 
-        if os.path.exists(ProcessUtilities.debugPath):
-            logging.writeToFile(f'Path vs the final url : {pathActual}')
-            logging.writeToFile(FinalURL)
+        # Debug logging removed for performance
 
         # Define webhook pattern for secure matching
         import re
@@ -43,8 +41,7 @@ class secMiddleware:
                 or webhook_pattern.match(pathActual) or pathActual.startswith('/cloudAPI'):
             pass
         else:
-            if os.path.exists(ProcessUtilities.debugPath):
-                logging.writeToFile(f'Request needs session : {pathActual}')
+            # Session check logging removed
             try:
                 val = request.session['userID']
             except:
@@ -62,8 +59,7 @@ class secMiddleware:
         # if os.path.exists(ProcessUtilities.debugPath):
         #     logging.writeToFile(f'Final actual URL without QS {FinalURL}')
 
-        if os.path.exists(ProcessUtilities.debugPath):
-            logging.writeToFile(f'Request method {request.method.lower()}')
+        # Request method logging removed
 
         ##########################
 
@@ -84,7 +80,7 @@ class secMiddleware:
                     final_json = json.dumps(final_dic)
                     return HttpResponse(final_json)
             else:
-                ipAddr = secMiddleware.get_client_ip(request).split(':')[:3]
+                ipAddr = ':'.join(secMiddleware.get_client_ip(request).split(':')[:3])
                 if request.session['ipAddr'] == ipAddr or admin.securityLevel == secMiddleware.LOW:
                     pass
                 else:
@@ -102,9 +98,7 @@ class secMiddleware:
         if bool(request.body):
             try:
 
-                if os.path.exists(ProcessUtilities.debugPath):
-                    logging.writeToFile('Request body detected.. scanning')
-                    logging.writeToFile(str(request.body))
+                # Body scanning logging removed
 
                 # Skip validation entirely for webhook endpoints
                 # Webhook URLs are: /websites/<domain>/webhook or /websites/<domain>/gitNotify
@@ -122,9 +116,7 @@ class secMiddleware:
                 for key, value in data.items():
                     valueAlreadyChecked = 0
 
-                    if os.path.exists(ProcessUtilities.debugPath):
-                        logging.writeToFile(f'Key being scanned {str(key)}')
-                        logging.writeToFile(f'Value being scanned {str(value)}')
+                    # Key/value scanning logging removed
 
                     # Skip validation for ports key to allow port ranges with colons
                     # but only for CSF modifyPorts endpoint
@@ -164,8 +156,7 @@ class secMiddleware:
                         pass
                     elif type(value) == list:
                         valueAlreadyChecked = 1
-                        if os.path.exists(ProcessUtilities.debugPath):
-                            logging.writeToFile(f'Item type detected as list')
+                        # List type logging removed
                         for items in value:
                             if isinstance(items, str) and (items.find('- -') > -1 or items.find('\n') > -1 or items.find(';') > -1 or items.find(
                                     '&&') > -1 or items.find('|') > -1 or items.find('...') > -1 \
@@ -259,8 +250,8 @@ class secMiddleware:
                 final_json = json.dumps(final_dic)
                 return HttpResponse(final_json)
         else:
-            if os.path.exists(ProcessUtilities.debugPath):
-                logging.writeToFile('Request does not have a body.')
+            # No body logging removed
+            pass
         # else:
         #     try:
         #         if request.path.find('cloudAPI/') > -1 or request.path.find('api/') > -1:
@@ -282,7 +273,5 @@ class secMiddleware:
         # response['Content-Security-Policy'] = "default-src 'self' cyberpanel.cloud *.cyberpanel.cloud"
         response['X-Content-Type-Options'] = "nosniff"
         response['Referrer-Policy'] = "same-origin"
-
-
 
         return response

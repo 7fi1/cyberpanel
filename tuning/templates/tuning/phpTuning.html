@@ -18,7 +18,7 @@
         text-align: center;
         margin-bottom: 3rem;
         padding: 3rem 0;
-        background: linear-gradient(135deg, #f8f9ff 0%, #f0f1ff 100%);
+        background: var(--bg-gradient, linear-gradient(135deg, #f8f9ff 0%, #f0f1ff 100%));
         border-radius: 20px;
         animation: fadeInDown 0.5s ease-out;
         position: relative;
@@ -32,7 +32,7 @@
         right: -50%;
         width: 200%;
         height: 200%;
-        background: radial-gradient(circle at 70% 30%, rgba(91, 95, 207, 0.1) 0%, transparent 50%);
+        background: radial-gradient(circle at 70% 30%, var(--accent-shadow, rgba(91, 95, 207, 0.1)) 0%, transparent 50%);
         animation: rotate 30s linear infinite;
     }
     
@@ -44,7 +44,7 @@
     .page-title {
         font-size: 2.5rem;
         font-weight: 700;
-        color: #1e293b;
+        color: var(--text-primary, #1e293b);
         margin-bottom: 1rem;
         display: flex;
         align-items: center;
@@ -55,26 +55,26 @@
     .php-icon {
         width: 60px;
         height: 60px;
-        background: white;
+        background: var(--bg-light, white);
         border-radius: 12px;
         display: flex;
         align-items: center;
         justify-content: center;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        box-shadow: var(--shadow-light, 0 4px 12px rgba(0,0,0,0.1));
     }
     
     .page-subtitle {
         font-size: 1.125rem;
-        color: #64748b;
+        color: var(--text-secondary, #64748b);
         max-width: 600px;
         margin: 0 auto;
     }
     
     .selector-panel {
-        background: white;
+        background: var(--bg-secondary, white);
         border-radius: 16px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 10px 40px rgba(0,0,0,0.08);
-        border: 1px solid #e8e9ff;
+        box-shadow: var(--shadow-medium, 0 1px 3px rgba(0,0,0,0.05), 0 10px 40px rgba(0,0,0,0.08));
+        border: 1px solid var(--border-light, #e8e9ff);
         padding: 2rem;
         margin-bottom: 2rem;
         animation: fadeInUp 0.5s ease-out;
@@ -90,18 +90,18 @@
     .selector-icon {
         width: 40px;
         height: 40px;
-        background: linear-gradient(135deg, #5b5fcf 0%, #4547a9 100%);
+        background: var(--accent-bg, linear-gradient(135deg, #5b5fcf 0%, #4547a9 100%));
         border-radius: 10px;
         display: flex;
         align-items: center;
         justify-content: center;
-        color: white;
+        color: var(--bg-light, white);
     }
     
     .selector-title {
         font-size: 1.25rem;
         font-weight: 600;
-        color: #1e293b;
+        color: var(--text-primary, #1e293b);
     }
     
     .selector-form {
@@ -116,7 +116,7 @@
     
     .form-label {
         font-weight: 500;
-        color: #475569;
+        color: var(--text-secondary, #475569);
         font-size: 0.875rem;
         margin-bottom: 0.5rem;
         display: block;
@@ -125,17 +125,18 @@
     .form-control {
         width: 100%;
         padding: 0.75rem 1rem;
-        border: 1px solid #e8e9ff;
+        border: 1px solid var(--border-light, #e8e9ff);
         border-radius: 8px;
         font-size: 0.875rem;
         transition: all 0.3s ease;
-        background: #fff;
+        background: var(--bg-light, #fff);
+        color: var(--text-primary, #1e293b);
     }
     
     .form-control:focus {
         outline: none;
-        border-color: #5b5fcf;
-        box-shadow: 0 0 0 3px rgba(91, 95, 207, 0.1);
+        border-color: var(--accent-color, #5b5fcf);
+        box-shadow: var(--accent-focus, 0 0 0 3px rgba(91, 95, 207, 0.1));
     }
     
     .select-control {
@@ -161,34 +162,34 @@
     }
     
     .btn-primary {
-        background: #5b5fcf;
-        color: white;
+        background: var(--accent-color, #5b5fcf);
+        color: var(--bg-light, white);
     }
     
     .btn-primary:hover {
-        background: #4547a9;
+        background: var(--accent-hover, #4547a9);
         transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(91, 95, 207, 0.3);
+        box-shadow: var(--accent-shadow, 0 4px 12px rgba(91, 95, 207, 0.3));
     }
     
     .tuning-panel {
-        background: white;
+        background: var(--bg-secondary, white);
         border-radius: 16px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 10px 40px rgba(0,0,0,0.08);
-        border: 1px solid #e8e9ff;
+        box-shadow: var(--shadow-medium, 0 1px 3px rgba(0,0,0,0.05), 0 10px 40px rgba(0,0,0,0.08));
+        border: 1px solid var(--border-light, #e8e9ff);
         overflow: hidden;
         animation: fadeInUp 0.5s ease-out 0.2s;
         animation-fill-mode: both;
     }
     
     .panel-header {
-        background: linear-gradient(135deg, #f8f9ff 0%, #f0f1ff 100%);
-        color: #1e293b;
+        background: var(--bg-gradient, linear-gradient(135deg, #f8f9ff 0%, #f0f1ff 100%));
+        color: var(--text-primary, #1e293b);
         padding: 1.5rem 2rem;
         display: flex;
         align-items: center;
         justify-content: space-between;
-        border-bottom: 1px solid #e8e9ff;
+        border-bottom: 1px solid var(--border-light, #e8e9ff);
     }
     
     .panel-title {
@@ -200,12 +201,12 @@
     }
     
     .php-version-badge {
-        background: #fff;
+        background: var(--bg-light, #fff);
         padding: 0.25rem 0.75rem;
         border-radius: 6px;
         font-size: 0.875rem;
-        color: #64748b;
-        border: 1px solid #e8e9ff;
+        color: var(--text-secondary, #64748b);
+        border: 1px solid var(--border-light, #e8e9ff);
     }
     
     .form-section {
@@ -218,24 +219,24 @@
         gap: 0.75rem;
         margin-bottom: 1.5rem;
         padding-bottom: 1rem;
-        border-bottom: 1px solid #e8e9ff;
+        border-bottom: 1px solid var(--border-light, #e8e9ff);
     }
     
     .section-icon {
         width: 32px;
         height: 32px;
-        background: #f3e8ff;
+        background: var(--accent-bg, #f3e8ff);
         border-radius: 8px;
         display: flex;
         align-items: center;
         justify-content: center;
-        color: #5b5fcf;
+        color: var(--accent-color, #5b5fcf);
     }
     
     .section-title {
         font-size: 1.125rem;
         font-weight: 600;
-        color: #1e293b;
+        color: var(--text-primary, #1e293b);
     }
     
     .form-grid {
@@ -252,7 +253,7 @@
     
     .field-label {
         font-weight: 500;
-        color: #475569;
+        color: var(--text-secondary, #475569);
         font-size: 0.875rem;
         display: flex;
         align-items: center;
@@ -260,7 +261,7 @@
     }
     
     .tooltip-icon {
-        color: #94a3b8;
+        color: var(--text-muted, #94a3b8);
         font-size: 0.875rem;
         cursor: help;
         position: relative;
@@ -276,8 +277,8 @@
         bottom: 100%;
         left: 50%;
         transform: translateX(-50%);
-        background: #1e293b;
-        color: white;
+        background: var(--text-primary, #1e293b);
+        color: var(--bg-light, white);
         padding: 0.5rem 1rem;
         border-radius: 6px;
         font-size: 0.75rem;
@@ -294,7 +295,7 @@
         left: 50%;
         transform: translateX(-50%);
         border: 5px solid transparent;
-        border-top-color: #1e293b;
+        border-top-color: var(--text-primary, #1e293b);
     }
     
     .input-group {
@@ -305,13 +306,13 @@
     
     .input-addon {
         font-size: 0.875rem;
-        color: #64748b;
+        color: var(--text-secondary, #64748b);
         font-weight: 500;
     }
     
     .current-value {
         font-size: 0.75rem;
-        color: #64748b;
+        color: var(--text-muted, #64748b);
         margin-top: 0.25rem;
     }
     
@@ -335,7 +336,7 @@
         left: 0;
         right: 0;
         bottom: 0;
-        background-color: #cbd5e1;
+        background-color: var(--border-color, #cbd5e1);
         transition: .4s;
         border-radius: 24px;
     }
@@ -347,13 +348,13 @@
         width: 18px;
         left: 3px;
         bottom: 3px;
-        background-color: white;
+        background-color: var(--bg-light, white);
         transition: .4s;
         border-radius: 50%;
     }
     
     input:checked + .toggle-slider {
-        background-color: #5b5fcf;
+        background-color: var(--accent-color, #5b5fcf);
     }
     
     input:checked + .toggle-slider:before {
@@ -365,26 +366,26 @@
         gap: 1rem;
         margin-top: 2rem;
         padding: 2rem;
-        background: #f8f9ff;
-        border-top: 1px solid #e8e9ff;
+        background: var(--bg-gradient, #f8f9ff);
+        border-top: 1px solid var(--border-light, #e8e9ff);
     }
     
     .btn-secondary {
-        background: white;
-        color: #64748b;
-        border: 1px solid #e8e9ff;
+        background: var(--bg-light, white);
+        color: var(--text-secondary, #64748b);
+        border: 1px solid var(--border-light, #e8e9ff);
     }
     
     .btn-secondary:hover {
-        background: #f8f9ff;
-        border-color: #cbd5e1;
+        background: var(--bg-hover, #f8f9ff);
+        border-color: var(--border-color, #cbd5e1);
     }
     
     .loading-spinner {
         width: 20px;
         height: 20px;
-        border: 2px solid #f3f3f3;
-        border-top: 2px solid #5b5fcf;
+        border: 2px solid var(--border-light, #f3f3f3);
+        border-top: 2px solid var(--accent-color, #5b5fcf);
         border-radius: 50%;
         animation: spin 1s linear infinite;
         display: inline-block;
@@ -416,37 +417,37 @@
     
     .alert-message {
         font-size: 0.875rem;
-        color: #475569;
+        color: var(--text-secondary, #475569);
     }
     
     .alert-success {
-        background: #d1fae5;
-        border: 1px solid #a7f3d0;
-        color: #065f46;
+        background: var(--success-bg, #d1fae5);
+        border: 1px solid var(--success-border, #a7f3d0);
+        color: var(--success-text, #065f46);
     }
     
     .alert-error {
-        background: #fee2e2;
-        border: 1px solid #fecaca;
-        color: #991b1b;
+        background: var(--danger-bg, #fee2e2);
+        border: 1px solid var(--danger-border, #fecaca);
+        color: var(--danger-text, #991b1b);
     }
     
     .alert-info {
-        background: #dbeafe;
-        border: 1px solid #bfdbfe;
-        color: #1e40af;
+        background: var(--info-bg, #dbeafe);
+        border: 1px solid var(--info-border, #bfdbfe);
+        color: var(--info-text, #1e40af);
     }
     
     .empty-state {
         text-align: center;
         padding: 3rem;
-        color: #64748b;
+        color: var(--text-secondary, #64748b);
     }
     
     .empty-icon {
         width: 80px;
         height: 80px;
-        background: #f3f4f6;
+        background: var(--bg-hover, #f3f4f6);
         border-radius: 50%;
         display: flex;
         align-items: center;
@@ -517,7 +518,7 @@
         <div class="header-content">
             <h1 class="page-title">
                 <div class="php-icon">
-                    <i class="fab fa-php" style="color: #5b5fcf; font-size: 1.75rem;"></i>
+                    <i class="fab fa-php" style="color: var(--accent-color, #5b5fcf); font-size: 1.75rem;"></i>
                 </div>
                 {% trans "PHP Tuning" %}
             </h1>
@@ -813,9 +814,9 @@
     <div class="tuning-panel" ng-show="hideDetails">
         <div class="empty-state">
             <div class="empty-icon">
-                <i class="fas fa-code" style="font-size: 2rem; color: #5b5fcf;"></i>
+                <i class="fas fa-code" style="font-size: 2rem; color: var(--accent-color, #5b5fcf);"></i>
             </div>
-            <h3 style="color: #1e293b; margin-bottom: 0.5rem;">{% trans "No PHP Version Selected" %}</h3>
+            <h3 style="color: var(--text-primary, #1e293b); margin-bottom: 0.5rem;">{% trans "No PHP Version Selected" %}</h3>
             <p>
                 {% if OLS %}
                     {% trans "Select a domain from the dropdown above to configure its PHP settings" %}

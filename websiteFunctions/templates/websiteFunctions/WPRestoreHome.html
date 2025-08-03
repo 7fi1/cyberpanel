@@ -54,7 +54,7 @@
             margin: 0 auto;
             padding: 20px;
             min-height: 100vh;
-            background: linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%);
+            background: linear-gradient(180deg, var(--bg-primary, #f8fafc) 0%, var(--bg-hover, #e2e8f0) 100%);
         }
         
         /* Page Title Section */
@@ -105,10 +105,10 @@
         
         /* Main Panel */
         .panel {
-            background: var(--bg-card);
+            background: var(--bg-secondary, white);
             border-radius: var(--radius-xl);
             box-shadow: var(--shadow-lg);
-            border: 1px solid var(--border-color);
+            border: 1px solid var(--border-color, #e2e8f0);
             overflow: hidden;
             position: relative;
         }
@@ -119,13 +119,13 @@
         
         /* Content Box Header */
         .content-box-header {
-            background: linear-gradient(135deg, var(--primary-light) 0%, var(--bg-light) 100%);
+            background: linear-gradient(135deg, var(--bg-hover, #eef2ff) 0%, var(--bg-primary, #f8fafc) 100%);
             padding: 25px 30px;
             margin: 0;
             font-size: 20px;
             font-weight: 700;
-            color: var(--text-primary);
-            border-bottom: 1px solid var(--border-color);
+            color: var(--text-heading, #1e293b);
+            border-bottom: 1px solid var(--border-color, #e2e8f0);
             letter-spacing: -0.3px;
             display: flex;
             align-items: center;
@@ -144,10 +144,10 @@
         
         /* Form Styling */
         .form-horizontal {
-            background: var(--bg-light);
+            background: var(--bg-hover, #f8fafc);
             padding: 30px;
             border-radius: var(--radius-lg);
-            border: 1px solid var(--border-color);
+            border: 1px solid var(--border-color, #e2e8f0);
         }
         
         .form-group {
@@ -161,7 +161,7 @@
         
         .control-label {
             font-weight: 600;
-            color: var(--text-primary);
+            color: var(--text-primary, #1e293b);
             margin-bottom: 8px;
             font-size: 14px;
             letter-spacing: 0.3px;
@@ -171,16 +171,16 @@
         }
         
         .form-control {
-            border: 2px solid var(--border-color);
-            border-radius: var(--radius-md);
+            border: 2px solid var(--border-color, #e2e8f0);
+            border-radius: var(--radius-md, 8px);
             padding: 12px 16px;
             font-size: 15px;
             transition: var(--transition-base);
-            background: white;
+            background: var(--bg-secondary, white);
         }
         
         .form-control:focus {
-            border-color: var(--primary-color);
+            border-color: var(--accent-color, #6366f1);
             box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
             outline: none;
         }
@@ -202,21 +202,21 @@
         }
         
         .input-group .form-control {
-            border-radius: var(--radius-md) 0 0 var(--radius-md);
+            border-radius: var(--radius-md, 8px) 0 0 var(--radius-md, 8px);
             border-right: none;
         }
         
         .input-group-addon {
-            background: var(--bg-light);
-            border: 2px solid var(--border-color);
+            background: var(--bg-hover, #f8fafc);
+            border: 2px solid var(--border-color, #e2e8f0);
             border-left: none;
             padding: 12px 16px;
             font-weight: 600;
-            color: var(--text-secondary);
+            color: var(--text-secondary, #64748b);
         }
         
         .input-group-btn input {
-            border-radius: 0 var(--radius-md) var(--radius-md) 0;
+            border-radius: 0 var(--radius-md, 8px) var(--radius-md, 8px) 0;
             border-left: none;
         }
         
@@ -285,11 +285,11 @@
         /* Progress Section */
         .progress {
             height: 12px;
-            border-radius: var(--radius-full);
-            background: var(--border-color);
+            border-radius: var(--radius-full, 9999px);
+            background: var(--border-color, #e2e8f0);
             overflow: hidden;
             margin-top: 15px;
-            box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+            box-shadow: inset 0 1px 3px var(--shadow-color, rgba(0,0,0,0.1));
         }
         
         .progress-bar {
@@ -325,26 +325,26 @@
         }
         
         .alert-success {
-            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
-            color: #065f46;
-            border: 1px solid #6ee7b7;
+            background: linear-gradient(135deg, var(--success-bg, #d1fae5) 0%, var(--success-light, #a7f3d0) 100%);
+            color: var(--success-text, #065f46);
+            border: 1px solid var(--success-border, #6ee7b7);
         }
         
         .alert-danger {
-            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
-            color: #991b1b;
-            border: 1px solid #fca5a5;
+            background: linear-gradient(135deg, var(--danger-bg, #fee2e2) 0%, var(--danger-light, #fecaca) 100%);
+            color: var(--danger-text, #991b1b);
+            border: 1px solid var(--danger-border, #fca5a5);
         }
         
         /* Form Sections */
         #exinstingsitedivDB,
         #exinstingsitediv,
         #Newsitediv {
-            background: white;
+            background: var(--bg-secondary, white);
             padding: 20px;
-            border-radius: var(--radius-md);
+            border-radius: var(--radius-md, 8px);
             margin-bottom: 20px;
-            border: 1px solid var(--border-color);
+            border: 1px solid var(--border-color, #e2e8f0);
             transition: var(--transition-base);
         }
         
@@ -352,7 +352,7 @@
         #exinstingsitediv:hover,
         #Newsitediv:hover {
             box-shadow: var(--shadow-md);
-            border-color: var(--primary-color);
+            border-color: var(--accent-color, #6366f1);
         }
         
         /* Loading Animation */

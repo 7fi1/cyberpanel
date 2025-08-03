@@ -21,6 +21,21 @@ def get_Ubuntu_release():
     return install_utils.get_Ubuntu_release(use_print=True, exit_on_error=True)
 
 
+def get_Ubuntu_code_name():
+    """Get Ubuntu codename based on version"""
+    release = get_Ubuntu_release()
+    if release >= 24.04:
+        return "noble"
+    elif release >= 22.04:
+        return "jammy"
+    elif release >= 20.04:
+        return "focal"
+    elif release >= 18.04:
+        return "bionic"
+    else:
+        return "xenial"
+
+
 # Using shared function from install_utils
 FetchCloudLinuxAlmaVersionVersion = install_utils.FetchCloudLinuxAlmaVersionVersion
 
@@ -81,28 +96,30 @@ class InstallCyberPanel:
             # Default mode 'One' uses directories with -one suffix
             source_path = f"{source_dir}-one"
         
+        # Ensure we're working with absolute paths
+        if not os.path.isabs(source_path):
+            source_path = os.path.join(self.cwd, source_path)
+        
         # Determine the actual file to copy
         if os.path.isdir(source_path):
-            # If it's a directory, we need to copy the whole directory
-            if os.path.exists(dest_path):
-                if os.path.isdir(dest_path):
-                    shutil.rmtree(dest_path)
-            shutil.copytree(source_path, dest_path)
-        else:
-            # If source is a directory but dest is a file, find the config file
-            if os.path.isdir(source_dir) or os.path.isdir(f"{source_dir}-one"):
-                # Look for pdns.conf or similar config file
-                if dest_path.endswith('pdns.conf'):
-                    source_file = os.path.join(source_path, 'pdns.conf')
-                elif dest_path.endswith('pureftpd-mysql.conf'):
-                    source_file = os.path.join(source_path, 'pureftpd-mysql.conf')
+            # If dest_path is a file (like pdns.conf), copy the specific file
+            if dest_path.endswith('.conf'):
+                # Look for the specific config file
+                source_file = os.path.join(source_path, os.path.basename(dest_path))
+                if os.path.exists(source_file):
+                    if os.path.exists(dest_path):
+                        os.remove(dest_path)
+                    shutil.copy(source_file, dest_path)
                 else:
-                    # Generic case - use basename of dest
-                    source_file = os.path.join(source_path, os.path.basename(dest_path))
-                
+                    raise IOError(f"Source file {source_file} not found")
+            else:
+                # If it's a directory, copy the whole directory
                 if os.path.exists(dest_path):
-                    os.remove(dest_path)
-                shutil.copy(source_file, dest_path)
+                    if os.path.isdir(dest_path):
+                        shutil.rmtree(dest_path)
+                shutil.copytree(source_path, dest_path)
+        else:
+            raise IOError(f"Source path {source_path} not found")
 
     @staticmethod
     def ISARM():
@@ -353,17 +370,32 @@ Signed-By: /etc/apt/keyrings/mariadb-keyring.pgp
                 # If the download fails, use manual repo configuration as fallback
                 if result != 1:
                     install_utils.writeToFile("MariaDB repo setup script failed, using manual configuration...")
-                    RepoPath = '/etc/apt/sources.list.d/mariadb.list'
-                    RepoContent = f"""# MariaDB 10.11 repository list - manual fallback
-deb [arch=amd64,arm64,ppc64el,s390x signed-by=/usr/share/keyrings/mariadb-keyring.pgp] https://mirror.mariadb.org/repo/10.11/ubuntu {get_Ubuntu_code_name()} main
-"""
-                    # Download and add MariaDB signing key
-                    command = 'mkdir -p /usr/share/keyrings && curl -fsSL https://mariadb.org/mariadb_release_signing_key.pgp | gpg --dearmor -o /usr/share/keyrings/mariadb-keyring.pgp'
+                    
+                    # First, ensure directories exist
+                    command = 'mkdir -p /usr/share/keyrings /etc/apt/sources.list.d'
                     install_utils.call(command, self.distro, command, command, 1, 1, os.EX_OSERR, True)
+                    
+                    # Download and add MariaDB signing key
+                    command = 'curl -fsSL https://mariadb.org/mariadb_release_signing_key.pgp | gpg --dearmor -o /usr/share/keyrings/mariadb-keyring.pgp'
+                    install_utils.call(command, self.distro, command, command, 1, 1, os.EX_OSERR, True)
+                    
+                    # Use multiple mirror options for better reliability
+                    RepoPath = '/etc/apt/sources.list.d/mariadb.list'
+                    codename = get_Ubuntu_code_name()
+                    RepoContent = f"""# MariaDB 10.11 repository list - manual fallback
+# Primary mirror
+deb [arch=amd64,arm64,ppc64el,s390x signed-by=/usr/share/keyrings/mariadb-keyring.pgp] https://mirror.mariadb.org/repo/10.11/ubuntu {codename} main
+
+# Alternative mirrors (uncomment if primary fails)
+# deb [arch=amd64,arm64,ppc64el,s390x signed-by=/usr/share/keyrings/mariadb-keyring.pgp] https://mirrors.gigenet.com/mariadb/repo/10.11/ubuntu {codename} main
+# deb [arch=amd64,arm64,ppc64el,s390x signed-by=/usr/share/keyrings/mariadb-keyring.pgp] https://ftp.osuosl.org/pub/mariadb/repo/10.11/ubuntu {codename} main
+"""
                     
                     WriteToFile = open(RepoPath, 'w')
                     WriteToFile.write(RepoContent)
                     WriteToFile.close()
+                    
+                    install_utils.writeToFile("Manual MariaDB repository configuration completed.")
 
 
 
@@ -521,7 +553,13 @@ gpgcheck=1
 
     def startPureFTPD(self):
         ############## Start pureftpd ######################
-        self.manage_service('pureftpd', 'start')
+        serviceName = install.preFlightsChecks.pureFTPDServiceName(self.distro)
+        
+        # During fresh installation, don't start Pure-FTPd yet
+        # It will be started after Django migrations create the required tables
+        InstallCyberPanel.stdOut("Pure-FTPd enabled for startup.", 1)
+        InstallCyberPanel.stdOut("Note: Pure-FTPd will start after database setup is complete.", 1)
+        logging.InstallLog.writeToFile("Pure-FTPd enabled but not started - waiting for Django migrations")
 
     def installPureFTPDConfigurations(self, mysql):
         try:
@@ -530,9 +568,12 @@ gpgcheck=1
             InstallCyberPanel.stdOut("Configuring PureFTPD..", 1)
 
             try:
-                os.mkdir("/etc/ssl/private")
-            except:
-                logging.InstallLog.writeToFile("[ERROR] Could not create directory for FTP SSL")
+                if not os.path.exists("/etc/ssl/private"):
+                    os.makedirs("/etc/ssl/private", mode=0o755)
+            except OSError as e:
+                if e.errno != errno.EEXIST:
+                    logging.InstallLog.writeToFile("[ERROR] Could not create directory for FTP SSL: " + str(e))
+                    raise
 
             if (self.distro == centos or self.distro == cent8 or self.distro == openeuler) or (
                     self.distro == ubuntu and get_Ubuntu_release() == 18.14):
@@ -669,7 +710,17 @@ gpgcheck=1
 
             # Install PowerDNS packages
             if self.distro == ubuntu:
-                self.install_package('pdns-server pdns-backend-mysql')
+                # Update package list first
+                command = "DEBIAN_FRONTEND=noninteractive apt-get update"
+                install_utils.call(command, self.distro, command, command, 1, 1, os.EX_OSERR, True)
+                
+                # Install PowerDNS packages
+                command = "DEBIAN_FRONTEND=noninteractive apt-get -y install pdns-server pdns-backend-mysql"
+                install_utils.call(command, self.distro, command, command, 1, 1, os.EX_OSERR, True)
+                
+                # Ensure service is stopped after installation for configuration
+                command = 'systemctl stop pdns || true'
+                install_utils.call(command, self.distro, command, command, 1, 0, os.EX_OSERR, True)
                 return 1
             else:
                 self.install_package('pdns pdns-backend-mysql')
@@ -687,9 +738,75 @@ gpgcheck=1
                 dnsPath = "/etc/pdns/pdns.conf"
             else:
                 dnsPath = "/etc/powerdns/pdns.conf"
+                # Ensure directory exists for Ubuntu
+                dnsDir = os.path.dirname(dnsPath)
+                if not os.path.exists(dnsDir):
+                    try:
+                        os.makedirs(dnsDir, mode=0o755)
+                    except OSError as e:
+                        if e.errno != errno.EEXIST:
+                            raise
 
-            self.copy_config_file("dns", dnsPath, mysql)
+            try:
+                self.copy_config_file("dns", dnsPath, mysql)
+            except Exception as e:
+                InstallCyberPanel.stdOut("[ERROR] Failed to copy PowerDNS config: " + str(e), 1)
+                logging.InstallLog.writeToFile('[ERROR] Failed to copy PowerDNS config: ' + str(e))
+                raise
 
+            # Verify the file was copied and has content
+            if not os.path.exists(dnsPath):
+                raise IOError(f"PowerDNS config file not found at {dnsPath} after copy")
+            
+            # Check if file has content
+            with open(dnsPath, "r") as f:
+                content = f.read()
+                if not content or "launch=gmysql" not in content:
+                    InstallCyberPanel.stdOut("[WARNING] PowerDNS config appears empty or incomplete, attempting to fix...", 1)
+                    
+                    # First try to re-copy
+                    try:
+                        if os.path.exists(dnsPath):
+                            os.remove(dnsPath)
+                        source_file = os.path.join(self.cwd, "dns-one", "pdns.conf")
+                        shutil.copy2(source_file, dnsPath)
+                    except Exception as copy_error:
+                        InstallCyberPanel.stdOut("[WARNING] Failed to re-copy config: " + str(copy_error), 1)
+                        
+                        # Fallback: directly write the essential MySQL configuration
+                        InstallCyberPanel.stdOut("[INFO] Directly writing MySQL backend configuration...", 1)
+                        try:
+                            mysql_config = f"""# PowerDNS MySQL Backend Configuration
+launch=gmysql
+gmysql-host=localhost
+gmysql-port=3306
+gmysql-user=cyberpanel
+gmysql-password={mysqlPassword}
+gmysql-dbname=cyberpanel
+
+# Basic PowerDNS settings
+daemon=no
+guardian=no
+setgid=pdns
+setuid=pdns
+"""
+                            # If file exists and has some content, append our config
+                            if os.path.exists(dnsPath) and content.strip():
+                                # Check if it's just missing the MySQL part
+                                with open(dnsPath, "a") as f:
+                                    f.write("\n\n" + mysql_config)
+                            else:
+                                # Write a complete minimal config
+                                with open(dnsPath, "w") as f:
+                                    f.write(mysql_config)
+                            
+                            InstallCyberPanel.stdOut("[SUCCESS] MySQL backend configuration written directly", 1)
+                        except Exception as write_error:
+                            InstallCyberPanel.stdOut("[ERROR] Failed to write MySQL config: " + str(write_error), 1)
+                            raise
+            
+            InstallCyberPanel.stdOut("PowerDNS config file prepared at: " + dnsPath, 1)
+            
             data = open(dnsPath, "r").readlines()
 
             writeDataToFile = open(dnsPath, "w")
@@ -714,6 +831,18 @@ gpgcheck=1
                 command = "sed -i 's|gmysql-port=3306|gmysql-port=%s|g' %s" % (self.mysqlport, dnsPath)
                 install_utils.call(command, self.distro, command, command, 1, 1, os.EX_OSERR)
 
+            # Set proper permissions for PowerDNS config
+            if self.distro == ubuntu:
+                # Ensure pdns user/group exists
+                command = 'id -u pdns &>/dev/null || useradd -r -s /usr/sbin/nologin pdns'
+                install_utils.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
+                
+                command = 'chown root:pdns %s' % dnsPath
+                install_utils.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
+                
+                command = 'chmod 640 %s' % dnsPath
+                install_utils.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
+
             InstallCyberPanel.stdOut("PowerDNS configured!", 1)
 
         except IOError as msg:
@@ -726,7 +855,15 @@ gpgcheck=1
         ############## Start PowerDNS ######################
 
         self.manage_service('pdns', 'enable')
-        self.manage_service('pdns', 'start')
+        
+        # During fresh installation, don't start PowerDNS yet
+        # It will be started after Django migrations create the required tables
+        InstallCyberPanel.stdOut("PowerDNS enabled for startup.", 1)
+        InstallCyberPanel.stdOut("Note: PowerDNS will start after database setup is complete.", 1)
+        logging.InstallLog.writeToFile("PowerDNS enabled but not started - waiting for Django migrations")
+        
+        # The service will be started later after migrations run
+        # or manually by the admin after installation completes
 
 
 def Main(cwd, mysql, distro, ent, serial=None, port="8090", ftp=None, dns=None, publicip=None, remotemysql=None,

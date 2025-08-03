@@ -9,7 +9,7 @@
 
     <style>
         body {
-            background-color: #f0f0ff;
+            background-color: var(--bg-primary, #f0f0ff);
         }
         .page-wrapper {
             background: transparent;
@@ -20,23 +20,23 @@
             margin: 0 auto;
         }
         .content-card {
-            background: white;
+            background: var(--bg-secondary, white);
             border-radius: 12px;
             padding: 2rem;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-            border: 1px solid #e8e9ff;
+            box-shadow: 0 2px 8px var(--shadow-color, rgba(0,0,0,0.08));
+            border: 1px solid var(--border-color, #e8e9ff);
             margin-bottom: 25px;
         }
         .section-header {
             overflow: hidden;
             margin-bottom: 2rem;
             padding-bottom: 1rem;
-            border-bottom: 3px solid #5b5fcf;
+            border-bottom: 3px solid var(--accent-color, #5b5fcf);
         }
         .section-title {
             font-size: 2rem;
             font-weight: 700;
-            color: #1a1a2e;
+            color: var(--text-primary, #1a1a2e);
             text-transform: uppercase;
             letter-spacing: 0.5px;
             margin: 0;
@@ -47,7 +47,7 @@
             margin-top: 0.5rem;
         }
         .btn-primary {
-            background: linear-gradient(135deg, #5b5fcf 0%, #7b7fd0 100%);
+            background: linear-gradient(135deg, var(--accent-color, #5b5fcf) 0%, var(--accent-hover, #7b7fd0) 100%);
             border: none;
             border-radius: 8px;
             padding: 0.625rem 1.5rem;
@@ -61,7 +61,7 @@
             text-decoration: none;
         }
         .btn-primary:hover {
-            background: linear-gradient(135deg, #4b4fbf 0%, #6b6fc0 100%);
+            background: linear-gradient(135deg, var(--accent-hover, #4b4fbf) 0%, var(--accent-hover, #6b6fc0) 100%);
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(91, 95, 207, 0.4);
             text-decoration: none;
@@ -73,31 +73,31 @@
             border-collapse: collapse;
         }
         .table thead th {
-            background: #f8f9ff;
-            color: #1a1a2e;
+            background: var(--bg-hover, #f8f9ff);
+            color: var(--text-primary, #1a1a2e);
             font-weight: 700;
             text-transform: uppercase;
             font-size: 0.875rem;
             letter-spacing: 0.75px;
             padding: 1.25rem 1rem;
             border: none;
-            border-bottom: 2px solid #e8e9ff;
+            border-bottom: 2px solid var(--border-color, #e8e9ff);
             text-align: left;
         }
         .table tbody td {
             padding: 1.25rem 1rem;
             vertical-align: middle;
-            color: #2f3640;
+            color: var(--text-primary, #2f3640);
             font-size: 0.9375rem;
-            border-bottom: 1px solid #f0f0ff;
+            border-bottom: 1px solid var(--border-color, #f0f0ff);
             line-height: 1.5;
         }
         .table tbody td strong {
-            color: #1a1a2e;
+            color: var(--text-primary, #1a1a2e);
             font-weight: 600;
         }
         .table tbody tr:hover {
-            background: #f8f9ff;
+            background: var(--bg-hover, #f8f9ff);
         }
         .btn-action {
             padding: 0.5rem 0.875rem;
@@ -113,45 +113,45 @@
             letter-spacing: 0.3px;
         }
         .btn-suspend {
-            color: #ef4444;
-            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger-text, #ef4444);
+            background: var(--danger-bg, rgba(239, 68, 68, 0.1));
             border-color: rgba(239, 68, 68, 0.2);
         }
         .btn-suspend:hover {
-            background: #ef4444;
+            background: var(--danger-text, #ef4444);
             color: white;
             transform: translateY(-2px);
             text-decoration: none;
         }
         .btn-activate {
-            color: #10b981;
-            background: rgba(16, 185, 129, 0.1);
+            color: var(--success-text, #10b981);
+            background: var(--success-bg, rgba(16, 185, 129, 0.1));
             border-color: rgba(16, 185, 129, 0.2);
         }
         .btn-activate:hover {
-            background: #10b981;
+            background: var(--success-text, #10b981);
             color: white;
             transform: translateY(-2px);
             text-decoration: none;
         }
         .btn-edit {
-            color: #5b5fcf;
+            color: var(--accent-color, #5b5fcf);
             background: rgba(91, 95, 207, 0.1);
             border-color: rgba(91, 95, 207, 0.2);
         }
         .btn-edit:hover {
-            background: #5b5fcf;
+            background: var(--accent-color, #5b5fcf);
             color: white;
             transform: translateY(-2px);
             text-decoration: none;
         }
         .btn-delete {
-            color: #ef4444;
-            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger-text, #ef4444);
+            background: var(--danger-bg, rgba(239, 68, 68, 0.1));
             border-color: rgba(239, 68, 68, 0.2);
         }
         .btn-delete:hover {
-            background: #ef4444;
+            background: var(--danger-text, #ef4444);
             color: white;
             transform: translateY(-2px);
             text-decoration: none;
@@ -164,13 +164,13 @@
             letter-spacing: 0.3px;
         }
         .state-active {
-            background: rgba(16, 185, 129, 0.15);
-            color: #065f46;
+            background: var(--success-bg, rgba(16, 185, 129, 0.15));
+            color: var(--success-text, #065f46);
             border: 1px solid rgba(16, 185, 129, 0.2);
         }
         .state-suspended {
-            background: rgba(239, 68, 68, 0.15);
-            color: #991b1b;
+            background: var(--danger-bg, rgba(239, 68, 68, 0.15));
+            color: var(--danger-text, #991b1b);
             border: 1px solid rgba(239, 68, 68, 0.2);
         }
         .loading-icon {
@@ -180,24 +180,25 @@
         }
         .modal-content {
             border-radius: 12px;
-            border: 1px solid #e8e9ff;
+            border: 1px solid var(--border-color, #e8e9ff);
+            background: var(--bg-secondary, white);
         }
         .modal-header {
-            background: #f8f9ff;
-            border-bottom: 1px solid #e8e9ff;
+            background: var(--bg-hover, #f8f9ff);
+            border-bottom: 1px solid var(--border-color, #e8e9ff);
             border-radius: 12px 12px 0 0;
             padding: 1.5rem;
         }
         .modal-title {
             font-weight: 700;
-            color: #1a1a2e;
+            color: var(--text-primary, #1a1a2e);
             font-size: 1.25rem;
         }
         .modal-body {
             padding: 2rem;
         }
         .form-label {
-            color: #1a1a2e;
+            color: var(--text-primary, #1a1a2e);
             font-weight: 600;
             font-size: 0.9375rem;
             margin-bottom: 0.5rem;
@@ -205,43 +206,44 @@
             letter-spacing: 0.3px;
         }
         .form-control {
-            border: 1px solid #e8e9ff;
+            border: 1px solid var(--border-color, #e8e9ff);
             border-radius: 8px;
             padding: 0.875rem 1rem;
             font-size: 1rem;
             transition: all 0.3s ease;
             width: 100%;
             box-sizing: border-box;
-            color: #2f3640;
+            color: var(--text-primary, #2f3640);
+            background: var(--bg-secondary, white);
             line-height: 1.5;
         }
         .form-control:focus {
-            border-color: #5b5fcf;
+            border-color: var(--accent-color, #5b5fcf);
             box-shadow: 0 0 0 3px rgba(91, 95, 207, 0.1);
             outline: none;
         }
         .danger-text {
-            color: #dc2626;
+            color: var(--danger-text, #dc2626);
             font-weight: 600;
             font-size: 1rem;
             margin-bottom: 1rem;
             line-height: 1.5;
         }
         .btn-danger {
-            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            background: linear-gradient(135deg, var(--danger-text, #ef4444) 0%, var(--danger-text, #dc2626) 100%);
             border: none;
             color: white;
         }
         .btn-danger:hover {
-            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+            background: linear-gradient(135deg, var(--danger-text, #dc2626) 0%, var(--danger-text, #b91c1c) 100%);
         }
         .btn-default {
-            background: #e5e7eb;
+            background: var(--bg-hover, #e5e7eb);
             border: none;
-            color: #374151;
+            color: var(--text-secondary, #374151);
         }
         .btn-default:hover {
-            background: #d1d5db;
+            background: var(--bg-hover, #d1d5db);
         }
         @media (max-width: 768px) {
             .page-container {

@@ -38,8 +38,43 @@ class CLManagerMain(multi.Thread):
         CLPath = '/etc/sysconfig/cloudlinux'
         activatedPath = '/home/cyberpanel/cloudlinux'
 
+        # Debug logging
+        logging.CyberCPLogFileWriter.writeToFile(f"[CLManager] Starting CloudLinux detection...")
+        
+        # Check multiple ways to detect CloudLinux
+        # Method 1: Check /etc/sysconfig/cloudlinux
         if os.path.exists(CLPath):
             data['CL'] = 1
+            logging.CyberCPLogFileWriter.writeToFile(f"[CLManager] CloudLinux detected via {CLPath}")
+        # Method 2: Check /etc/redhat-release
+        elif os.path.exists('/etc/redhat-release'):
+            try:
+                with open('/etc/redhat-release', 'r') as f:
+                    content = f.read()
+                    logging.CyberCPLogFileWriter.writeToFile(f"[CLManager] /etc/redhat-release content: {content.strip()}")
+                    if 'CloudLinux' in content:
+                        data['CL'] = 1
+                        logging.CyberCPLogFileWriter.writeToFile(f"[CLManager] CloudLinux detected in /etc/redhat-release")
+                    else:
+                        logging.CyberCPLogFileWriter.writeToFile(f"[CLManager] CloudLinux NOT found in /etc/redhat-release")
+            except Exception as e:
+                logging.CyberCPLogFileWriter.writeToFile(f"[CLManager] Error reading /etc/redhat-release: {str(e)}")
+        # Method 3: Check /etc/os-release
+        elif os.path.exists('/etc/os-release'):
+            try:
+                with open('/etc/os-release', 'r') as f:
+                    content = f.read()
+                    if 'CloudLinux' in content:
+                        data['CL'] = 1
+                        logging.CyberCPLogFileWriter.writeToFile(f"[CLManager] CloudLinux detected in /etc/os-release")
+            except:
+                pass
+        # Method 4: Check if cagefsctl command exists
+        elif os.path.exists('/usr/sbin/cagefsctl'):
+            data['CL'] = 1
+            logging.CyberCPLogFileWriter.writeToFile(f"[CLManager] CloudLinux detected via cagefsctl presence")
+        else:
+            logging.CyberCPLogFileWriter.writeToFile(f"[CLManager] CloudLinux not detected by any method")
 
         if os.path.exists(activatedPath):
             data['activatedPath'] = 1

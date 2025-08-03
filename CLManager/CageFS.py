@@ -256,9 +256,6 @@ ui_path_owner = lscpd:lscpd
 
             ### address issue to create imunify dir - https://app.clickup.com/t/86engx249
 
-            command = 'mkdir /usr/local/CyberCP/public/imunifyav'
-            ProcessUtilities.executioner(command)
-
             command = 'pkill -f "bash imav-deploy.sh"'
             ServerStatusUtil.executioner(command, statusFile)
 
@@ -267,6 +264,9 @@ ui_path_owner = lscpd:lscpd
                 ServerStatusUtil.executioner(command, statusFile)
 
             command = 'bash imav-deploy.sh --uninstall --yes'
+            ServerStatusUtil.executioner(command, statusFile)
+
+            command = 'mkdir -p /usr/local/CyberCP/public/imunifyav'
             ServerStatusUtil.executioner(command, statusFile)
 
             command = 'bash imav-deploy.sh --yes'

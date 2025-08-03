@@ -22,29 +22,29 @@
     .page-title {
         font-size: 28px;
         font-weight: 700;
-        color: #2f3640;
+        color: var(--text-primary, #2f3640);
         margin-bottom: 8px;
     }
     
     .page-subtitle {
         font-size: 14px;
-        color: #8893a7;
+        color: var(--text-secondary, #8893a7);
     }
     
     /* Card styles */
     .content-card {
-        background: white;
+        background: var(--bg-secondary, white);
         border-radius: 12px;
         padding: 30px;
         box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        border: 1px solid #e8e9ff;
+        border: 1px solid var(--border-color, #e8e9ff);
         margin-bottom: 25px;
     }
     
     .card-title {
         font-size: 18px;
         font-weight: 700;
-        color: #2f3640;
+        color: var(--text-primary, #2f3640);
         margin-bottom: 25px;
         display: flex;
         align-items: center;
@@ -55,7 +55,7 @@
         content: '';
         width: 4px;
         height: 24px;
-        background: #5b5fcf;
+        background: var(--accent-color, #5b5fcf);
         border-radius: 2px;
     }
     
@@ -68,7 +68,7 @@
         display: block;
         font-size: 13px;
         font-weight: 600;
-        color: #64748b;
+        color: var(--text-secondary, #64748b);
         margin-bottom: 8px;
         text-transform: uppercase;
         letter-spacing: 0.5px;
@@ -77,21 +77,21 @@
     .form-select {
         width: 100%;
         padding: 10px 14px;
-        border: 1px solid #e8e9ff;
+        border: 1px solid var(--border-color, #e8e9ff);
         border-radius: 8px;
         font-size: 14px;
-        color: #2f3640;
-        background: white;
+        color: var(--text-primary, #2f3640);
+        background: var(--bg-secondary, white);
         transition: all 0.2s ease;
     }
     
     .form-select:hover {
-        border-color: #5b5fcf;
+        border-color: var(--accent-color, #5b5fcf);
     }
     
     .form-select:focus {
         outline: none;
-        border-color: #5b5fcf;
+        border-color: var(--accent-color, #5b5fcf);
         box-shadow: 0 0 0 3px rgba(91,95,207,0.1);
     }
     
@@ -150,27 +150,27 @@
     }
     
     .alert-info {
-        background: #e3f2fd;
-        border: 1px solid #bbdefb;
-        color: #1565c0;
+        background: var(--info-bg, #e3f2fd);
+        border: 1px solid var(--info-border, #bbdefb);
+        color: var(--info-text, #1565c0);
     }
     
     .alert-warning {
-        background: #fff3e0;
-        border: 1px solid #ffe0b2;
-        color: #ef6c00;
+        background: var(--warning-bg, #fff3e0);
+        border: 1px solid var(--warning-border, #ffe0b2);
+        color: var(--warning-text, #ef6c00);
     }
     
     .alert-success {
-        background: #e8f5e9;
-        border: 1px solid #c8e6c9;
-        color: #2e7d32;
+        background: var(--success-bg, #e8f5e9);
+        border: 1px solid var(--success-border, #c8e6c9);
+        color: var(--success-text, #2e7d32);
     }
     
     .alert-danger {
-        background: #ffebee;
-        border: 1px solid #ffcdd2;
-        color: #c62828;
+        background: var(--danger-bg, #ffebee);
+        border: 1px solid var(--danger-border, #ffcdd2);
+        color: var(--danger-text, #c62828);
     }
     
     /* Loading spinner */
@@ -179,7 +179,7 @@
         width: 16px;
         height: 16px;
         border: 2px solid #f3f3f3;
-        border-top: 2px solid #5b5fcf;
+        border-top: 2px solid var(--accent-color, #5b5fcf);
         border-radius: 50%;
         animation: spin 1s linear infinite;
         margin-left: 10px;

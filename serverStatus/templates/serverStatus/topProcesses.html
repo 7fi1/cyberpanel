@@ -8,6 +8,62 @@
 <!-- Current language: {{ LANGUAGE_CODE }} -->
 
 <style>
+    /* CSS Variables for Dark Mode Support */
+    :root {
+        /* Text colors */
+        --text-primary: #1e293b;
+        --text-secondary: #475569;
+        --text-muted: #64748b;
+        --text-on-gradient: rgba(255, 255, 255, 0.9);
+        
+        /* Background colors */
+        --bg-primary: #ffffff;
+        --bg-secondary: #f8f9ff;
+        --bg-light: #f3f4f6;
+        --bg-hover: #f8f9ff;
+        --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        
+        /* Border colors */
+        --border-color: #e8e9ff;
+        --border-light: #f1f5f9;
+        
+        /* Accent colors */
+        --accent-color: #667eea;
+        --accent-hover: #764ba2;
+        --accent-bg: #f3e8ff;
+        --accent-focus: rgba(102, 126, 234, 0.1);
+        --accent-shadow: rgba(102, 126, 234, 0.3);
+        
+        /* Status colors */
+        --success-bg: #d1fae5;
+        --success-color: #065f46;
+        --success-border: #a7f3d0;
+        --success-accent: #4ade80;
+        --success-dark: #10b981;
+        
+        --danger-bg: #fee2e2;
+        --danger-color: #991b1b;
+        --danger-border: #fecaca;
+        --danger-accent: #dc2626;
+        --danger-hover: #b91c1c;
+        
+        --warning-bg: #fef3c7;
+        --warning-color: #92400e;
+        --warning-border: #fde68a;
+        
+        --info-bg: #dbeafe;
+        --info-color: #1e40af;
+        --info-border: #bfdbfe;
+        
+        /* Shadow colors */
+        --shadow-light: rgba(0,0,0,0.05);
+        --shadow-medium: rgba(0,0,0,0.08);
+        --shadow-color: rgba(0,0,0,0.1);
+        
+        /* Console colors */
+        --console-bg: #1e293b;
+        --console-text: #10b981;
+    }
     .modern-container {
         max-width: 1400px;
         margin: 0 auto;
@@ -18,12 +74,12 @@
         text-align: center;
         margin-bottom: 3rem;
         padding: 3rem 0;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: var(--bg-gradient);
         border-radius: 20px;
         animation: fadeInDown 0.5s ease-out;
         position: relative;
         overflow: hidden;
-        color: white;
+        color: var(--bg-primary);
     }
     
     .page-header::before {
@@ -66,7 +122,7 @@
     
     .page-subtitle {
         font-size: 1.125rem;
-        color: rgba(255, 255, 255, 0.9);
+        color: var(--text-on-gradient);
         max-width: 600px;
         margin: 0 auto;
     }
@@ -85,7 +141,7 @@
     .refresh-dot {
         width: 8px;
         height: 8px;
-        background: #4ade80;
+        background: var(--success-accent);
         border-radius: 50%;
         animation: pulse 1.5s infinite;
     }
@@ -98,10 +154,10 @@
     }
     
     .stat-card {
-        background: white;
+        background: var(--bg-primary);
         border-radius: 16px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 10px 40px rgba(0,0,0,0.08);
-        border: 1px solid #e8e9ff;
+        box-shadow: 0 1px 3px var(--shadow-light), 0 10px 40px var(--shadow-medium);
+        border: 1px solid var(--border-color);
         padding: 1.5rem;
         transition: all 0.3s ease;
         animation: fadeInUp 0.5s ease-out;
@@ -111,7 +167,7 @@
     
     .stat-card:hover {
         transform: translateY(-5px);
-        box-shadow: 0 4px 6px rgba(0,0,0,0.05), 0 20px 60px rgba(0,0,0,0.1);
+        box-shadow: 0 4px 6px var(--shadow-light), 0 20px 60px var(--shadow-color);
     }
     
     .stat-card::before {
@@ -121,7 +177,7 @@
         left: 0;
         right: 0;
         height: 4px;
-        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        background: var(--bg-gradient);
     }
     
     .stat-header {
@@ -133,7 +189,7 @@
     
     .stat-title {
         font-size: 0.875rem;
-        color: #64748b;
+        color: var(--text-muted);
         font-weight: 500;
         display: flex;
         align-items: center;
@@ -143,12 +199,12 @@
     .stat-icon {
         width: 32px;
         height: 32px;
-        background: #f3e8ff;
+        background: var(--accent-bg);
         border-radius: 8px;
         display: flex;
         align-items: center;
         justify-content: center;
-        color: #667eea;
+        color: var(--accent-color);
         font-size: 1rem;
     }
     
@@ -167,7 +223,7 @@
     .stat-value {
         font-size: 1.25rem;
         font-weight: 700;
-        color: #1e293b;
+        color: var(--text-primary);
     }
     
     .stat-label {
@@ -176,18 +232,18 @@
     }
     
     .processes-panel {
-        background: white;
+        background: var(--bg-primary);
         border-radius: 16px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 10px 40px rgba(0,0,0,0.08);
-        border: 1px solid #e8e9ff;
+        box-shadow: 0 1px 3px var(--shadow-light), 0 10px 40px var(--shadow-medium);
+        border: 1px solid var(--border-color);
         overflow: hidden;
         animation: fadeInUp 0.5s ease-out 0.2s;
         animation-fill-mode: both;
     }
     
     .panel-header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
+        background: var(--bg-gradient);
+        color: var(--bg-primary);
         padding: 1.5rem 2rem;
         display: flex;
         align-items: center;
@@ -250,7 +306,7 @@
     .modern-table thead {
         position: sticky;
         top: 0;
-        background: #f8f9ff;
+        background: var(--bg-hover);
         z-index: 10;
     }
     
@@ -258,18 +314,18 @@
         padding: 1rem;
         text-align: left;
         font-weight: 600;
-        color: #475569;
+        color: var(--text-secondary);
         font-size: 0.875rem;
         text-transform: uppercase;
         letter-spacing: 0.05em;
-        border-bottom: 1px solid #e8e9ff;
+        border-bottom: 1px solid var(--border-color);
     }
     
     .modern-table td {
         padding: 1rem;
         font-size: 0.875rem;
-        color: #1e293b;
-        border-bottom: 1px solid #f1f5f9;
+        color: var(--text-primary);
+        border-bottom: 1px solid var(--border-light);
     }
     
     .modern-table tbody tr {
@@ -277,7 +333,7 @@
     }
     
     .modern-table tbody tr:hover {
-        background: #f8f9ff;
+        background: var(--bg-hover);
     }
     
     .process-user {
@@ -289,14 +345,14 @@
     .user-avatar {
         width: 28px;
         height: 28px;
-        background: #e8e9ff;
+        background: var(--border-color);
         border-radius: 6px;
         display: flex;
         align-items: center;
         justify-content: center;
         font-size: 0.75rem;
         font-weight: 600;
-        color: #667eea;
+        color: var(--accent-color);
     }
     
     .process-state {
@@ -308,23 +364,23 @@
     }
     
     .state-running {
-        background: #d1fae5;
-        color: #065f46;
+        background: var(--success-bg);
+        color: var(--success-color);
     }
     
     .state-sleeping {
-        background: #dbeafe;
-        color: #1e40af;
+        background: var(--info-bg);
+        color: var(--info-color);
     }
     
     .state-stopped {
-        background: #fef3c7;
-        color: #92400e;
+        background: var(--warning-bg);
+        color: var(--warning-color);
     }
     
     .state-zombie {
-        background: #fee2e2;
-        color: #991b1b;
+        background: var(--danger-bg);
+        color: var(--danger-color);
     }
     
     .cpu-usage {
@@ -336,7 +392,7 @@
     .usage-bar {
         width: 60px;
         height: 6px;
-        background: #e5e7eb;
+        background: var(--bg-light);
         border-radius: 3px;
         overflow: hidden;
         position: relative;
@@ -344,7 +400,7 @@
     
     .usage-fill {
         height: 100%;
-        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        background: var(--bg-gradient);
         transition: width 0.3s ease;
     }
     
@@ -363,7 +419,7 @@
     .kill-button {
         padding: 0.5rem 1rem;
         border-radius: 6px;
-        background: #dc2626;
+        background: var(--danger-accent);
         color: white;
         border: none;
         font-size: 0.75rem;
@@ -376,7 +432,7 @@
     }
     
     .kill-button:hover {
-        background: #b91c1c;
+        background: var(--danger-hover);
         transform: translateY(-2px);
         box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
     }
@@ -398,7 +454,7 @@
         width: 40px;
         height: 40px;
         border: 3px solid #f3f3f3;
-        border-top: 3px solid #667eea;
+        border-top: 3px solid var(--accent-color);
         border-radius: 50%;
         animation: spin 1s linear infinite;
     }
@@ -414,18 +470,18 @@
     }
     
     .metric-high {
-        background: #fee2e2;
-        color: #991b1b;
+        background: var(--danger-bg);
+        color: var(--danger-color);
     }
     
     .metric-medium {
-        background: #fef3c7;
-        color: #92400e;
+        background: var(--warning-bg);
+        color: var(--warning-color);
     }
     
     .metric-low {
-        background: #d1fae5;
-        color: #065f46;
+        background: var(--success-bg);
+        color: var(--success-color);
     }
     
     @keyframes spin {
@@ -537,7 +593,7 @@
                 </div>
             </div>
             <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #e8e9ff;">
-                <div style="font-size: 0.75rem; color: #64748b;">
+                <div style="font-size: 0.75rem; color: var(--text-muted);">
                     <strong>{% trans "Model:" %}</strong> {$ modelName || '-' $}<br>
                     <strong>{% trans "Cache:" %}</strong> {$ cacheSize || '-' $}
                 </div>
@@ -560,15 +616,15 @@
                     <span class="stat-label">{% trans "Total" %}</span>
                 </div>
                 <div class="stat-item">
-                    <span class="stat-value" style="color: #10b981;">{$ runningProcesses || '0' $}</span>
+                    <span class="stat-value" style="color: var(--success-dark);">{$ runningProcesses || '0' $}</span>
                     <span class="stat-label">{% trans "Running" %}</span>
                 </div>
                 <div class="stat-item">
-                    <span class="stat-value" style="color: #3b82f6;">{$ sleepingProcesses || '0' $}</span>
+                    <span class="stat-value" style="color: var(--info-color);">{$ sleepingProcesses || '0' $}</span>
                     <span class="stat-label">{% trans "Sleeping" %}</span>
                 </div>
                 <div class="stat-item">
-                    <span class="stat-value" style="color: #ef4444;">
+                    <span class="stat-value" style="color: var(--danger-accent);">
                         <span ng-if="zombieProcesses > 0">{$ zombieProcesses $}</span>
                         <span ng-if="!zombieProcesses || zombieProcesses == 0">0</span>
                     </span>
@@ -623,11 +679,11 @@
                     <span class="stat-label">{% trans "Total" %}</span>
                 </div>
                 <div class="stat-item">
-                    <span class="stat-value" style="color: #10b981;">{$ freeMemory || '-' $}</span>
+                    <span class="stat-value" style="color: var(--success-dark);">{$ freeMemory || '-' $}</span>
                     <span class="stat-label">{% trans "Free" %}</span>
                 </div>
                 <div class="stat-item">
-                    <span class="stat-value" style="color: #ef4444;">{$ usedMemory || '-' $}</span>
+                    <span class="stat-value" style="color: var(--danger-accent);">{$ usedMemory || '-' $}</span>
                     <span class="stat-label">{% trans "Used" %}</span>
                 </div>
                 <div class="stat-item">
@@ -653,11 +709,11 @@
                     <span class="stat-label">{% trans "Total" %}</span>
                 </div>
                 <div class="stat-item">
-                    <span class="stat-value" style="color: #10b981;">{$ swapFreeMemory || '-' $}</span>
+                    <span class="stat-value" style="color: var(--success-dark);">{$ swapFreeMemory || '-' $}</span>
                     <span class="stat-label">{% trans "Free" %}</span>
                 </div>
                 <div class="stat-item">
-                    <span class="stat-value" style="color: #ef4444;">{$ swapUsedMemory || '-' $}</span>
+                    <span class="stat-value" style="color: var(--danger-accent);">{$ swapUsedMemory || '-' $}</span>
                     <span class="stat-label">{% trans "Used" %}</span>
                 </div>
                 <div class="stat-item">
@@ -730,7 +786,7 @@
                 <tbody>
                     <tr ng-repeat="process in processes | filter:search">
                         <td>
-                            <span style="font-weight: 600; color: #667eea;">{$ process.PID $}</span>
+                            <span style="font-weight: 600; color: var(--accent-color);">{$ process.PID $}</span>
                         </td>
                         <td>
                             <div class="process-user">

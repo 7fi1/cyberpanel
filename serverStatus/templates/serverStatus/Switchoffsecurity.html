@@ -9,6 +9,28 @@
 
 
     <style>
+        /* CSS Variables for Dark Mode Support */
+        :root {
+            /* Text colors */
+            --text-primary: #333333;
+            --text-secondary: #666666;
+            --text-muted: #999999;
+            
+            /* Background colors */
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8f9fa;
+            --bg-hover: #e9ecef;
+            --bg-light: lightblue;
+            
+            /* Border colors */
+            --border-color: #ccc;
+            --border-light: #dee2e6;
+            
+            /* Accent colors */
+            --accent-color: #007bff;
+            --accent-hover: #0056b3;
+        }
+        
         .tagcontainer {
             display: flex;
             justify-content: space-evenly;
@@ -19,7 +41,7 @@
             height: 300px;
             overflow-y: auto;
             margin-right: 10px;
-            border: 1px solid #ccc;
+            border: 1px solid var(--border-color);
         }
 
         .tags-label {
@@ -37,7 +59,7 @@
         }
 
         .tags:hover {
-            background-color: lightblue;
+            background-color: var(--bg-secondary);
         }
 
         .tag-icon {

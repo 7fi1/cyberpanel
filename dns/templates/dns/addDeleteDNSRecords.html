@@ -4,7 +4,47 @@
 
 {% block header_scripts %}
 <style>
-    /* Modern DNS Manager Styles */
+    /* Modern DNS Manager Styles with Dark Mode Support */
+    :root {
+        --primary-color: #5b5fcf;
+        --primary-hover: #4a4fc4;
+        --primary-light: #eef0ff;
+        --secondary-color: #10b981;
+        --danger-color: #ef4444;
+        --warning-color: #ffa000;
+        --success-color: #10b981;
+        
+        --bg-primary: #ffffff;
+        --bg-secondary: #f8f9ff;
+        --bg-tertiary: #fafbff;
+        --bg-hover: #f8f9ff;
+        --bg-light: #f1f5f9;
+        --bg-gradient: linear-gradient(135deg, #f8f9ff 0%, #fff 100%);
+        
+        --text-primary: #1e293b;
+        --text-secondary: #64748b;
+        --text-muted: #94a3b8;
+        --text-light: #cbd5e1;
+        
+        --border-color: #e8e9ff;
+        --border-light: #e2e8f0;
+        --border-hover: #5b5fcf;
+        
+        --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
+        --shadow-md: 0 4px 12px rgba(0,0,0,0.1);
+        --shadow-lg: 0 10px 40px rgba(0,0,0,0.08);
+        --shadow-primary: 0 4px 12px rgba(91,95,207,0.2);
+        --shadow-success: 0 2px 8px rgba(16,185,129,0.3);
+        
+        --radius-sm: 6px;
+        --radius-md: 8px;
+        --radius-lg: 10px;
+        --radius-xl: 12px;
+        --radius-2xl: 16px;
+        
+        --transition-base: all 0.2s ease;
+    }
+    
     .dns-manager {
         background: transparent;
         padding: 20px;
@@ -29,13 +69,13 @@
     .dns-title {
         font-size: 28px;
         font-weight: 700;
-        color: #1e293b;
+        color: var(--text-primary);
         margin-bottom: 8px;
     }
     
     .dns-subtitle {
         font-size: 14px;
-        color: #64748b;
+        color: var(--text-secondary);
         line-height: 1.6;
     }
     
@@ -44,28 +84,28 @@
         align-items: center;
         gap: 8px;
         padding: 10px 20px;
-        background: #f8f9ff;
-        color: #5b5fcf;
-        border: 1px solid #e8e9ff;
-        border-radius: 8px;
+        background: var(--bg-secondary);
+        color: var(--primary-color);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-md);
         text-decoration: none;
         font-size: 14px;
         font-weight: 600;
-        transition: all 0.2s ease;
+        transition: var(--transition-base);
     }
     
     .docs-link:hover {
-        background: #5b5fcf;
-        color: white;
+        background: var(--primary-color);
+        color: var(--bg-primary);
         transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(91,95,207,0.2);
+        box-shadow: var(--shadow-primary);
     }
     
     /* PowerDNS Disabled State */
     .powerdns-disabled {
         background: #fff8e1;
         border: 1px solid #ffe082;
-        border-radius: 12px;
+        border-radius: var(--radius-xl);
         padding: 40px;
         text-align: center;
         margin-bottom: 30px;
@@ -73,30 +113,30 @@
     
     .powerdns-disabled i {
         font-size: 48px;
-        color: #ffa000;
+        color: var(--warning-color);
         margin-bottom: 20px;
     }
     
     .powerdns-disabled h3 {
         font-size: 20px;
-        color: #1e293b;
+        color: var(--text-primary);
         margin-bottom: 20px;
     }
     
     /* Main Content Card */
     .dns-content-card {
-        background: white;
-        border-radius: 16px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 10px 40px rgba(0,0,0,0.08);
-        border: 1px solid #e8e9ff;
+        background: var(--bg-primary);
+        border-radius: var(--radius-2xl);
+        box-shadow: var(--shadow-sm), var(--shadow-lg);
+        border: 1px solid var(--border-color);
         overflow: hidden;
     }
     
     /* Domain Selector */
     .domain-selector-section {
         padding: 30px;
-        background: linear-gradient(135deg, #f8f9ff 0%, #fff 100%);
-        border-bottom: 1px solid #e8e9ff;
+        background: var(--bg-gradient);
+        border-bottom: 1px solid var(--border-color);
     }
     
     .domain-selector-wrapper {
@@ -107,7 +147,7 @@
     .domain-selector-label {
         font-size: 13px;
         font-weight: 600;
-        color: #64748b;
+        color: var(--text-secondary);
         text-transform: uppercase;
         letter-spacing: 0.5px;
         margin-bottom: 12px;
@@ -117,22 +157,22 @@
     .domain-select {
         width: 100%;
         padding: 12px 16px;
-        border: 2px solid #e8e9ff;
-        border-radius: 10px;
+        border: 2px solid var(--border-color);
+        border-radius: var(--radius-lg);
         font-size: 15px;
-        color: #1e293b;
-        background: white;
-        transition: all 0.2s ease;
+        color: var(--text-primary);
+        background: var(--bg-primary);
+        transition: var(--transition-base);
         cursor: pointer;
     }
     
     .domain-select:hover {
-        border-color: #5b5fcf;
+        border-color: var(--border-hover);
     }
     
     .domain-select:focus {
         outline: none;
-        border-color: #5b5fcf;
+        border-color: var(--border-hover);
         box-shadow: 0 0 0 3px rgba(91,95,207,0.1);
     }
     
@@ -143,8 +183,8 @@
     
     /* Record Type Tabs */
     .record-type-tabs {
-        background: #fafbff;
-        border-bottom: 1px solid #e8e9ff;
+        background: var(--bg-tertiary);
+        border-bottom: 1px solid var(--border-color);
         padding: 0 30px;
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
@@ -166,17 +206,17 @@
         display: flex;
         align-items: center;
         padding: 20px 24px;
-        color: #64748b;
+        color: var(--text-secondary);
         text-decoration: none;
         font-weight: 600;
         font-size: 14px;
-        transition: all 0.2s ease;
+        transition: var(--transition-base);
         position: relative;
         white-space: nowrap;
     }
     
     .record-type-tabs li.active a {
-        color: #5b5fcf;
+        color: var(--primary-color);
     }
     
     .record-type-tabs li.active::after {
@@ -186,12 +226,12 @@
         left: 0;
         right: 0;
         height: 3px;
-        background: #5b5fcf;
+        background: var(--primary-color);
         border-radius: 3px 3px 0 0;
     }
     
     .record-type-tabs a:hover {
-        color: #5b5fcf;
+        color: var(--primary-color);
     }
     
     /* Record Type Badge */
@@ -201,24 +241,24 @@
         justify-content: center;
         width: 32px;
         height: 32px;
-        background: #e8e9ff;
-        border-radius: 8px;
+        background: var(--border-color);
+        border-radius: var(--radius-md);
         font-size: 11px;
         font-weight: 700;
         margin-right: 10px;
-        transition: all 0.2s ease;
+        transition: var(--transition-base);
     }
     
     .record-type-tabs li.active .record-type-badge {
-        background: #5b5fcf;
-        color: white;
+        background: var(--primary-color);
+        color: var(--bg-primary);
     }
     
     /* Add Record Form */
     .add-record-form {
         padding: 30px;
-        background: #fafbff;
-        border-bottom: 1px solid #e8e9ff;
+        background: var(--bg-tertiary);
+        border-bottom: 1px solid var(--border-color);
     }
     
     .record-form-grid {
@@ -244,7 +284,7 @@
         display: block;
         font-size: 12px;
         font-weight: 600;
-        color: #64748b;
+        color: var(--text-secondary);
         margin-bottom: 8px;
         text-transform: uppercase;
         letter-spacing: 0.5px;
@@ -254,42 +294,42 @@
     .form-field select {
         width: 100%;
         padding: 10px 14px;
-        border: 1px solid #e2e8f0;
-        border-radius: 8px;
+        border: 1px solid var(--border-light);
+        border-radius: var(--radius-md);
         font-size: 14px;
-        color: #1e293b;
-        background: white;
-        transition: all 0.2s ease;
+        color: var(--text-primary);
+        background: var(--bg-primary);
+        transition: var(--transition-base);
     }
     
     .form-field input:hover,
     .form-field select:hover {
-        border-color: #5b5fcf;
+        border-color: var(--border-hover);
     }
     
     .form-field input:focus,
     .form-field select:focus {
         outline: none;
-        border-color: #5b5fcf;
+        border-color: var(--border-hover);
         box-shadow: 0 0 0 3px rgba(91,95,207,0.1);
     }
     
     .form-field input[disabled] {
-        background: #f1f5f9;
+        background: var(--bg-light);
         cursor: not-allowed;
     }
     
     /* Add Button */
     .btn-add-record {
         padding: 10px 20px;
-        background: #5b5fcf;
-        color: white;
+        background: var(--primary-color);
+        color: var(--bg-primary);
         border: none;
-        border-radius: 8px;
+        border-radius: var(--radius-md);
         font-size: 14px;
         font-weight: 600;
         cursor: pointer;
-        transition: all 0.2s ease;
+        transition: var(--transition-base);
         display: flex;
         align-items: center;
         gap: 8px;
@@ -297,7 +337,7 @@
     }
     
     .btn-add-record:hover {
-        background: #4a4fc4;
+        background: var(--primary-hover);
         transform: translateY(-1px);
         box-shadow: 0 4px 12px rgba(91,95,207,0.3);
     }
@@ -317,7 +357,7 @@
     .records-table-title {
         font-size: 18px;
         font-weight: 700;
-        color: #1e293b;
+        color: var(--text-primary);
         display: flex;
         align-items: center;
         gap: 10px;
@@ -330,8 +370,8 @@
         min-width: 28px;
         height: 28px;
         padding: 0 10px;
-        background: #e8e9ff;
-        color: #5b5fcf;
+        background: var(--border-color);
+        color: var(--primary-color);
         border-radius: 14px;
         font-size: 13px;
         font-weight: 700;
@@ -340,31 +380,31 @@
     /* Modern Table */
     .modern-dns-table {
         width: 100%;
-        background: white;
-        border-radius: 12px;
+        background: var(--bg-primary);
+        border-radius: var(--radius-xl);
         overflow: hidden;
-        border: 1px solid #e8e9ff;
+        border: 1px solid var(--border-color);
     }
     
     .modern-dns-table thead {
-        background: #f8f9ff;
+        background: var(--bg-secondary);
     }
     
     .modern-dns-table th {
         padding: 16px 20px;
         font-size: 12px;
         font-weight: 600;
-        color: #64748b;
+        color: var(--text-secondary);
         text-transform: uppercase;
         letter-spacing: 0.5px;
         text-align: left;
-        border-bottom: 1px solid #e8e9ff;
+        border-bottom: 1px solid var(--border-color);
     }
     
     .modern-dns-table td {
         padding: 12px 20px;
         font-size: 14px;
-        color: #1e293b;
+        color: var(--text-primary);
         border-bottom: 1px solid #f0f0f0;
     }
     
@@ -373,7 +413,7 @@
     }
     
     .modern-dns-table tbody tr:hover {
-        background: #fafbff;
+        background: var(--bg-tertiary);
     }
     
     /* Type Badge in Table */
@@ -381,9 +421,9 @@
         display: inline-flex;
         align-items: center;
         padding: 4px 10px;
-        background: #e8e9ff;
-        color: #5b5fcf;
-        border-radius: 6px;
+        background: var(--border-color);
+        color: var(--primary-color);
+        border-radius: var(--radius-sm);
         font-size: 11px;
         font-weight: 700;
         text-transform: uppercase;
@@ -395,22 +435,22 @@
         width: 100%;
         padding: 6px 10px;
         border: 1px solid transparent;
-        border-radius: 6px;
+        border-radius: var(--radius-sm);
         font-size: 14px;
         font-family: 'Courier New', monospace;
         background: transparent;
-        transition: all 0.2s ease;
+        transition: var(--transition-base);
     }
     
     .editable-input:hover {
-        background: #f8f9ff;
-        border-color: #e8e9ff;
+        background: var(--bg-secondary);
+        border-color: var(--border-color);
     }
     
     .editable-input:focus {
         outline: none;
-        background: white;
-        border-color: #5b5fcf;
+        background: var(--bg-primary);
+        border-color: var(--border-hover);
         box-shadow: 0 0 0 3px rgba(91,95,207,0.1);
     }
     
@@ -424,36 +464,36 @@
     .btn-action {
         padding: 6px 12px;
         border: none;
-        border-radius: 6px;
+        border-radius: var(--radius-sm);
         font-size: 13px;
         font-weight: 600;
         cursor: pointer;
-        transition: all 0.2s ease;
+        transition: var(--transition-base);
         display: inline-flex;
         align-items: center;
         gap: 6px;
     }
     
     .btn-save {
-        background: #10b981;
-        color: white;
+        background: var(--success-color);
+        color: var(--bg-primary);
     }
     
     .btn-save:hover {
         background: #059669;
         transform: translateY(-1px);
-        box-shadow: 0 2px 8px rgba(16,185,129,0.3);
+        box-shadow: var(--shadow-success);
     }
     
     .btn-delete {
         background: transparent;
-        color: #ef4444;
+        color: var(--danger-color);
         padding: 8px;
     }
     
     .btn-delete:hover {
         background: #fee2e2;
-        border-radius: 6px;
+        border-radius: var(--radius-sm);
     }
     
     /* Loading State */
@@ -461,8 +501,8 @@
         display: inline-block;
         width: 16px;
         height: 16px;
-        border: 2px solid #e8e9ff;
-        border-top-color: #5b5fcf;
+        border: 2px solid var(--border-color);
+        border-top-color: var(--primary-color);
         border-radius: 50%;
         animation: spin 0.8s linear infinite;
     }
@@ -475,24 +515,24 @@
     .empty-state {
         text-align: center;
         padding: 60px 30px;
-        color: #94a3b8;
+        color: var(--text-muted);
     }
     
     .empty-state i {
         font-size: 48px;
-        color: #e2e8f0;
+        color: var(--text-light);
         margin-bottom: 20px;
     }
     
     .empty-state-text {
         font-size: 16px;
-        color: #64748b;
+        color: var(--text-secondary);
         margin-bottom: 8px;
     }
     
     .empty-state-subtext {
         font-size: 14px;
-        color: #94a3b8;
+        color: var(--text-muted);
     }
     
     /* Alerts */
@@ -506,13 +546,13 @@
     
     .dns-alert {
         padding: 16px 20px;
-        border-radius: 10px;
+        border-radius: var(--radius-lg);
         margin-bottom: 12px;
         display: flex;
         align-items: center;
         gap: 12px;
         animation: slideIn 0.3s ease-out;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        box-shadow: var(--shadow-md);
     }
     
     @keyframes slideIn {
@@ -550,8 +590,8 @@
         justify-content: center;
         width: 16px;
         height: 16px;
-        background: #e8e9ff;
-        color: #5b5fcf;
+        background: var(--border-color);
+        color: var(--primary-color);
         border-radius: 50%;
         font-size: 10px;
         cursor: help;

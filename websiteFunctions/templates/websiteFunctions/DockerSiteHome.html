@@ -80,13 +80,13 @@
         }
 
         .info-box {
-            background: #fff;
-            border: 1px solid var(--border-color);
+            background: var(--bg-secondary, #fff);
+            border: 1px solid var(--border-color, #e2e8f0);
             border-radius: 8px;
             padding: 20px;
             margin-bottom: 24px;
-            box-shadow: var(--box-shadow);
-            transition: var(--transition);
+            box-shadow: var(--box-shadow, 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.06));
+            transition: var(--transition, all 0.2s ease);
             max-width: 100%;
             overflow: hidden;
         }
@@ -99,9 +99,9 @@
         .info-box h4 {
             margin-top: 0;
             margin-bottom: 18px;
-            color: var(--dark-color);
+            color: var(--text-heading, #1e293b);
             font-weight: 600;
-            border-bottom: 2px solid #f5f5f5;
+            border-bottom: 2px solid var(--border-color, #f5f5f5);
             padding-bottom: 10px;
             font-size: 16px;
         }
@@ -109,14 +109,14 @@
         .progress {
             margin-bottom: 15px;
             height: 12px;
-            background-color: #f5f5f5;
+            background-color: var(--border-color, #f5f5f5);
             border-radius: 20px;
             overflow: hidden;
             box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
         }
 
         .progress-bar {
-            background-color: var(--primary-color);
+            background-color: var(--accent-color, #2496ed);
             color: white;
             text-align: center;
             line-height: 12px;
@@ -125,17 +125,17 @@
         }
 
         .progress-bar.high {
-            background-color: var(--danger-color);
+            background-color: var(--danger-text, #ef4444);
         }
 
         /* Resource usage colors */
         .progress-bar[aria-valuenow^="8"],
         .progress-bar[aria-valuenow^="9"] {
-            background-color: var(--danger-color);
+            background-color: var(--danger-text, #ef4444);
         }
 
         .progress-bar[aria-valuenow^="7"] {
-            background-color: var(--warning-color);
+            background-color: #f59e0b;
         }
 
         .label {
@@ -148,31 +148,32 @@
         }
 
         .label-success {
-            background-color: var(--secondary-color);
+            background-color: var(--success-text, #10b981);
             color: white;
         }
 
         .label-danger {
-            background-color: var(--danger-color);
+            background-color: var(--danger-text, #ef4444);
             color: white;
         }
 
         .label-warning {
-            background-color: var(--warning-color);
+            background-color: #f59e0b;
             color: white;
         }
 
         .table-striped > tbody > tr:nth-of-type(odd) {
-            background-color: #f9f9f9;
+            background-color: var(--bg-hover, #f9f9f9);
         }
 
         .table {
             margin-bottom: 0;
-            background-color: white;
+            background-color: var(--bg-secondary, white);
             width: 100%;
             border-collapse: collapse;
             table-layout: fixed;
             word-wrap: break-word;
+            color: var(--text-primary, #333);
         }
         
         .table td, .table th {
@@ -181,9 +182,9 @@
         }
 
         .table > thead > tr > th {
-            border-bottom: 2px solid #ddd;
+            border-bottom: 2px solid var(--border-color, #ddd);
             font-weight: 600;
-            color: var(--dark-color);
+            color: var(--text-heading, #1e293b);
             padding: 12px 8px;
             text-align: left;
         }
@@ -191,7 +192,7 @@
         .table > tbody > tr > td {
             vertical-align: middle;
             padding: 12px 8px;
-            border-top: 1px solid #f0f0f0;
+            border-top: 1px solid var(--border-color, #f0f0f0);
         }
 
         .table-responsive {
@@ -205,12 +206,12 @@
             border-radius: 16px;
             overflow: hidden;
             margin-bottom: 30px;
-            box-shadow: var(--box-shadow);
-            border: 1px solid var(--border-color);
-            background: white;
+            box-shadow: var(--box-shadow, 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.06));
+            border: 1px solid var(--border-color, #e2e8f0);
+            background: var(--bg-secondary, white);
             max-width: 100%;
             width: 100%;
-            transition: var(--transition);
+            transition: var(--transition, all 0.2s ease);
             position: relative;
         }
         
@@ -237,11 +238,11 @@
 
         .container-header {
             padding: 20px 24px;
-            background: #f8fafc;
+            background: var(--bg-hover, #f8fafc);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color, #e2e8f0);
             position: relative;
         }
         
@@ -249,14 +250,14 @@
             margin: 0;
             font-size: 18px;
             font-weight: 600;
-            color: var(--dark-color);
+            color: var(--text-heading, #1e293b);
             display: flex;
             align-items: center;
             gap: 12px;
         }
         
         .container-header h3 .fa-cube {
-            color: var(--docker-blue);
+            color: var(--accent-color, #0db7ed);
             font-size: 20px;
         }
 
@@ -302,27 +303,27 @@
 
         /* Button Colors */
         .btn-success {
-            background-color: var(--secondary-color);
+            background-color: var(--success-text, #10b981);
             color: white;
         }
         
         .btn-warning {
-            background-color: var(--warning-color);
+            background-color: #f59e0b;
             color: white;
         }
         
         .btn-danger {
-            background-color: var(--danger-color);
+            background-color: var(--danger-text, #ef4444);
             color: white;
         }
         
         .btn-primary {
-            background-color: var(--primary-color);
+            background-color: var(--accent-color, #2496ed);
             color: white;
         }
         
         .btn-info {
-            background-color: var(--info-color);
+            background-color: var(--info-text, #3b82f6);
             color: white;
         }
 
@@ -335,15 +336,15 @@
         }
         
         .metric-card {
-            background: white;
+            background: var(--bg-secondary, white);
             padding: 15px;
             border-radius: 6px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-            border: 1px solid #f0f0f0;
+            box-shadow: 0 1px 3px var(--shadow-color, rgba(0,0,0,0.08));
+            border: 1px solid var(--border-color, #f0f0f0);
         }
         
         .metric-card h5 {
-            color: #666;
+            color: var(--text-secondary, #666);
             margin-bottom: 10px;
             font-size: 14px;
         }
@@ -351,7 +352,7 @@
         .metric-card .value {
             font-size: 22px;
             font-weight: bold;
-            color: var(--dark-color);
+            color: var(--text-heading, #1e293b);
         }
 
         /* Status indicators */
@@ -365,11 +366,11 @@
         }
 
         .status-running {
-            background-color: var(--secondary-color);
+            background-color: var(--success-text, #10b981);
         }
 
         .status-stopped {
-            background-color: var(--danger-color);
+            background-color: var(--danger-text, #ef4444);
         }
         
         /* Workflow status badge - Enhanced */
@@ -386,14 +387,14 @@
         }
         
         .workflow-status.active {
-            background: #d1fae5;
-            color: #059669;
+            background: var(--success-bg, #d1fae5);
+            color: var(--success-text, #059669);
             border: 1px solid #a7f3d0;
         }
         
         .workflow-status.error {
-            background: #fee2e2;
-            color: #dc2626;
+            background: var(--danger-bg, #fee2e2);
+            color: var(--danger-text, #dc2626);
             border: 1px solid #fecaca;
         }
         
@@ -405,23 +406,23 @@
         textarea.logs {
             width: 100%;
             padding: 10px;
-            border: 1px solid #eee;
+            border: 1px solid var(--border-color, #eee);
             border-radius: 4px;
             font-family: monospace;
-            font-size: 13px;
+            font-size: 18px;
             line-height: 1.5;
-            background-color: #f8f9fa;
-            color: #333;
+            background-color: var(--bg-hover, #f8f9fa);
+            color: var(--text-primary, #333);
             height: 300px;
         }
 
         /* Code styling */
         code {
             padding: 2px 5px;
-            background-color: #f8f9fa;
+            background-color: var(--bg-hover, #f8f9fa);
             border-radius: 3px;
             font-family: monospace;
-            color: #333;
+            color: var(--text-primary, #333);
             font-size: 90%;
         }
 
@@ -466,12 +467,12 @@
 
         /* Custom n8n container */
         .n8n-container {
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            border-left: 4px solid var(--secondary-color);
+            background: linear-gradient(135deg, var(--bg-hover, #f5f7fa) 0%, #c3cfe2 100%);
+            border-left: 4px solid var(--success-text, #10b981);
             border-radius: 8px;
             padding: 20px;
             margin-bottom: 30px;
-            box-shadow: var(--box-shadow);
+            box-shadow: var(--box-shadow, 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.06));
             max-width: 100%;
             overflow: hidden;
         }
@@ -480,13 +481,14 @@
         .modal-content {
             border-radius: 8px;
             border: none;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 5px 15px var(--shadow-color, rgba(0,0,0,0.1));
+            background: var(--bg-secondary, white);
         }
 
         .modal-header {
-            border-bottom: 1px solid #f5f5f5;
+            border-bottom: 1px solid var(--border-color, #f5f5f5);
             padding: 15px 20px;
-            background-color: #f8f9fa;
+            background-color: var(--bg-hover, #f8f9fa);
             border-top-left-radius: 8px;
             border-top-right-radius: 8px;
         }
@@ -496,8 +498,9 @@
         }
 
         .modal-footer {
-            border-top: 1px solid #f5f5f5;
+            border-top: 1px solid var(--border-color, #f5f5f5);
             padding: 15px 20px;
+            background-color: var(--bg-hover, #f8f9fa);
         }
 
         /* Icon fixes */
@@ -554,7 +557,7 @@
         .page-title h2 {
             font-size: 24px;
             margin: 0;
-            color: var(--dark-color);
+            color: var(--text-heading, #1e293b);
             font-weight: 600;
             display: flex;
             align-items: center;
@@ -562,22 +565,22 @@
 
         .page-title h2 i {
             margin-right: 10px;
-            color: var(--primary-color);
+            color: var(--accent-color, #2496ed);
         }
 
         .page-title p {
-            color: #777;
+            color: var(--text-secondary, #777);
             margin: 5px 0 0 0;
             font-size: 14px;
         }
 
         .create-btn {
-            background-color: var(--primary-color) !important;
+            background-color: var(--accent-color, #2496ed) !important;
             color: white !important;
             padding: 8px 16px;
             border-radius: 4px;
-            box-shadow: var(--box-shadow);
-            transition: var(--transition);
+            box-shadow: var(--box-shadow, 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.06));
+            transition: var(--transition, all 0.2s ease);
             display: inline-flex !important;
             align-items: center;
             text-decoration: none;
@@ -585,10 +588,10 @@
         }
 
         .create-btn:hover {
-            background-color: #1976d2 !important;
+            background-color: var(--accent-hover, #1976d2) !important;
             color: white;
             transform: translateY(-2px);
-            box-shadow: var(--box-shadow-hover);
+            box-shadow: var(--box-shadow-hover, 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05));
             text-decoration: none;
         }
         
@@ -602,15 +605,15 @@
         }
         
         .stats-card {
-            background: white;
+            background: var(--bg-secondary, white);
             border-radius: 12px;
             padding: 20px;
             display: flex;
             align-items: center;
             gap: 15px;
-            box-shadow: var(--box-shadow);
-            transition: var(--transition);
-            border: 1px solid var(--border-color);
+            box-shadow: var(--box-shadow, 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.06));
+            transition: var(--transition, all 0.2s ease);
+            border: 1px solid var(--border-color, #e2e8f0);
             position: relative;
             overflow: hidden;
         }
@@ -643,7 +646,7 @@
         
         .stats-card:hover {
             transform: translateY(-2px);
-            box-shadow: var(--box-shadow-hover);
+            box-shadow: var(--box-shadow-hover, 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05));
         }
         
         .stats-icon {
@@ -657,18 +660,18 @@
         }
         
         .stats-card.running .stats-icon {
-            background: #d1fae5;
-            color: #10b981;
+            background: var(--success-bg, #d1fae5);
+            color: var(--success-text, #10b981);
         }
         
         .stats-card.stopped .stats-icon {
-            background: #fee2e2;
-            color: #ef4444;
+            background: var(--danger-bg, #fee2e2);
+            color: var(--danger-text, #ef4444);
         }
         
         .stats-card.total .stats-icon {
             background: #e0f2fe;
-            color: var(--docker-blue);
+            color: var(--accent-color, #0db7ed);
         }
         
         .stats-card.memory .stats-icon {
@@ -683,13 +686,13 @@
         .stats-value {
             font-size: 28px;
             font-weight: 700;
-            color: var(--dark-color);
+            color: var(--text-heading, #1e293b);
             line-height: 1;
         }
         
         .stats-label {
             font-size: 14px;
-            color: #64748b;
+            color: var(--text-secondary, #64748b);
             margin-top: 5px;
             font-weight: 500;
         }
@@ -707,12 +710,12 @@
         
         /* Search and Filter Section */
         .search-filter-section {
-            background: white;
+            background: var(--bg-secondary, white);
             border-radius: 12px;
             padding: 20px;
             margin-bottom: 30px;
-            box-shadow: var(--box-shadow);
-            border: 1px solid var(--border-color);
+            box-shadow: var(--box-shadow, 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.06));
+            border: 1px solid var(--border-color, #e2e8f0);
             display: flex;
             gap: 20px;
             align-items: center;
@@ -730,21 +733,23 @@
             left: 15px;
             top: 50%;
             transform: translateY(-50%);
-            color: #94a3b8;
+            color: var(--text-secondary, #94a3b8);
             font-size: 16px;
         }
         
         .search-box input {
             width: 100%;
             padding: 10px 15px 10px 45px;
-            border: 1px solid var(--border-color);
+            border: 1px solid var(--border-color, #e2e8f0);
             border-radius: 8px;
             font-size: 14px;
-            transition: var(--transition);
+            background: var(--bg-secondary, white);
+            color: var(--text-primary, #333);
+            transition: var(--transition, all 0.2s ease);
         }
         
         .search-box input:focus {
-            border-color: var(--docker-blue);
+            border-color: var(--accent-color, #0db7ed);
             box-shadow: 0 0 0 3px rgba(36, 150, 237, 0.1);
             outline: none;
         }
@@ -756,29 +761,29 @@
         
         .filter-btn {
             padding: 8px 16px;
-            border: 1px solid var(--border-color);
-            background: white;
+            border: 1px solid var(--border-color, #e2e8f0);
+            background: var(--bg-secondary, white);
             border-radius: 8px;
             font-size: 14px;
             font-weight: 500;
-            color: #64748b;
+            color: var(--text-secondary, #64748b);
             cursor: pointer;
-            transition: var(--transition);
+            transition: var(--transition, all 0.2s ease);
             display: flex;
             align-items: center;
             gap: 6px;
         }
         
         .filter-btn:hover {
-            border-color: var(--docker-blue);
-            color: var(--docker-blue);
-            background: #f0f9ff;
+            border-color: var(--accent-color, #0db7ed);
+            color: var(--accent-color, #0db7ed);
+            background: var(--info-bg, #f0f9ff);
         }
         
         .filter-btn.active {
-            background: var(--docker-blue);
+            background: var(--accent-color, #0db7ed);
             color: white;
-            border-color: var(--docker-blue);
+            border-color: var(--accent-color, #0db7ed);
         }
         
         .filter-btn i {
@@ -789,16 +794,16 @@
         .empty-state {
             text-align: center;
             padding: 80px 20px;
-            background: white;
+            background: var(--bg-secondary, white);
             border-radius: 12px;
-            box-shadow: var(--box-shadow);
-            border: 1px solid var(--border-color);
+            box-shadow: var(--box-shadow, 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.06));
+            border: 1px solid var(--border-color, #e2e8f0);
         }
         
         .empty-state-icon {
             width: 100px;
             height: 100px;
-            background: #f0f9ff;
+            background: var(--info-bg, #f0f9ff);
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -808,25 +813,25 @@
         
         .empty-state-icon i {
             font-size: 48px;
-            color: var(--docker-blue);
+            color: var(--accent-color, #0db7ed);
         }
         
         .empty-state h3 {
             font-size: 24px;
-            color: var(--dark-color);
+            color: var(--text-heading, #1e293b);
             margin-bottom: 10px;
         }
         
         .empty-state p {
-            color: #64748b;
+            color: var(--text-secondary, #64748b);
             font-size: 16px;
             margin-bottom: 30px;
         }
         
         /* Enhanced button styles */
         .btn-success {
-            background: #10b981 !important;
-            border-color: #10b981 !important;
+            background: var(--success-text, #10b981) !important;
+            border-color: var(--success-text, #10b981) !important;
         }
         
         .btn-success:hover {
@@ -845,8 +850,8 @@
         }
         
         .btn-danger {
-            background: #ef4444 !important;
-            border-color: #ef4444 !important;
+            background: var(--danger-text, #ef4444) !important;
+            border-color: var(--danger-text, #ef4444) !important;
         }
         
         .btn-danger:hover {
@@ -855,8 +860,8 @@
         }
         
         .btn-info {
-            background: #3b82f6 !important;
-            border-color: #3b82f6 !important;
+            background: var(--info-text, #3b82f6) !important;
+            border-color: var(--info-text, #3b82f6) !important;
         }
         
         .btn-info:hover {
@@ -865,13 +870,13 @@
         }
         
         .btn-primary {
-            background: var(--docker-blue) !important;
-            border-color: var(--docker-blue) !important;
+            background: var(--accent-color, #0db7ed) !important;
+            border-color: var(--accent-color, #0db7ed) !important;
         }
         
         .btn-primary:hover {
-            background: #0284c7 !important;
-            border-color: #0284c7 !important;
+            background: var(--accent-hover, #0284c7) !important;
+            border-color: var(--accent-hover, #0284c7) !important;
         }
 
         .create-btn i {

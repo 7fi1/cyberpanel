@@ -22,18 +22,18 @@
     
     /* Overview Section */
     .overview-section {
-        background: white;
+        background: var(--bg-secondary, white);
         border-radius: 12px;
         padding: 25px;
         margin-bottom: 25px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        border: 1px solid #e8e9ff;
+        box-shadow: 0 2px 8px var(--shadow-color, rgba(0,0,0,0.08));
+        border: 1px solid var(--border-color, #e8e9ff);
     }
     
     .section-title {
         font-size: 16px;
         font-weight: 700;
-        color: #2f3640;
+        color: var(--text-primary, #2f3640);
         margin-bottom: 20px;
         display: flex;
         align-items: center;
@@ -46,7 +46,7 @@
         content: '';
         width: 4px;
         height: 24px;
-        background: #5b5fcf;
+        background: var(--accent-color, #5b5fcf);
         border-radius: 2px;
     }
     
@@ -57,8 +57,8 @@
     }
     
     .stat-card {
-        background: white;
-        border: 1px solid #e8e9ff;
+        background: var(--bg-secondary, white);
+        border: 1px solid var(--border-color, #e8e9ff);
         border-radius: 12px;
         padding: 20px;
         position: relative;
@@ -74,7 +74,7 @@
     
     .stat-card-title {
         font-size: 13px;
-        color: #8893a7;
+        color: var(--text-secondary, #8893a7);
         font-weight: 600;
         text-transform: uppercase;
         letter-spacing: 0.5px;
@@ -82,13 +82,13 @@
     
     .stat-card-value {
         font-size: 13px;
-        color: #8893a7;
+        color: var(--text-secondary, #8893a7);
     }
     
     .progress-bar-container {
         width: 100%;
         height: 8px;
-        background: #e8e9ff;
+        background: var(--border-color, #e8e9ff);
         border-radius: 4px;
         overflow: hidden;
     }
@@ -97,23 +97,23 @@
         height: 100%;
         border-radius: 4px;
         transition: width 0.3s ease;
-        background: #5b5fcf;
+        background: var(--accent-color, #5b5fcf);
     }
     
     .stat-card-info {
         margin-top: 10px;
         font-size: 13px;
-        color: #8893a7;
+        color: var(--text-secondary, #8893a7);
     }
     
     /* Insights Section */
     .insights-section {
-        background: white;
+        background: var(--bg-secondary, white);
         border-radius: 12px;
         padding: 25px;
         margin-bottom: 25px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        border: 1px solid #e8e9ff;
+        box-shadow: 0 2px 8px var(--shadow-color, rgba(0,0,0,0.08));
+        border: 1px solid var(--border-color, #e8e9ff);
     }
     
     .insights-grid {
@@ -123,8 +123,8 @@
     }
     
     .insight-card {
-        background: #f8f9ff;
-        border: 1px solid #e8e9ff;
+        background: var(--bg-hover, #f8f9ff);
+        border: 1px solid var(--border-color, #e8e9ff);
         border-radius: 10px;
         padding: 20px 15px;
         text-align: center;
@@ -135,13 +135,13 @@
     .insight-card:hover {
         transform: translateY(-5px);
         box-shadow: 0 5px 20px rgba(91,95,207,0.1);
-        border-color: #5b5fcf;
+        border-color: var(--accent-color, #5b5fcf);
     }
     
     .insight-icon {
         width: 48px;
         height: 48px;
-        background: #5b5fcf;
+        background: var(--accent-color, #5b5fcf);
         border-radius: 12px;
         display: flex;
         align-items: center;
@@ -154,23 +154,23 @@
     .insight-value {
         font-size: 28px;
         font-weight: 700;
-        color: #2f3640;
+        color: var(--text-primary, #2f3640);
         margin-bottom: 5px;
     }
     
     .insight-label {
         font-size: 13px;
-        color: #8893a7;
+        color: var(--text-secondary, #8893a7);
         font-weight: 500;
     }
     
     /* Activity Board */
     .activity-section {
-        background: white;
+        background: var(--bg-secondary, white);
         border-radius: 12px;
         padding: 25px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        border: 1px solid #e8e9ff;
+        box-shadow: 0 2px 8px var(--shadow-color, rgba(0,0,0,0.08));
+        border: 1px solid var(--border-color, #e8e9ff);
     }
     
     .activity-header {
@@ -185,10 +185,10 @@
     .activity-tabs {
         display: flex;
         gap: 3px;
-        background: #f0f0ff;
+        background: var(--bg-primary, #f0f0ff);
         padding: 3px;
         border-radius: 8px;
-        border: 1px solid #e8e9ff;
+        border: 1px solid var(--border-color, #e8e9ff);
     }
     
     .activity-tab {
@@ -198,7 +198,7 @@
         border-radius: 6px;
         font-size: 12px;
         font-weight: 600;
-        color: #64748b;
+        color: var(--text-secondary, #64748b);
         cursor: pointer;
         transition: all 0.2s ease;
         display: flex;
@@ -208,12 +208,12 @@
     }
     
     .activity-tab:hover {
-        color: #5b5fcf;
+        color: var(--accent-color, #5b5fcf);
         background: rgba(91,95,207,0.1);
     }
     
     .activity-tab.active {
-        background: #5b5fcf;
+        background: var(--accent-color, #5b5fcf);
         color: white;
         box-shadow: 0 2px 4px rgba(91,95,207,0.3);
     }
@@ -241,28 +241,28 @@
         padding: 12px 15px;
         font-size: 11px;
         font-weight: 700;
-        color: #64748b;
+        color: var(--text-secondary, #64748b);
         text-transform: uppercase;
         letter-spacing: 0.8px;
-        border-bottom: 2px solid #e8e9ff;
-        background: #f8f9ff;
+        border-bottom: 2px solid var(--border-color, #e8e9ff);
+        background: var(--bg-hover, #f8f9ff);
     }
     
     .activity-table td {
         padding: 12px 15px;
         font-size: 13px;
-        color: #2f3640;
-        border-bottom: 1px solid #f0f0ff;
+        color: var(--text-primary, #2f3640);
+        border-bottom: 1px solid var(--border-color, #f0f0ff);
     }
     
     .activity-table tr:hover {
-        background: #f8f9ff;
+        background: var(--bg-hover, #f8f9ff);
     }
     
     .view-activity-btn {
-        background: #f8f9ff;
-        border: 1px solid #e8e9ff;
-        color: #5b5fcf;
+        background: var(--bg-hover, #f8f9ff);
+        border: 1px solid var(--border-color, #e8e9ff);
+        color: var(--accent-color, #5b5fcf);
         padding: 6px 14px;
         border-radius: 6px;
         font-size: 12px;
@@ -272,9 +272,9 @@
     }
     
     .view-activity-btn:hover {
-        background: #5b5fcf;
+        background: var(--accent-color, #5b5fcf);
         color: white;
-        border-color: #5b5fcf;
+        border-color: var(--accent-color, #5b5fcf);
         box-shadow: 0 2px 4px rgba(91,95,207,0.3);
     }
     
@@ -282,9 +282,9 @@
         height: 280px;
         position: relative;
         padding: 15px;
-        background: #fafbff;
+        background: var(--bg-hover, #fafbff);
         border-radius: 8px;
-        border: 1px solid #e8e9ff;
+        border: 1px solid var(--border-color, #e8e9ff);
         margin-top: 10px;
     }
     
@@ -314,7 +314,7 @@
         max-width: 90vw;
         max-height: 90vh;
         width: 600px;
-        background: #fff;
+        background: var(--bg-secondary, #fff);
         border-radius: 16px;
         box-shadow: 0 8px 40px rgba(0,0,0,0.18);
         padding: 32px 28px 24px;
@@ -336,8 +336,8 @@
     
     /* Brand Bird Badge */
     .brand-badge {
-        background: #2f3640;
-        color: white;
+        background: var(--text-primary, #2f3640);
+        color: var(--bg-secondary, white);
         padding: 6px 12px;
         border-radius: 8px;
         font-size: 12px;
@@ -440,7 +440,7 @@
         <h2 class="section-title">INSIGHTS</h2>
         <div class="insights-grid">
             <div class="insight-card">
-                <div class="insight-icon" style="background: #5b5fcf;">
+                <div class="insight-icon">
                     <i class="fas fa-users"></i>
                 </div>
                 <div class="insight-value">{$ totalUsers || 0 $}</div>
@@ -448,7 +448,7 @@
             </div>
             
             <div class="insight-card">
-                <div class="insight-icon" style="background: #5b5fcf;">
+                <div class="insight-icon">
                     <i class="fas fa-globe"></i>
                 </div>
                 <div class="insight-value">{$ totalSites || 0 $}</div>
@@ -464,7 +464,7 @@
             </div>
             
             <div class="insight-card">
-                <div class="insight-icon" style="background: #5b5fcf;">
+                <div class="insight-icon">
                     <i class="fas fa-database"></i>
                 </div>
                 <div class="insight-value">{$ totalDBs || 0 $}</div>
@@ -472,7 +472,7 @@
             </div>
             
             <div class="insight-card">
-                <div class="insight-icon" style="background: #5b5fcf;">
+                <div class="insight-icon">
                     <i class="fas fa-envelope"></i>
                 </div>
                 <div class="insight-value">{$ totalEmails || 0 $}</div>
@@ -480,7 +480,7 @@
             </div>
             
             <div class="insight-card">
-                <div class="insight-icon" style="background: #5b5fcf;">
+                <div class="insight-icon">
                     <i class="fas fa-folder"></i>
                 </div>
                 <div class="insight-value">{$ totalFTPUsers || 0 $}</div>

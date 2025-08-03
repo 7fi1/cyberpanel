@@ -18,7 +18,7 @@
         text-align: center;
         margin-bottom: 3rem;
         padding: 3rem 0;
-        background: linear-gradient(135deg, #f8f9ff 0%, #f0f1ff 100%);
+        background: linear-gradient(135deg, var(--bg-hover, #f8f9ff) 0%, var(--bg-gradient, #f0f1ff) 100%);
         border-radius: 20px;
         animation: fadeInDown 0.5s ease-out;
     }
@@ -26,7 +26,7 @@
     .page-title {
         font-size: 3rem;
         font-weight: 700;
-        color: #1e293b;
+        color: var(--text-primary, #1e293b);
         margin-bottom: 1rem;
         display: flex;
         align-items: center;
@@ -36,7 +36,7 @@
     
     .page-subtitle {
         font-size: 1.25rem;
-        color: #64748b;
+        color: var(--text-secondary, #64748b);
         margin-bottom: 1.5rem;
     }
     
@@ -48,8 +48,8 @@
     }
     
     .btn-primary {
-        background: #5b5fcf;
-        color: white;
+        background: var(--accent-color, #5b5fcf);
+        color: var(--bg-secondary, white);
         border: none;
         padding: 0.75rem 2rem;
         border-radius: 10px;
@@ -64,16 +64,16 @@
     }
     
     .btn-primary:hover {
-        background: #4547a9;
+        background: var(--accent-hover, #4547a9);
         transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(91, 95, 207, 0.4);
-        color: white;
+        box-shadow: 0 8px 20px var(--accent-shadow-hover, rgba(91, 95, 207, 0.4));
+        color: var(--bg-secondary, white);
     }
     
     .btn-secondary {
-        background: #fff;
-        color: #5b5fcf;
-        border: 1px solid #e8e9ff;
+        background: var(--bg-secondary, #fff);
+        color: var(--accent-color, #5b5fcf);
+        border: 1px solid var(--border-color, #e8e9ff);
         padding: 0.75rem 2rem;
         border-radius: 10px;
         font-weight: 500;
@@ -87,15 +87,15 @@
     }
     
     .btn-secondary:hover {
-        background: #f8f9ff;
-        border-color: #5b5fcf;
+        background: var(--bg-hover, #f8f9ff);
+        border-color: var(--accent-color, #5b5fcf);
         transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(91, 95, 207, 0.2);
+        box-shadow: 0 4px 12px var(--accent-shadow-light, rgba(91, 95, 207, 0.2));
     }
     
     .btn-danger {
-        background: #ef4444;
-        color: white;
+        background: var(--danger-color, #ef4444);
+        color: var(--bg-secondary, white);
         border: none;
         padding: 0.5rem 1rem;
         border-radius: 8px;
@@ -109,9 +109,9 @@
     }
     
     .btn-danger:hover {
-        background: #dc2626;
+        background: var(--danger-hover, #dc2626);
         transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+        box-shadow: 0 4px 12px var(--danger-shadow, rgba(239, 68, 68, 0.4));
     }
     
     .btn-gray {
@@ -136,25 +136,25 @@
     }
     
     .main-card {
-        background: white;
+        background: var(--bg-secondary, white);
         border-radius: 16px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 10px 40px rgba(0,0,0,0.08);
-        border: 1px solid #e8e9ff;
+        box-shadow: 0 1px 3px var(--shadow-light, rgba(0,0,0,0.05)), 0 10px 40px var(--shadow-color, rgba(0,0,0,0.08));
+        border: 1px solid var(--border-color, #e8e9ff);
         overflow: hidden;
         margin-bottom: 2rem;
         animation: fadeInUp 0.5s ease-out;
     }
     
     .card-header {
-        background: linear-gradient(135deg, #f8f9ff 0%, #f0f1ff 100%);
+        background: linear-gradient(135deg, var(--bg-hover, #f8f9ff) 0%, var(--bg-gradient, #f0f1ff) 100%);
         padding: 1.5rem 2rem;
-        border-bottom: 1px solid #e8e9ff;
+        border-bottom: 1px solid var(--border-color, #e8e9ff);
     }
     
     .card-title {
         font-size: 1.25rem;
         font-weight: 600;
-        color: #1e293b;
+        color: var(--text-primary, #1e293b);
         margin: 0;
         display: flex;
         align-items: center;
@@ -177,29 +177,29 @@
         display: block;
         margin-bottom: 0.5rem;
         font-weight: 500;
-        color: #1e293b;
+        color: var(--text-primary, #1e293b);
         font-size: 0.875rem;
     }
     
     .form-control {
         width: 100%;
         padding: 0.875rem 1rem;
-        border: 1px solid #e8e9ff;
+        border: 1px solid var(--border-color, #e8e9ff);
         border-radius: 10px;
         font-size: 0.875rem;
         transition: all 0.3s ease;
-        background: #fff;
+        background: var(--bg-secondary, #fff);
     }
     
     .form-control:focus {
         outline: none;
-        border-color: #5b5fcf;
-        box-shadow: 0 0 0 3px rgba(91, 95, 207, 0.1);
+        border-color: var(--accent-color, #5b5fcf);
+        box-shadow: 0 0 0 3px var(--accent-focus, rgba(91, 95, 207, 0.1));
     }
     
     .schedule-info-card {
-        background: #f8f9ff;
-        border: 1px solid #e8e9ff;
+        background: var(--bg-hover, #f8f9ff);
+        border: 1px solid var(--border-color, #e8e9ff);
         border-radius: 12px;
         padding: 1.5rem;
         margin-bottom: 2rem;
@@ -207,36 +207,36 @@
     
     .schedule-table {
         width: 100%;
-        background: white;
+        background: var(--bg-secondary, white);
         border-radius: 12px;
         overflow: hidden;
-        border: 1px solid #e8e9ff;
+        border: 1px solid var(--border-color, #e8e9ff);
     }
     
     .schedule-table thead {
-        background: linear-gradient(135deg, #f8f9ff 0%, #f0f1ff 100%);
+        background: linear-gradient(135deg, var(--bg-hover, #f8f9ff) 0%, var(--bg-gradient, #f0f1ff) 100%);
     }
     
     .schedule-table th {
         padding: 1rem;
         text-align: left;
         font-weight: 600;
-        color: #1e293b;
+        color: var(--text-primary, #1e293b);
         font-size: 0.875rem;
         text-transform: uppercase;
         letter-spacing: 0.05em;
-        border-bottom: 1px solid #e8e9ff;
+        border-bottom: 1px solid var(--border-color, #e8e9ff);
     }
     
     .schedule-table td {
         padding: 1rem;
-        color: #64748b;
+        color: var(--text-secondary, #64748b);
         font-size: 0.875rem;
-        border-bottom: 1px solid #f3f4f6;
+        border-bottom: 1px solid var(--border-light, #f3f4f6);
     }
     
     .schedule-table tbody tr:hover {
-        background: #f8f9ff;
+        background: var(--bg-hover, #f8f9ff);
     }
     
     .schedule-table tbody tr:last-child td {
@@ -244,8 +244,8 @@
     }
     
     .status-badge {
-        background: #d1fae5;
-        color: #065f46;
+        background: var(--success-bg, #d1fae5);
+        color: var(--success-text, #065f46);
         padding: 0.25rem 0.75rem;
         border-radius: 20px;
         font-size: 0.75rem;
@@ -255,8 +255,8 @@
     }
     
     .frequency-badge {
-        background: #e0e7ff;
-        color: #5b5fcf;
+        background: var(--accent-bg, #e0e7ff);
+        color: var(--accent-color, #5b5fcf);
         padding: 0.25rem 0.75rem;
         border-radius: 6px;
         font-size: 0.875rem;
@@ -266,8 +266,8 @@
     .loading-spinner {
         width: 20px;
         height: 20px;
-        border: 3px solid #e8e9ff;
-        border-top-color: #5b5fcf;
+        border: 3px solid var(--border-color, #e8e9ff);
+        border-top-color: var(--accent-color, #5b5fcf);
         border-radius: 50%;
         animation: spin 1s linear infinite;
         display: inline-block;
@@ -281,8 +281,8 @@
     }
     
     .job-selector {
-        background: #f8f9ff;
-        border: 1px solid #e8e9ff;
+        background: var(--bg-hover, #f8f9ff);
+        border: 1px solid var(--border-color, #e8e9ff);
         border-radius: 12px;
         padding: 1.5rem;
         margin-bottom: 2rem;
@@ -296,15 +296,15 @@
     }
     
     .modal-header {
-        background: linear-gradient(135deg, #f8f9ff 0%, #f0f1ff 100%);
-        border-bottom: 1px solid #e8e9ff;
+        background: linear-gradient(135deg, var(--bg-hover, #f8f9ff) 0%, var(--bg-gradient, #f0f1ff) 100%);
+        border-bottom: 1px solid var(--border-color, #e8e9ff);
         padding: 1.5rem 2rem;
     }
     
     .modal-title {
         font-size: 1.25rem;
         font-weight: 600;
-        color: #1e293b;
+        color: var(--text-primary, #1e293b);
         margin: 0;
     }
     
@@ -314,7 +314,7 @@
     
     .log-table {
         width: 100%;
-        background: #f8f9ff;
+        background: var(--bg-hover, #f8f9ff);
         border-radius: 8px;
         overflow: hidden;
     }
@@ -324,20 +324,20 @@
         padding: 0.75rem;
         text-align: left;
         font-weight: 600;
-        color: #1e293b;
+        color: var(--text-primary, #1e293b);
         font-size: 0.875rem;
     }
     
     .log-table td {
         padding: 0.75rem;
-        color: #64748b;
+        color: var(--text-secondary, #64748b);
         font-size: 0.875rem;
-        border-bottom: 1px solid #e8e9ff;
+        border-bottom: 1px solid var(--border-color, #e8e9ff);
     }
     
     .log-type {
         font-weight: 600;
-        color: #5b5fcf;
+        color: var(--accent-color, #5b5fcf);
     }
     
     @keyframes spin {
@@ -545,7 +545,7 @@
                     </thead>
                     <tbody>
                         <tr>
-                            <td><i class="fas fa-calendar-check" style="color: #5b5fcf; margin-right: 0.5rem;"></i>{$ lastRun $}</td>
+                            <td><i class="fas fa-calendar-check" style="color: var(--accent-color, #5b5fcf); margin-right: 0.5rem;"></i>{$ lastRun $}</td>
                             <td><span class="frequency-badge">{$ allSites $}</span></td>
                             <td>
                                 <select ng-change="changeFrequency()" ng-model="backupFrequency" 
@@ -623,7 +623,7 @@
                     <tbody>
                         <tr ng-repeat="website in websites track by $index">
                             <td>
-                                <i class="fas fa-globe" style="color: #5b5fcf; margin-right: 0.5rem;"></i>
+                                <i class="fas fa-globe" style="color: var(--accent-color, #5b5fcf); margin-right: 0.5rem;"></i>
                                 <strong ng-bind="website.name"></strong>
                             </td>
                             <td style="text-align: center;">

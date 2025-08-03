@@ -29,29 +29,29 @@
     .page-title {
         font-size: 28px;
         font-weight: 700;
-        color: #2f3640;
+        color: var(--text-primary, #2f3640);
         margin-bottom: 8px;
     }
     
     .page-subtitle {
         font-size: 14px;
-        color: #8893a7;
+        color: var(--text-secondary, #8893a7);
     }
     
     /* Card styles */
     .content-card {
-        background: white;
+        background: var(--bg-secondary, white);
         border-radius: 12px;
         padding: 30px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        border: 1px solid #e8e9ff;
+        box-shadow: 0 2px 8px var(--shadow-color, rgba(0,0,0,0.08));
+        border: 1px solid var(--border-color, #e8e9ff);
         margin-bottom: 25px;
     }
     
     .card-title {
         font-size: 18px;
         font-weight: 700;
-        color: #2f3640;
+        color: var(--text-primary, #2f3640);
         margin-bottom: 25px;
         display: flex;
         align-items: center;
@@ -62,7 +62,7 @@
         content: '';
         width: 4px;
         height: 24px;
-        background: #5b5fcf;
+        background: var(--accent-color, #5b5fcf);
         border-radius: 2px;
     }
     
@@ -75,7 +75,7 @@
         display: block;
         font-size: 13px;
         font-weight: 600;
-        color: #64748b;
+        color: var(--text-secondary, #64748b);
         margin-bottom: 8px;
         text-transform: uppercase;
         letter-spacing: 0.5px;
@@ -84,21 +84,21 @@
     .form-control {
         width: 100%;
         padding: 10px 14px;
-        border: 1px solid #e8e9ff;
+        border: 1px solid var(--border-color, #e8e9ff);
         border-radius: 8px;
         font-size: 14px;
-        color: #2f3640;
-        background: white;
+        color: var(--text-primary, #2f3640);
+        background: var(--bg-secondary, white);
         transition: all 0.2s ease;
     }
     
     .form-control:hover {
-        border-color: #5b5fcf;
+        border-color: var(--accent-color, #5b5fcf);
     }
     
     .form-control:focus {
         outline: none;
-        border-color: #5b5fcf;
+        border-color: var(--accent-color, #5b5fcf);
         box-shadow: 0 0 0 3px rgba(91,95,207,0.1);
     }
     
@@ -120,8 +120,8 @@
     /* Windows-specific fixes */
     @media screen and (-ms-high-contrast: active), (-ms-high-contrast: none) {
         select.form-control {
-            color: #2f3640 !important;
-            background-color: white !important;
+            color: var(--text-primary, #2f3640) !important;
+            background-color: var(--bg-secondary, white) !important;
         }
     }
     
@@ -131,14 +131,14 @@
     }
     
     select.form-control:focus {
-        color: #2f3640;
-        background-color: white;
+        color: var(--text-primary, #2f3640);
+        background-color: var(--bg-secondary, white);
     }
     
     /* Website selector card */
     .website-selector-card {
-        background: #f8f9ff;
-        border: 1px solid #e8e9ff;
+        background: var(--bg-hover, #f8f9ff);
+        border: 1px solid var(--border-color, #e8e9ff);
         border-radius: 10px;
         padding: 20px;
         margin-bottom: 25px;
@@ -147,33 +147,33 @@
     /* Table styles */
     .modern-table {
         width: 100%;
-        background: white;
+        background: var(--bg-secondary, white);
         border-radius: 10px;
         overflow: hidden;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-        border: 1px solid #e8e9ff;
+        box-shadow: 0 1px 3px var(--shadow-color, rgba(0,0,0,0.05));
+        border: 1px solid var(--border-color, #e8e9ff);
     }
     
     .modern-table thead {
-        background: #f8f9ff;
+        background: var(--bg-hover, #f8f9ff);
     }
     
     .modern-table th {
         padding: 16px 20px;
         font-size: 13px;
         font-weight: 600;
-        color: #64748b;
+        color: var(--text-secondary, #64748b);
         text-transform: uppercase;
         letter-spacing: 0.5px;
-        border-bottom: 1px solid #e8e9ff;
+        border-bottom: 1px solid var(--border-color, #e8e9ff);
         text-align: left;
     }
     
     .modern-table td {
         padding: 16px 20px;
         font-size: 14px;
-        color: #2f3640;
-        border-bottom: 1px solid #f0f0f0;
+        color: var(--text-primary, #2f3640);
+        border-bottom: 1px solid var(--border-color, #f0f0f0);
     }
     
     .modern-table tbody tr:last-child td {
@@ -181,14 +181,14 @@
     }
     
     .modern-table tbody tr:hover {
-        background: #fafbff;
+        background: var(--bg-hover, #fafbff);
     }
     
     /* Database name styles */
     .db-name {
         font-family: 'Courier New', monospace;
         font-weight: 600;
-        color: #5b5fcf;
+        color: var(--accent-color, #5b5fcf);
     }
     
     /* Button styles */
@@ -207,25 +207,36 @@
     }
     
     .btn-primary {
-        background: #5b5fcf;
+        background: var(--accent-color, #5b5fcf);
         color: white;
     }
     
     .btn-primary:hover {
-        background: #4a4fc4;
+        background: var(--accent-hover, #4a4fc4);
         box-shadow: 0 4px 12px rgba(91,95,207,0.3);
         transform: translateY(-1px);
     }
     
     .btn-secondary {
-        background: #f8f9ff;
-        color: #5b5fcf;
-        border: 1px solid #e8e9ff;
+        background: var(--bg-hover, #f8f9ff);
+        color: var(--accent-color, #5b5fcf);
+        border: 1px solid var(--border-color, #e8e9ff);
     }
     
     .btn-secondary:hover {
-        background: #eef0ff;
-        border-color: #5b5fcf;
+        background: var(--bg-hover, #eef0ff);
+        border-color: var(--accent-color, #5b5fcf);
+    }
+    
+    .btn-success {
+        background: var(--success-text, #10b981);
+        color: white;
+    }
+    
+    .btn-success:hover {
+        background: var(--success-text, #059669);
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        transform: translateY(-1px);
     }
     
     .btn-sm {
@@ -251,8 +262,8 @@
     
     /* Password change section */
     .password-change-section {
-        background: #f8f9ff;
-        border: 1px solid #e8e9ff;
+        background: var(--bg-hover, #f8f9ff);
+        border: 1px solid var(--border-color, #e8e9ff);
         border-radius: 10px;
         padding: 25px;
         margin-bottom: 25px;
@@ -262,7 +273,7 @@
     .password-change-title {
         font-size: 16px;
         font-weight: 700;
-        color: #2f3640;
+        color: var(--text-primary, #2f3640);
         margin-bottom: 20px;
         display: flex;
         align-items: center;
@@ -270,7 +281,7 @@
     }
     
     .password-change-title i {
-        color: #5b5fcf;
+        color: var(--accent-color, #5b5fcf);
     }
     
     /* Password input group */
@@ -287,8 +298,8 @@
     
     /* Generated password box */
     .generated-password-box {
-        background: #e8f5e9;
-        border: 1px solid #c8e6c9;
+        background: var(--success-bg, #e8f5e9);
+        border: 1px solid var(--success-text, #c8e6c9);
         border-radius: 8px;
         padding: 16px;
         margin-bottom: 20px;
@@ -298,7 +309,7 @@
     .generated-password-label {
         font-size: 12px;
         font-weight: 600;
-        color: #2e7d32;
+        color: var(--success-text, #2e7d32);
         text-transform: uppercase;
         letter-spacing: 0.5px;
         margin-bottom: 8px;
@@ -307,7 +318,7 @@
     .generated-password-value {
         font-family: 'Courier New', monospace;
         font-size: 14px;
-        color: #1b5e20;
+        color: var(--success-text, #1b5e20);
         font-weight: 600;
         word-break: break-all;
     }
@@ -316,12 +327,12 @@
     .modal-content {
         border-radius: 12px;
         border: none;
-        box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        box-shadow: 0 8px 32px var(--shadow-color, rgba(0,0,0,0.1));
     }
     
     .modal-header {
-        background: #f8f9ff;
-        border-bottom: 1px solid #e8e9ff;
+        background: var(--bg-hover, #f8f9ff);
+        border-bottom: 1px solid var(--border-color, #e8e9ff);
         border-radius: 12px 12px 0 0;
         padding: 20px 25px;
     }
@@ -329,7 +340,7 @@
     .modal-title {
         font-size: 18px;
         font-weight: 700;
-        color: #2f3640;
+        color: var(--text-primary, #2f3640);
         display: flex;
         align-items: center;
         gap: 10px;
@@ -340,8 +351,8 @@
     }
     
     .modal-footer {
-        background: #f8f9ff;
-        border-top: 1px solid #e8e9ff;
+        background: var(--bg-hover, #f8f9ff);
+        border-top: 1px solid var(--border-color, #e8e9ff);
         border-radius: 0 0 12px 12px;
         padding: 15px 25px;
         display: flex;
@@ -352,6 +363,35 @@
     /* IP Access table in modal */
     .ip-access-table {
         margin-top: 20px;
+    }
+    
+    /* Help text styles */
+    .help-text {
+        color: var(--text-secondary, #64748b);
+        font-size: 12px;
+    }
+    
+    /* Password group button wrapper */
+    .password-btn-wrapper {
+        margin-top: 28px;
+    }
+    
+    /* Generated password button wrapper */
+    .generated-password-btn {
+        margin-top: 10px;
+    }
+    
+    /* Modal separator */
+    .modal-separator {
+        margin: 25px 0;
+        border-color: var(--border-color, #e8e9ff);
+    }
+    
+    /* Current access title */
+    .current-access-title {
+        font-weight: 600;
+        margin-bottom: 15px;
+        color: var(--text-primary, #2f3640);
     }
     
     /* Alert styles */
@@ -371,15 +411,15 @@
     }
     
     .alert-danger {
-        background: #ffebee;
-        border: 1px solid #ffcdd2;
-        color: #c62828;
+        background: var(--danger-bg, #ffebee);
+        border: 1px solid var(--danger-text, #ffcdd2);
+        color: var(--danger-text, #c62828);
     }
     
     .alert-success {
-        background: #e8f5e9;
-        border: 1px solid #c8e6c9;
-        color: #2e7d32;
+        background: var(--success-bg, #e8f5e9);
+        border: 1px solid var(--success-text, #c8e6c9);
+        color: var(--success-text, #2e7d32);
     }
     
     /* Loading spinner */
@@ -387,8 +427,8 @@
         display: inline-block;
         width: 16px;
         height: 16px;
-        border: 2px solid #f3f3f3;
-        border-top: 2px solid #5b5fcf;
+        border: 2px solid var(--border-color, #f3f3f3);
+        border-top: 2px solid var(--accent-color, #5b5fcf);
         border-radius: 50%;
         animation: spin 1s linear infinite;
         margin-left: 10px;
@@ -514,7 +554,7 @@
                     <input type="password" class="form-control" ng-model="dbPassword" 
                            placeholder="{% trans 'Enter new password' %}" required>
                 </div>
-                <div style="margin-top: 28px;">
+                <div class="password-btn-wrapper">
                     <button type="button" ng-click="generatePassword()" class="btn btn-secondary">
                         <i class="fas fa-sync"></i>
                         {% trans "Generate" %}
@@ -525,7 +565,7 @@
             <div class="generated-password-box" ng-show="!generatedPasswordView">
                 <div class="generated-password-label">{% trans "Generated Password" %}</div>
                 <div class="generated-password-value">{$ dbPassword $}</div>
-                <button type="button" ng-click="usePassword()" class="btn btn-success btn-sm" style="margin-top: 10px;">
+                <button type="button" ng-click="usePassword()" class="btn btn-success btn-sm generated-password-btn">
                     <i class="fas fa-check"></i>
                     {% trans "Use This Password" %}
                 </button>
@@ -595,7 +635,7 @@
                                                                class="form-control" 
                                                                ng-model="$parent.remoteIP" 
                                                                required>
-                                                        <div class="help-text" style="margin-top: 6px;">
+                                                        <div class="help-text">
                                                             {% trans "Use % for wildcard (e.g., 192.168.1.% for subnet)" %}
                                                         </div>
                                                     </div>
@@ -606,9 +646,9 @@
                                                     </button>
                                                 </form>
                                                 
-                                                <hr style="margin: 25px 0;">
+                                                <hr class="modal-separator">
                                                 
-                                                <h5 style="font-weight: 600; margin-bottom: 15px;">{% trans "Current Access" %}</h5>
+                                                <h5 class="current-access-title">{% trans "Current Access" %}</h5>
                                                 <table class="modern-table ip-access-table">
                                                     <thead>
                                                         <tr>

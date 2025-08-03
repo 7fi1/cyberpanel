@@ -6,18 +6,17 @@ import shutil
 import time
 from io import StringIO
 
-import paramiko
+sys.path.append('/usr/local/CyberCP')
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "CyberCP.settings")
 
+import django
+django.setup()
+
+import paramiko
 from ApachController.ApacheVhosts import ApacheVhost
 from loginSystem.models import Administrator
 from managePHP.phpManager import PHPManager
 from plogical.acl import ACLManager
-
-sys.path.append('/usr/local/CyberCP')
-import django
-
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "CyberCP.settings")
-django.setup()
 import threading as multi
 from plogical.CyberCPLogFileWriter import CyberCPLogFileWriter as logging
 import subprocess
@@ -36,7 +35,7 @@ class ApplicationInstaller(multi.Thread):
     LOCALHOST = 'localhost'
     REMOTE = 0
     PORT = '3306'
-    MauticVersion = '4.4.9'
+    MauticVersion = '6.0.3'
     PrestaVersion = '1.7.8.3'
 
     def __init__(self, installApp, extraArgs):
@@ -189,15 +188,16 @@ class ApplicationInstaller(multi.Thread):
 
             vhFile = f'/usr/local/lsws/conf/vhosts/{domainName}/vhost.conf'
 
-            phpPath = phpUtilities.GetPHPVersionFromFile(vhFile, domainName)
+            # Force PHP 8.2 for Mautic 5.x installations
+            phpPath = '/usr/local/lsws/lsphp82/bin/php'
 
-            ### basically for now php 8.1 is being checked
+            ### basically for now php 8.2 is being checked for Mautic
 
             if not os.path.exists(phpPath):
                 statusFile = open(tempStatusPath, 'w')
-                statusFile.writelines('PHP 8.1 missing installing now..,20')
+                statusFile.writelines('PHP 8.2 missing installing now..,20')
                 statusFile.close()
-                phpUtilities.InstallSaidPHP('81')
+                phpUtilities.InstallSaidPHP('82')
 
             ### if web is using apache then some missing extensions are required to install
 
@@ -294,8 +294,19 @@ class ApplicationInstaller(multi.Thread):
             statusFile.writelines('Downloading Mautic Core,30')
             statusFile.close()
 
-            ### replace command with composer install
-            command = f'{phpPath} /usr/bin/composer create-project mautic/recommended-project:^5 {finalPath}'
+            ### Download Mautic ZIP archive directly
+            mauticUrl = "https://github.com/mautic/mautic/releases/download/6.0.3/6.0.3.zip"
+            mauticZip = f"/tmp/mautic-6.0.3.zip"
+            
+            command = f'wget -O {mauticZip} {mauticUrl}'
+            ProcessUtilities.outputExecutioner(command, externalApp, None)
+            
+            ### Extract to final path
+            command = f'unzip -q {mauticZip} -d {finalPath}'
+            ProcessUtilities.outputExecutioner(command, externalApp, None)
+            
+            ### Clean up zip file
+            command = f'rm -f {mauticZip}'
             ProcessUtilities.outputExecutioner(command, externalApp, None)
 
             statusFile = open(tempStatusPath, 'w')
@@ -316,7 +327,7 @@ class ApplicationInstaller(multi.Thread):
                 finalURL = domainName
 
 
-            command = f"{phpPath} -d memory_limit=256M bin/console mautic:install --db_host='localhost' --db_name='{dbName}' --db_user='{dbUser}' --db_password='{dbPassword}' --admin_username='{username}' --admin_email='{email}' --admin_password='{password}' --db_port='3306' http://{finalURL} -f"
+            command = f"{phpPath} -d memory_limit=256M bin/console mautic:install http://{finalURL} --db_driver='pdo_mysql' --db_host='localhost' --db_port='3306' --db_name='{dbName}' --db_user='{dbUser}' --db_password='{dbPassword}' --db_backup_tables='false' --admin_firstname='Admin' --admin_lastname='User' --admin_username='{username}' --admin_email='{email}' --admin_password='{password}' --force"
 
             result = ProcessUtilities.outputExecutioner(command, externalApp, None, finalPath)
 
@@ -328,35 +339,13 @@ class ApplicationInstaller(multi.Thread):
             ProcessUtilities.outputExecutioner(command, externalApp, None, finalPath)
 
 
-            ExistingDocRoot = ACLManager.FindDocRootOfSite(None, domainName)
-
-            if ExistingDocRoot.find('docroot') > -1:
-                ExistingDocRoot = ExistingDocRoot.replace('docroot', '')
-
-
-            NewDocRoot = f'{ExistingDocRoot}/docroot'
-            ACLManager.ReplaceDocRoot(None, domainName, NewDocRoot)
-
-            if ProcessUtilities.decideServer() == ProcessUtilities.OLS:
-
-                try:
-
-                    ExistingDocRootApache = ACLManager.FindDocRootOfSiteApache(None, domainName)
-
-                    if ExistingDocRootApache.find('docroot') == -1:
-                        NewDocRootApache = f'{ExistingDocRootApache}docroot'
-                    else:
-                        NewDocRootApache = ExistingDocRootApache
-
-                    if ExistingDocRootApache != None:
-                        ACLManager.ReplaceDocRootApache(None, domainName, NewDocRootApache)
-                except:
-                    pass
+            # Direct ZIP method serves from root directory, no docroot changes needed
+            # Document root remains as finalPath
 
             ### fix incorrect rules in .htaccess of mautic
 
             if ProcessUtilities.decideServer() == ProcessUtilities.ent:
-                htAccessPath = f'{finalPath}docroot/.htaccess'
+                htAccessPath = f'{finalPath}.htaccess'
 
                 command = f"sed -i '/# Fallback for Apache < 2.4/,/<\/IfModule>/d' {htAccessPath}"
                 ProcessUtilities.executioner(command, externalApp, True)
@@ -576,6 +565,7 @@ class ApplicationInstaller(multi.Thread):
         except BaseException as msg:
             logging.writeToFile(str(msg) + ' [ApplicationInstaller.installGit]')
 
+
     def dbCreation(self, tempStatusPath, website):
         passFile = "/etc/cyberpanel/mysqlPassword"
 
@@ -625,6 +615,8 @@ class ApplicationInstaller(multi.Thread):
 
     def installWordPress(self):
         try:
+            logging.writeToFile(f"installWordPress started with extraArgs: {self.extraArgs}")
+            
             domainName = self.extraArgs['domainName']
             home = self.extraArgs['home']
             tempStatusPath = self.extraArgs['tempStatusPath']
@@ -633,6 +625,8 @@ class ApplicationInstaller(multi.Thread):
             adminUser = self.extraArgs['adminUser']
             adminPassword = self.extraArgs['adminPassword']
             adminEmail = self.extraArgs['adminEmail']
+            
+            logging.writeToFile(f"installWordPress - domain: {domainName}, home: {home}, status: {tempStatusPath}")
 
             FNULL = open(os.devnull, 'w')
 
@@ -1573,6 +1567,9 @@ class ApplicationInstaller(multi.Thread):
 
     def DeployWordPress(self):
         try:
+            # Debug logging
+            logging.writeToFile(f"DeployWordPress started with args: {self.extraArgs}")
+            logging.statusWriter(self.extraArgs['tempStatusPath'], 'DeployWordPress function started..,5')
 
             if self.extraArgs['createSite']:
                 logging.statusWriter(self.extraArgs['tempStatusPath'], 'Creating this application..,10')
@@ -1584,7 +1581,7 @@ class ApplicationInstaller(multi.Thread):
                 tempStatusPath = "/home/cyberpanel/" + str(randint(1000, 9999))
                 externalApp = "".join(re.findall("[a-zA-Z]+", self.extraArgs['domain']))[:5] + str(randint(1000, 9999))
 
-                virtualHostUtilities.createVirtualHost(self.extraArgs['domain'], self.extraArgs['email'], 'PHP 7.4',
+                virtualHostUtilities.createVirtualHost(self.extraArgs['domain'], self.extraArgs['email'], 'PHP 8.1',
                                                        externalApp, 1, 1, 0,
                                                        'admin', 'Default', 0, tempStatusPath,
                                                        0)
@@ -1597,6 +1594,7 @@ class ApplicationInstaller(multi.Thread):
             ## Install WordPress
 
             logging.statusWriter(self.extraArgs['tempStatusPath'], 'Installing WordPress.,50')
+            logging.writeToFile("About to call installWordPress function")
 
             currentTemp = self.extraArgs['tempStatusPath']
             self.extraArgs['domainName'] = self.extraArgs['domain']
@@ -1605,8 +1603,13 @@ class ApplicationInstaller(multi.Thread):
             self.extraArgs['adminUser'] = self.extraArgs['userName']
             self.extraArgs['adminPassword'] = self.extraArgs['password']
             self.extraArgs['adminEmail'] = self.extraArgs['email']
+            
+            logging.writeToFile(f"Calling installWordPress with domainName: {self.extraArgs['domainName']}")
+            logging.writeToFile(f"Admin user: {self.extraArgs['adminUser']}, email: {self.extraArgs['adminEmail']}")
 
             self.installWordPress()
+            
+            logging.writeToFile("installWordPress call completed")
 
             result = open(self.extraArgs['tempStatusPath'], 'r').read()
             if result.find('[404]') > -1:

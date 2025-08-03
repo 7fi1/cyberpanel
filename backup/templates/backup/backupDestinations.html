@@ -18,7 +18,7 @@
             text-align: center;
             margin-bottom: 3rem;
             padding: 3rem 0;
-            background: linear-gradient(135deg, #f8f9ff 0%, #f0f1ff 100%);
+            background: linear-gradient(135deg, var(--bg-hover, #f8f9ff) 0%, var(--bg-gradient, #f0f1ff) 100%);
             border-radius: 20px;
             animation: fadeInDown 0.5s ease-out;
         }
@@ -26,7 +26,7 @@
         .page-title {
             font-size: 3rem;
             font-weight: 700;
-            color: #1e293b;
+            color: var(--text-primary, #1e293b);
             margin-bottom: 1rem;
             display: flex;
             align-items: center;
@@ -36,7 +36,7 @@
         
         .page-subtitle {
             font-size: 1.25rem;
-            color: #64748b;
+            color: var(--text-secondary, #64748b);
             margin-bottom: 1.5rem;
         }
         
@@ -48,8 +48,8 @@
         }
         
         .btn-primary {
-            background: #5b5fcf;
-            color: white;
+            background: var(--accent-color, #5b5fcf);
+            color: var(--bg-secondary, white);
             border: none;
             padding: 0.75rem 2rem;
             border-radius: 10px;
@@ -64,16 +64,16 @@
         }
         
         .btn-primary:hover {
-            background: #4547a9;
+            background: var(--accent-hover, #4547a9);
             transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(91, 95, 207, 0.4);
-            color: white;
+            box-shadow: 0 8px 20px var(--accent-shadow-hover, rgba(91, 95, 207, 0.4));
+            color: var(--bg-secondary, white);
         }
         
         .btn-secondary {
-            background: #fff;
-            color: #5b5fcf;
-            border: 1px solid #e8e9ff;
+            background: var(--bg-secondary, #fff);
+            color: var(--accent-color, #5b5fcf);
+            border: 1px solid var(--border-color, #e8e9ff);
             padding: 0.75rem 2rem;
             border-radius: 10px;
             font-weight: 500;
@@ -87,15 +87,15 @@
         }
         
         .btn-secondary:hover {
-            background: #f8f9ff;
-            border-color: #5b5fcf;
+            background: var(--bg-hover, #f8f9ff);
+            border-color: var(--accent-color, #5b5fcf);
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(91, 95, 207, 0.2);
+            box-shadow: 0 4px 12px var(--accent-shadow-light, rgba(91, 95, 207, 0.2));
         }
         
         .btn-danger {
-            background: #ef4444;
-            color: white;
+            background: var(--danger-color, #ef4444);
+            color: var(--bg-secondary, white);
             border: none;
             padding: 0.5rem 1rem;
             border-radius: 8px;
@@ -109,21 +109,21 @@
         }
         
         .btn-danger:hover {
-            background: #dc2626;
+            background: var(--danger-hover, #dc2626);
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+            box-shadow: 0 4px 12px var(--danger-shadow, rgba(239, 68, 68, 0.4));
         }
         
         .promo-banner {
-            background: linear-gradient(135deg, #5b5fcf 0%, #8187ff 100%);
-            color: white;
+            background: linear-gradient(135deg, var(--accent-color, #5b5fcf) 0%, var(--accent-light, #8187ff) 100%);
+            color: var(--bg-secondary, white);
             padding: 1.5rem 2rem;
             border-radius: 12px;
             margin-bottom: 2rem;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            box-shadow: 0 4px 20px rgba(91, 95, 207, 0.3);
+            box-shadow: 0 4px 20px var(--accent-shadow, rgba(91, 95, 207, 0.3));
         }
         
         .promo-text {
@@ -132,8 +132,8 @@
         }
         
         .promo-link {
-            background: white;
-            color: #5b5fcf;
+            background: var(--bg-secondary, white);
+            color: var(--accent-color, #5b5fcf);
             padding: 0.5rem 1.5rem;
             border-radius: 8px;
             text-decoration: none;
@@ -143,29 +143,29 @@
         
         .promo-link:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            box-shadow: 0 4px 12px var(--shadow-dark, rgba(0,0,0,0.2));
         }
         
         .main-card {
-            background: white;
+            background: var(--bg-secondary, white);
             border-radius: 16px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 10px 40px rgba(0,0,0,0.08);
-            border: 1px solid #e8e9ff;
+            box-shadow: 0 1px 3px var(--shadow-light, rgba(0,0,0,0.05)), 0 10px 40px var(--shadow-color, rgba(0,0,0,0.08));
+            border: 1px solid var(--border-color, #e8e9ff);
             overflow: hidden;
             margin-bottom: 2rem;
             animation: fadeInUp 0.5s ease-out;
         }
         
         .card-header {
-            background: linear-gradient(135deg, #f8f9ff 0%, #f0f1ff 100%);
+            background: linear-gradient(135deg, var(--bg-hover, #f8f9ff) 0%, var(--bg-gradient, #f0f1ff) 100%);
             padding: 1.5rem 2rem;
-            border-bottom: 1px solid #e8e9ff;
+            border-bottom: 1px solid var(--border-color, #e8e9ff);
         }
         
         .card-title {
             font-size: 1.25rem;
             font-weight: 600;
-            color: #1e293b;
+            color: var(--text-primary, #1e293b);
             margin: 0;
             display: flex;
             align-items: center;
@@ -177,8 +177,8 @@
         }
         
         .destination-type-selector {
-            background: #f8f9ff;
-            border: 1px solid #e8e9ff;
+            background: var(--bg-hover, #f8f9ff);
+            border: 1px solid var(--border-color, #e8e9ff);
             border-radius: 12px;
             padding: 2rem;
             margin-bottom: 2rem;
@@ -194,24 +194,24 @@
         
         .tab-button {
             padding: 0.75rem 2rem;
-            background: #fff;
-            border: 2px solid #e8e9ff;
+            background: var(--bg-secondary, #fff);
+            border: 2px solid var(--border-color, #e8e9ff);
             border-radius: 10px;
             font-weight: 500;
             cursor: pointer;
             transition: all 0.3s ease;
-            color: #64748b;
+            color: var(--text-secondary, #64748b);
         }
         
         .tab-button.active {
-            background: #5b5fcf;
-            color: white;
-            border-color: #5b5fcf;
+            background: var(--accent-color, #5b5fcf);
+            color: var(--bg-secondary, white);
+            border-color: var(--accent-color, #5b5fcf);
         }
         
         .tab-button:hover:not(.active) {
-            border-color: #5b5fcf;
-            color: #5b5fcf;
+            border-color: var(--accent-color, #5b5fcf);
+            color: var(--accent-color, #5b5fcf);
         }
         
         .form-section {
@@ -226,59 +226,59 @@
             display: block;
             margin-bottom: 0.5rem;
             font-weight: 500;
-            color: #1e293b;
+            color: var(--text-primary, #1e293b);
             font-size: 0.875rem;
         }
         
         .form-control {
             width: 100%;
             padding: 0.875rem 1rem;
-            border: 1px solid #e8e9ff;
+            border: 1px solid var(--border-color, #e8e9ff);
             border-radius: 10px;
             font-size: 0.875rem;
             transition: all 0.3s ease;
-            background: #fff;
+            background: var(--bg-secondary, #fff);
         }
         
         .form-control:focus {
             outline: none;
-            border-color: #5b5fcf;
-            box-shadow: 0 0 0 3px rgba(91, 95, 207, 0.1);
+            border-color: var(--accent-color, #5b5fcf);
+            box-shadow: 0 0 0 3px var(--accent-focus, rgba(91, 95, 207, 0.1));
         }
         
         .destination-table {
             width: 100%;
-            background: white;
+            background: var(--bg-secondary, white);
             border-radius: 12px;
             overflow: hidden;
-            border: 1px solid #e8e9ff;
+            border: 1px solid var(--border-color, #e8e9ff);
             margin-top: 2rem;
         }
         
         .destination-table thead {
-            background: linear-gradient(135deg, #f8f9ff 0%, #f0f1ff 100%);
+            background: linear-gradient(135deg, var(--bg-hover, #f8f9ff) 0%, var(--bg-gradient, #f0f1ff) 100%);
         }
         
         .destination-table th {
             padding: 1rem;
             text-align: left;
             font-weight: 600;
-            color: #1e293b;
+            color: var(--text-primary, #1e293b);
             font-size: 0.875rem;
             text-transform: uppercase;
             letter-spacing: 0.05em;
-            border-bottom: 1px solid #e8e9ff;
+            border-bottom: 1px solid var(--border-color, #e8e9ff);
         }
         
         .destination-table td {
             padding: 1rem;
-            color: #64748b;
+            color: var(--text-secondary, #64748b);
             font-size: 0.875rem;
-            border-bottom: 1px solid #f3f4f6;
+            border-bottom: 1px solid var(--border-light, #f3f4f6);
         }
         
         .destination-table tbody tr:hover {
-            background: #f8f9ff;
+            background: var(--bg-hover, #f8f9ff);
         }
         
         .destination-table tbody tr:last-child td {
@@ -288,8 +288,8 @@
         .loading-spinner {
             width: 20px;
             height: 20px;
-            border: 3px solid #e8e9ff;
-            border-top-color: #5b5fcf;
+            border: 3px solid var(--border-color, #e8e9ff);
+            border-top-color: var(--accent-color, #5b5fcf);
             border-radius: 50%;
             animation: spin 1s linear infinite;
             display: inline-block;
@@ -297,8 +297,8 @@
         }
         
         .info-badge {
-            background: #e0e7ff;
-            color: #5b5fcf;
+            background: var(--accent-bg, #e0e7ff);
+            color: var(--accent-color, #5b5fcf);
             padding: 0.25rem 0.75rem;
             border-radius: 6px;
             font-size: 0.75rem;
@@ -307,8 +307,8 @@
         }
         
         .port-badge {
-            background: #f3f4f6;
-            color: #1e293b;
+            background: var(--border-light, #f3f4f6);
+            color: var(--text-primary, #1e293b);
             padding: 0.25rem 0.75rem;
             border-radius: 6px;
             font-size: 0.875rem;
@@ -317,7 +317,7 @@
         
         .destination-icon {
             font-size: 2.5rem;
-            color: #5b5fcf;
+            color: var(--accent-color, #5b5fcf);
             margin-bottom: 1rem;
         }
         
@@ -440,8 +440,8 @@
 
                     <!-- SFTP Configuration -->
                     <div ng-hide="sftpHide" class="form-section">
-                        <h3 style="font-size: 1.1rem; font-weight: 600; color: #1e293b; margin-bottom: 1.5rem;">
-                            <i class="fas fa-network-wired" style="color: #5b5fcf; margin-right: 0.5rem;"></i>
+                        <h3 style="font-size: 1.1rem; font-weight: 600; color: var(--text-primary, #1e293b); margin-bottom: 1.5rem;">
+                            <i class="fas fa-network-wired" style="color: var(--accent-color, #5b5fcf); margin-right: 0.5rem;"></i>
                             {% trans "SFTP Server Configuration" %}
                         </h3>
                         
@@ -502,8 +502,8 @@
 
                     <!-- Local Configuration -->
                     <div ng-hide="localHide" class="form-section">
-                        <h3 style="font-size: 1.1rem; font-weight: 600; color: #1e293b; margin-bottom: 1.5rem;">
-                            <i class="fas fa-hdd" style="color: #5b5fcf; margin-right: 0.5rem;"></i>
+                        <h3 style="font-size: 1.1rem; font-weight: 600; color: var(--text-primary, #1e293b); margin-bottom: 1.5rem;">
+                            <i class="fas fa-hdd" style="color: var(--accent-color, #5b5fcf); margin-right: 0.5rem;"></i>
                             {% trans "Local Storage Configuration" %}
                         </h3>
                         
@@ -565,11 +565,11 @@
                                     <span class="info-badge" ng-bind="record.ip"></span>
                                 </td>
                                 <td>
-                                    <i class="fas fa-user" style="color: #64748b; margin-right: 0.5rem;"></i>
+                                    <i class="fas fa-user" style="color: var(--text-secondary, #64748b); margin-right: 0.5rem;"></i>
                                     <span ng-bind="record.username"></span>
                                 </td>
                                 <td>
-                                    <i class="fas fa-folder" style="color: #64748b; margin-right: 0.5rem;"></i>
+                                    <i class="fas fa-folder" style="color: var(--text-secondary, #64748b); margin-right: 0.5rem;"></i>
                                     <span ng-bind="record.path"></span>
                                 </td>
                                 <td>
@@ -614,8 +614,8 @@
                                     <strong ng-bind="record.name"></strong>
                                 </td>
                                 <td>
-                                    <i class="fas fa-folder-open" style="color: #5b5fcf; margin-right: 0.5rem;"></i>
-                                    <span style="font-family: monospace; background: #f3f4f6; padding: 0.25rem 0.5rem; border-radius: 4px;" 
+                                    <i class="fas fa-folder-open" style="color: var(--accent-color, #5b5fcf); margin-right: 0.5rem;"></i>
+                                    <span style="font-family: monospace; background: var(--border-light, #f3f4f6); padding: 0.25rem 0.5rem; border-radius: 4px;" 
                                           ng-bind="record.path"></span>
                                 </td>
                                 <td style="text-align: center;">

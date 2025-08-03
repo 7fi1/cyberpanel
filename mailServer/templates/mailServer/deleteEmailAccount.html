@@ -23,7 +23,7 @@
         .page-title {
             font-size: 2.5rem;
             font-weight: 700;
-            color: #1e293b;
+            color: var(--text-primary, #1e293b);
             margin-bottom: 0.5rem;
             display: flex;
             align-items: center;
@@ -33,29 +33,29 @@
         
         .page-subtitle {
             font-size: 1.125rem;
-            color: #64748b;
+            color: var(--text-secondary, #64748b);
             margin-bottom: 0;
         }
         
         .main-card {
-            background: white;
+            background: var(--bg-secondary, white);
             border-radius: 16px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 10px 40px rgba(0,0,0,0.08);
-            border: 1px solid #e8e9ff;
+            box-shadow: 0 1px 3px var(--shadow-light, rgba(0,0,0,0.05)), 0 10px 40px var(--shadow-color, rgba(0,0,0,0.08));
+            border: 1px solid var(--border-color, #e8e9ff);
             overflow: hidden;
             animation: fadeInUp 0.5s ease-out;
         }
         
         .card-header {
-            background: linear-gradient(135deg, #f8f9ff 0%, #f0f1ff 100%);
+            background: linear-gradient(135deg, var(--bg-hover, #f8f9ff) 0%, var(--bg-hover, #f0f1ff) 100%);
             padding: 1.5rem 2rem;
-            border-bottom: 1px solid #e8e9ff;
+            border-bottom: 1px solid var(--border-color, #e8e9ff);
         }
         
         .card-title {
             font-size: 1.25rem;
             font-weight: 600;
-            color: #1e293b;
+            color: var(--text-primary, #1e293b);
             margin: 0;
             display: flex;
             align-items: center;
@@ -78,29 +78,29 @@
             display: block;
             margin-bottom: 0.5rem;
             font-weight: 500;
-            color: #1e293b;
+            color: var(--text-primary, #1e293b);
             font-size: 0.875rem;
         }
         
         .form-control {
             width: 100%;
             padding: 0.75rem 1rem;
-            border: 1px solid #e8e9ff;
+            border: 1px solid var(--border-color, #e8e9ff);
             border-radius: 8px;
             font-size: 0.875rem;
             transition: all 0.3s ease;
-            background: #fff;
+            background: var(--bg-secondary, #fff);
         }
         
         .form-control:focus {
             outline: none;
-            border-color: #5b5fcf;
-            box-shadow: 0 0 0 3px rgba(91, 95, 207, 0.1);
+            border-color: var(--accent-color, #5b5fcf);
+            box-shadow: 0 0 0 3px var(--accent-shadow, rgba(91, 95, 207, 0.1));
         }
         
         .btn-primary {
-            background: #5b5fcf;
-            color: white;
+            background: var(--accent-color, #5b5fcf);
+            color: var(--bg-secondary, white);
             border: none;
             padding: 0.75rem 2rem;
             border-radius: 8px;
@@ -113,14 +113,14 @@
         }
         
         .btn-primary:hover {
-            background: #4547a9;
+            background: var(--accent-hover, #4547a9);
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(91, 95, 207, 0.4);
+            box-shadow: 0 4px 12px var(--accent-shadow-dark, rgba(91, 95, 207, 0.4));
         }
         
         .btn-danger {
-            background: #ef4444;
-            color: white;
+            background: var(--danger-color, #ef4444);
+            color: var(--bg-secondary, white);
             border: none;
             padding: 0.75rem 2rem;
             border-radius: 8px;
@@ -133,14 +133,14 @@
         }
         
         .btn-danger:hover {
-            background: #dc2626;
+            background: var(--danger-hover, #dc2626);
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+            box-shadow: 0 4px 12px var(--danger-shadow, rgba(239, 68, 68, 0.4));
         }
         
         .btn-warning {
-            background: #ffa000;
-            color: white;
+            background: var(--warning-color, #ffa000);
+            color: var(--bg-secondary, white);
             border: none;
             padding: 0.75rem 2rem;
             border-radius: 8px;
@@ -153,9 +153,9 @@
         }
         
         .btn-warning:hover {
-            background: #ff8800;
+            background: var(--warning-hover, #ff8800);
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(255, 160, 0, 0.4);
+            box-shadow: 0 4px 12px var(--warning-shadow, rgba(255, 160, 0, 0.4));
         }
         
         .alert {
@@ -169,26 +169,26 @@
         }
         
         .alert-success {
-            background: #d1fae5;
-            color: #065f46;
-            border: 1px solid #a7f3d0;
+            background: var(--success-bg-light, #d1fae5);
+            color: var(--success-text, #065f46);
+            border: 1px solid var(--success-border, #a7f3d0);
         }
         
         .alert-danger {
-            background: #fee2e2;
-            color: #991b1b;
-            border: 1px solid #fecaca;
+            background: var(--danger-bg-light, #fee2e2);
+            color: var(--danger-text, #991b1b);
+            border: 1px solid var(--danger-border, #fecaca);
         }
         
         .alert-info {
-            background: #dbeafe;
-            color: #1e40af;
-            border: 1px solid #bfdbfe;
+            background: var(--info-bg-light, #dbeafe);
+            color: var(--info-text, #1e40af);
+            border: 1px solid var(--info-border, #bfdbfe);
         }
         
         .disabled-notice {
-            background: #fef3c7;
-            border: 1px solid #fde68a;
+            background: var(--warning-bg-light, #fef3c7);
+            border: 1px solid var(--warning-border, #fde68a);
             border-radius: 12px;
             padding: 2rem;
             text-align: center;
@@ -196,22 +196,22 @@
         }
         
         .disabled-notice h3 {
-            color: #92400e;
+            color: var(--warning-text, #92400e);
             margin-bottom: 1rem;
         }
         
         .loading-spinner {
             width: 20px;
             height: 20px;
-            border: 2px solid #e8e9ff;
-            border-top-color: #5b5fcf;
+            border: 2px solid var(--border-color, #e8e9ff);
+            border-top-color: var(--accent-color, #5b5fcf);
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
         
         .delete-warning {
-            background: #fef2f2;
-            border: 1px solid #fecaca;
+            background: var(--danger-bg-light, #fef2f2);
+            border: 1px solid var(--danger-border, #fecaca);
             border-radius: 12px;
             padding: 1.5rem;
             margin-bottom: 1.5rem;
@@ -219,7 +219,7 @@
         }
         
         .delete-warning h4 {
-            color: #991b1b;
+            color: var(--danger-text, #991b1b);
             margin-bottom: 0.5rem;
             display: flex;
             align-items: center;
@@ -228,7 +228,7 @@
         }
         
         .delete-warning p {
-            color: #7f1d1d;
+            color: var(--danger-text-dark, #7f1d1d);
             margin-bottom: 0;
             font-size: 0.875rem;
         }
@@ -280,8 +280,8 @@
         }
         
         .email-select-section {
-            background: #f8f9ff;
-            border: 1px solid #e8e9ff;
+            background: var(--bg-hover, #f8f9ff);
+            border: 1px solid var(--border-color, #e8e9ff);
             border-radius: 12px;
             padding: 1.5rem;
             margin-bottom: 1.5rem;
@@ -308,7 +308,7 @@
             <div class="card-body">
                 {% if not status %}
                     <div class="disabled-notice">
-                        <i class="fas fa-exclamation-triangle fa-3x mb-3" style="color: #ffa000;"></i>
+                        <i class="fas fa-exclamation-triangle fa-3x mb-3" style="color: var(--warning-color, #ffa000);"></i>
                         <h3>{% trans "Postfix is disabled" %}</h3>
                         <p class="mb-3">{% trans "You need to enable Postfix to manage email accounts" %}</p>
                         <a href="{% url 'managePostfix' %}" class="btn-primary">

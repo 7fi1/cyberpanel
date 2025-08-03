@@ -14,12 +14,12 @@
         text-align: center;
         margin-bottom: 3rem;
         padding: 3rem 0;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, var(--php-gradient-start, #667eea) 0%, var(--php-gradient-end, #764ba2) 100%);
         border-radius: 20px;
         animation: fadeInDown 0.5s ease-out;
         position: relative;
         overflow: hidden;
-        color: white;
+        color: var(--text-primary, white);
     }
     
     .page-header::before {
@@ -29,7 +29,7 @@
         right: -50%;
         width: 200%;
         height: 200%;
-        background: radial-gradient(circle at 70% 30%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+        background: radial-gradient(circle at 70% 30%, var(--bg-light, rgba(255, 255, 255, 0.1)) 0%, transparent 50%);
         animation: rotate 30s linear infinite;
     }
     
@@ -78,18 +78,18 @@
     .php-icon {
         width: 60px;
         height: 60px;
-        background: rgba(255, 255, 255, 0.2);
+        background: var(--bg-light, rgba(255, 255, 255, 0.2));
         backdrop-filter: blur(10px);
         border-radius: 12px;
         display: flex;
         align-items: center;
         justify-content: center;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        box-shadow: var(--shadow-light, 0 4px 12px rgba(0,0,0,0.1));
     }
     
     .page-subtitle {
         font-size: 1.125rem;
-        color: rgba(255, 255, 255, 0.9);
+        color: var(--text-secondary, rgba(255, 255, 255, 0.9));
         max-width: 600px;
         margin: 0 auto;
     }
@@ -99,28 +99,28 @@
         display: inline-flex;
         align-items: center;
         gap: 0.5rem;
-        background: rgba(255, 255, 255, 0.2);
+        background: var(--bg-light, rgba(255, 255, 255, 0.2));
         backdrop-filter: blur(10px);
         padding: 0.5rem 1.5rem;
         border-radius: 20px;
-        color: white;
+        color: var(--text-primary, white);
         text-decoration: none;
         font-size: 0.875rem;
         transition: all 0.3s ease;
     }
     
     .apache-link:hover {
-        background: rgba(255, 255, 255, 0.3);
+        background: var(--bg-hover, rgba(255, 255, 255, 0.3));
         transform: translateY(-2px);
-        color: white;
+        color: var(--text-primary, white);
         text-decoration: none;
     }
     
     .selector-panel {
-        background: white;
+        background: var(--bg-secondary, white);
         border-radius: 16px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 10px 40px rgba(0,0,0,0.08);
-        border: 1px solid #e8e9ff;
+        box-shadow: var(--shadow-medium, 0 1px 3px rgba(0,0,0,0.05), 0 10px 40px rgba(0,0,0,0.08));
+        border: 1px solid var(--border-color, #e8e9ff);
         padding: 2rem;
         margin-bottom: 2rem;
         animation: fadeInUp 0.5s ease-out;
@@ -136,18 +136,18 @@
     .selector-icon {
         width: 40px;
         height: 40px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, var(--php-gradient-start, #667eea) 0%, var(--php-gradient-end, #764ba2) 100%);
         border-radius: 10px;
         display: flex;
         align-items: center;
         justify-content: center;
-        color: white;
+        color: var(--text-primary, white);
     }
     
     .selector-title {
         font-size: 1.25rem;
         font-weight: 600;
-        color: #1e293b;
+        color: var(--text-primary, #1e293b);
     }
     
     .selector-form {
@@ -162,7 +162,7 @@
     
     .form-label {
         font-weight: 500;
-        color: #475569;
+        color: var(--text-secondary, #475569);
         font-size: 0.875rem;
         margin-bottom: 0.5rem;
         display: block;
@@ -171,17 +171,17 @@
     .form-control {
         width: 100%;
         padding: 0.75rem 1rem;
-        border: 1px solid #e8e9ff;
+        border: 1px solid var(--border-color, #e8e9ff);
         border-radius: 8px;
         font-size: 0.875rem;
         transition: all 0.3s ease;
-        background: #fff;
+        background: var(--bg-secondary, #fff);
     }
     
     .form-control:focus {
         outline: none;
-        border-color: #667eea;
-        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        border-color: var(--accent-color, #667eea);
+        box-shadow: var(--accent-shadow, 0 0 0 3px rgba(102, 126, 234, 0.1));
     }
     
     .select-control {
@@ -207,13 +207,13 @@
     }
     
     .btn-primary {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
+        background: linear-gradient(135deg, var(--php-gradient-start, #667eea) 0%, var(--php-gradient-end, #764ba2) 100%);
+        color: var(--text-primary, white);
     }
     
     .btn-primary:hover {
         transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        box-shadow: var(--accent-shadow, 0 4px 12px rgba(102, 126, 234, 0.3));
     }
     
     .btn-primary:disabled {
@@ -223,10 +223,10 @@
     }
     
     .extensions-panel {
-        background: white;
+        background: var(--bg-secondary, white);
         border-radius: 16px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 10px 40px rgba(0,0,0,0.08);
-        border: 1px solid #e8e9ff;
+        box-shadow: var(--shadow-medium, 0 1px 3px rgba(0,0,0,0.05), 0 10px 40px rgba(0,0,0,0.08));
+        border: 1px solid var(--border-color, #e8e9ff);
         overflow: hidden;
         animation: fadeInUp 0.5s ease-out 0.2s;
         animation-fill-mode: both;
@@ -234,8 +234,8 @@
     
     .controls-bar {
         padding: 1.5rem 2rem;
-        background: #f8f9ff;
-        border-bottom: 1px solid #e8e9ff;
+        background: var(--bg-light, #f8f9ff);
+        border-bottom: 1px solid var(--border-color, #e8e9ff);
     }
     
     .search-box {
@@ -246,16 +246,18 @@
     .search-input {
         width: 100%;
         padding: 0.75rem 1rem 0.75rem 2.5rem;
-        border: 1px solid #e8e9ff;
+        border: 1px solid var(--border-color, #e8e9ff);
         border-radius: 8px;
         font-size: 0.875rem;
         transition: all 0.3s ease;
+        background: var(--bg-secondary, white);
+        color: var(--text-primary, inherit);
     }
     
     .search-input:focus {
         outline: none;
-        border-color: #667eea;
-        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        border-color: var(--accent-color, #667eea);
+        box-shadow: var(--accent-shadow, 0 0 0 3px rgba(102, 126, 234, 0.1));
     }
     
     .search-icon {
@@ -263,33 +265,33 @@
         left: 0.75rem;
         top: 50%;
         transform: translateY(-50%);
-        color: #94a3b8;
+        color: var(--text-muted, #94a3b8);
     }
     
     .extensions-table {
         width: 100%;
-        background: white;
+        background: var(--bg-secondary, white);
     }
     
     .extensions-table thead {
-        background: #f8f9ff;
+        background: var(--bg-light, #f8f9ff);
     }
     
     .extensions-table th {
         padding: 1rem;
         text-align: left;
         font-weight: 600;
-        color: #475569;
+        color: var(--text-secondary, #475569);
         font-size: 0.75rem;
         text-transform: uppercase;
         letter-spacing: 0.05em;
-        border-bottom: 1px solid #e8e9ff;
+        border-bottom: 1px solid var(--border-color, #e8e9ff);
     }
     
     .extensions-table td {
         padding: 1rem;
-        border-bottom: 1px solid #f1f5f9;
-        color: #334155;
+        border-bottom: 1px solid var(--border-light, #f1f5f9);
+        color: var(--text-primary, #334155);
         font-size: 0.875rem;
     }
     
@@ -298,19 +300,19 @@
     }
     
     .extensions-table tbody tr:hover {
-        background: #f8f9ff;
+        background: var(--bg-hover, #f8f9ff);
     }
     
     .extension-name {
         font-weight: 600;
-        color: #1e293b;
+        color: var(--text-primary, #1e293b);
     }
     
     .php-version-badge {
         font-family: 'Monaco', 'Consolas', monospace;
         font-size: 0.75rem;
-        background: #e0e7ff;
-        color: #4c1d95;
+        background: var(--accent-bg, #e0e7ff);
+        color: var(--accent-color, #4c1d95);
         padding: 0.25rem 0.5rem;
         border-radius: 4px;
         font-weight: 500;
@@ -327,13 +329,13 @@
     }
     
     .status-installed {
-        background: #d1fae5;
-        color: #065f46;
+        background: var(--success-bg, #d1fae5);
+        color: var(--success-color, #065f46);
     }
     
     .status-not-installed {
-        background: #fee2e2;
-        color: #991b1b;
+        background: var(--danger-bg, #fee2e2);
+        color: var(--danger-color, #991b1b);
     }
     
     .btn-sm {
@@ -342,32 +344,32 @@
     }
     
     .btn-install {
-        background: #10b981;
-        color: white;
+        background: var(--success-color, #10b981);
+        color: var(--text-primary, white);
     }
     
     .btn-install:hover:not(:disabled) {
-        background: #059669;
+        background: var(--success-hover, #059669);
         transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        box-shadow: var(--success-shadow, 0 4px 12px rgba(16, 185, 129, 0.3));
     }
     
     .btn-uninstall {
-        background: #ef4444;
-        color: white;
+        background: var(--danger-color, #ef4444);
+        color: var(--text-primary, white);
     }
     
     .btn-uninstall:hover:not(:disabled) {
-        background: #dc2626;
+        background: var(--danger-hover, #dc2626);
         transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+        box-shadow: var(--danger-shadow, 0 4px 12px rgba(239, 68, 68, 0.3));
     }
     
     .log-panel {
-        background: white;
+        background: var(--bg-secondary, white);
         border-radius: 16px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 10px 40px rgba(0,0,0,0.08);
-        border: 1px solid #e8e9ff;
+        box-shadow: var(--shadow-medium, 0 1px 3px rgba(0,0,0,0.05), 0 10px 40px rgba(0,0,0,0.08));
+        border: 1px solid var(--border-color, #e8e9ff);
         padding: 2rem;
         margin-top: 2rem;
         animation: fadeInUp 0.5s ease-out;
@@ -383,7 +385,7 @@
     .log-title {
         font-size: 1.25rem;
         font-weight: 600;
-        color: #1e293b;
+        color: var(--text-primary, #1e293b);
         display: flex;
         align-items: center;
         gap: 0.75rem;
@@ -392,17 +394,17 @@
     .log-icon {
         width: 32px;
         height: 32px;
-        background: #f3e8ff;
+        background: var(--accent-bg, #f3e8ff);
         border-radius: 8px;
         display: flex;
         align-items: center;
         justify-content: center;
-        color: #667eea;
+        color: var(--accent-color, #667eea);
     }
     
     .log-output {
-        background: #1e293b;
-        color: #10b981;
+        background: var(--console-bg, #1e293b);
+        color: var(--console-text, #10b981);
         font-family: 'Monaco', 'Consolas', monospace;
         font-size: 0.875rem;
         padding: 1.5rem;
@@ -414,14 +416,14 @@
     }
     
     .btn-back {
-        background: #6366f1;
-        color: white;
+        background: var(--info-color, #6366f1);
+        color: var(--text-primary, white);
     }
     
     .btn-back:hover {
-        background: #4f46e5;
+        background: var(--info-hover, #4f46e5);
         transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        box-shadow: var(--info-shadow, 0 4px 12px rgba(99, 102, 241, 0.3));
     }
     
     .alert {
@@ -435,9 +437,9 @@
     }
     
     .alert-danger {
-        background: #fee2e2;
-        color: #991b1b;
-        border: 1px solid #fecaca;
+        background: var(--danger-bg, #fee2e2);
+        color: var(--danger-color, #991b1b);
+        border: 1px solid var(--danger-border, #fecaca);
     }
     
     .alert-icon {
@@ -447,8 +449,8 @@
     .loading-spinner {
         width: 20px;
         height: 20px;
-        border: 2px solid #f3f3f3;
-        border-top: 2px solid #667eea;
+        border: 2px solid var(--border-light, #f3f3f3);
+        border-top: 2px solid var(--accent-color, #667eea);
         border-radius: 50%;
         animation: spin 1s linear infinite;
         display: inline-block;
@@ -583,7 +585,7 @@
                         <span class="status-badge" 
                               ng-class="{'status-installed': record.status=='Installed', 
                                          'status-not-installed': record.status=='Not-Installed'}">
-                            <i class="fas fa-circle" style="font-size: 0.5rem;"></i>
+                            <i class="fas fa-circle" style="font-size: 0.5rem; color: inherit;"></i>
                             {$ record.status $}
                         </span>
                     </td>

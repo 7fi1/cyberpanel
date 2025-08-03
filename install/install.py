@@ -17,7 +17,7 @@ import secrets
 import install_utils
 
 VERSION = '2.4'
-BUILD = 2
+BUILD = 3
 
 # Using shared char_set from install_utils
 char_set = install_utils.char_set
@@ -2160,8 +2160,8 @@ milter_default_action = accept
             if os.path.exists('/usr/bin/php'):
                 os.remove('/usr/bin/php')
 
-            # Create symlink to PHP 8.0
-            command = 'ln -s /usr/local/lsws/lsphp80/bin/php /usr/bin/php'
+            # Create symlink to PHP 8.1
+            command = 'ln -s /usr/local/lsws/lsphp81/bin/php /usr/bin/php'
             preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
 
             logging.InstallLog.writeToFile("[setupPHPSymlink] PHP symlink created successfully.")
@@ -2461,6 +2461,49 @@ vmail
 
         command = f'chmod +x {filePath}'
         preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
+    
+    def startDeferredServices(self):
+        """Start services that were deferred during installation (PowerDNS and Pure-FTPd)
+        These services require database tables that are created by Django migrations"""
+        
+        preFlightsChecks.stdOut("Starting deferred services that depend on database tables...")
+        
+        # Start PowerDNS if it was installed
+        if os.path.exists('/home/cyberpanel/powerdns'):
+            preFlightsChecks.stdOut("Starting PowerDNS service...")
+            command = 'systemctl start pdns'
+            result = preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
+            
+            if result == 1:
+                # Check if service started successfully
+                command = 'systemctl is-active pdns'
+                try:
+                    output = subprocess.check_output(shlex.split(command)).decode("utf-8").strip()
+                    if output == 'active':
+                        preFlightsChecks.stdOut("PowerDNS service started successfully!")
+                    else:
+                        preFlightsChecks.stdOut("[WARNING] PowerDNS service may not have started properly. Status: " + output)
+                except:
+                    preFlightsChecks.stdOut("[WARNING] Could not verify PowerDNS service status")
+        
+        # Start Pure-FTPd if it was installed
+        if os.path.exists('/home/cyberpanel/pureftpd'):
+            preFlightsChecks.stdOut("Starting Pure-FTPd service...")
+            ftpService = self.pureFTPDServiceName(self.distro)
+            command = f'systemctl start {ftpService}'
+            result = preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
+            
+            if result == 1:
+                # Check if service started successfully
+                command = f'systemctl is-active {ftpService}'
+                try:
+                    output = subprocess.check_output(shlex.split(command)).decode("utf-8").strip()
+                    if output == 'active':
+                        preFlightsChecks.stdOut("Pure-FTPd service started successfully!")
+                    else:
+                        preFlightsChecks.stdOut("[WARNING] Pure-FTPd service may not have started properly. Status: " + output)
+                except:
+                    preFlightsChecks.stdOut("[WARNING] Could not verify Pure-FTPd service status")
 
 def configure_jwt_secret():
     try:
@@ -2695,7 +2738,9 @@ echo $oConfig->Save() ? 'Done' : 'Error';
     checks.fixCyberPanelPermissions()
     configure_jwt_secret()
 
-    # 
+    # Start services that were enabled but not started during installation
+    # These services require database tables that are created by Django migrations
+    checks.startDeferredServices()
 
     logging.InstallLog.writeToFile("CyberPanel installation successfully completed!,80")
 

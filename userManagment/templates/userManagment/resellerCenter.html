@@ -9,7 +9,7 @@
 
 <style>
     body {
-        background-color: #f0f0ff;
+        background-color: var(--bg-primary, #f0f0ff);
     }
     .page-wrapper {
         background: transparent;
@@ -22,17 +22,17 @@
     
     /* Page Header */
     .page-header {
-        background: white;
+        background: var(--bg-secondary, white);
         border-radius: 12px;
         padding: 25px;
         margin-bottom: 25px;
         box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        border: 1px solid #e8e9ff;
+        border: 1px solid var(--border-color, #e8e9ff);
     }
     .page-header h1 {
         font-size: 28px;
         font-weight: 700;
-        color: #2f3640;
+        color: var(--text-primary, #2f3640);
         margin: 0 0 10px 0;
         display: flex;
         align-items: center;
@@ -41,7 +41,7 @@
     .page-header .icon {
         width: 48px;
         height: 48px;
-        background: #5856d6;
+        background: var(--accent-color, #5856d6);
         border-radius: 12px;
         display: flex;
         align-items: center;
@@ -52,7 +52,7 @@
     }
     .page-header p {
         font-size: 15px;
-        color: #64748b;
+        color: var(--text-secondary, #64748b);
         margin: 0;
     }
     
@@ -64,11 +64,11 @@
         margin-bottom: 25px;
     }
     .stat-card {
-        background: white;
+        background: var(--bg-secondary, white);
         border-radius: 12px;
         padding: 20px;
         box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        border: 1px solid #e8e9ff;
+        border: 1px solid var(--border-color, #e8e9ff);
         display: flex;
         align-items: center;
         gap: 15px;
@@ -90,25 +90,25 @@
     }
     .stat-icon.users {
         background: rgba(88,86,214,0.1);
-        color: #5856d6;
+        color: var(--accent-color, #5856d6);
     }
     .stat-icon.sites {
-        background: rgba(16,185,129,0.1);
-        color: #10b981;
+        background: var(--success-bg, rgba(16,185,129,0.1));
+        color: var(--success-text, #10b981);
     }
     .stat-icon.resellers {
-        background: rgba(251,146,60,0.1);
-        color: #fb923c;
+        background: var(--warning-bg, rgba(251,146,60,0.1));
+        color: var(--warning-text, #fb923c);
     }
     .stat-content h3 {
         font-size: 24px;
         font-weight: 700;
-        color: #2f3640;
+        color: var(--text-primary, #2f3640);
         margin: 0;
     }
     .stat-content p {
         font-size: 14px;
-        color: #64748b;
+        color: var(--text-secondary, #64748b);
         margin: 0;
     }
     
@@ -120,11 +120,11 @@
     }
     
     .content-card {
-        background: white;
+        background: var(--bg-secondary, white);
         border-radius: 12px;
         padding: 25px;
         box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        border: 1px solid #e8e9ff;
+        border: 1px solid var(--border-color, #e8e9ff);
     }
     
     .content-card.full-width {
@@ -134,7 +134,7 @@
     .section-title {
         font-size: 18px;
         font-weight: 700;
-        color: #2f3640;
+        color: var(--text-primary, #2f3640);
         margin-bottom: 20px;
         display: flex;
         align-items: center;
@@ -144,7 +144,7 @@
         content: '';
         width: 4px;
         height: 24px;
-        background: #5856d6;
+        background: var(--accent-color, #5856d6);
         border-radius: 2px;
     }
     
@@ -156,11 +156,12 @@
         margin-bottom: 25px;
     }
     .feature-item {
-        background: #f8f9ff;
+        background: var(--bg-hover, #f8f9ff);
         border-radius: 8px;
         padding: 15px;
         text-align: center;
         transition: all 0.3s ease;
+        border: 1px solid var(--border-color, #e8e9ff);
     }
     .feature-item:hover {
         background: #e8e6ff;
@@ -168,19 +169,19 @@
     }
     .feature-item i {
         font-size: 28px;
-        color: #5856d6;
+        color: var(--accent-color, #5856d6);
         margin-bottom: 10px;
         display: block;
     }
     .feature-item h4 {
         font-size: 14px;
         font-weight: 600;
-        color: #2f3640;
+        color: var(--text-primary, #2f3640);
         margin: 0 0 5px 0;
     }
     .feature-item p {
         font-size: 12px;
-        color: #64748b;
+        color: var(--text-secondary, #64748b);
         margin: 0;
     }
     
@@ -189,30 +190,31 @@
         margin-bottom: 20px;
     }
     .form-label {
-        color: #2f3640;
+        color: var(--text-primary, #2f3640);
         font-weight: 600;
         margin-bottom: 8px;
         display: block;
         font-size: 14px;
     }
     .form-control {
-        border: 2px solid #e8e9ff;
+        border: 2px solid var(--border-color, #e8e9ff);
         border-radius: 8px;
         padding: 12px 16px;
         font-size: 15px;
         transition: all 0.3s ease;
         width: 100%;
         box-sizing: border-box;
-        background: #f8f9ff;
+        background: var(--bg-hover, #f8f9ff);
+        color: var(--text-primary, #2f3640);
     }
     .form-control:focus {
-        border-color: #5856d6;
+        border-color: var(--accent-color, #5856d6);
         box-shadow: 0 0 0 3px rgba(88,86,214,0.1);
         outline: none;
-        background: white;
+        background: var(--bg-secondary, white);
     }
     .help-text {
-        color: #94a3b8;
+        color: var(--text-secondary, #94a3b8);
         font-size: 13px;
         margin-top: 5px;
         display: flex;
@@ -225,7 +227,7 @@
     
     /* Buttons */
     .btn-primary {
-        background: #5856d6;
+        background: var(--accent-color, #5856d6);
         border: none;
         border-radius: 8px;
         padding: 12px 28px;
@@ -253,13 +255,13 @@
         margin-bottom: 20px;
     }
     .quick-action {
-        background: #f8f9ff;
-        border: 2px solid #e8e9ff;
+        background: var(--bg-hover, #f8f9ff);
+        border: 2px solid var(--border-color, #e8e9ff);
         border-radius: 8px;
         padding: 8px 16px;
         font-size: 13px;
         font-weight: 600;
-        color: #5856d6;
+        color: var(--accent-color, #5856d6);
         cursor: pointer;
         transition: all 0.3s ease;
         display: inline-flex;
@@ -267,9 +269,9 @@
         gap: 6px;
     }
     .quick-action:hover {
-        background: #5856d6;
+        background: var(--accent-color, #5856d6);
         color: white;
-        border-color: #5856d6;
+        border-color: var(--accent-color, #5856d6);
     }
     
     /* Loading State */

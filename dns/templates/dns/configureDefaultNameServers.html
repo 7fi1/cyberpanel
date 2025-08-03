@@ -25,7 +25,7 @@
     .default-ns-title {
         font-size: 32px;
         font-weight: 700;
-        color: #1e293b;
+        color: var(--text-primary, #1e293b);
         margin-bottom: 12px;
         display: flex;
         align-items: center;
@@ -34,13 +34,13 @@
     }
     
     .default-ns-title i {
-        color: #5b5fcf;
+        color: var(--accent-color, #5b5fcf);
         font-size: 36px;
     }
     
     .default-ns-subtitle {
         font-size: 16px;
-        color: #64748b;
+        color: var(--text-secondary, #64748b);
         line-height: 1.6;
         max-width: 700px;
         margin: 0 auto 20px;
@@ -51,9 +51,9 @@
         align-items: center;
         gap: 8px;
         padding: 10px 20px;
-        background: #f8f9ff;
-        color: #5b5fcf;
-        border: 1px solid #e8e9ff;
+        background: var(--bg-hover, #f8f9ff);
+        color: var(--accent-color, #5b5fcf);
+        border: 1px solid var(--border-color, #e8e9ff);
         border-radius: 8px;
         text-decoration: none;
         font-size: 14px;
@@ -62,16 +62,16 @@
     }
     
     .docs-link:hover {
-        background: #5b5fcf;
+        background: var(--accent-color, #5b5fcf);
         color: white;
         transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(91,95,207,0.2);
+        box-shadow: 0 4px 12px var(--accent-shadow, rgba(91,95,207,0.2));
     }
     
     /* PowerDNS Disabled State */
     .powerdns-disabled {
-        background: #fff8e1;
-        border: 1px solid #ffe082;
+        background: var(--warning-bg, #fff8e1);
+        border: 1px solid var(--warning-border, #ffe082);
         border-radius: 12px;
         padding: 40px;
         text-align: center;
@@ -80,13 +80,13 @@
     
     .powerdns-disabled i {
         font-size: 48px;
-        color: #ffa000;
+        color: var(--warning-color, #ffa000);
         margin-bottom: 20px;
     }
     
     .powerdns-disabled h3 {
         font-size: 20px;
-        color: #1e293b;
+        color: var(--text-primary, #1e293b);
         margin-bottom: 20px;
     }
     
@@ -95,7 +95,7 @@
         align-items: center;
         gap: 8px;
         padding: 12px 24px;
-        background: #5b5fcf;
+        background: var(--accent-color, #5b5fcf);
         color: white;
         border: none;
         border-radius: 8px;
@@ -107,16 +107,16 @@
     }
     
     .enable-btn:hover {
-        background: #4a4fc4;
+        background: var(--accent-hover, #4a4fc4);
         transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(91,95,207,0.3);
+        box-shadow: 0 4px 12px var(--accent-shadow, rgba(91,95,207,0.3));
         color: white;
     }
     
     /* Info Section */
     .info-section {
-        background: #f8f9ff;
-        border: 1px solid #e8e9ff;
+        background: var(--bg-hover, #f8f9ff);
+        border: 1px solid var(--border-color, #e8e9ff);
         border-radius: 12px;
         padding: 24px;
         margin-bottom: 30px;
@@ -128,15 +128,15 @@
     .info-icon {
         width: 48px;
         height: 48px;
-        background: white;
+        background: var(--bg-secondary, white);
         border-radius: 10px;
         display: flex;
         align-items: center;
         justify-content: center;
         flex-shrink: 0;
-        color: #5b5fcf;
+        color: var(--accent-color, #5b5fcf);
         font-size: 24px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        box-shadow: 0 2px 8px var(--shadow-light, rgba(0,0,0,0.05));
     }
     
     .info-content {
@@ -146,35 +146,35 @@
     .info-title {
         font-size: 16px;
         font-weight: 700;
-        color: #1e293b;
+        color: var(--text-primary, #1e293b);
         margin-bottom: 4px;
     }
     
     .info-text {
         font-size: 14px;
-        color: #64748b;
+        color: var(--text-secondary, #64748b);
         line-height: 1.6;
     }
     
     /* Main Configuration Card */
     .config-card {
-        background: white;
+        background: var(--bg-secondary, white);
         border-radius: 16px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 10px 40px rgba(0,0,0,0.08);
-        border: 1px solid #e8e9ff;
+        box-shadow: 0 1px 3px var(--shadow-light, rgba(0,0,0,0.05)), 0 10px 40px var(--shadow-color, rgba(0,0,0,0.08));
+        border: 1px solid var(--border-color, #e8e9ff);
         overflow: hidden;
     }
     
     .card-header {
-        background: linear-gradient(135deg, #f8f9ff 0%, #fff 100%);
+        background: linear-gradient(135deg, var(--bg-hover, #f8f9ff) 0%, var(--bg-secondary, #fff) 100%);
         padding: 30px;
-        border-bottom: 1px solid #e8e9ff;
+        border-bottom: 1px solid var(--border-color, #e8e9ff);
     }
     
     .card-title {
         font-size: 20px;
         font-weight: 700;
-        color: #1e293b;
+        color: var(--text-primary, #1e293b);
         display: flex;
         align-items: center;
         gap: 12px;
@@ -184,7 +184,7 @@
         content: '';
         width: 4px;
         height: 28px;
-        background: #5b5fcf;
+        background: var(--accent-color, #5b5fcf);
         border-radius: 2px;
     }
     
@@ -198,8 +198,8 @@
     
     /* Nameserver Card */
     .nameserver-card {
-        background: #fafbff;
-        border: 2px solid #e8e9ff;
+        background: var(--bg-primary, #fafbff);
+        border: 2px solid var(--border-color, #e8e9ff);
         border-radius: 12px;
         padding: 20px;
         transition: all 0.3s ease;
@@ -214,7 +214,7 @@
         left: 0;
         right: 0;
         height: 4px;
-        background: #5b5fcf;
+        background: var(--accent-color, #5b5fcf);
         transform: scaleX(0);
         transition: transform 0.3s ease;
     }
@@ -226,8 +226,8 @@
     
     .nameserver-card:hover {
         transform: translateY(-2px);
-        box-shadow: 0 8px 24px rgba(0,0,0,0.08);
-        border-color: #5b5fcf;
+        box-shadow: 0 8px 24px var(--shadow-color, rgba(0,0,0,0.08));
+        border-color: var(--accent-color, #5b5fcf);
     }
     
     .nameserver-header {
@@ -240,14 +240,14 @@
     .nameserver-icon {
         width: 40px;
         height: 40px;
-        background: white;
+        background: var(--bg-secondary, white);
         border-radius: 8px;
         display: flex;
         align-items: center;
         justify-content: center;
-        color: #5b5fcf;
+        color: var(--accent-color, #5b5fcf);
         font-size: 20px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        box-shadow: 0 2px 8px var(--shadow-light, rgba(0,0,0,0.05));
     }
     
     .nameserver-info {
@@ -257,7 +257,7 @@
     .nameserver-label {
         font-size: 12px;
         font-weight: 600;
-        color: #94a3b8;
+        color: var(--text-muted, #94a3b8);
         text-transform: uppercase;
         letter-spacing: 0.5px;
         margin-bottom: 2px;
@@ -266,34 +266,34 @@
     .nameserver-order {
         font-size: 14px;
         font-weight: 700;
-        color: #1e293b;
+        color: var(--text-primary, #1e293b);
     }
     
     .nameserver-input {
         width: 100%;
         padding: 12px 16px;
-        border: 2px solid #e8e9ff;
+        border: 2px solid var(--border-color, #e8e9ff);
         border-radius: 8px;
         font-size: 15px;
-        color: #1e293b;
-        background: white;
+        color: var(--text-primary, #1e293b);
+        background: var(--bg-secondary, white);
         transition: all 0.2s ease;
         font-family: 'Courier New', monospace;
     }
     
     .nameserver-input:hover {
-        border-color: #c7c9ff;
+        border-color: var(--border-hover, #c7c9ff);
     }
     
     .nameserver-input:focus {
         outline: none;
-        border-color: #5b5fcf;
-        box-shadow: 0 0 0 3px rgba(91,95,207,0.1);
+        border-color: var(--accent-color, #5b5fcf);
+        box-shadow: 0 0 0 3px var(--accent-focus, rgba(91,95,207,0.1));
     }
     
     .nameserver-hint {
         font-size: 12px;
-        color: #94a3b8;
+        color: var(--text-muted, #94a3b8);
         margin-top: 8px;
         font-style: italic;
     }
@@ -303,7 +303,7 @@
         display: inline-block;
         width: 6px;
         height: 6px;
-        background: #ef4444;
+        background: var(--danger-color, #ef4444);
         border-radius: 50%;
         margin-left: 4px;
         vertical-align: super;
@@ -313,8 +313,8 @@
     .optional-badge {
         display: inline-block;
         padding: 2px 8px;
-        background: #e0e7ff;
-        color: #5b5fcf;
+        background: var(--accent-bg, #e0e7ff);
+        color: var(--accent-color, #5b5fcf);
         border-radius: 4px;
         font-size: 10px;
         font-weight: 600;
@@ -325,15 +325,15 @@
     
     /* Visual Preview */
     .preview-section {
-        background: #f8f9ff;
-        border-top: 1px solid #e8e9ff;
+        background: var(--bg-hover, #f8f9ff);
+        border-top: 1px solid var(--border-color, #e8e9ff);
         padding: 30px;
     }
     
     .preview-title {
         font-size: 14px;
         font-weight: 600;
-        color: #64748b;
+        color: var(--text-secondary, #64748b);
         text-transform: uppercase;
         letter-spacing: 0.5px;
         margin-bottom: 20px;
@@ -348,8 +348,8 @@
     }
     
     .preview-item {
-        background: white;
-        border: 1px solid #e8e9ff;
+        background: var(--bg-secondary, white);
+        border: 1px solid var(--border-color, #e8e9ff);
         border-radius: 8px;
         padding: 12px 20px;
         display: flex;
@@ -358,23 +358,23 @@
     }
     
     .preview-item i {
-        color: #5b5fcf;
+        color: var(--accent-color, #5b5fcf);
         font-size: 16px;
     }
     
     .preview-item span {
         font-family: 'Courier New', monospace;
         font-size: 14px;
-        color: #1e293b;
+        color: var(--text-primary, #1e293b);
         font-weight: 600;
     }
     
     /* Form Actions */
     .form-actions {
         padding: 30px;
-        background: #fafbff;
+        background: var(--bg-primary, #fafbff);
         text-align: center;
-        border-top: 1px solid #e8e9ff;
+        border-top: 1px solid var(--border-color, #e8e9ff);
     }
     
     .btn-save {
@@ -382,7 +382,7 @@
         align-items: center;
         gap: 10px;
         padding: 14px 32px;
-        background: #5b5fcf;
+        background: var(--accent-color, #5b5fcf);
         color: white;
         border: none;
         border-radius: 10px;
@@ -393,13 +393,13 @@
     }
     
     .btn-save:hover {
-        background: #4a4fc4;
+        background: var(--accent-hover, #4a4fc4);
         transform: translateY(-1px);
-        box-shadow: 0 6px 20px rgba(91,95,207,0.3);
+        box-shadow: 0 6px 20px var(--accent-shadow, rgba(91,95,207,0.3));
     }
     
     .btn-save:disabled {
-        background: #cbd5e1;
+        background: var(--bg-disabled, #cbd5e1);
         cursor: not-allowed;
         transform: none;
         box-shadow: none;
@@ -486,7 +486,7 @@
         <div class="powerdns-disabled">
             <i class="fas fa-exclamation-circle"></i>
             <h3>{% trans "PowerDNS is disabled" %}</h3>
-            <p style="margin-bottom: 24px; color: #64748b;">
+            <p style="margin-bottom: 24px; color: var(--text-secondary, #64748b);">
                 {% trans "You need to enable PowerDNS to configure default nameservers" %}
             </p>
             <a href="{% url 'managePowerDNS' %}" class="enable-btn">
@@ -675,9 +675,9 @@ $(document).ready(function() {
     $('.nameserver-input').on('input', function() {
         var $card = $(this).closest('.nameserver-card');
         if ($(this).val()) {
-            $card.css('border-color', '#5b5fcf');
+            $card.css('border-color', 'var(--accent-color, #5b5fcf)');
         } else {
-            $card.css('border-color', '#e8e9ff');
+            $card.css('border-color', 'var(--border-color, #e8e9ff)');
         }
     });
 });

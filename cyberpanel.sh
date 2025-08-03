@@ -1236,12 +1236,29 @@ Retry_Command "pip install --default-timeout=3600 virtualenv"
 
 Download_Requirement
 
+echo -e "Creating CyberPanel virtual environment..."
+
+# First ensure the directory exists
+mkdir -p /usr/local/CyberPanel
+
 if [[ "$Server_OS" = "Ubuntu" ]] && [[ "$Server_OS_Version" = "22" ]] ; then
-python3 -m venv /usr/local/CyberPanel
-Check_Return
+  echo -e "Ubuntu 22.04 detected, using python3 -m venv..."
+  if python3 -m venv /usr/local/CyberPanel 2>&1; then
+    echo -e "Virtual environment created successfully"
+  else
+    echo -e "python3 -m venv failed, trying virtualenv..."
+    # Ensure virtualenv is properly installed
+    pip3 install --upgrade virtualenv
+    virtualenv -p /usr/bin/python3 /usr/local/CyberPanel
+  fi
 else
-virtualenv -p /usr/bin/python3 /usr/local/CyberPanel
-  Check_Return
+  virtualenv -p /usr/bin/python3 /usr/local/CyberPanel
+fi
+
+# Verify virtual environment was created
+if [[ ! -f /usr/local/CyberPanel/bin/activate ]]; then
+  echo -e "ERROR: Virtual environment creation failed!"
+  exit 1
 fi
 
 if [ "$Server_OS" = "Ubuntu" ]; then
@@ -1931,12 +1948,29 @@ rm -f /root/cyberpanel/cert_conf
 Post_Install_Required_Components() {
 Debug_Log2 "Finalization..,80"
 
+echo -e "Creating CyberCP virtual environment..."
+
+# First ensure the directory exists
+mkdir -p /usr/local/CyberCP
+
 if [[ "$Server_OS" = "Ubuntu" ]] && [[ "$Server_OS_Version" = "22" ]] ; then
-python3 -m venv /usr/local/CyberCP
-Check_Return
+  echo -e "Ubuntu 22.04 detected, using python3 -m venv..."
+  if python3 -m venv /usr/local/CyberCP 2>&1; then
+    echo -e "Virtual environment created successfully"
+  else
+    echo -e "python3 -m venv failed, trying virtualenv..."
+    # Ensure virtualenv is properly installed
+    pip3 install --upgrade virtualenv
+    virtualenv -p /usr/bin/python3 /usr/local/CyberCP
+  fi
 else
-virtualenv -p /usr/bin/python3 /usr/local/CyberCP
-  Check_Return
+  virtualenv -p /usr/bin/python3 /usr/local/CyberCP
+fi
+
+# Verify virtual environment was created
+if [[ ! -f /usr/local/CyberCP/bin/activate ]]; then
+  echo -e "ERROR: Virtual environment creation failed!"
+  exit 1
 fi
 
 if [[ "$Server_OS" = "Ubuntu" ]] && [[ "$Server_OS_Version" = "20" ]] ; then
@@ -1952,6 +1986,16 @@ fi
 
 Retry_Command "pip install --default-timeout=3600 -r /usr/local/requirments.txt"
  Check_Return "requirments.txt" "no_exit"
+
+# Verify Django installation
+echo -e "Verifying Django installation..."
+if ! /usr/local/CyberCP/bin/python -c "import django" 2>/dev/null; then
+  echo -e "WARNING: Django not found, reinstalling requirements..."
+  pip install --upgrade pip setuptools wheel packaging
+  pip install --default-timeout=3600 --ignore-installed -r /usr/local/requirments.txt
+else
+  echo -e "Django is properly installed"
+fi
 
 if [[ "$Server_OS" = "Ubuntu" ]] && [[ "$Server_OS_Version" = "22" ]] ; then
   cp /usr/bin/python3.10 /usr/local/CyberCP/bin/python3

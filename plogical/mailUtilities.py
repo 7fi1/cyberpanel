@@ -404,20 +404,15 @@ class mailUtilities:
     @staticmethod
     def changeEmailPassword(email, newPassword, encrypt = None):
         try:
+            changePass = EUsers.objects.get(email=email)
             if encrypt == None:
-                CentOSPath = '/etc/redhat-release'
-                changePass = EUsers.objects.get(email=email)
-                if os.path.exists(CentOSPath):
-                    password = bcrypt.hashpw(newPassword.encode('utf-8'), bcrypt.gensalt())
-                    password = '{CRYPT}%s' % (password.decode())
-                    changePass.password = password
-                else:
-                    changePass.password = newPassword
-                changePass.save()
+                # Always use bcrypt hashing regardless of OS
+                password = bcrypt.hashpw(newPassword.encode('utf-8'), bcrypt.gensalt())
+                password = '{CRYPT}%s' % (password.decode())
+                changePass.password = password
             else:
-                changePass = EUsers.objects.get(email=email)
                 changePass.password = newPassword
-                changePass.save()
+            changePass.save()
             return 0,'None'
         except BaseException as msg:
             return 0, str(msg)

@@ -1,6 +1,7 @@
 #!/usr/local/CyberCP/bin/python
 import os.path
 import sys
+import errno
 import django
 sys.path.append('/usr/local/CyberCP')
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "CyberCP.settings")
@@ -334,10 +335,27 @@ class FTPManager:
     def startPureFTPD(self):
         ############## Start pureftpd ######################
         if ProcessUtilities.decideDistro() == ProcessUtilities.ubuntu:
+            serviceName = 'pure-ftpd-mysql'
             command = 'systemctl start pure-ftpd-mysql'
         else:
+            serviceName = 'pure-ftpd'
             command = 'systemctl start pure-ftpd'
+        
         ProcessUtilities.executioner(command)
+        
+        # Give service time to start
+        import time
+        time.sleep(2)
+        
+        # Check if service started successfully
+        command = 'systemctl is-active %s' % serviceName
+        output = ProcessUtilities.outputExecutioner(command)
+        
+        if output.strip() != 'active':
+            logging.CyberCPLogFileWriter.writeToFile('[ERROR] Pure-FTPd failed to start. Service status: ' + output)
+            logging.CyberCPLogFileWriter.statusWriter(self.extraArgs['tempStatusPath'],
+                                                      '[ERROR] Pure-FTPd service failed to start properly [404]')
+            return 0
 
         return 1
 
@@ -445,9 +463,12 @@ class FTPManager:
             ## setup ssl for ftp
 
             try:
-                os.mkdir("/etc/ssl/private")
-            except:
-                logging.CyberCPLogFileWriter.writeToFile("[ERROR] Could not create directory for FTP SSL")
+                if not os.path.exists("/etc/ssl/private"):
+                    os.makedirs("/etc/ssl/private", mode=0o755)
+            except OSError as e:
+                if e.errno != errno.EEXIST:
+                    logging.CyberCPLogFileWriter.writeToFile("[ERROR] Could not create directory for FTP SSL: " + str(e))
+                    raise
 
             if ProcessUtilities.decideDistro() == ProcessUtilities.centos or ProcessUtilities.decideDistro() == ProcessUtilities.cent8:
                 command = 'openssl req -newkey rsa:1024 -new -nodes -x509 -days 3650 -subj "/C=US/ST=Denial/L=Springfield/O=Dis/CN=www.example.com" -keyout /etc/ssl/private/pure-ftpd.pem -out /etc/ssl/private/pure-ftpd.pem'

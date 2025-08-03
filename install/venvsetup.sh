@@ -884,12 +884,23 @@ if [[ $PROVIDER == "Alibaba Cloud" ]] ; then
 fi
 
 pip install virtualenv
-virtualenv --system-site-packages /usr/local/CyberPanel
+
+# Create virtual environment with fallback for Ubuntu 22.04 compatibility
+echo "Creating CyberPanel virtual environment..."
+if python3 -m venv --system-site-packages /usr/local/CyberPanel 2>&1 | grep -q "unrecognized option"; then
+    # Fallback to virtualenv if python3 -m venv doesn't support --system-site-packages
+    virtualenv --system-site-packages /usr/local/CyberPanel
+elif python3 -m venv --system-site-packages /usr/local/CyberPanel 2>/dev/null; then
+    echo "Virtual environment created successfully using python3 -m venv"
+else
+    # Final fallback to virtualenv
+    virtualenv --system-site-packages /usr/local/CyberPanel
+fi
+
 source /usr/local/CyberPanel/bin/activate
 rm -rf requirements.txt
 wget -O requirements.txt https://raw.githubusercontent.com/usmannasir/cyberpanel/1.8.0/requirments.txt
 pip install --ignore-installed -r requirements.txt
-virtualenv --system-site-packages /usr/local/CyberPanel
 fi
 
 if [[ $DEV == "ON" ]] ; then

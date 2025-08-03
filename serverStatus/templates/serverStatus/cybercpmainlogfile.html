@@ -4,6 +4,72 @@
 
 {% block header_scripts %}
 <style>
+    /* CSS Variables for Dark Mode Support */
+    :root {
+        /* Text colors */
+        --text-primary: #1e293b;
+        --text-secondary: #475569;
+        --text-muted: #64748b;
+        --text-on-gradient: rgba(255, 255, 255, 0.9);
+        --text-terminal: #e2e8f0;
+        --text-console: #10b981;
+        
+        /* Background colors */
+        --bg-primary: #ffffff;
+        --bg-secondary: #f8f9ff;
+        --bg-light: #f3f4f6;
+        --bg-hover: #f8f9ff;
+        --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        
+        /* Border colors */
+        --border-color: #e8e9ff;
+        --border-light: #f1f5f9;
+        --border-terminal: #334155;
+        
+        /* Accent colors */
+        --accent-color: #667eea;
+        --accent-hover: #5a67d8;
+        --accent-bg: #f3e8ff;
+        --accent-focus: rgba(102, 126, 234, 0.1);
+        --accent-shadow: rgba(102, 126, 234, 0.3);
+        
+        /* Status colors */
+        --success-bg: #d1fae5;
+        --success-color: #065f46;
+        --success-border: #a7f3d0;
+        --success-accent: #10b981;
+        
+        --danger-bg: #fee2e2;
+        --danger-color: #991b1b;
+        --danger-border: #fecaca;
+        --danger-accent: #ef4444;
+        --danger-hover: #dc2626;
+        
+        --warning-bg: #fef3c7;
+        --warning-color: #92400e;
+        --warning-border: #fde68a;
+        
+        --info-bg: #dbeafe;
+        --info-color: #1e40af;
+        --info-border: #bfdbfe;
+        
+        /* Shadow colors */
+        --shadow-light: rgba(0,0,0,0.05);
+        --shadow-medium: rgba(0,0,0,0.08);
+        --shadow-color: rgba(0,0,0,0.1);
+        
+        /* Console/Terminal colors */
+        --console-bg: #1e293b;
+        --console-text: #10b981;
+        --console-border: #334155;
+        --console-scrollbar: #64748b;
+        --console-scrollbar-hover: #94a3b8;
+        
+        /* Neutral colors */
+        --neutral-bg: #64748b;
+        --neutral-hover: #475569;
+        --neutral-shadow: rgba(100, 116, 139, 0.3);
+    }
     .modern-container {
         max-width: 1400px;
         margin: 0 auto;
@@ -14,12 +80,12 @@
         text-align: center;
         margin-bottom: 3rem;
         padding: 3rem 0;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: var(--bg-gradient);
         border-radius: 20px;
         animation: fadeInDown 0.5s ease-out;
         position: relative;
         overflow: hidden;
-        color: white;
+        color: var(--bg-primary);
     }
     
     .page-header::before {
@@ -89,29 +155,29 @@
     
     .page-subtitle {
         font-size: 1.125rem;
-        color: rgba(255, 255, 255, 0.9);
+        color: var(--text-on-gradient);
         max-width: 700px;
         margin: 0 auto;
         line-height: 1.6;
     }
     
     .log-viewer-panel {
-        background: white;
+        background: var(--bg-primary);
         border-radius: 16px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 10px 40px rgba(0,0,0,0.08);
-        border: 1px solid #e8e9ff;
+        box-shadow: 0 1px 3px var(--shadow-light), 0 10px 40px var(--shadow-medium);
+        border: 1px solid var(--border-color);
         overflow: hidden;
         animation: fadeInUp 0.5s ease-out;
     }
     
     .panel-header {
-        background: #1e293b;
-        color: white;
+        background: var(--console-bg, #1e293b);
+        color: var(--bg-primary);
         padding: 1rem 1.5rem;
         display: flex;
         align-items: center;
         justify-content: space-between;
-        border-bottom: 1px solid #334155;
+        border-bottom: 1px solid var(--console-border);
     }
     
     .panel-title {
@@ -120,18 +186,18 @@
         display: flex;
         align-items: center;
         gap: 0.75rem;
-        color: #e2e8f0;
+        color: var(--text-terminal);
     }
     
     .panel-icon {
         width: 32px;
         height: 32px;
-        background: #334155;
+        background: var(--console-border);
         border-radius: 8px;
         display: flex;
         align-items: center;
         justify-content: center;
-        color: #64748b;
+        color: var(--text-muted);
     }
     
     .log-stats {
@@ -145,18 +211,18 @@
         align-items: center;
         gap: 0.5rem;
         font-size: 0.875rem;
-        color: #94a3b8;
+        color: var(--text-muted, #94a3b8);
     }
     
     .stat-value {
-        color: #e2e8f0;
+        color: var(--text-terminal);
         font-weight: 600;
     }
     
     .log-controls {
-        background: #f8f9ff;
+        background: var(--bg-secondary);
         padding: 1rem 1.5rem;
-        border-bottom: 1px solid #e8e9ff;
+        border-bottom: 1px solid var(--border-color, #e8e9ff);
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -178,7 +244,7 @@
     .search-input {
         width: 100%;
         padding: 0.5rem 1rem 0.5rem 2.5rem;
-        border: 1px solid #e8e9ff;
+        border: 1px solid var(--border-color);
         border-radius: 8px;
         font-size: 0.875rem;
         transition: all 0.3s ease;
@@ -186,8 +252,8 @@
     
     .search-input:focus {
         outline: none;
-        border-color: #667eea;
-        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        border-color: var(--accent-color, #667eea);
+        box-shadow: 0 0 0 3px var(--accent-focus, rgba(102, 126, 234, 0.1));
     }
     
     .search-icon {
@@ -195,12 +261,12 @@
         left: 0.75rem;
         top: 50%;
         transform: translateY(-50%);
-        color: #94a3b8;
+        color: var(--text-muted, #94a3b8);
         font-size: 0.875rem;
     }
     
     .log-content {
-        background: #1e293b;
+        background: var(--console-bg, #1e293b);
         padding: 1.5rem;
         min-height: 600px;
         max-height: 700px;
@@ -211,9 +277,9 @@
     .log-textarea {
         width: 100%;
         background: transparent;
-        color: #10b981;
+        color: var(--console-text, #10b981);
         font-family: 'Monaco', 'Consolas', 'Courier New', monospace;
-        font-size: 0.875rem;
+        font-size: 1.125rem;
         line-height: 1.6;
         border: none;
         outline: none;
@@ -222,7 +288,7 @@
     }
     
     .log-textarea::placeholder {
-        color: #475569;
+        color: var(--text-secondary);
     }
     
     .log-line-numbers {
@@ -231,13 +297,13 @@
         top: 1.5rem;
         width: 50px;
         text-align: right;
-        color: #475569;
+        color: var(--text-secondary);
         font-family: 'Monaco', 'Consolas', 'Courier New', monospace;
-        font-size: 0.875rem;
+        font-size: 1.125rem;
         line-height: 1.6;
         user-select: none;
         padding-right: 1rem;
-        border-right: 1px solid #334155;
+        border-right: 1px solid var(--console-border);
     }
     
     .log-content-wrapper {
@@ -245,9 +311,9 @@
     }
     
     .action-bar {
-        background: #f8f9ff;
+        background: var(--bg-secondary);
         padding: 1.5rem;
-        border-top: 1px solid #e8e9ff;
+        border-top: 1px solid var(--border-color);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -268,43 +334,43 @@
     }
     
     .btn-primary {
-        background: #667eea;
-        color: white;
+        background: var(--accent-color);
+        color: var(--bg-primary);
     }
     
     .btn-primary:hover {
-        background: #5a67d8;
+        background: var(--accent-hover);
         transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        box-shadow: 0 4px 12px var(--accent-shadow);
     }
     
     .btn-danger {
-        background: #ef4444;
-        color: white;
+        background: var(--danger-accent);
+        color: var(--bg-primary);
     }
     
     .btn-danger:hover {
-        background: #dc2626;
+        background: var(--danger-hover);
         transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+        box-shadow: 0 4px 12px var(--danger-shadow, rgba(239, 68, 68, 0.3));
     }
     
     .btn-secondary {
-        background: #64748b;
-        color: white;
+        background: var(--neutral-bg);
+        color: var(--bg-primary);
     }
     
     .btn-secondary:hover {
-        background: #475569;
+        background: var(--neutral-hover);
         transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(100, 116, 139, 0.3);
+        box-shadow: 0 4px 12px var(--neutral-shadow);
     }
     
     .loading-spinner {
         width: 20px;
         height: 20px;
-        border: 2px solid #f3f3f3;
-        border-top: 2px solid #667eea;
+        border: 2px solid var(--bg-light, #f3f3f3);
+        border-top: 2px solid var(--accent-color);
         border-radius: 50%;
         animation: spin 1s linear infinite;
         display: inline-block;
@@ -326,15 +392,15 @@
     }
     
     .alert-success {
-        background: #d1fae5;
-        color: #065f46;
-        border: 1px solid #a7f3d0;
+        background: var(--success-bg);
+        color: var(--success-color);
+        border: 1px solid var(--success-border);
     }
     
     .alert-danger {
-        background: #fee2e2;
-        color: #991b1b;
-        border: 1px solid #fecaca;
+        background: var(--danger-bg);
+        color: var(--danger-color);
+        border: 1px solid var(--danger-border);
     }
     
     .alert-icon {
@@ -344,12 +410,12 @@
     .empty-state {
         text-align: center;
         padding: 4rem 2rem;
-        color: #64748b;
+        color: var(--text-muted);
     }
     
     .empty-icon {
         font-size: 4rem;
-        color: #94a3b8;
+        color: var(--text-muted, #94a3b8);
         margin-bottom: 1rem;
     }
     
@@ -357,12 +423,12 @@
         font-size: 1.25rem;
         font-weight: 600;
         margin-bottom: 0.5rem;
-        color: #475569;
+        color: var(--text-secondary);
     }
     
     .empty-text {
         font-size: 0.875rem;
-        color: #64748b;
+        color: var(--text-muted);
     }
     
     /* Custom Scrollbar */
@@ -371,25 +437,25 @@
     }
     
     .log-content::-webkit-scrollbar-track {
-        background: #334155;
+        background: var(--console-border);
         border-radius: 4px;
     }
     
     .log-content::-webkit-scrollbar-thumb {
-        background: #64748b;
+        background: var(--neutral-bg);
         border-radius: 4px;
     }
     
     .log-content::-webkit-scrollbar-thumb:hover {
-        background: #94a3b8;
+        background: var(--console-scrollbar-hover);
     }
     
     /* Log Level Colors */
-    .log-error { color: #ef4444; }
-    .log-warning { color: #f59e0b; }
-    .log-info { color: #3b82f6; }
-    .log-debug { color: #8b5cf6; }
-    .log-success { color: #10b981; }
+    .log-error { color: var(--danger-accent); }
+    .log-warning { color: var(--warning-color); }
+    .log-info { color: var(--info-color); }
+    .log-debug { color: var(--debug-color, #8b5cf6); }
+    .log-success { color: var(--success-accent); }
     
     /* Responsive */
     @media (max-width: 768px) {
@@ -466,7 +532,7 @@
                     <span class="stat-value">{% trans "Last 50 lines" %}</span>
                 </div>
                 <div ng-hide="logFileLoading" class="stat-item">
-                    <i class="fas fa-check-circle" style="color: #10b981;"></i>
+                    <i class="fas fa-check-circle" style="color: var(--success-accent, #10b981);"></i>
                     <span>{% trans "Live" %}</span>
                 </div>
                 <div ng-show="!logFileLoading" class="loading-spinner"></div>

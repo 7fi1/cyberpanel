@@ -17,18 +17,18 @@
     }
     
     .ssl-section {
-        background: white;
+        background: var(--bg-secondary, white);
         border-radius: 12px;
         padding: 25px;
         margin-bottom: 25px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        border: 1px solid #e8e9ff;
+        box-shadow: 0 2px 8px var(--shadow-color, rgba(0,0,0,0.08));
+        border: 1px solid var(--border-color, #e8e9ff);
     }
     
     .section-title {
         font-size: 16px;
         font-weight: 700;
-        color: #2f3640;
+        color: var(--text-primary, #2f3640);
         margin-bottom: 20px;
         display: flex;
         align-items: center;
@@ -41,14 +41,14 @@
         content: '';
         width: 4px;
         height: 24px;
-        background: #5b5fcf;
+        background: var(--accent-color, #5b5fcf);
         border-radius: 2px;
     }
     
     .ssl-docs-link {
-        background: #f8f9ff;
-        border: 1px solid #e8e9ff;
-        color: #5b5fcf;
+        background: var(--bg-hover, #f8f9ff);
+        border: 1px solid var(--border-color, #e8e9ff);
+        color: var(--accent-color, #5b5fcf);
         padding: 6px 14px;
         border-radius: 6px;
         font-size: 12px;
@@ -62,23 +62,23 @@
     }
     
     .ssl-docs-link:hover {
-        background: #5b5fcf;
-        color: white;
-        border-color: #5b5fcf;
+        background: var(--accent-color, #5b5fcf);
+        color: var(--bg-secondary, white);
+        border-color: var(--accent-color, #5b5fcf);
         box-shadow: 0 2px 4px rgba(91,95,207,0.3);
         text-decoration: none;
     }
     
     .ssl-description {
-        color: #8893a7;
+        color: var(--text-muted, #8893a7);
         font-size: 14px;
         margin-bottom: 25px;
         line-height: 1.5;
     }
     
     .video-container {
-        background: #fafbff;
-        border: 1px solid #e8e9ff;
+        background: var(--bg-light, #fafbff);
+        border: 1px solid var(--border-color, #e8e9ff);
         border-radius: 8px;
         padding: 20px;
         margin-bottom: 25px;
@@ -110,10 +110,10 @@
         justify-content: center;
         gap: 10px;
         padding: 15px 20px;
-        background: #fafbff;
-        border: 1px solid #e8e9ff;
+        background: var(--bg-light, #fafbff);
+        border: 1px solid var(--border-color, #e8e9ff);
         border-radius: 8px;
-        color: #2f3640;
+        color: var(--text-primary, #2f3640);
         text-decoration: none;
         font-weight: 600;
         transition: all 0.2s ease;
@@ -121,15 +121,15 @@
     
     .nav-tabs li.active a,
     .nav-tabs a:hover {
-        background: #5b5fcf;
-        color: white;
-        border-color: #5b5fcf;
-        box-shadow: 0 2px 8px rgba(91,95,207,0.3);
+        background: var(--accent-color, #5b5fcf);
+        color: var(--bg-secondary, white);
+        border-color: var(--accent-color, #5b5fcf);
+        box-shadow: 0 2px 8px var(--accent-shadow, rgba(91,95,207,0.3));
     }
     
     .tab-content {
-        background: #fafbff;
-        border: 1px solid #e8e9ff;
+        background: var(--bg-light, #fafbff);
+        border: 1px solid var(--border-color, #e8e9ff);
         border-radius: 8px;
         padding: 25px;
     }
@@ -142,7 +142,7 @@
     .form-label {
         font-size: 13px;
         font-weight: 600;
-        color: #2f3640;
+        color: var(--text-primary, #2f3640);
         margin-bottom: 8px;
         text-transform: uppercase;
         letter-spacing: 0.5px;
@@ -152,18 +152,18 @@
     .form-control {
         width: 100%;
         padding: 12px 16px;
-        border: 1px solid #e8e9ff;
+        border: 1px solid var(--border-color, #e8e9ff);
         border-radius: 8px;
         font-size: 14px;
-        color: #2f3640;
-        background: white;
+        color: var(--text-primary, #2f3640);
+        background: var(--bg-secondary, white);
         transition: all 0.2s ease;
     }
     
     .form-control:focus {
         outline: none;
-        border-color: #5b5fcf;
-        box-shadow: 0 0 0 3px rgba(91,95,207,0.1);
+        border-color: var(--accent-color, #5b5fcf);
+        box-shadow: 0 0 0 3px var(--accent-focus, rgba(91,95,207,0.1));
     }
     
     /* Windows selectbox fix */
@@ -178,14 +178,14 @@
         padding-right: 40px;
         line-height: 1.5;
         min-height: 44px;
-        color: #2f3640;
+        color: var(--text-primary, #2f3640);
     }
     
     /* Windows-specific fixes */
     @media screen and (-ms-high-contrast: active), (-ms-high-contrast: none) {
         select.form-control {
             color: #2f3640 !important;
-            background-color: white !important;
+            background-color: var(--bg-secondary, white) !important;
         }
     }
     
@@ -195,21 +195,21 @@
     }
     
     select.form-control:focus {
-        color: #2f3640;
-        background-color: white;
+        color: var(--text-primary, #2f3640);
+        background-color: var(--bg-secondary, white);
     }
     
     textarea.form-control {
         resize: vertical;
         font-family: 'Monaco', 'Consolas', 'Courier New', monospace;
         font-size: 13px;
-        background: #f8f9ff;
+        background: var(--bg-hover, #f8f9ff);
     }
     
     .btn-primary {
-        background: #5b5fcf;
-        border: 1px solid #5b5fcf;
-        color: white;
+        background: var(--accent-color, #5b5fcf);
+        border: 1px solid var(--accent-color, #5b5fcf);
+        color: var(--bg-secondary, white);
         padding: 12px 24px;
         border-radius: 8px;
         font-size: 14px;
@@ -223,15 +223,15 @@
     }
     
     .btn-primary:hover {
-        background: #4b4fbf;
-        border-color: #4b4fbf;
-        box-shadow: 0 3px 8px rgba(91,95,207,0.3);
+        background: var(--accent-hover, #4b4fbf);
+        border-color: var(--accent-hover, #4b4fbf);
+        box-shadow: 0 3px 8px var(--accent-shadow, rgba(91,95,207,0.3));
         transform: translateY(-1px);
     }
     
     .btn-primary:disabled {
-        background: #94a3b8;
-        border-color: #94a3b8;
+        background: var(--text-disabled, #94a3b8);
+        border-color: var(--text-disabled, #94a3b8);
         cursor: not-allowed;
         transform: none;
         box-shadow: none;
@@ -239,8 +239,8 @@
     
     /* SSL Details Panel */
     .ssl-details-panel {
-        background: white;
-        border: 1px solid #e8e9ff;
+        background: var(--bg-secondary, white);
+        border: 1px solid var(--border-color, #e8e9ff);
         border-radius: 8px;
         padding: 20px;
         margin-top: 20px;
@@ -249,7 +249,7 @@
     .ssl-details-header {
         font-size: 14px;
         font-weight: 700;
-        color: #2f3640;
+        color: var(--text-primary, #2f3640);
         margin-bottom: 15px;
         padding-bottom: 10px;
         border-bottom: 1px solid #e8e9ff;
@@ -258,11 +258,11 @@
     .ssl-details-panel p {
         margin: 8px 0;
         font-size: 14px;
-        color: #64748b;
+        color: var(--text-secondary, #64748b);
     }
     
     .ssl-details-panel strong {
-        color: #2f3640;
+        color: var(--text-primary, #2f3640);
         font-weight: 600;
     }
     
@@ -276,9 +276,9 @@
     }
     
     .alert-success {
-        background: #f0f9ff;
-        border: 1px solid #bae6fd;
-        color: #0c4a6e;
+        background: var(--info-bg, #f0f9ff);
+        border: 1px solid var(--info-border, #bae6fd);
+        color: var(--info-text, #0c4a6e);
     }
     
     .alert-info {
@@ -303,13 +303,13 @@
     .premium-hero h1 {
         font-size: 32px;
         font-weight: 800;
-        color: #2f3640;
+        color: var(--text-primary, #2f3640);
         margin-bottom: 20px;
     }
     
     .premium-description {
         font-size: 16px;
-        color: #64748b;
+        color: var(--text-secondary, #64748b);
         line-height: 1.7;
         max-width: 800px;
         margin: 0 auto 40px;
@@ -411,13 +411,13 @@
                             <div ng-if="sslDetails" class="ssl-details-panel">
                                 <h4 class="ssl-details-header">{% trans "SSL Details" %}</h4>
                                 <div ng-if="sslDetails.hasSSL">
-                                    <p><strong>{% trans "Status:" %}</strong> <span style="color: #10b981;">Active</span></p>
+                                    <p><strong>{% trans "Status:" %}</strong> <span style="color: var(--success-color, #10b981);">Active</span></p>
                                     <p><strong>{% trans "Issued By:" %}</strong> {$ sslDetails.authority $}</p>
                                     <p><strong>{% trans "Expiry Date:" %}</strong> {$ sslDetails.expiryDate $}</p>
                                     <p><strong>{% trans "Days Remaining:" %}</strong> {$ sslDetails.days $}</p>
                                 </div>
                                 <div ng-if="!sslDetails.hasSSL">
-                                    <p><strong>{% trans "Status:" %}</strong> <span style="color: #ef4444;">No SSL Certificate</span></p>
+                                    <p><strong>{% trans "Status:" %}</strong> <span style="color: var(--danger-color, #ef4444);">No SSL Certificate</span></p>
                                     <p ng-if="sslDetails.error_message"><strong>{% trans "Error:" %}</strong> {$ sslDetails.error_message $}</p>
                                 </div>
                             </div>

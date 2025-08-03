@@ -22,29 +22,29 @@
     .page-title {
         font-size: 28px;
         font-weight: 700;
-        color: #2f3640;
+        color: var(--text-primary, #2f3640);
         margin-bottom: 8px;
     }
     
     .page-subtitle {
         font-size: 14px;
-        color: #8893a7;
+        color: var(--text-secondary, #8893a7);
     }
     
     /* Card styles */
     .content-card {
-        background: white;
+        background: var(--bg-secondary, white);
         border-radius: 12px;
         padding: 30px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        border: 1px solid #e8e9ff;
+        box-shadow: 0 2px 8px var(--shadow-color, rgba(0,0,0,0.08));
+        border: 1px solid var(--border-color, #e8e9ff);
         margin-bottom: 25px;
     }
     
     .card-title {
         font-size: 18px;
         font-weight: 700;
-        color: #2f3640;
+        color: var(--text-primary, #2f3640);
         margin-bottom: 25px;
         display: flex;
         align-items: center;
@@ -55,7 +55,7 @@
         content: '';
         width: 4px;
         height: 24px;
-        background: #5b5fcf;
+        background: var(--accent-color, #5b5fcf);
         border-radius: 2px;
     }
     
@@ -77,21 +77,21 @@
     .form-control {
         width: 100%;
         padding: 10px 14px;
-        border: 1px solid #e8e9ff;
+        border: 1px solid var(--border-color, #e8e9ff);
         border-radius: 8px;
         font-size: 14px;
-        color: #2f3640;
-        background: white;
+        color: var(--text-primary, #2f3640);
+        background: var(--bg-secondary, white);
         transition: all 0.2s ease;
     }
     
     .form-control:hover {
-        border-color: #5b5fcf;
+        border-color: var(--accent-color, #5b5fcf);
     }
     
     .form-control:focus {
         outline: none;
-        border-color: #5b5fcf;
+        border-color: var(--accent-color, #5b5fcf);
         box-shadow: 0 0 0 3px rgba(91,95,207,0.1);
     }
     
@@ -113,8 +113,8 @@
     /* Windows-specific fixes */
     @media screen and (-ms-high-contrast: active), (-ms-high-contrast: none) {
         select.form-control {
-            color: #2f3640 !important;
-            background-color: white !important;
+            color: var(--text-primary, #2f3640) !important;
+            background-color: var(--bg-secondary, white) !important;
         }
     }
     
@@ -124,14 +124,14 @@
     }
     
     select.form-control option {
-        color: #2f3640;
-        background-color: white;
+        color: var(--text-primary, #2f3640);
+        background-color: var(--bg-secondary, white);
         padding: 8px;
     }
     
     select.form-control:focus {
-        color: #2f3640;
-        background-color: white;
+        color: var(--text-primary, #2f3640);
+        background-color: var(--bg-secondary, white);
     }
     
     /* Checkbox styles */
@@ -144,15 +144,15 @@
         align-items: center;
         gap: 10px;
         padding: 12px 16px;
-        background: #f8f9ff;
-        border: 1px solid #e8e9ff;
+        background: var(--bg-hover, #f8f9ff);
+        border: 1px solid var(--border-color, #e8e9ff);
         border-radius: 8px;
         transition: all 0.2s ease;
         cursor: pointer;
     }
     
     .checkbox-wrapper:hover {
-        border-color: #5b5fcf;
+        border-color: var(--accent-color, #5b5fcf);
         background: #f0f1ff;
     }
     
@@ -161,12 +161,12 @@
         height: 18px;
         border-radius: 4px;
         cursor: pointer;
-        accent-color: #5b5fcf;
+        accent-color: var(--accent-color, #5b5fcf);
     }
     
     .checkbox-label {
         font-size: 14px;
-        color: #2f3640;
+        color: var(--text-primary, #2f3640);
         font-weight: 500;
         cursor: pointer;
         user-select: none;
@@ -174,7 +174,7 @@
     }
     
     .checkbox-label a {
-        color: #5b5fcf;
+        color: var(--accent-color, #5b5fcf);
         text-decoration: none;
         font-weight: 600;
     }
@@ -199,12 +199,12 @@
     }
     
     .btn-primary {
-        background: #5b5fcf;
+        background: var(--accent-color, #5b5fcf);
         color: white;
     }
     
     .btn-primary:hover {
-        background: #4a4fc4;
+        background: var(--accent-hover, #4a4fc4);
         box-shadow: 0 4px 12px rgba(91,95,207,0.3);
         transform: translateY(-1px);
     }
@@ -217,25 +217,25 @@
     }
     
     .btn-secondary {
-        background: #f8f9ff;
-        color: #5b5fcf;
-        border: 1px solid #e8e9ff;
+        background: var(--bg-hover, #f8f9ff);
+        color: var(--accent-color, #5b5fcf);
+        border: 1px solid var(--border-color, #e8e9ff);
     }
     
     .btn-secondary:hover {
         background: #eef0ff;
-        border-color: #5b5fcf;
+        border-color: var(--accent-color, #5b5fcf);
     }
     
     .btn-secondary:disabled {
-        background: #f8f9ff;
+        background: var(--bg-hover, #f8f9ff);
         color: #ccc;
         cursor: not-allowed;
     }
     
     /* Progress section */
     .progress-section {
-        background: #f8f9ff;
+        background: var(--bg-hover, #f8f9ff);
         border-radius: 10px;
         padding: 25px;
         margin-top: 20px;
@@ -244,13 +244,13 @@
     .progress-status {
         font-size: 16px;
         font-weight: 600;
-        color: #2f3640;
+        color: var(--text-primary, #2f3640);
         text-align: center;
         margin-bottom: 20px;
     }
     
     .progress-bar-container {
-        background: #e8e9ff;
+        background: var(--border-color, #e8e9ff);
         height: 8px;
         border-radius: 4px;
         overflow: hidden;
@@ -258,7 +258,7 @@
     }
     
     .progress-bar-fill {
-        background: #5b5fcf;
+        background: var(--accent-color, #5b5fcf);
         height: 100%;
         border-radius: 4px;
         transition: width 0.3s ease;
@@ -275,21 +275,21 @@
     }
     
     .alert-info {
-        background: #e3f2fd;
-        border: 1px solid #bbdefb;
-        color: #1565c0;
+        background: var(--info-bg, #e3f2fd);
+        border: 1px solid var(--info-border, #bbdefb);
+        color: var(--info-text, #1565c0);
     }
     
     .alert-success {
-        background: #e8f5e9;
-        border: 1px solid #c8e6c9;
-        color: #2e7d32;
+        background: var(--success-bg, #e8f5e9);
+        border: 1px solid var(--success-border, #c8e6c9);
+        color: var(--success-text, #2e7d32);
     }
     
     .alert-danger {
-        background: #ffebee;
-        border: 1px solid #ffcdd2;
-        color: #c62828;
+        background: var(--danger-bg, #ffebee);
+        border: 1px solid var(--danger-border, #ffcdd2);
+        color: var(--danger-text, #c62828);
     }
     
     /* Loading spinner */
@@ -298,7 +298,7 @@
         width: 16px;
         height: 16px;
         border: 2px solid #f3f3f3;
-        border-top: 2px solid #5b5fcf;
+        border-top: 2px solid var(--accent-color, #5b5fcf);
         border-radius: 50%;
         animation: spin 1s linear infinite;
         margin-left: 10px;
@@ -319,7 +319,7 @@
     /* Error message */
     .field-error {
         font-size: 12px;
-        color: #dc3545;
+        color: var(--danger-text, #dc3545);
         margin-top: 5px;
     }
     
@@ -425,7 +425,7 @@
                                 <input ng-model="apacheBackend" type="checkbox" id="apacheBackend">
                                 <label for="apacheBackend" class="checkbox-label">
                                     OpenLiteSpeed + Apache (Backend)
-                                    <small style="display: block; color: #8893a7; font-weight: normal; margin-top: 4px;">
+                                    <small style="display: block; color: var(--text-secondary, #8893a7); font-weight: normal; margin-top: 4px;">
                                         {% trans "For Ubuntu 22, AlmaLinux 8 and AlmaLinux 9" %}
                                     </small>
                                 </label>
@@ -437,7 +437,7 @@
                                         Premium Feature
                                         <i class="fas fa-external-link-alt" style="font-size: 10px;"></i>
                                     </a>
-                                    <small style="display: block; color: #8893a7; font-weight: normal; margin-top: 4px;">
+                                    <small style="display: block; color: var(--text-secondary, #8893a7); font-weight: normal; margin-top: 4px;">
                                         {% trans "For Ubuntu 22, AlmaLinux 8 and AlmaLinux 9" %}
                                     </small>
                                 </label>

@@ -1,5 +1,6 @@
 {% load i18n %}
 {% get_current_language as LANGUAGE_CODE %}
+{% with CP_VERSION="2.4.3" %}
 <!DOCTYPE html>
 <html lang="en" ng-app="CyberCP">
 <head>
@@ -8,21 +9,21 @@
     <title>{% block title %}CyberPanel{% endblock %}</title>
     
     {% load static %}
-    <link rel="icon" type="image/x-icon" href="{% static 'baseTemplate/assets/finalBase/favicon.png' %}">
+    <link rel="icon" type="image/x-icon" href="{% static 'baseTemplate/assets/finalBase/favicon.png' %}?v={{ CP_VERSION }}">
     
     <!-- Bootstrap CSS -->
-    <link rel="stylesheet" type="text/css" href="{% static 'baseTemplate/assets/bootstrap/css/bootstrap.min.css' %}">
-    <link rel="stylesheet" type="text/css" href="{% static 'baseTemplate/bootstrap-toggle.min.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'baseTemplate/assets/bootstrap/css/bootstrap.min.css' %}?v={{ CP_VERSION }}">
+    <link rel="stylesheet" type="text/css" href="{% static 'baseTemplate/bootstrap-toggle.min.css' %}?v={{ CP_VERSION }}">
     
     <!-- Core Scripts -->
-    <script src="{% static 'baseTemplate/angularjs.1.6.5.js' %}"></script>
+    <script src="{% static 'baseTemplate/angularjs.1.6.5.js' %}?v={{ CP_VERSION }}"></script>
     <script src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
     <!-- Bootstrap JavaScript -->
 
-    <script src="{% static 'baseTemplate/assets/bootstrap/js/bootstrap.min.js' %}"></script>
-    <script src="{% static 'baseTemplate/bootstrap-toggle.min.js' %}"></script>
+    <script src="{% static 'baseTemplate/assets/bootstrap/js/bootstrap.min.js' %}?v={{ CP_VERSION }}"></script>
+    <script src="{% static 'baseTemplate/bootstrap-toggle.min.js' %}?v={{ CP_VERSION }}"></script>
     <script src="https://cdn.jsdelivr.net/npm/qrious/dist/qrious.min.js"></script>
-    <script src="{% static 'baseTemplate/custom-js/system-status.js' %}?v={{ CYBERPANEL_FULL_VERSION }}"></script>
+    <script src="{% static 'baseTemplate/custom-js/system-status.js' %}?v={{ CP_VERSION }}"></script>
     
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -31,11 +32,52 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <!-- PNotify -->
-    <link rel="stylesheet" type="text/css" href="{% static 'baseTemplate/custom-js/pnotify.custom.min.css' %}">
-    <script src="{% static 'baseTemplate/custom-js/pnotify.custom.min.js' %}"></script>
+    <link rel="stylesheet" type="text/css" href="{% static 'baseTemplate/custom-js/pnotify.custom.min.css' %}?v={{ CP_VERSION }}">
+    <script src="{% static 'baseTemplate/custom-js/pnotify.custom.min.js' %}?v={{ CP_VERSION }}"></script>
     
     <!-- Modern Design System -->
     <style>
+        /* CSS Variables for Theme */
+        :root {
+            /* Light Theme Colors */
+            --bg-primary: #f0f0ff;
+            --bg-secondary: white;
+            --bg-sidebar: #f3f1ff;
+            --bg-sidebar-item: white;
+            --bg-hover: #e8e6ff;
+            --text-primary: #2f3640;
+            --text-secondary: #64748b;
+            --text-heading: #1e293b;
+            --border-color: #e8e9ff;
+            --shadow-color: rgba(0,0,0,0.05);
+            --accent-color: #5856d6;
+            --accent-hover: #4644c0;
+            --danger-color: #ef4444;
+            --success-color: #10b981;
+            --warning-bg: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            --ai-banner-bg: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%);
+        }
+        
+        /* Dark Theme Colors */
+        [data-theme="dark"] {
+            --bg-primary: #0f0f23;
+            --bg-secondary: #1a1a3e;
+            --bg-sidebar: #16162e;
+            --bg-sidebar-item: #1e1e42;
+            --bg-hover: #252550;
+            --text-primary: #e4e4e7;
+            --text-secondary: #9ca3af;
+            --text-heading: #f3f4f6;
+            --border-color: #2a2a5e;
+            --shadow-color: rgba(0,0,0,0.3);
+            --accent-color: #7c7ff3;
+            --accent-hover: #6b6ee8;
+            --danger-color: #f87171;
+            --success-color: #34d399;
+            --warning-bg: linear-gradient(135deg, #78350f 0%, #92400e 100%);
+            --ai-banner-bg: linear-gradient(135deg, #4c1d95 0%, #5b21b6 50%, #6d28d9 100%);
+        }
+        
         * {
             margin: 0;
             padding: 0;
@@ -44,25 +86,27 @@
         
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background: #f0f0ff;
-            color: #2f3640;
+            background: var(--bg-primary);
+            color: var(--text-primary);
             overflow-x: hidden;
             min-height: 100vh;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
         
         /* Header */
         #header {
-            background: white;
+            background: var(--bg-secondary);
             height: 80px;
             display: flex;
             align-items: center;
             padding: 0 30px;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            box-shadow: 0 2px 12px var(--shadow-color);
             position: fixed;
             top: 0;
             left: 260px;
             right: 0;
             z-index: 1000;
+            transition: background-color 0.3s ease;
         }
         
         #header .logo {
@@ -96,12 +140,12 @@
         #header .logo-text .brand {
             font-size: 26px;
             font-weight: 700;
-            color: #1e293b;
+            color: var(--text-heading);
         }
         
         #header .logo-text .tagline {
             font-size: 14px;
-            color: #94a3b8;
+            color: var(--text-secondary);
             font-weight: 400;
             margin-top: -2px;
         }
@@ -114,7 +158,7 @@
         }
         
         #header-right .info-text {
-            color: #94a3b8;
+            color: var(--text-secondary);
             font-size: 13px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
@@ -134,14 +178,14 @@
             align-items: center;
             justify-content: center;
             background: transparent;
-            color: #94a3b8;
+            color: var(--text-secondary);
             text-decoration: none;
             transition: all 0.3s ease;
             font-size: 20px;
         }
         
         #header-right .social-links a:hover {
-            background: #5856d6;
+            background: var(--accent-color);
             color: white;
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(88,86,214,0.3);
@@ -149,7 +193,7 @@
         
         #header-right .logout-btn {
             background: transparent;
-            color: #5856d6;
+            color: var(--accent-color);
             border: none;
             padding: 10px 24px;
             border-radius: 12px;
@@ -164,32 +208,62 @@
         }
         
         #header-right .logout-btn:hover {
-            background: #5856d6;
+            background: var(--accent-color);
             color: white;
             box-shadow: 0 5px 15px rgba(88,86,214,0.3);
+        }
+        
+        /* Theme Toggle Button */
+        .theme-toggle {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: transparent;
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 18px;
+        }
+        
+        .theme-toggle:hover {
+            background: var(--accent-color);
+            color: white;
+            border-color: var(--accent-color);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(88,86,214,0.3);
+        }
+        
+        [data-theme="dark"] .theme-toggle {
+            color: #fbbf24;
         }
         
         /* Sidebar */
         #sidebar {
             width: 260px;
-            background: #f3f1ff;
+            background: var(--bg-sidebar);
             height: 100vh;
             position: fixed;
             left: 0;
             top: 0;
             overflow-y: auto;
             z-index: 1001;
+            transition: background-color 0.3s ease;
         }
         
         .sidebar-logo {
             padding: 20px;
-            background: white;
+            background: var(--bg-secondary);
             margin: 15px;
             border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            box-shadow: 0 2px 8px var(--shadow-color);
             display: flex;
             align-items: center;
             gap: 12px;
+            transition: background-color 0.3s ease;
         }
         
         .sidebar-logo .logo-icon {
@@ -218,38 +292,40 @@
         .sidebar-logo .logo-text .brand {
             font-size: 16px;
             font-weight: 700;
-            color: #2f3640;
+            color: var(--text-heading);
         }
         
         .sidebar-logo .logo-text .tagline {
             font-size: 11px;
-            color: #94a3b8;
+            color: var(--text-secondary);
             font-weight: 400;
         }
         
         
         #sidebar .server-info {
             padding: 15px;
-            background: white;
+            background: var(--bg-secondary);
             margin: 15px;
             border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            box-shadow: 0 2px 8px var(--shadow-color);
             display: flex;
             align-items: center;
             gap: 12px;
+            transition: background-color 0.3s ease;
         }
         
         #sidebar .server-info .server-icon {
             width: 40px;
             height: 40px;
-            background: #e8e6ff;
+            background: var(--bg-hover);
             border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #5856d6;
+            color: var(--accent-color);
             font-size: 18px;
             flex-shrink: 0;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
         
         #sidebar .server-info .server-details {
@@ -261,7 +337,7 @@
         
         #sidebar .server-info .info-line {
             font-size: 12px;
-            color: #64748b;
+            color: var(--text-secondary);
             display: flex;
             align-items: center;
             white-space: nowrap;
@@ -269,14 +345,14 @@
         }
         
         #sidebar .server-info .info-line strong {
-            color: #2f3640;
+            color: var(--text-primary);
             font-weight: 600;
             margin-right: 4px;
             flex-shrink: 0;
         }
         
         #sidebar .server-info .ip-value {
-            color: #5856d6;
+            color: var(--accent-color);
             font-weight: 600;
             cursor: pointer;
             position: relative;
@@ -284,7 +360,7 @@
         }
         
         #sidebar .server-info .ip-value:hover {
-            color: #4644c0;
+            color: var(--accent-hover);
         }
         
         #sidebar .server-info .ip-value::after {
@@ -303,8 +379,8 @@
         
         .copy-tooltip {
             position: absolute;
-            background: #2f3640;
-            color: white;
+            background: var(--text-primary);
+            color: var(--bg-secondary);
             padding: 4px 8px;
             border-radius: 4px;
             font-size: 11px;
@@ -323,7 +399,7 @@
         }
         
         #sidebar .section-header {
-            background: #5856d6;
+            background: var(--accent-color);
             color: white;
             padding: 8px 15px;
             margin: 15px;
@@ -333,13 +409,14 @@
             font-weight: 700;
             border-radius: 8px;
             text-align: center;
+            transition: background-color 0.3s ease;
         }
         
         #sidebar .menu-item {
             display: flex;
             align-items: center;
             padding: 12px 15px;
-            color: #64748b;
+            color: var(--text-secondary);
             text-decoration: none;
             transition: all 0.3s ease;
             position: relative;
@@ -348,18 +425,18 @@
             font-weight: 500;
             border-radius: 8px;
             margin: 2px 15px;
-            background: white;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            background: var(--bg-secondary);
+            box-shadow: 0 1px 3px var(--shadow-color);
         }
         
         #sidebar .menu-item:hover {
-            background: #f8f9ff;
-            color: #5856d6;
-            box-shadow: 0 2px 8px rgba(88,86,214,0.1);
+            background: var(--bg-hover);
+            color: var(--accent-color);
+            box-shadow: 0 2px 8px var(--shadow-color);
         }
         
         #sidebar .menu-item.active {
-            background: #5856d6;
+            background: var(--accent-color);
             color: white;
             box-shadow: 0 3px 10px rgba(88,86,214,0.3);
         }
@@ -371,16 +448,17 @@
         #sidebar .menu-item .icon-wrapper {
             width: 32px;
             height: 32px;
-            background: #e8e6ff;
+            background: var(--bg-hover);
             border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
+            transition: background-color 0.3s ease;
         }
         
         #sidebar .menu-item:hover .icon-wrapper {
-            background: #e8e6ff;
+            background: var(--bg-hover);
         }
         
         #sidebar .menu-item.active .icon-wrapper {
@@ -389,7 +467,8 @@
         
         #sidebar .menu-item i {
             font-size: 18px;
-            color: #5856d6;
+            color: var(--accent-color);
+            transition: color 0.3s ease;
         }
         
         #sidebar .menu-item.active i {
@@ -414,8 +493,8 @@
         #sidebar .menu-item .chevron {
             margin-left: auto;
             font-size: 12px;
-            transition: transform 0.3s ease;
-            color: #94a3b8;
+            transition: transform 0.3s ease, color 0.3s ease;
+            color: var(--text-secondary);
         }
         
         #sidebar .menu-item.expanded .chevron {
@@ -436,13 +515,13 @@
             font-size: 14px;
             gap: 8px;
             margin-bottom: 8px;
-            background: white;
+            background: var(--bg-sidebar-item);
             margin-right: 0;
             margin-left: 0;
         }
         
         #sidebar .submenu .menu-item:hover {
-            box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+            box-shadow: 0 2px 6px var(--shadow-color);
         }
         
         #sidebar .submenu .menu-item.delete {
@@ -467,27 +546,27 @@
         
         /* Active submenu item */
         #sidebar .submenu .menu-item.active {
-            background: #5856d6;
+            background: var(--accent-color);
             color: white;
             box-shadow: 0 2px 8px rgba(88,86,214,0.2);
         }
         
         #sidebar .submenu .menu-item.active:hover {
-            background: #4a48c8;
+            background: var(--accent-hover);
         }
         
         /* Parent menu item with active child */
         #sidebar .menu-item.has-active-child {
-            color: #5856d6;
+            color: var(--accent-color);
             font-weight: 600;
         }
         
         #sidebar .menu-item.has-active-child .icon-wrapper {
-            background: #e8e6ff;
+            background: var(--bg-hover);
         }
         
         #sidebar .menu-item.has-active-child i {
-            color: #5856d6;
+            color: var(--accent-color);
         }
         
         /* Main Content */
@@ -495,6 +574,8 @@
             margin-left: 260px;
             padding: 110px 30px 30px;
             min-height: 100vh;
+            background: var(--bg-primary);
+            transition: background-color 0.3s ease;
         }
         
         /* Notification Banner */
@@ -786,35 +867,35 @@
         }
         
         ::-webkit-scrollbar-track {
-            background: #f1f1f1;
+            background: var(--bg-primary);
         }
         
         ::-webkit-scrollbar-thumb {
-            background: #5b5fcf;
+            background: var(--accent-color);
             border-radius: 4px;
         }
         
         ::-webkit-scrollbar-thumb:hover {
-            background: #4b4fbf;
+            background: var(--accent-hover);
         }
         
         /* Mobile Menu Toggle */
         #mobile-menu-toggle {
             display: none;
-            background: #e8e6ff;
+            background: var(--bg-hover);
             border: none;
             width: 40px;
             height: 40px;
             border-radius: 10px;
             cursor: pointer;
             margin-right: 15px;
-            color: #5856d6;
+            color: var(--accent-color);
             font-size: 18px;
             transition: all 0.3s ease;
         }
         
         #mobile-menu-toggle:hover {
-            background: #5856d6;
+            background: var(--accent-color);
             color: white;
         }
         
@@ -895,6 +976,11 @@
                     <i class="fab fa-twitter"></i>
                 </a>
             </div>
+            <!-- Dark mode toggle temporarily disabled
+            <button id="theme-toggle" class="theme-toggle" title="Toggle Dark Mode">
+                <i class="fas fa-moon" id="theme-icon"></i>
+            </button>
+            -->
             <a href="{% url 'logout' %}" class="logout-btn">
                 <i class="fas fa-arrow-right-from-bracket"></i>
                 Logout
@@ -1681,20 +1767,21 @@
     </div>
     
     <!-- Additional Scripts -->
-    <script src="{% static 'packages/packages.js' %}?v={{ CYBERPANEL_FULL_VERSION }}"></script>
-    <script src="{% static 'websiteFunctions/websiteFunctions.js' %}?v={{ CYBERPANEL_FULL_VERSION }}"></script>
-    <script src="{% static 'userManagment/userManagment.js' %}?v={{ CYBERPANEL_FULL_VERSION }}"></script>
-    <script src="{% static 'databases/databases.js' %}?v={{ CYBERPANEL_FULL_VERSION }}"></script>
-    <script src="{% static 'dns/dns.js' %}?v={{ CYBERPANEL_FULL_VERSION }}"></script>
-    <script src="{% static 'mailServer/mailServer.js' %}?v={{ CYBERPANEL_FULL_VERSION }}"></script>
-    <script src="{% static 'ftp/ftp.js' %}?v={{ CYBERPANEL_FULL_VERSION }}"></script>
-    <script src="{% static 'backup/backup.js' %}?v={{ CYBERPANEL_FULL_VERSION }}"></script>
-    <script src="{% static 'managePHP/managePHP.js' %}?v={{ CYBERPANEL_FULL_VERSION }}"></script>
-    <script src="{% static 'serverLogs/serverLogs.js' %}?v={{ CYBERPANEL_FULL_VERSION }}"></script>
-    <script src="{% static 'serverStatus/serverStatus.js' %}?v={{ CYBERPANEL_FULL_VERSION }}"></script>
-    <script src="{% static 'firewall/firewall.js' %}?v={{ CYBERPANEL_FULL_VERSION }}"></script>
-    <script src="{% static 'emailPremium/emailPremium.js' %}?v={{ CYBERPANEL_FULL_VERSION }}"></script>
-    <script src="{% static 'manageServices/manageServices.js' %}?v={{ CYBERPANEL_FULL_VERSION }}"></script>
+    <script src="{% static 'packages/packages.js' %}?v={{ CP_VERSION }}"></script>
+    <script src="{% static 'websiteFunctions/websiteFunctions.js' %}?v={{ CP_VERSION }}"></script>
+    <script src="{% static 'userManagment/userManagment.js' %}?v={{ CP_VERSION }}"></script>
+    <script src="{% static 'databases/databases.js' %}?v={{ CP_VERSION }}"></script>
+    <script src="{% static 'dns/dns.js' %}?v={{ CP_VERSION }}"></script>
+    <script src="{% static 'mailServer/mailServer.js' %}?v={{ CP_VERSION }}"></script>
+    <script src="{% static 'ftp/ftp.js' %}?v={{ CP_VERSION }}"></script>
+    <script src="{% static 'backup/backup.js' %}?v={{ CP_VERSION }}"></script>
+    <script src="{% static 'managePHP/managePHP.js' %}?v={{ CP_VERSION }}"></script>
+    <script src="{% static 'serverLogs/serverLogs.js' %}?v={{ CP_VERSION }}"></script>
+    <script src="{% static 'serverStatus/serverStatus.js' %}?v={{ CP_VERSION }}"></script>
+    <script src="{% static 'firewall/firewall.js' %}?v={{ CP_VERSION }}"></script>
+    <script src="{% static 'emailPremium/emailPremium.js' %}?v={{ CP_VERSION }}"></script>
+    <script src="{% static 'manageServices/manageServices.js' %}?v={{ CP_VERSION }}"></script>
+    <script src="{% static 'CLManager/CLManager.js' %}?v={{ CP_VERSION }}"></script>
     
     <!-- Scripts -->
     <script>
@@ -1859,6 +1946,54 @@
         }
     </script>
     
+    <!-- Force light theme until dark mode is fully implemented -->
+    <script>
+        // Force light theme
+        document.documentElement.setAttribute('data-theme', 'light');
+        localStorage.setItem('cyberPanelTheme', 'light');
+    </script>
+    
+    <!-- Dark Mode Toggle Script - Temporarily disabled until fully implemented -->
+    <!-- <script>
+        // Theme switching functionality
+        (function() {
+            // Get saved theme from localStorage or default to light
+            const savedTheme = localStorage.getItem('cyberPanelTheme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            
+            // Update icon based on current theme
+            const updateThemeIcon = (theme) => {
+                const icon = document.getElementById('theme-icon');
+                if (icon) {
+                    icon.className = theme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+                }
+            };
+            
+            // Initialize icon
+            updateThemeIcon(savedTheme);
+            
+            // Theme toggle functionality
+            const themeToggle = document.getElementById('theme-toggle');
+            if (themeToggle) {
+                themeToggle.addEventListener('click', () => {
+                    const currentTheme = document.documentElement.getAttribute('data-theme');
+                    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                    
+                    // Update theme
+                    document.documentElement.setAttribute('data-theme', newTheme);
+                    localStorage.setItem('cyberPanelTheme', newTheme);
+                    
+                    // Update icon
+                    updateThemeIcon(newTheme);
+                    
+                    // Dispatch custom event for any components that need to react to theme change
+                    window.dispatchEvent(new CustomEvent('themeChanged', { detail: { theme: newTheme } }));
+                });
+            }
+        })();
+    </script> -->
+    
     {% block footer_scripts %}{% endblock %}
 </body>
 </html>
+{% endwith %}

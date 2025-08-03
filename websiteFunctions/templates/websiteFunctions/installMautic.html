@@ -8,36 +8,36 @@
 <!-- Current language: {{ LANGUAGE_CODE }} -->
 
 <style>
-    /* Ultra-Modern CyberPanel Design System */
-    :root {
-        --primary-color: #6366f1;
-        --primary-hover: #5558e3;
-        --primary-light: #eef2ff;
-        --secondary-color: #8b5cf6;
-        --accent-color: #ec4899;
-        --success-color: #10b981;
-        --danger-color: #ef4444;
-        --warning-color: #f59e0b;
-        --info-color: #3b82f6;
+    /* Mautic Installation Page Styles with Dark Mode Support */
+    .mautic-installer {
+        --primary-color: var(--accent-color, #6366f1);
+        --primary-hover: var(--accent-hover, #5558e3);
+        --primary-light: var(--accent-bg, #eef2ff);
+        --secondary-color: var(--purple-color, #8b5cf6);
+        --accent-color-local: var(--accent-color, #ec4899);
+        --success-color-local: var(--success-color, #10b981);
+        --danger-color-local: var(--danger-color, #ef4444);
+        --warning-color-local: var(--warning-color, #f59e0b);
+        --info-color-local: var(--info-color, #3b82f6);
         
-        --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --bg-gradient: linear-gradient(135deg, var(--accent-color, #667eea) 0%, var(--purple-color, #764ba2) 100%);
         --bg-gradient-alt: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-        --bg-gradient-success: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        --bg-gradient-success: linear-gradient(135deg, var(--success-color, #11998e) 0%, #38ef7d 100%);
         
-        --bg-light: #f8fafc;
-        --bg-card: #ffffff;
-        --bg-hover: #f1f5f9;
-        --border-color: #e2e8f0;
-        --border-light: #f1f5f9;
+        --bg-light-local: var(--bg-hover, #f8fafc);
+        --bg-card-local: var(--bg-secondary, #ffffff);
+        --bg-hover-local: var(--bg-hover, #f1f5f9);
+        --border-color-local: var(--border-color, #e2e8f0);
+        --border-light-local: var(--border-light, #f1f5f9);
         
-        --text-primary: #1e293b;
-        --text-secondary: #64748b;
-        --text-muted: #94a3b8;
+        --text-primary-local: var(--text-primary, #1e293b);
+        --text-secondary-local: var(--text-secondary, #64748b);
+        --text-muted-local: var(--text-muted, #94a3b8);
         
-        --shadow-sm: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.06);
-        --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
-        --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
-        --shadow-xl: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
+        --shadow-sm: 0 1px 3px var(--shadow-color, rgba(0,0,0,0.12)), 0 1px 2px var(--shadow-color, rgba(0,0,0,0.06));
+        --shadow-md: 0 4px 6px -1px var(--shadow-color, rgba(0,0,0,0.1)), 0 2px 4px -1px var(--shadow-color, rgba(0,0,0,0.06));
+        --shadow-lg: 0 10px 15px -3px var(--shadow-color, rgba(0,0,0,0.1)), 0 4px 6px -2px var(--shadow-color, rgba(0,0,0,0.05));
+        --shadow-xl: 0 20px 25px -5px var(--shadow-color, rgba(0,0,0,0.1)), 0 10px 10px -5px var(--shadow-color, rgba(0,0,0,0.04));
         
         --radius-sm: 6px;
         --radius-md: 8px;
@@ -49,16 +49,16 @@
     }
     
     /* Container Styling */
-    .container {
+    .mautic-installer .container {
         max-width: 1200px;
         margin: 0 auto;
         padding: 20px;
         min-height: 100vh;
-        background: linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%);
+        background: linear-gradient(180deg, var(--bg-primary, #f8fafc) 0%, var(--border-color, #e2e8f0) 100%);
     }
     
     /* Page Title Section */
-    #page-title {
+    .mautic-installer #page-title {
         background: var(--bg-gradient);
         color: white;
         padding: 40px;
@@ -107,28 +107,28 @@
     }
     
     /* Main Panel */
-    .panel {
-        background: var(--bg-card);
+    .mautic-installer .panel {
+        background: var(--bg-card-local);
         border-radius: var(--radius-xl);
         box-shadow: var(--shadow-lg);
-        border: 1px solid var(--border-color);
+        border: 1px solid var(--border-color-local);
         overflow: hidden;
         position: relative;
     }
     
-    .panel-body {
+    .mautic-installer .panel-body {
         padding: 0;
     }
     
     /* Content Box Header */
-    .title-hero {
-        background: linear-gradient(135deg, var(--primary-light) 0%, var(--bg-light) 100%);
+    .mautic-installer .title-hero {
+        background: linear-gradient(135deg, var(--primary-light) 0%, var(--bg-light-local) 100%);
         padding: 25px 30px;
         margin: 0;
         font-size: 20px;
         font-weight: 700;
-        color: var(--text-primary);
-        border-bottom: 1px solid var(--border-color);
+        color: var(--text-primary-local);
+        border-bottom: 1px solid var(--border-color-local);
         letter-spacing: -0.3px;
         display: flex;
         align-items: center;
@@ -141,19 +141,19 @@
     }
     
     /* Form Wrapper */
-    .example-box-wrapper {
+    .mautic-installer .example-box-wrapper {
         padding: 30px;
     }
     
     /* Form Styling */
-    .form-horizontal {
-        background: var(--bg-light);
+    .mautic-installer .form-horizontal {
+        background: var(--bg-light-local);
         padding: 30px;
         border-radius: var(--radius-lg);
-        border: 1px solid var(--border-color);
+        border: 1px solid var(--border-color-local);
     }
     
-    .form-group {
+    .mautic-installer .form-group {
         margin-bottom: 25px;
         transition: var(--transition-base);
     }
@@ -162,9 +162,9 @@
         transform: translateX(5px);
     }
     
-    .control-label {
+    .mautic-installer .control-label {
         font-weight: 600;
-        color: var(--text-primary);
+        color: var(--text-primary-local);
         margin-bottom: 8px;
         font-size: 14px;
         letter-spacing: 0.3px;
@@ -173,13 +173,14 @@
         gap: 8px;
     }
     
-    .form-control {
-        border: 2px solid var(--border-color);
+    .mautic-installer .form-control {
+        border: 2px solid var(--border-color-local);
         border-radius: var(--radius-md);
         padding: 12px 16px;
         font-size: 15px;
         transition: var(--transition-base);
-        background: white;
+        background: var(--bg-secondary, white);
+        color: var(--text-primary-local);
     }
     
     .form-control:focus {
@@ -188,8 +189,8 @@
         outline: none;
     }
     
-    .form-control::placeholder {
-        color: var(--text-muted);
+    .mautic-installer .form-control::placeholder {
+        color: var(--text-muted-local);
         font-size: 14px;
     }
     
@@ -261,7 +262,7 @@
     .progress {
         height: 12px;
         border-radius: var(--radius-full);
-        background: var(--border-color);
+        background: var(--border-color-local);
         overflow: hidden;
         margin-top: 15px;
         box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
@@ -371,7 +372,7 @@
     .mautic-logo {
         width: 40px;
         height: 40px;
-        background: white;
+        background: var(--bg-secondary, white);
         border-radius: 8px;
         padding: 5px;
         display: inline-flex;
@@ -391,12 +392,12 @@
         display: flex;
         align-items: center;
         gap: 10px;
-        color: var(--text-secondary);
+        color: var(--text-secondary-local);
         font-size: 14px;
     }
     
     .feature-item i {
-        color: var(--success-color);
+        color: var(--success-color-local);
         font-size: 16px;
     }
     
@@ -435,6 +436,7 @@
     }
 </style>
 
+<div class="mautic-installer">
 <div class="container">
     <div id="page-title">
         <h2>
@@ -597,6 +599,7 @@
         </div>
     </div>
 
+</div>
 </div>
 
 {% endblock %}
