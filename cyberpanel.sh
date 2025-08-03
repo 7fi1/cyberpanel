@@ -4,6 +4,89 @@
 #set -x
 #set -u
 
+# Logging setup
+LOG_DIR="/var/log/cyberpanel"
+LOG_FILE="$LOG_DIR/cyberpanel_install_$(date +%Y%m%d_%H%M%S).log"
+DEBUG_LOG_FILE="$LOG_DIR/cyberpanel_install_debug_$(date +%Y%m%d_%H%M%S).log"
+
+# Create log directory if it doesn't exist
+mkdir -p "$LOG_DIR" 2>/dev/null || {
+    # If /var/log/cyberpanel cannot be created, use /tmp
+    LOG_DIR="/tmp/cyberpanel_logs"
+    mkdir -p "$LOG_DIR"
+    LOG_FILE="$LOG_DIR/cyberpanel_install_$(date +%Y%m%d_%H%M%S).log"
+    DEBUG_LOG_FILE="$LOG_DIR/cyberpanel_install_debug_$(date +%Y%m%d_%H%M%S).log"
+}
+
+# Logging functions
+log_info() {
+    local message="$1"
+    local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+    echo "[$timestamp] [INFO] $message" | tee -a "$LOG_FILE"
+}
+
+log_error() {
+    local message="$1"
+    local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+    echo "[$timestamp] [ERROR] $message" | tee -a "$LOG_FILE" >&2
+}
+
+log_warning() {
+    local message="$1"
+    local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+    echo "[$timestamp] [WARNING] $message" | tee -a "$LOG_FILE"
+}
+
+log_debug() {
+    local message="$1"
+    local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+    echo "[$timestamp] [DEBUG] $message" >> "$DEBUG_LOG_FILE"
+}
+
+log_command() {
+    local command="$1"
+    local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+    echo "[$timestamp] [COMMAND] Executing: $command" >> "$DEBUG_LOG_FILE"
+    
+    # Execute command and capture output
+    local output
+    local exit_code
+    output=$($command 2>&1)
+    exit_code=$?
+    
+    if [ $exit_code -eq 0 ]; then
+        echo "[$timestamp] [COMMAND] Success: $command" >> "$DEBUG_LOG_FILE"
+        [ -n "$output" ] && echo "[$timestamp] [OUTPUT] $output" >> "$DEBUG_LOG_FILE"
+    else
+        echo "[$timestamp] [COMMAND] Failed (exit code: $exit_code): $command" >> "$DEBUG_LOG_FILE"
+        [ -n "$output" ] && echo "[$timestamp] [ERROR OUTPUT] $output" >> "$DEBUG_LOG_FILE"
+    fi
+    
+    return $exit_code
+}
+
+log_function_start() {
+    local function_name="$1"
+    local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+    echo "[$timestamp] [FUNCTION] Starting: $function_name" | tee -a "$LOG_FILE"
+    echo "[$timestamp] [FUNCTION] Starting: $function_name with args: ${@:2}" >> "$DEBUG_LOG_FILE"
+}
+
+log_function_end() {
+    local function_name="$1"
+    local exit_code="${2:-0}"
+    local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+    if [ $exit_code -eq 0 ]; then
+        echo "[$timestamp] [FUNCTION] Completed: $function_name" >> "$DEBUG_LOG_FILE"
+    else
+        echo "[$timestamp] [FUNCTION] Failed: $function_name (exit code: $exit_code)" | tee -a "$LOG_FILE"
+    fi
+}
+
+# Initialize logging
+log_info "CyberPanel installation started"
+log_info "Log file: $LOG_FILE"
+log_info "Debug log file: $DEBUG_LOG_FILE"
 
 #CyberPanel installer script for CentOS 7, CentOS 8, CloudLinux 7, AlmaLinux 8, RockyLinux 8, Ubuntu 18.04, Ubuntu 20.04, Ubuntu 20.10, openEuler 20.03 and openEuler 22.03
 #For whoever may edit this script, please follow:
@@ -45,9 +128,11 @@ Sudo_Test=$(set)
 #for SUDO check
 
 Set_Default_Variables() {
+log_function_start "Set_Default_Variables"
 
 echo -e "Fetching latest data from CyberPanel server...\n"
 echo -e "This may take few seconds..."
+log_info "Fetching latest data from CyberPanel server"
 
 Silent="Off"
 Server_Edition="OLS"
@@ -76,9 +161,12 @@ Branch_Name="v${Panel_Version}.${Panel_Build}"
 
 if [[ $Branch_Name = v*.*.* ]] ; then
   echo -e  "\nBranch name fetched...$Branch_Name"
+  log_info "Branch name fetched: $Branch_Name"
 else
   echo -e "\nUnable to fetch Branch name..."
   echo -e "\nPlease try again in few moments, if this error still happens, please contact support"
+  log_error "Unable to fetch branch name from version.txt"
+  log_function_end "Set_Default_Variables" 1
   exit
 fi
 
@@ -104,6 +192,8 @@ Enterprise_Flag=""
 License_Key=""
 Debug_Log2 "Starting installation..,1"
 
+log_debug "Default variables set - Server Edition: $Server_Edition, Total RAM: $Total_RAM MB"
+log_function_end "Set_Default_Variables"
 }
 
 # Helper Functions for Package Management
@@ -297,7 +387,9 @@ fi
 Check_Return() {
   #check previous command result , 0 = ok ,  non-0 = something wrong.
 # shellcheck disable=SC2181
-if [[ $? != "0" ]]; then
+local exit_code=$?
+if [[ $exit_code != "0" ]]; then
+  log_error "Previous command failed with exit code: $exit_code"
   if [[ -n "$1" ]] ; then
     echo -e "\n\n\n$1"
   fi
@@ -314,14 +406,18 @@ fi
 
 Retry_Command() {
 # shellcheck disable=SC2034
+local command="$1"
+log_debug "Starting retry command: $command"
 for i in {1..50};
 do
   if [[ "$i" = "50" ]] ; then
     echo "command $1 failed for 50 times, exit..."
+    log_error "Command failed after 50 retries: $1"
     exit 2
   else
     $1  && break || {
       echo -e "\n$1 has failed for $i times\nWait and try again...\n"
+      log_warning "Command failed, retry $i/50: $1"
       # Exponential backoff: 1s, 2s, 4s, 8s, then cap at 10s
       if [[ $i -le 4 ]]; then
         sleep $((2**($i-1)))
@@ -334,10 +430,14 @@ done
 }
 
 Check_Root() {
+log_function_start "Check_Root"
 echo -e "\nChecking root privileges..."
+log_info "Checking root privileges"
   if echo "$Sudo_Test" | grep SUDO >/dev/null; then
     echo -e "\nYou are using SUDO , please run as root user...\n"
     echo -e "\nIf you don't have direct access to root user, please run \e[31msudo su -\e[39m command (do NOT miss the \e[31m-\e[39m at end or it will fail) and then run installation command again."
+    log_error "Not running as root user - SUDO detected"
+    log_function_end "Check_Root" 1
     exit
   fi
 
@@ -345,19 +445,28 @@ echo -e "\nChecking root privileges..."
     echo -e "\nYou must run on root user to install CyberPanel...\n"
     echo -e "or run following command: (do NOT miss the quotes)"
     echo -e "\e[31msudo su -c \"sh <(curl https://cyberpanel.sh || wget -O - https://cyberpanel.sh)\"\e[39m"
+    log_error "Not running as root user - UID is not 0"
+    log_function_end "Check_Root" 1
     exit 1
   else
     echo -e "\nYou are runing as root...\n"
+    log_info "Root user verified"
   fi
+  log_function_end "Check_Root"
 }
 
 Check_Server_IP() {
+log_function_start "Check_Server_IP"
+log_debug "Fetching server IP address"
 Server_IP=$(curl --silent --max-time 30 -4 https://cyberpanel.sh/?ip)
   if [[ $Server_IP =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
     echo -e "Valid IP detected..."
+    log_info "Valid server IP detected: $Server_IP"
   else
     echo -e "Can not detect IP, exit..."
     Debug_Log2 "Can not detect IP. [404]"
+    log_error "Failed to detect valid server IP address"
+    log_function_end "Check_Server_IP" 1
     exit
   fi
 
@@ -384,12 +493,18 @@ fi
 if [[ "$Server_Country" = *"CN"* ]] ; then
   Server_Country="CN"
   echo -e "Setting up to use mirror server...\n"
+  log_info "Server country set to CN - will use mirror servers"
 fi
+log_debug "Server location: $Server_Country, IP: $Server_IP"
+log_function_end "Check_Server_IP"
 }
 
 Check_OS() {
+log_function_start "Check_OS"
 if [[ ! -f /etc/os-release ]] ; then
+  log_error "Unable to detect the operating system - /etc/os-release not found"
   echo -e "Unable to detect the operating system...\n"
+  log_function_end "Check_OS" 1
   exit
 fi
 
@@ -434,6 +549,7 @@ Server_OS_Version=$(grep VERSION_ID /etc/os-release | awk -F[=,] '{print $2}' | 
 #to make 20.04 display as 20, etc.
 
 echo -e "System: $Server_OS $Server_OS_Version detected...\n"
+log_info "Operating system detected: $Server_OS $Server_OS_Version"
 
 if [[ $Server_OS = "CloudLinux" ]] || [[ "$Server_OS" = "AlmaLinux" ]] || [[ "$Server_OS" = "RockyLinux" ]] || [[ "$Server_OS" = "RedHat" ]] ; then
   Server_OS="CentOS"
@@ -445,10 +561,13 @@ if [[ "$Debug" = "On" ]] ; then
   Debug_Log "Server_OS" "$Server_OS $Server_OS_Version"
 fi
 
+log_function_end "Check_OS"
 }
 
 Check_Virtualization() {
+log_function_start "Check_Virtualization"
 echo -e "Checking virtualization type..."
+log_info "Checking virtualization type"
 #if hostnamectl | grep -q "Virtualization: lxc"; then
 #  echo -e "\nLXC detected..."
 #  echo -e "CyberPanel does not support LXC"
@@ -460,6 +579,7 @@ echo -e "Checking virtualization type..."
 
 if hostnamectl | grep -q "Virtualization: openvz"; then
   echo -e "OpenVZ detected...\n"
+  log_info "OpenVZ virtualization detected - applying specific configurations"
 
   if [[ ! -d /etc/systemd/system/pure-ftpd.service.d ]]; then
     mkdir /etc/systemd/system/pure-ftpd.service.d
@@ -489,6 +609,8 @@ fi
 }
 
 Check_Panel() {
+log_function_start "Check_Panel"
+log_info "Checking for existing control panels"
 if [[ -d /usr/local/cpanel ]]; then
   echo -e "\ncPanel detected...\n"
   Debug_Log2 "cPanel detected...exit... [404]"
@@ -509,6 +631,8 @@ fi
 }
 
 Check_Process() {
+    log_function_start "Check_Process"
+    log_info "Checking for conflicting processes"
     local services=("httpd" "apache2" "named" "exim")
     
     for service in "${services[@]}"; do
@@ -517,11 +641,15 @@ Check_Process() {
             manage_service "$service" "disable"
             manage_service "$service" "mask"
             echo -e "\n$service process detected, disabling...\n"
+            log_warning "$service process detected and disabled"
         fi
     done
+    log_function_end "Check_Process"
 }
 
 Check_Provider() {
+log_function_start "Check_Provider"
+log_info "Detecting server provider"
 if hash dmidecode >/dev/null 2>&1; then
   if [[ "$(dmidecode -s bios-vendor)" = "Google" ]]; then
     Server_Provider="Google Cloud Platform"
@@ -577,6 +705,7 @@ echo -e "\nThis will install LiteSpeed Enterise , replace LICENSE_KEY to actual 
 }
 
 Check_Argument() {
+log_function_start "Check_Argument" "$@"
 if  [[ "$#" = "0" ]] || [[ "$#" = "1" && "$1" = "--debug" ]] || [[ "$#" = "1" && "$1" = "--mirror" ]]; then
   echo -e "\nInitialized...\n"
 else
@@ -966,7 +1095,10 @@ License_Check "$License_Key"
 }
 
 Pre_Install_Setup_Repository() {
+log_function_start "Pre_Install_Setup_Repository"
+log_info "Setting up package repositories for $Server_OS $Server_OS_Version"
 if [[ $Server_OS = "CentOS" ]] ; then
+  log_debug "Importing LiteSpeed GPG key"
   rpm --import https://cyberpanel.sh/rpms.litespeedtech.com/centos/RPM-GPG-KEY-litespeed
   #import the LiteSpeed GPG key
 
@@ -1063,6 +1195,7 @@ EOF
 fi
 
 if [[ $Server_OS = "openEuler" ]]; then
+  log_debug "Importing LiteSpeed GPG key"
   rpm --import https://cyberpanel.sh/rpms.litespeedtech.com/centos/RPM-GPG-KEY-litespeed
   #import the LiteSpeed GPG key
   yum clean all
@@ -1169,8 +1302,9 @@ done
 }
 
 Pre_Install_Required_Components() {
-
+log_function_start "Pre_Install_Required_Components"
 Debug_Log2 "Installing necessary components..,3"
+log_info "Installing required system components and dependencies"
 
 if [[ "$Server_OS" = "CentOS" ]] || [[ "$Server_OS" = "openEuler" ]] ; then
   # System-wide update - consider making this optional for faster installs
@@ -1295,7 +1429,9 @@ Debug_Log2 "Necessary components installed..,5"
 }
 
 Pre_Install_System_Tweak() {
+log_function_start "Pre_Install_System_Tweak"
 Debug_Log2 "Setting up system tweak...,20"
+log_info "Applying system tweaks and optimizations"
 Line_Number=$(grep -n "127.0.0.1" /etc/hosts | cut -d: -f 1)
 My_Hostname=$(hostname)
 
@@ -1473,10 +1609,15 @@ if [[ -n "$Line1" ]] && [[ "$Line1" =~ ^[0-9]+$ ]]; then
 else
     echo "Warning: Could not find 'nameserver 8.8.8.8' pattern in installCyberPanel.py - skipping resolv.conf modification"
 fi
+
+log_debug "System tweaks completed - SWAP, limits, and DNS configured"
+log_function_end "Pre_Install_System_Tweak"
 }
 
 License_Validation() {
+log_function_start "License_Validation"
 Debug_Log2 "Validating LiteSpeed license...,40"
+log_info "Validating LiteSpeed Enterprise license"
 Current_Dir=$(pwd)
 
 if [ -f /root/cyberpanel-tmp ]; then
@@ -1510,13 +1651,17 @@ fi
 if ./lshttpd -V |& grep "ERROR" || ./lshttpd -V |& grep "expire in 0 days" ; then
   echo -e "\n\nThere appears to be an issue with license , please check above result..."
   Debug_Log2 "There appears to be an issue with LiteSpeed License, make sure you are using correct serial key. [404]"
+  log_error "LiteSpeed license validation failed"
+  log_function_end "License_Validation" 1
   exit
 fi
 
 echo -e "\nLicense seems valid..."
+log_info "LiteSpeed license validated successfully"
 cd "$Current_Dir" || exit
 rm -rf /root/cyberpanel-tmp
   #clean up the temp files
+log_function_end "License_Validation"
 }
 
 Pre_Install_CN_Replacement() {
@@ -1579,7 +1724,9 @@ Retry_Command "/root/.acme.sh/acme.sh --upgrade --auto-upgrade"
 }
 
 Main_Installation() {
+log_function_start "Main_Installation"
 Debug_Log2 "Starting main installation..,30"
+log_info "Starting main CyberPanel installation"
 if [[ -d /usr/local/CyberCP ]] ; then
   echo -e "\n CyberPanel already installed, exiting..."
   Debug_Log2 "CyberPanel already installed, exiting... [404]"
@@ -1680,9 +1827,13 @@ Post_Install_Addon_Mecached_LSMCD() {
   
   manage_service "lsmcd" "enable"
   manage_service "lsmcd" "start"
+  log_info "LSMCD installation completed"
+  log_function_end "Post_Install_Addon_Mecached_LSMCD"
 }
 
 Post_Install_Addon_Memcached() {
+  log_function_start "Post_Install_Addon_Memcached"
+  log_info "Installing Memcached and PHP extension"
   install_php_packages "memcached"
   
   if [[ $Total_RAM -ge 2048 ]]; then
@@ -1704,6 +1855,8 @@ Post_Install_Addon_Memcached() {
 }
 
 Post_Install_Addon_Redis() {
+  log_function_start "Post_Install_Addon_Redis"
+  log_info "Installing Redis server and PHP extension"
   # Install PHP Redis extension
   install_php_packages "redis"
   
@@ -1749,7 +1902,9 @@ Post_Install_Addon_Redis() {
 }
 
 Post_Install_PHP_Session_Setup() {
+log_function_start "Post_Install_PHP_Session_Setup"
 echo -e "\nSetting up PHP session storage path...\n"
+log_info "Setting up PHP session storage configuration"
 #wget -O /root/php_session_script.sh "${Git_Content_URL}/stable/CPScripts/setup_php_sessions.sh"
 chmod +x /usr/local/CyberCP/CPScripts/setup_php_sessions.sh
 bash /usr/local/CyberCP/CPScripts/setup_php_sessions.sh
@@ -1758,6 +1913,8 @@ Debug_Log2 "Setting up PHP session conf...,90"
 }
 
 Post_Install_PHP_TimezoneDB() {
+log_function_start "Post_Install_PHP_TimezoneDB"
+log_info "Installing PHP TimezoneDB extension"
 Current_Dir="$(pwd)"
 rm -f /usr/local/lsws/cyberpanel-tmp
 mkdir /usr/local/lsws/cyberpanel-tmp
@@ -1785,6 +1942,8 @@ Debug_Log2 "Installing timezoneDB...,95"
 }
 
 Post_Install_Regenerate_Webadmin_Console_Passwd() {
+log_function_start "Post_Install_Regenerate_Webadmin_Console_Passwd"
+log_info "Regenerating WebAdmin console password"
 if [[ "$Server_Edition" = "OLS" ]]; then
   PHP_Command="admin_php"
 else
@@ -1803,10 +1962,14 @@ chown lsadm:lsadm /usr/local/lsws/admin/conf/htpasswd
 chmod 600 /usr/local/lsws/admin/conf/htpasswd
 echo "${Webadmin_Pass}" >/etc/cyberpanel/webadmin_passwd
 chmod 600 /etc/cyberpanel/webadmin_passwd
+log_info "WebAdmin console password regenerated"
+log_function_end "Post_Install_Regenerate_Webadmin_Console_Passwd"
 }
 
 Post_Install_Setup_Watchdog() {
+log_function_start "Post_Install_Setup_Watchdog"
 if [[ "$Watchdog" = "On" ]]; then
+  log_info "Setting up watchdog monitoring service"
   wget -O /etc/cyberpanel/watchdog.sh "${Git_Content_URL}/stable/CPScripts/watchdog.sh"
   chmod 700 /etc/cyberpanel/watchdog.sh
   ln -s /etc/cyberpanel/watchdog.sh /usr/local/bin/watchdog
@@ -1841,6 +2004,8 @@ fi
 }
 
 Post_Install_Display_Final_Info() {
+log_function_start "Post_Install_Display_Final_Info"
+log_info "Preparing final installation information"
 snappymailAdminPass=$(grep SetPassword /usr/local/CyberCP/public/snappymail.php| sed -e 's|$oConfig->SetPassword(||g' -e "s|');||g" -e "s|'||g")
 Elapsed_Time="$((Time_Count / 3600)) hrs $(((SECONDS / 60) % 60)) min $((Time_Count % 60)) sec"
 echo "###################################################################"
@@ -1912,6 +2077,8 @@ fi
 
 
 Post_Install_Regenerate_Cert() {
+log_function_start "Post_Install_Regenerate_Cert"
+log_info "Regenerating SSL certificates for control panel"
 cat <<EOF >/root/cyberpanel/cert_conf
 [req]
 prompt=no
@@ -2032,6 +2199,8 @@ fi
 }
 
 Post_Install_Tweak() {
+log_function_start "Post_Install_Tweak"
+log_info "Applying post-installation tweaks and configurations"
 if [[ -d /etc/pure-ftpd/conf ]]; then
   echo "yes" >/etc/pure-ftpd/conf/ChrootEveryone
   systemctl restart pure-ftpd-mysql
@@ -2142,6 +2311,7 @@ systemctl stop lsws >/dev/null 2>&1
 systemctl start lsws >/dev/null 2>&1
 echo -e "\nFinalizing...\n"
 echo -e "Cleaning up...\n"
+log_info "Cleaning up temporary installation files"
 rm -rf /root/cyberpanel
 
 if [[ "$Server_Country" = "CN" ]] ; then
@@ -2164,6 +2334,11 @@ sed -i 's|http://license.litespeedtech.com/|https://cyberpanel.sh/license.litesp
 }
 
 echo -e "\nInitializing...\n"
+log_info "============================================="
+log_info "CyberPanel installation script started"
+log_info "Script version: $Panel_Version.$Panel_Build"
+log_info "Script arguments: $*"
+log_info "============================================="
 
 if [[ "$*" = *"--debug"* ]] ; then
   Debug="On"
