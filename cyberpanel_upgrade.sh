@@ -4,6 +4,7 @@
 #set -x
 #set -u
 
+
 #CyberPanel installer script for CentOS 7, CentOS 8, CloudLinux 7, AlmaLinux 8, RockyLinux 8, Ubuntu 18.04, Ubuntu 20.04, Ubuntu 20.10, openEuler 20.03 and openEuler 22.03
 #For whoever may edit this script, please follow:
 #Please use Pre_Install_xxx() and Post_Install_xxx() if you want to something respectively before or after the panel installation
