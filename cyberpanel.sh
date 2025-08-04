@@ -2130,6 +2130,18 @@ if [[ "$Server_OS" = "Ubuntu" ]] && [[ "$Server_OS_Version" = "22" ]] ; then
     pip3 install --upgrade virtualenv
     virtualenv -p /usr/bin/python3 /usr/local/CyberCP
   fi
+elif [[ "$Server_OS" = "CentOS" ]] && [[ "$Server_OS_Version" = "9" ]] ; then
+  echo -e "AlmaLinux/Rocky Linux 9 detected, using python3 -m venv..."
+  if python3 -m venv /usr/local/CyberCP 2>&1; then
+    echo -e "Virtual environment created successfully"
+  else
+    echo -e "python3 -m venv failed, trying virtualenv..."
+    # Ensure virtualenv is properly installed
+    pip3 install --upgrade virtualenv
+    # Find the correct python3 path
+    PYTHON_PATH=$(which python3 2>/dev/null || which python3.9 2>/dev/null || echo "/usr/bin/python3")
+    virtualenv -p "$PYTHON_PATH" /usr/local/CyberCP
+  fi
 else
   virtualenv -p /usr/bin/python3 /usr/local/CyberCP
 fi
