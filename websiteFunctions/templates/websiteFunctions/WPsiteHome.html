@@ -9,6 +9,8 @@
 
     <style>
         /* Ultra-Modern CyberPanel Design System */
+        /* 
+        Commented out :root block to allow dark mode CSS variables to work properly
         :root {
             --primary-color: #6366f1;
             --primary-hover: #5558e3;
@@ -47,6 +49,7 @@
             
             --transition-base: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
+        */
 
         /* Container Styling */
         .container {
@@ -54,13 +57,13 @@
             margin: 0 auto;
             padding: 20px;
             min-height: 100vh;
-            background: linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%);
+            background: var(--bg-primary, linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%));
         }
 
         /* Page Title Section */
         #page-title {
             background: var(--bg-gradient);
-            color: white;
+            color: var(--text-on-primary, white);
             padding: 40px;
             border-radius: var(--radius-xl);
             margin-bottom: 30px;
@@ -125,7 +128,7 @@
             content: '';
             width: 8px;
             height: 8px;
-            background: #10b981;
+            background: var(--success-color, #10b981);
             border-radius: 50%;
             animation: statusPulse 2s ease-in-out infinite;
         }
@@ -306,7 +309,7 @@
             justify-content: center;
             margin-bottom: 15px;
             font-size: 24px;
-            color: white;
+            color: var(--text-on-primary, white);
             box-shadow: var(--shadow-md);
         }
         
@@ -371,7 +374,7 @@
             height: 1.25rem;
             pointer-events: none;
             content: "";
-            background-color: #fff;
+            background-color: var(--bg-primary, #fff);
             border: 2px solid var(--border-color);
             border-radius: var(--radius-sm);
             transition: var(--transition-base);
@@ -389,7 +392,7 @@
         }
         
         .custom-control-checkbox .custom-control-input:checked ~ .custom-control-label::before {
-            color: #fff;
+            color: var(--text-on-primary, #fff);
             border-color: var(--primary-color);
             background-color: var(--primary-color);
         }
@@ -408,12 +411,12 @@
         
         .custom-control-checkbox .custom-control-input:disabled ~ .custom-control-label,
         .custom-control-checkbox .custom-control-input[disabled] ~ .custom-control-label {
-            color: #6c757d;
+            color: var(--text-secondary, #6c757d);
         }
         
         .custom-control-checkbox .custom-control-input:disabled ~ .custom-control-label::before,
         .custom-control-checkbox .custom-control-input[disabled] ~ .custom-control-label::before {
-            background-color: #e9ecef;
+            background-color: var(--bg-secondary, #e9ecef);
         }
 
         /* Enhanced Toggle Switch */
@@ -434,8 +437,8 @@
             height: 1.75rem;
             pointer-events: all;
             border-radius: var(--radius-full);
-            background-color: #e2e8f0;
-            border: 2px solid #cbd5e1;
+            background-color: var(--bg-secondary, #e2e8f0);
+            border: 2px solid var(--border-color, #cbd5e1);
             transition: all var(--transition-base);
             box-shadow: inset 0 2px 4px rgba(0,0,0,0.06);
         }
@@ -445,7 +448,7 @@
             left: calc(-3.5rem + 4px);
             width: calc(1.75rem - 8px);
             height: calc(1.75rem - 8px);
-            background-color: white;
+            background-color: var(--bg-primary, white);
             border-radius: var(--radius-full);
             transition: all var(--transition-base);
             box-shadow: 0 2px 6px rgba(0,0,0,0.15);
@@ -458,7 +461,7 @@
         }
 
         .custom-control-switch .custom-control-input:checked ~ .custom-control-label::after {
-            background-color: white;
+            background-color: var(--bg-primary, white);
             transform: translateX(1.75rem);
             box-shadow: 0 3px 8px rgba(0,0,0,0.2);
         }
@@ -496,12 +499,12 @@
 
         .custom-control-input:disabled ~ .custom-control-label,
         .custom-control-input[disabled] ~ .custom-control-label {
-            color: #6c757d;
+            color: var(--text-secondary, #6c757d);
         }
 
         .custom-control-input:disabled ~ .custom-control-label::before,
         .custom-control-input[disabled] ~ .custom-control-label::before {
-            background-color: #e9ecef;
+            background-color: var(--bg-secondary, #e9ecef);
         }
 
         /* Enhanced Buttons */
@@ -548,14 +551,14 @@
 
         .btn-primary {
             background: var(--bg-gradient);
-            color: white;
+            color: var(--text-on-primary, white);
             box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
         }
 
         .btn-primary:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
-            color: white;
+            color: var(--text-on-primary, white);
         }
         
         .btn-primary:hover i {
@@ -564,11 +567,11 @@
 
         .btn-danger {
             background: var(--danger-color);
-            color: white;
+            color: var(--text-on-primary, white);
         }
 
         .btn-danger:hover {
-            background: #dc2626;
+            background: var(--danger-color, #dc2626);
             transform: translateY(-2px);
             box-shadow: var(--shadow-md);
         }
@@ -580,7 +583,7 @@
         }
 
         .btn-default:hover {
-            background: white;
+            background: var(--bg-primary, white);
             box-shadow: var(--shadow-sm);
             transform: translateY(-2px);
         }
@@ -593,7 +596,7 @@
 
         .btn-outline-primary:hover {
             background: var(--primary-color);
-            color: white;
+            color: var(--text-on-primary, white);
         }
 
         .btn-outline-danger {
@@ -604,7 +607,7 @@
 
         .btn-outline-danger:hover {
             background: var(--danger-color);
-            color: white;
+            color: var(--text-on-primary, white);
         }
 
         /* Site Settings Section */
@@ -729,7 +732,7 @@
 
         .table thead th {
             border: none;
-            color: white;
+            color: var(--text-on-primary, white);
             font-weight: 600;
             padding: 18px;
             font-size: 14px;
@@ -883,7 +886,7 @@
             position: absolute;
             z-index: 1000;
             text-align: left;
-            color: white;
+            color: var(--text-on-primary, white);
             font-size: 13px;
             border-radius: var(--radius-sm);
             box-shadow: var(--shadow-md);
@@ -1086,17 +1089,17 @@
         
         .badge-success {
             background: var(--success-color);
-            color: white;
+            color: var(--text-on-primary, white);
         }
         
         .badge-danger {
             background: var(--danger-color);
-            color: white;
+            color: var(--text-on-primary, white);
         }
         
         .badge-info {
             background: var(--info-color);
-            color: white;
+            color: var(--text-on-primary, white);
         }
         
         /* Additional Modern Enhancements */
@@ -1175,7 +1178,7 @@
         
         .modal-header {
             background: var(--bg-gradient);
-            color: white;
+            color: var(--text-on-primary, white);
             border-bottom: none;
             padding: 20px 25px;
         }
@@ -1271,7 +1274,7 @@
         }
         
         .bottom-action-link:hover {
-            color: white;
+            color: var(--text-on-primary, white);
             transform: translateY(-3px) scale(1.05);
             box-shadow: var(--shadow-xl);
             border-color: var(--primary-color);
@@ -1342,7 +1345,7 @@
         
         .restore-link:hover {
             background: var(--primary-color);
-            color: white;
+            color: var(--text-on-primary, white);
             text-decoration: none;
             border-color: var(--primary-color);
         }
@@ -1360,7 +1363,7 @@
         }
         
         .domain-selection-box {
-            background: white;
+            background: var(--bg-primary, white);
             padding: 20px;
             border-radius: var(--radius-sm);
             border: 1px solid var(--border-color);
@@ -1389,7 +1392,7 @@
         .domain-select {
             border-radius: 0 var(--radius-sm) var(--radius-sm) 0 !important;
             border-left: 0;
-            background: white;
+            background: var(--bg-primary, white);
             min-width: 200px;
         }
         
@@ -1407,7 +1410,7 @@
         }
         
         .staging-table {
-            background: white;
+            background: var(--bg-primary, white);
         }
         
         /* Backup Section Styles */
@@ -1429,9 +1432,9 @@
         }
         
         .alert-modern.alert-info {
-            background: #e0f2fe;
-            color: #0369a1;
-            border-color: #7dd3fc;
+            background: var(--info-bg, #e0f2fe);
+            color: var(--info-text, #0369a1);
+            border-color: var(--info-border, #7dd3fc);
         }
         
         .alert-modern i {
@@ -1449,7 +1452,7 @@
         }
         
         .alert-modern a {
-            color: #0284c7;
+            color: var(--info-accent, #0284c7);
             font-weight: 500;
         }
         
@@ -1538,7 +1541,7 @@
         }
         
         .btn-refresh {
-            background: white;
+            background: var(--bg-primary, white);
             border: 1px solid var(--border-color);
             border-radius: var(--radius-md);
             padding: 8px 12px;
@@ -1549,7 +1552,7 @@
         
         .btn-refresh:hover {
             background: var(--primary-color);
-            color: white;
+            color: var(--text-on-primary, white);
             border-color: var(--primary-color);
             transform: rotate(180deg);
         }
@@ -1598,7 +1601,7 @@
         }
         
         .preview-link {
-            color: white;
+            color: var(--text-on-primary, white);
             text-decoration: none;
             font-size: 16px;
             font-weight: 600;
@@ -1614,7 +1617,7 @@
         }
         
         .preview-link:hover {
-            background: white;
+            background: var(--bg-primary, white);
             color: var(--primary-color);
             text-decoration: none;
             transform: translateY(-2px);
@@ -1713,7 +1716,7 @@
             transform: translateY(-3px);
             box-shadow: var(--shadow-lg);
             border-color: var(--primary-color);
-            color: white;
+            color: var(--text-on-primary, white);
         }
         
         .action-links-grid a:hover::before {
@@ -1749,7 +1752,7 @@
         }
         
         .action-links-grid a:hover i {
-            -webkit-text-fill-color: white;
+            -webkit-text-fill-color: var(--text-on-primary, white);
         }
         
         /* Responsive improvements */
@@ -1829,8 +1832,8 @@
             height: 1rem;
             pointer-events: none;
             content: "";
-            background-color: #fff;
-            border: 1px solid #adb5bd;
+            background-color: var(--bg-primary, #fff);
+            border: 1px solid var(--border-color, #adb5bd);
             border-radius: 0.25rem;
         }
         
@@ -1846,7 +1849,7 @@
         }
         
         .custom-control-checkbox .custom-control-input:checked ~ .custom-control-label::before {
-            color: #fff;
+            color: var(--text-on-primary, #fff);
             border-color: var(--primary-color);
             background-color: var(--primary-color);
         }
