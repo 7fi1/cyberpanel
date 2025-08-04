@@ -8,6 +8,113 @@
 <!-- Current language: {{ LANGUAGE_CODE }} -->
 
 <style>
+    /* CSS Variables for Dark Mode Support */
+    :root {
+        /* Text colors */
+        --text-primary: #1e293b;
+        --text-secondary: #475569;
+        --text-muted: #64748b;
+        --text-on-gradient: rgba(255, 255, 255, 0.9);
+        
+        /* Background colors */
+        --bg-primary: #ffffff;
+        --bg-secondary: #f8f9ff;
+        --bg-light: #f3f4f6;
+        --bg-hover: #f8f9ff;
+        --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        
+        /* Border colors */
+        --border-color: #e8e9ff;
+        --border-light: #f1f5f9;
+        
+        /* Accent colors */
+        --accent-color: #667eea;
+        --accent-hover: #764ba2;
+        --accent-bg: #f3e8ff;
+        --accent-focus: rgba(102, 126, 234, 0.1);
+        --accent-shadow: rgba(102, 126, 234, 0.3);
+        
+        /* Status colors */
+        --success-bg: #d1fae5;
+        --success-color: #065f46;
+        --success-border: #a7f3d0;
+        --success-accent: #10b981;
+        --success-hover: #059669;
+        
+        --danger-bg: #fee2e2;
+        --danger-color: #991b1b;
+        --danger-border: #fecaca;
+        --danger-accent: #dc2626;
+        --danger-hover: #b91c1c;
+        
+        --warning-bg: #fef3c7;
+        --warning-color: #92400e;
+        --warning-border: #fde68a;
+        
+        --info-bg: #dbeafe;
+        --info-color: #1e40af;
+        --info-border: #bfdbfe;
+        
+        /* Shadow colors */
+        --shadow-light: rgba(0,0,0,0.05);
+        --shadow-medium: rgba(0,0,0,0.08);
+        --shadow-color: rgba(0,0,0,0.1);
+        
+        /* Console colors */
+        --console-bg: #1e293b;
+        --console-text: #10b981;
+    }
+    
+    [data-theme="dark"] {
+        /* Dark mode overrides */
+        --text-primary: #e4e4e7;
+        --text-secondary: #9ca3af;
+        --text-muted: #6b7280;
+        --text-on-gradient: rgba(255, 255, 255, 0.9);
+        
+        --bg-primary: #0f0f23;
+        --bg-secondary: #1a1a3e;
+        --bg-light: #252550;
+        --bg-hover: #252550;
+        --bg-gradient: linear-gradient(135deg, #7c7ff3 0%, #9b5de5 100%);
+        
+        --border-color: #2a2a5e;
+        --border-light: #374151;
+        
+        --accent-color: #7c7ff3;
+        --accent-hover: #9b5de5;
+        --accent-bg: #3730a3;
+        --accent-focus: rgba(124, 127, 243, 0.1);
+        --accent-shadow: rgba(124, 127, 243, 0.3);
+        
+        --success-bg: #064e3b;
+        --success-color: #34d399;
+        --success-border: #065f46;
+        --success-accent: #10b981;
+        --success-hover: #15803d;
+        
+        --danger-bg: #7f1d1d;
+        --danger-color: #fca5a5;
+        --danger-border: #991b1b;
+        --danger-accent: #ef4444;
+        --danger-hover: #dc2626;
+        
+        --warning-bg: #78350f;
+        --warning-color: #fbbf24;
+        --warning-border: #92400e;
+        
+        --info-bg: #1e3a8a;
+        --info-color: #93c5fd;
+        --info-border: #1e40af;
+        
+        --shadow-light: rgba(0,0,0,0.3);
+        --shadow-medium: rgba(0,0,0,0.4);
+        --shadow-color: rgba(0,0,0,0.5);
+        
+        --console-bg: #0f0f23;
+        --console-text: #4ade80;
+    }
+    
     .modern-container {
         max-width: 1200px;
         margin: 0 auto;
@@ -18,7 +125,7 @@
         text-align: center;
         margin-bottom: 3rem;
         padding: 3rem 0;
-        background: var(--bg-gradient, linear-gradient(135deg, #f8f9ff 0%, #f0f1ff 100%));
+        background: var(--bg-gradient);
         border-radius: 20px;
         animation: fadeInDown 0.5s ease-out;
         position: relative;
@@ -32,7 +139,7 @@
         right: -50%;
         width: 200%;
         height: 200%;
-        background: radial-gradient(circle at 70% 30%, var(--accent-shadow, rgba(91, 95, 207, 0.1)) 0%, transparent 50%);
+        background: radial-gradient(circle at 70% 30%, var(--accent-shadow) 0%, transparent 50%);
         animation: rotate 30s linear infinite;
     }
     
@@ -44,7 +151,7 @@
     .page-title {
         font-size: 2.5rem;
         font-weight: 700;
-        color: var(--text-primary, #1e293b);
+        color: var(--text-primary);
         margin-bottom: 1rem;
         display: flex;
         align-items: center;
@@ -55,26 +162,26 @@
     .php-icon {
         width: 60px;
         height: 60px;
-        background: var(--bg-light, white);
+        background: var(--bg-light);
         border-radius: 12px;
         display: flex;
         align-items: center;
         justify-content: center;
-        box-shadow: var(--shadow-light, 0 4px 12px rgba(0,0,0,0.1));
+        box-shadow: var(--shadow-light);
     }
     
     .page-subtitle {
         font-size: 1.125rem;
-        color: var(--text-secondary, #64748b);
+        color: var(--text-secondary);
         max-width: 600px;
         margin: 0 auto;
     }
     
     .selector-panel {
-        background: var(--bg-secondary, white);
+        background: var(--bg-secondary);
         border-radius: 16px;
-        box-shadow: var(--shadow-medium, 0 1px 3px rgba(0,0,0,0.05), 0 10px 40px rgba(0,0,0,0.08));
-        border: 1px solid var(--border-light, #e8e9ff);
+        box-shadow: 0 1px 3px var(--shadow-light), 0 10px 40px var(--shadow-medium);
+        border: 1px solid var(--border-light);
         padding: 2rem;
         margin-bottom: 2rem;
         animation: fadeInUp 0.5s ease-out;
@@ -90,18 +197,18 @@
     .selector-icon {
         width: 40px;
         height: 40px;
-        background: var(--accent-bg, linear-gradient(135deg, #5b5fcf 0%, #4547a9 100%));
+        background: var(--accent-bg);
         border-radius: 10px;
         display: flex;
         align-items: center;
         justify-content: center;
-        color: var(--bg-light, white);
+        color: var(--bg-light);
     }
     
     .selector-title {
         font-size: 1.25rem;
         font-weight: 600;
-        color: var(--text-primary, #1e293b);
+        color: var(--text-primary);
     }
     
     .selector-form {
@@ -116,7 +223,7 @@
     
     .form-label {
         font-weight: 500;
-        color: var(--text-secondary, #475569);
+        color: var(--text-secondary);
         font-size: 0.875rem;
         margin-bottom: 0.5rem;
         display: block;
@@ -125,23 +232,23 @@
     .form-control {
         width: 100%;
         padding: 0.75rem 1rem;
-        border: 1px solid var(--border-light, #e8e9ff);
+        border: 1px solid var(--border-light);
         border-radius: 8px;
         font-size: 0.875rem;
         transition: all 0.3s ease;
-        background: var(--bg-light, #fff);
-        color: var(--text-primary, #1e293b);
+        background: var(--bg-light);
+        color: var(--text-primary);
     }
     
     .form-control:focus {
         outline: none;
-        border-color: var(--accent-color, #5b5fcf);
-        box-shadow: var(--accent-focus, 0 0 0 3px rgba(91, 95, 207, 0.1));
+        border-color: var(--accent-color);
+        box-shadow: var(--accent-focus);
     }
     
     .select-control {
         appearance: none;
-        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23475569' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
         background-position: right 0.5rem center;
         background-repeat: no-repeat;
         background-size: 1.5em 1.5em;
@@ -162,34 +269,34 @@
     }
     
     .btn-primary {
-        background: var(--accent-color, #5b5fcf);
-        color: var(--bg-light, white);
+        background: var(--accent-color);
+        color: var(--bg-light);
     }
     
     .btn-primary:hover {
-        background: var(--accent-hover, #4547a9);
+        background: var(--accent-hover);
         transform: translateY(-2px);
-        box-shadow: var(--accent-shadow, 0 4px 12px rgba(91, 95, 207, 0.3));
+        box-shadow: var(--accent-shadow);
     }
     
     .tuning-panel {
-        background: var(--bg-secondary, white);
+        background: var(--bg-secondary);
         border-radius: 16px;
-        box-shadow: var(--shadow-medium, 0 1px 3px rgba(0,0,0,0.05), 0 10px 40px rgba(0,0,0,0.08));
-        border: 1px solid var(--border-light, #e8e9ff);
+        box-shadow: 0 1px 3px var(--shadow-light), 0 10px 40px var(--shadow-medium);
+        border: 1px solid var(--border-light);
         overflow: hidden;
         animation: fadeInUp 0.5s ease-out 0.2s;
         animation-fill-mode: both;
     }
     
     .panel-header {
-        background: var(--bg-gradient, linear-gradient(135deg, #f8f9ff 0%, #f0f1ff 100%));
-        color: var(--text-primary, #1e293b);
+        background: var(--bg-gradient);
+        color: var(--text-primary);
         padding: 1.5rem 2rem;
         display: flex;
         align-items: center;
         justify-content: space-between;
-        border-bottom: 1px solid var(--border-light, #e8e9ff);
+        border-bottom: 1px solid var(--border-light);
     }
     
     .panel-title {
@@ -201,12 +308,12 @@
     }
     
     .php-version-badge {
-        background: var(--bg-light, #fff);
+        background: var(--bg-light);
         padding: 0.25rem 0.75rem;
         border-radius: 6px;
         font-size: 0.875rem;
-        color: var(--text-secondary, #64748b);
-        border: 1px solid var(--border-light, #e8e9ff);
+        color: var(--text-secondary);
+        border: 1px solid var(--border-light);
     }
     
     .form-section {
@@ -219,24 +326,24 @@
         gap: 0.75rem;
         margin-bottom: 1.5rem;
         padding-bottom: 1rem;
-        border-bottom: 1px solid var(--border-light, #e8e9ff);
+        border-bottom: 1px solid var(--border-light);
     }
     
     .section-icon {
         width: 32px;
         height: 32px;
-        background: var(--accent-bg, #f3e8ff);
+        background: var(--accent-bg);
         border-radius: 8px;
         display: flex;
         align-items: center;
         justify-content: center;
-        color: var(--accent-color, #5b5fcf);
+        color: var(--accent-color);
     }
     
     .section-title {
         font-size: 1.125rem;
         font-weight: 600;
-        color: var(--text-primary, #1e293b);
+        color: var(--text-primary);
     }
     
     .form-grid {
@@ -253,7 +360,7 @@
     
     .field-label {
         font-weight: 500;
-        color: var(--text-secondary, #475569);
+        color: var(--text-secondary);
         font-size: 0.875rem;
         display: flex;
         align-items: center;
@@ -261,7 +368,7 @@
     }
     
     .tooltip-icon {
-        color: var(--text-muted, #94a3b8);
+        color: var(--text-muted);
         font-size: 0.875rem;
         cursor: help;
         position: relative;
@@ -277,8 +384,8 @@
         bottom: 100%;
         left: 50%;
         transform: translateX(-50%);
-        background: var(--text-primary, #1e293b);
-        color: var(--bg-light, white);
+        background: var(--text-primary);
+        color: var(--bg-light);
         padding: 0.5rem 1rem;
         border-radius: 6px;
         font-size: 0.75rem;
@@ -295,7 +402,7 @@
         left: 50%;
         transform: translateX(-50%);
         border: 5px solid transparent;
-        border-top-color: var(--text-primary, #1e293b);
+        border-top-color: var(--text-primary);
     }
     
     .input-group {
@@ -306,13 +413,13 @@
     
     .input-addon {
         font-size: 0.875rem;
-        color: var(--text-secondary, #64748b);
+        color: var(--text-secondary);
         font-weight: 500;
     }
     
     .current-value {
         font-size: 0.75rem;
-        color: var(--text-muted, #64748b);
+        color: var(--text-muted);
         margin-top: 0.25rem;
     }
     
@@ -336,7 +443,7 @@
         left: 0;
         right: 0;
         bottom: 0;
-        background-color: var(--border-color, #cbd5e1);
+        background-color: var(--border-color);
         transition: .4s;
         border-radius: 24px;
     }
@@ -348,13 +455,13 @@
         width: 18px;
         left: 3px;
         bottom: 3px;
-        background-color: var(--bg-light, white);
+        background-color: var(--bg-light);
         transition: .4s;
         border-radius: 50%;
     }
     
     input:checked + .toggle-slider {
-        background-color: var(--accent-color, #5b5fcf);
+        background-color: var(--accent-color);
     }
     
     input:checked + .toggle-slider:before {
@@ -366,26 +473,26 @@
         gap: 1rem;
         margin-top: 2rem;
         padding: 2rem;
-        background: var(--bg-gradient, #f8f9ff);
-        border-top: 1px solid var(--border-light, #e8e9ff);
+        background: var(--bg-gradient);
+        border-top: 1px solid var(--border-light);
     }
     
     .btn-secondary {
-        background: var(--bg-light, white);
-        color: var(--text-secondary, #64748b);
-        border: 1px solid var(--border-light, #e8e9ff);
+        background: var(--bg-light);
+        color: var(--text-secondary);
+        border: 1px solid var(--border-light);
     }
     
     .btn-secondary:hover {
-        background: var(--bg-hover, #f8f9ff);
-        border-color: var(--border-color, #cbd5e1);
+        background: var(--bg-hover);
+        border-color: var(--border-color);
     }
     
     .loading-spinner {
         width: 20px;
         height: 20px;
-        border: 2px solid var(--border-light, #f3f3f3);
-        border-top: 2px solid var(--accent-color, #5b5fcf);
+        border: 2px solid var(--border-light);
+        border-top: 2px solid var(--accent-color);
         border-radius: 50%;
         animation: spin 1s linear infinite;
         display: inline-block;
@@ -417,37 +524,37 @@
     
     .alert-message {
         font-size: 0.875rem;
-        color: var(--text-secondary, #475569);
+        color: var(--text-secondary);
     }
     
     .alert-success {
-        background: var(--success-bg, #d1fae5);
-        border: 1px solid var(--success-border, #a7f3d0);
-        color: var(--success-text, #065f46);
+        background: var(--success-bg);
+        border: 1px solid var(--success-border);
+        color: var(--success-color);
     }
     
     .alert-error {
-        background: var(--danger-bg, #fee2e2);
-        border: 1px solid var(--danger-border, #fecaca);
-        color: var(--danger-text, #991b1b);
+        background: var(--danger-bg);
+        border: 1px solid var(--danger-border);
+        color: var(--danger-color);
     }
     
     .alert-info {
-        background: var(--info-bg, #dbeafe);
-        border: 1px solid var(--info-border, #bfdbfe);
-        color: var(--info-text, #1e40af);
+        background: var(--info-bg);
+        border: 1px solid var(--info-border);
+        color: var(--info-color);
     }
     
     .empty-state {
         text-align: center;
         padding: 3rem;
-        color: var(--text-secondary, #64748b);
+        color: var(--text-secondary);
     }
     
     .empty-icon {
         width: 80px;
         height: 80px;
-        background: var(--bg-hover, #f3f4f6);
+        background: var(--bg-hover);
         border-radius: 50%;
         display: flex;
         align-items: center;
@@ -518,7 +625,7 @@
         <div class="header-content">
             <h1 class="page-title">
                 <div class="php-icon">
-                    <i class="fab fa-php" style="color: var(--accent-color, #5b5fcf); font-size: 1.75rem;"></i>
+                    <i class="fab fa-php" style="color: var(--accent-color); font-size: 1.75rem;"></i>
                 </div>
                 {% trans "PHP Tuning" %}
             </h1>
@@ -814,9 +921,9 @@
     <div class="tuning-panel" ng-show="hideDetails">
         <div class="empty-state">
             <div class="empty-icon">
-                <i class="fas fa-code" style="font-size: 2rem; color: var(--accent-color, #5b5fcf);"></i>
+                <i class="fas fa-code" style="font-size: 2rem; color: var(--accent-color);"></i>
             </div>
-            <h3 style="color: var(--text-primary, #1e293b); margin-bottom: 0.5rem;">{% trans "No PHP Version Selected" %}</h3>
+            <h3 style="color: var(--text-primary); margin-bottom: 0.5rem;">{% trans "No PHP Version Selected" %}</h3>
             <p>
                 {% if OLS %}
                     {% trans "Select a domain from the dropdown above to configure its PHP settings" %}
