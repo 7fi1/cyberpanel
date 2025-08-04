@@ -17,18 +17,18 @@
     
     /* Page Header */
     .page-header {
-        background: white;
+        background: var(--bg-primary, white);
         border-radius: 12px;
         padding: 25px;
         margin-bottom: 25px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        border: 1px solid #e8e9ff;
+        box-shadow: 0 2px 8px var(--shadow-light, rgba(0,0,0,0.08));
+        border: 1px solid var(--border-light, #e8e9ff);
     }
     
     .page-header h1 {
         font-size: 28px;
         font-weight: 700;
-        color: #2f3640;
+        color: var(--text-primary, #2f3640);
         margin: 0 0 10px 0;
         display: flex;
         align-items: center;
@@ -50,7 +50,7 @@
     
     .page-header p {
         font-size: 15px;
-        color: #64748b;
+        color: var(--text-secondary, #64748b);
         margin: 0;
     }
     
@@ -77,18 +77,18 @@
     
     /* Content Section */
     .content-section {
-        background: white;
+        background: var(--bg-primary, white);
         border-radius: 12px;
         padding: 25px;
         margin-bottom: 25px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        border: 1px solid #e8e9ff;
+        box-shadow: 0 2px 8px var(--shadow-light, rgba(0,0,0,0.08));
+        border: 1px solid var(--border-light, #e8e9ff);
     }
     
     .section-title {
         font-size: 18px;
         font-weight: 700;
-        color: #2f3640;
+        color: var(--text-primary, #2f3640);
         margin-bottom: 20px;
         display: flex;
         align-items: center;
@@ -105,7 +105,7 @@
     
     /* Status Box */
     .status-box {
-        background: #f8f9ff;
+        background: var(--bg-secondary, #f8f9ff);
         border-radius: 12px;
         padding: 30px;
         text-align: center;
@@ -129,13 +129,13 @@
     .status-title {
         font-size: 20px;
         font-weight: 700;
-        color: #2f3640;
+        color: var(--text-primary, #2f3640);
         margin-bottom: 15px;
     }
     
     .status-description {
         font-size: 15px;
-        color: #64748b;
+        color: var(--text-secondary, #64748b);
         margin-bottom: 25px;
     }
     
@@ -150,7 +150,7 @@
     .toggle-label {
         font-size: 16px;
         font-weight: 600;
-        color: #2f3640;
+        color: var(--text-primary, #2f3640);
     }
     
     /* Save Button */
@@ -193,9 +193,9 @@
     }
     
     .alert-success {
-        background: #d1fae5;
-        color: #065f46;
-        border: 1px solid #a7f3d0;
+        background: var(--bg-success, #d1fae5);
+        color: var(--text-success, #065f46);
+        border: 1px solid var(--border-success, #a7f3d0);
     }
     
     .alert-success .alert-icon {
@@ -203,9 +203,9 @@
     }
     
     .alert-danger {
-        background: #fee2e2;
-        color: #991b1b;
-        border: 1px solid #fecaca;
+        background: var(--bg-danger, #fee2e2);
+        color: var(--text-danger, #991b1b);
+        border: 1px solid var(--border-danger, #fecaca);
     }
     
     .alert-danger .alert-icon {
@@ -216,7 +216,7 @@
     .loading-spinner {
         width: 24px;
         height: 24px;
-        border: 3px solid #e8e9ff;
+        border: 3px solid var(--border-light, #e8e9ff);
         border-top-color: #5856d6;
         border-radius: 50%;
         animation: spin 1s linear infinite;
@@ -238,7 +238,7 @@
     }
     
     .info-card {
-        background: #f8f9ff;
+        background: var(--bg-secondary, #f8f9ff);
         border-radius: 12px;
         padding: 20px;
         text-align: center;
@@ -266,20 +266,20 @@
     .info-card-title {
         font-size: 16px;
         font-weight: 600;
-        color: #2f3640;
+        color: var(--text-primary, #2f3640);
         margin-bottom: 8px;
     }
     
     .info-card-description {
         font-size: 14px;
-        color: #64748b;
+        color: var(--text-secondary, #64748b);
         line-height: 1.5;
     }
     
     /* Port Info */
     .port-info {
-        background: #f0f4ff;
-        border: 1px solid #d1d9ff;
+        background: var(--bg-info, #f0f4ff);
+        border: 1px solid var(--border-info, #d1d9ff);
         border-radius: 8px;
         padding: 15px;
         margin-top: 20px;
@@ -295,7 +295,7 @@
     
     .port-info-text {
         font-size: 14px;
-        color: #2f3640;
+        color: var(--text-primary, #2f3640);
     }
     
     .port-info-text strong {

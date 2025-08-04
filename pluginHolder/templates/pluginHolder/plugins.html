@@ -17,18 +17,18 @@
     
     /* Page Header */
     .page-header {
-        background: white;
+        background: var(--bg-primary, white);
         border-radius: 12px;
         padding: 25px;
         margin-bottom: 25px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        border: 1px solid #e8e9ff;
+        box-shadow: var(--shadow-md, 0 2px 8px rgba(0,0,0,0.08));
+        border: 1px solid var(--border-primary, #e8e9ff);
     }
     
     .page-header h1 {
         font-size: 28px;
         font-weight: 700;
-        color: #2f3640;
+        color: var(--text-primary, #2f3640);
         margin: 0 0 10px 0;
         display: flex;
         align-items: center;
@@ -50,24 +50,24 @@
     
     .page-header p {
         font-size: 15px;
-        color: #64748b;
+        color: var(--text-secondary, #64748b);
         margin: 0;
     }
     
     /* Content Section */
     .content-section {
-        background: white;
+        background: var(--bg-primary, white);
         border-radius: 12px;
         padding: 25px;
         margin-bottom: 25px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        border: 1px solid #e8e9ff;
+        box-shadow: var(--shadow-md, 0 2px 8px rgba(0,0,0,0.08));
+        border: 1px solid var(--border-primary, #e8e9ff);
     }
     
     .section-title {
         font-size: 18px;
         font-weight: 700;
-        color: #2f3640;
+        color: var(--text-primary, #2f3640);
         margin-bottom: 20px;
         display: flex;
         align-items: center;
@@ -90,8 +90,8 @@
     }
     
     .plugin-card {
-        background: white;
-        border: 1px solid #e8e9ff;
+        background: var(--bg-primary, white);
+        border: 1px solid var(--border-primary, #e8e9ff);
         border-radius: 12px;
         padding: 25px;
         transition: all 0.3s ease;
@@ -101,7 +101,7 @@
     
     .plugin-card:hover {
         transform: translateY(-5px);
-        box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+        box-shadow: var(--shadow-lg, 0 8px 24px rgba(0,0,0,0.1));
         border-color: #5856d6;
     }
     
@@ -131,7 +131,7 @@
     .plugin-icon {
         width: 56px;
         height: 56px;
-        background: #f8f9ff;
+        background: var(--bg-secondary, #f8f9ff);
         border-radius: 12px;
         display: flex;
         align-items: center;
@@ -148,14 +148,14 @@
     .plugin-name {
         font-size: 18px;
         font-weight: 700;
-        color: #2f3640;
+        color: var(--text-primary, #2f3640);
         margin-bottom: 5px;
     }
     
     .plugin-type {
         display: inline-block;
         padding: 4px 12px;
-        background: #e8e6ff;
+        background: var(--purple-light, #e8e6ff);
         color: #5856d6;
         border-radius: 6px;
         font-size: 12px;
@@ -166,7 +166,7 @@
     
     .plugin-description {
         font-size: 14px;
-        color: #64748b;
+        color: var(--text-secondary, #64748b);
         line-height: 1.6;
         margin-bottom: 15px;
     }
@@ -176,23 +176,23 @@
         justify-content: space-between;
         align-items: center;
         padding-top: 15px;
-        border-top: 1px solid #e8e9ff;
+        border-top: 1px solid var(--border-primary, #e8e9ff);
     }
     
     .plugin-version {
         font-size: 13px;
-        color: #94a3b8;
+        color: var(--text-muted, #94a3b8);
         display: flex;
         align-items: center;
         gap: 5px;
     }
     
     .plugin-version-number {
-        background: #f8f9ff;
+        background: var(--bg-secondary, #f8f9ff);
         padding: 3px 8px;
         border-radius: 4px;
         font-weight: 600;
-        color: #64748b;
+        color: var(--text-secondary, #64748b);
     }
     
     /* Table View (Alternative) */
@@ -202,26 +202,26 @@
     }
     
     .plugins-table th {
-        background: #f8f9ff;
+        background: var(--bg-secondary, #f8f9ff);
         padding: 15px;
         text-align: left;
         font-size: 14px;
         font-weight: 600;
-        color: #64748b;
+        color: var(--text-secondary, #64748b);
         text-transform: uppercase;
         letter-spacing: 0.5px;
-        border-bottom: 2px solid #e8e9ff;
+        border-bottom: 2px solid var(--border-primary, #e8e9ff);
     }
     
     .plugins-table td {
         padding: 20px 15px;
-        border-bottom: 1px solid #e8e9ff;
+        border-bottom: 1px solid var(--border-primary, #e8e9ff);
         font-size: 14px;
-        color: #2f3640;
+        color: var(--text-primary, #2f3640);
     }
     
     .plugins-table tr:hover {
-        background: #f8f9ff;
+        background: var(--bg-hover, #f8f9ff);
     }
     
     .plugins-table tr:last-child td {
@@ -237,26 +237,26 @@
     .empty-icon {
         width: 80px;
         height: 80px;
-        background: #f8f9ff;
+        background: var(--bg-secondary, #f8f9ff);
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
         margin: 0 auto 20px;
         font-size: 36px;
-        color: #94a3b8;
+        color: var(--text-muted, #94a3b8);
     }
     
     .empty-title {
         font-size: 20px;
         font-weight: 700;
-        color: #2f3640;
+        color: var(--text-primary, #2f3640);
         margin-bottom: 10px;
     }
     
     .empty-description {
         font-size: 15px;
-        color: #64748b;
+        color: var(--text-secondary, #64748b);
         max-width: 400px;
         margin: 0 auto;
     }
@@ -275,9 +275,9 @@
         font-weight: 600;
         cursor: pointer;
         transition: all 0.3s ease;
-        border: 1px solid #e8e9ff;
-        background: white;
-        color: #64748b;
+        border: 1px solid var(--border-primary, #e8e9ff);
+        background: var(--bg-primary, white);
+        color: var(--text-secondary, #64748b);
         display: inline-flex;
         align-items: center;
         gap: 8px;
@@ -290,7 +290,7 @@
     }
     
     .view-btn:hover:not(.active) {
-        background: #f8f9ff;
+        background: var(--bg-hover, #f8f9ff);
         color: #5856d6;
         border-color: #5856d6;
     }
@@ -312,13 +312,13 @@
     }
     
     .alert-danger {
-        background: #fee2e2;
-        color: #991b1b;
-        border: 1px solid #fecaca;
+        background: var(--alert-danger-bg, #fee2e2);
+        color: var(--alert-danger-text, #991b1b);
+        border: 1px solid var(--alert-danger-border, #fecaca);
     }
     
     .alert-danger .alert-icon {
-        color: #ef4444;
+        color: var(--alert-danger-icon, #ef4444);
     }
     
     /* Responsive */
