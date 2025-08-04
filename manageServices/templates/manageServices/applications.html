@@ -17,18 +17,18 @@
     
     /* Page Header */
     .page-header {
-        background: white;
+        background: var(--bg-primary, white);
         border-radius: 12px;
         padding: 25px;
         margin-bottom: 25px;
         box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        border: 1px solid #e8e9ff;
+        border: 1px solid var(--border-color, #e8e9ff);
     }
     
     .page-header h1 {
         font-size: 28px;
         font-weight: 700;
-        color: #2f3640;
+        color: var(--text-primary, #2f3640);
         margin: 0 0 10px 0;
         display: flex;
         align-items: center;
@@ -50,24 +50,24 @@
     
     .page-header p {
         font-size: 15px;
-        color: #64748b;
+        color: var(--text-secondary, #64748b);
         margin: 0;
     }
     
     /* Content Section */
     .content-section {
-        background: white;
+        background: var(--bg-primary, white);
         border-radius: 12px;
         padding: 25px;
         margin-bottom: 25px;
         box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        border: 1px solid #e8e9ff;
+        border: 1px solid var(--border-color, #e8e9ff);
     }
     
     .section-title {
         font-size: 18px;
         font-weight: 700;
-        color: #2f3640;
+        color: var(--text-primary, #2f3640);
         margin-bottom: 20px;
         display: flex;
         align-items: center;
@@ -90,8 +90,8 @@
     }
     
     .app-card {
-        background: white;
-        border: 1px solid #e8e9ff;
+        background: var(--bg-primary, white);
+        border: 1px solid var(--border-color, #e8e9ff);
         border-radius: 12px;
         padding: 25px;
         transition: all 0.3s ease;
@@ -137,7 +137,7 @@
         justify-content: center;
         flex-shrink: 0;
         overflow: hidden;
-        background: #f8f9ff;
+        background: var(--bg-secondary, #f8f9ff);
         padding: 12px;
     }
     
@@ -154,7 +154,7 @@
     .app-name {
         font-size: 20px;
         font-weight: 700;
-        color: #2f3640;
+        color: var(--text-primary, #2f3640);
         margin-bottom: 5px;
     }
     
@@ -169,8 +169,8 @@
     }
     
     .app-status.installed {
-        background: #d1fae5;
-        color: #065f46;
+        background: var(--success-bg, #d1fae5);
+        color: var(--success-text, #065f46);
     }
     
     .app-status.installed i {
@@ -178,8 +178,8 @@
     }
     
     .app-status.not-installed {
-        background: #fee2e2;
-        color: #991b1b;
+        background: var(--danger-bg, #fee2e2);
+        color: var(--danger-text, #991b1b);
     }
     
     .app-status.not-installed i {
@@ -188,7 +188,7 @@
     
     .app-description {
         font-size: 14px;
-        color: #64748b;
+        color: var(--text-secondary, #64748b);
         line-height: 1.6;
         margin-bottom: 20px;
     }
@@ -243,8 +243,8 @@
     }
     
     .modal-header {
-        background: #f8f9ff;
-        border-bottom: 1px solid #e8e9ff;
+        background: var(--bg-secondary, #f8f9ff);
+        border-bottom: 1px solid var(--border-color, #e8e9ff);
         border-radius: 12px 12px 0 0;
         padding: 20px;
     }
@@ -252,7 +252,7 @@
     .modal-title {
         font-size: 20px;
         font-weight: 700;
-        color: #2f3640;
+        color: var(--text-primary, #2f3640);
         display: flex;
         align-items: center;
         gap: 10px;
@@ -263,8 +263,8 @@
     }
     
     .install-log {
-        background: #f8f9ff;
-        border: 1px solid #e8e9ff;
+        background: var(--bg-secondary, #f8f9ff);
+        border: 1px solid var(--border-color, #e8e9ff);
         border-radius: 8px;
         padding: 15px;
     }
@@ -272,11 +272,11 @@
     .log-textarea {
         width: 100%;
         padding: 12px 15px;
-        border: 1px solid #e8e9ff;
+        border: 1px solid var(--border-color, #e8e9ff);
         border-radius: 8px;
         font-size: 13px;
-        color: #2f3640;
-        background: white;
+        color: var(--text-primary, #2f3640);
+        background: var(--bg-primary, white);
         resize: vertical;
         font-family: 'Monaco', 'Consolas', monospace;
         line-height: 1.5;
@@ -286,7 +286,7 @@
     .loading-spinner {
         width: 24px;
         height: 24px;
-        border: 3px solid #e8e9ff;
+        border: 3px solid var(--border-color, #e8e9ff);
         border-top-color: #5856d6;
         border-radius: 50%;
         animation: spin 1s linear infinite;
@@ -307,26 +307,26 @@
     .empty-icon {
         width: 80px;
         height: 80px;
-        background: #f8f9ff;
+        background: var(--bg-secondary, #f8f9ff);
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
         margin: 0 auto 20px;
         font-size: 36px;
-        color: #94a3b8;
+        color: var(--text-muted, #94a3b8);
     }
     
     .empty-title {
         font-size: 20px;
         font-weight: 700;
-        color: #2f3640;
+        color: var(--text-primary, #2f3640);
         margin-bottom: 10px;
     }
     
     .empty-description {
         font-size: 15px;
-        color: #64748b;
+        color: var(--text-secondary, #64748b);
     }
     
     /* Responsive */

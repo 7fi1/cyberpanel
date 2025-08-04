@@ -17,18 +17,18 @@
     
     /* Page Header */
     .page-header {
-        background: white;
+        background: var(--bg-primary, white);
         border-radius: 12px;
         padding: 25px;
         margin-bottom: 25px;
         box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        border: 1px solid #e8e9ff;
+        border: 1px solid var(--border-light, #e8e9ff);
     }
     
     .page-header h1 {
         font-size: 28px;
         font-weight: 700;
-        color: #2f3640;
+        color: var(--text-primary, #2f3640);
         margin: 0 0 10px 0;
         display: flex;
         align-items: center;
@@ -50,18 +50,18 @@
     
     .page-header p {
         font-size: 15px;
-        color: #64748b;
+        color: var(--text-secondary, #64748b);
         margin: 0;
     }
     
     /* Content Section */
     .content-section {
-        background: white;
+        background: var(--bg-primary, white);
         border-radius: 12px;
         padding: 25px;
         margin-bottom: 25px;
         box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        border: 1px solid #e8e9ff;
+        border: 1px solid var(--border-light, #e8e9ff);
     }
     
     /* Installation Section */
@@ -73,7 +73,7 @@
     .install-icon {
         width: 80px;
         height: 80px;
-        background: #f8f9ff;
+        background: var(--bg-secondary, #f8f9ff);
         border-radius: 50%;
         display: flex;
         align-items: center;
@@ -86,13 +86,13 @@
     .install-title {
         font-size: 24px;
         font-weight: 700;
-        color: #2f3640;
+        color: var(--text-primary, #2f3640);
         margin-bottom: 10px;
     }
     
     .install-description {
         font-size: 16px;
-        color: #64748b;
+        color: var(--text-secondary, #64748b);
         margin-bottom: 25px;
     }
     
@@ -127,7 +127,7 @@
     .access-icon {
         width: 80px;
         height: 80px;
-        background: #d1fae5;
+        background: var(--success-bg, #d1fae5);
         border-radius: 50%;
         display: flex;
         align-items: center;
@@ -140,13 +140,13 @@
     .access-title {
         font-size: 24px;
         font-weight: 700;
-        color: #2f3640;
+        color: var(--text-primary, #2f3640);
         margin-bottom: 10px;
     }
     
     .access-description {
         font-size: 16px;
-        color: #64748b;
+        color: var(--text-secondary, #64748b);
         margin-bottom: 25px;
     }
     
@@ -177,8 +177,8 @@
     
     /* Installation Log */
     .install-log {
-        background: #f8f9ff;
-        border: 1px solid #e8e9ff;
+        background: var(--bg-secondary, #f8f9ff);
+        border: 1px solid var(--border-light, #e8e9ff);
         border-radius: 8px;
         padding: 15px;
         margin-top: 20px;
@@ -194,17 +194,17 @@
     .install-log-title {
         font-size: 16px;
         font-weight: 600;
-        color: #2f3640;
+        color: var(--text-primary, #2f3640);
     }
     
     .log-textarea {
         width: 100%;
         padding: 12px 15px;
-        border: 1px solid #e8e9ff;
+        border: 1px solid var(--border-light, #e8e9ff);
         border-radius: 8px;
         font-size: 13px;
-        color: #2f3640;
-        background: white;
+        color: var(--text-primary, #2f3640);
+        background: var(--bg-primary, white);
         resize: vertical;
         font-family: 'Monaco', 'Consolas', monospace;
         line-height: 1.5;
@@ -227,9 +227,9 @@
     }
     
     .alert-success {
-        background: #d1fae5;
-        color: #065f46;
-        border: 1px solid #a7f3d0;
+        background: var(--success-bg, #d1fae5);
+        color: var(--success-text, #065f46);
+        border: 1px solid var(--success-border, #a7f3d0);
     }
     
     .alert-success .alert-icon {
@@ -237,9 +237,9 @@
     }
     
     .alert-danger {
-        background: #fee2e2;
-        color: #991b1b;
-        border: 1px solid #fecaca;
+        background: var(--error-bg, #fee2e2);
+        color: var(--error-text, #991b1b);
+        border: 1px solid var(--error-border, #fecaca);
     }
     
     .alert-danger .alert-icon {
@@ -250,7 +250,7 @@
     .loading-spinner {
         width: 24px;
         height: 24px;
-        border: 3px solid #e8e9ff;
+        border: 3px solid var(--border-light, #e8e9ff);
         border-top-color: #5856d6;
         border-radius: 50%;
         animation: spin 1s linear infinite;
@@ -272,7 +272,7 @@
     }
     
     .feature-card {
-        background: #f8f9ff;
+        background: var(--bg-secondary, #f8f9ff);
         border-radius: 12px;
         padding: 20px;
         text-align: center;
@@ -300,13 +300,13 @@
     .feature-title {
         font-size: 16px;
         font-weight: 600;
-        color: #2f3640;
+        color: var(--text-primary, #2f3640);
         margin-bottom: 8px;
     }
     
     .feature-description {
         font-size: 14px;
-        color: #64748b;
+        color: var(--text-secondary, #64748b);
     }
     
     /* Responsive */

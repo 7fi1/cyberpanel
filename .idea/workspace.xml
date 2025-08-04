@@ -6,16 +6,8 @@
   <component name="ChangeListManager">
     <list default="true" id="5251c5c9-f2a1-41f2-bc76-10b517091df1" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/emailMarketing/templates/emailMarketing/composeMessages.html" beforeDir="false" afterPath="$PROJECT_DIR$/emailMarketing/templates/emailMarketing/composeMessages.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/emailMarketing/templates/emailMarketing/configureVerify.html" beforeDir="false" afterPath="$PROJECT_DIR$/emailMarketing/templates/emailMarketing/configureVerify.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/emailMarketing/templates/emailMarketing/createEmailList.html" beforeDir="false" afterPath="$PROJECT_DIR$/emailMarketing/templates/emailMarketing/createEmailList.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/emailMarketing/templates/emailMarketing/emailMarketing.html" beforeDir="false" afterPath="$PROJECT_DIR$/emailMarketing/templates/emailMarketing/emailMarketing.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/emailMarketing/templates/emailMarketing/manageLists.html" beforeDir="false" afterPath="$PROJECT_DIR$/emailMarketing/templates/emailMarketing/manageLists.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/emailMarketing/templates/emailMarketing/manageSMTPHosts.html" beforeDir="false" afterPath="$PROJECT_DIR$/emailMarketing/templates/emailMarketing/manageSMTPHosts.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/emailMarketing/templates/emailMarketing/sendEmails.html" beforeDir="false" afterPath="$PROJECT_DIR$/emailMarketing/templates/emailMarketing/sendEmails.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/emailMarketing/templates/emailMarketing/website.html" beforeDir="false" afterPath="$PROJECT_DIR$/emailMarketing/templates/emailMarketing/website.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/emailPremium/templates/emailPremium/SpamAssassin.html" beforeDir="false" afterPath="$PROJECT_DIR$/emailPremium/templates/emailPremium/SpamAssassin.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/emailPremium/templates/emailPremium/mailQueue.html" beforeDir="false" afterPath="$PROJECT_DIR$/emailPremium/templates/emailPremium/mailQueue.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/emailPremium/templates/emailPremium/MailScanner.html" beforeDir="false" afterPath="$PROJECT_DIR$/emailPremium/templates/emailPremium/MailScanner.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/emailPremium/templates/emailPremium/Rspamd.html" beforeDir="false" afterPath="$PROJECT_DIR$/emailPremium/templates/emailPremium/Rspamd.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
