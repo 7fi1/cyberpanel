@@ -17,18 +17,18 @@
     
     /* Page Header */
     .page-header {
-        background: white;
+        background: var(--bg-primary, white);
         border-radius: 12px;
         padding: 25px;
         margin-bottom: 25px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        border: 1px solid #e8e9ff;
+        box-shadow: 0 2px 8px var(--shadow-light, rgba(0,0,0,0.08));
+        border: 1px solid var(--border-color, #e8e9ff);
     }
     
     .page-header h1 {
         font-size: 28px;
         font-weight: 700;
-        color: #2f3640;
+        color: var(--text-primary, #2f3640);
         margin: 0 0 10px 0;
         display: flex;
         align-items: center;
@@ -50,7 +50,7 @@
     
     .page-header p {
         font-size: 15px;
-        color: #64748b;
+        color: var(--text-secondary, #64748b);
         margin: 0;
     }
     
@@ -77,18 +77,18 @@
     
     /* Content Section */
     .content-section {
-        background: white;
+        background: var(--bg-primary, white);
         border-radius: 12px;
         padding: 25px;
         margin-bottom: 25px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        border: 1px solid #e8e9ff;
+        box-shadow: 0 2px 8px var(--shadow-light, rgba(0,0,0,0.08));
+        border: 1px solid var(--border-color, #e8e9ff);
     }
     
     .section-title {
         font-size: 18px;
         font-weight: 700;
-        color: #2f3640;
+        color: var(--text-primary, #2f3640);
         margin-bottom: 20px;
         display: flex;
         align-items: center;
@@ -112,7 +112,7 @@
     .form-label {
         font-size: 14px;
         font-weight: 600;
-        color: #2f3640;
+        color: var(--text-primary, #2f3640);
         margin-bottom: 8px;
         display: block;
         text-transform: none;
@@ -121,11 +121,11 @@
     .form-control {
         width: 100%;
         padding: 10px 15px;
-        border: 1px solid #e8e9ff;
+        border: 1px solid var(--border-color, #e8e9ff);
         border-radius: 8px;
         font-size: 14px;
-        color: #2f3640;
-        background: white;
+        color: var(--text-primary, #2f3640);
+        background: var(--bg-primary, white);
         transition: all 0.3s ease;
     }
     
@@ -138,11 +138,11 @@
     .form-select {
         width: 100%;
         padding: 10px 15px;
-        border: 1px solid #e8e9ff;
+        border: 1px solid var(--border-color, #e8e9ff);
         border-radius: 8px;
         font-size: 14px;
-        color: #2f3640;
-        background: white;
+        color: var(--text-primary, #2f3640);
+        background: var(--bg-primary, white);
         transition: all 0.3s ease;
         cursor: pointer;
     }
@@ -178,7 +178,7 @@
         left: 0;
         right: 0;
         bottom: 0;
-        background-color: #e8e9ff;
+        background-color: var(--border-color, #e8e9ff);
         transition: .3s;
         border-radius: 26px;
         pointer-events: none;
@@ -207,7 +207,7 @@
     
     /* Status Box */
     .status-box {
-        background: #f8f9ff;
+        background: var(--bg-secondary, #f8f9ff);
         border-radius: 8px;
         padding: 20px;
         margin-bottom: 25px;
@@ -234,7 +234,7 @@
     
     .status-label {
         font-size: 14px;
-        color: #64748b;
+        color: var(--text-secondary, #64748b);
         margin-bottom: 5px;
     }
     
@@ -284,9 +284,9 @@
     }
     
     .alert-success {
-        background: #d1fae5;
-        color: #065f46;
-        border: 1px solid #a7f3d0;
+        background: var(--alert-success-bg, #d1fae5);
+        color: var(--alert-success-color, #065f46);
+        border: 1px solid var(--alert-success-border, #a7f3d0);
     }
     
     .alert-success .alert-icon {
@@ -294,9 +294,9 @@
     }
     
     .alert-danger {
-        background: #fee2e2;
-        color: #991b1b;
-        border: 1px solid #fecaca;
+        background: var(--alert-danger-bg, #fee2e2);
+        color: var(--alert-danger-color, #991b1b);
+        border: 1px solid var(--alert-danger-border, #fecaca);
     }
     
     .alert-danger .alert-icon {
@@ -307,7 +307,7 @@
     .loading-spinner {
         width: 24px;
         height: 24px;
-        border: 3px solid #e8e9ff;
+        border: 3px solid var(--border-color, #e8e9ff);
         border-top-color: #5856d6;
         border-radius: 50%;
         animation: spin 1s linear infinite;
@@ -322,7 +322,7 @@
     
     /* Configuration Cards */
     .config-card {
-        background: #f8f9ff;
+        background: var(--bg-secondary, #f8f9ff);
         border-radius: 12px;
         padding: 20px;
         margin-bottom: 20px;
@@ -331,7 +331,7 @@
     .config-card-title {
         font-size: 16px;
         font-weight: 600;
-        color: #2f3640;
+        color: var(--text-primary, #2f3640);
         margin-bottom: 15px;
         display: flex;
         align-items: center;
@@ -341,7 +341,7 @@
     .config-card-icon {
         width: 32px;
         height: 32px;
-        background: white;
+        background: var(--bg-primary, white);
         border-radius: 8px;
         display: flex;
         align-items: center;
@@ -353,7 +353,7 @@
     /* Help Text */
     .help-text {
         font-size: 13px;
-        color: #94a3b8;
+        color: var(--text-muted, #94a3b8);
         margin-top: 5px;
         font-style: italic;
     }
@@ -425,7 +425,7 @@
                                 <input type="checkbox" id="pdnsStatus">
                                 <span class="toggle-slider"></span>
                             </label>
-                            <span style="font-weight: 600; color: #2f3640;">{% trans "Enable/Disable PowerDNS" %}</span>
+                            <span style="font-weight: 600; color: var(--text-primary, #2f3640);">{% trans "Enable/Disable PowerDNS" %}</span>
                         </div>
                     </div>
                 </div>
