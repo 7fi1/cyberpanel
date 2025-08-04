@@ -68,6 +68,59 @@
         --console-bg: #1e293b;
         --console-text: #10b981;
     }
+    
+    [data-theme="dark"] {
+        /* Dark mode overrides */
+        --ls-gradient-start: #7c7ff3;
+        --ls-gradient-end: #9b5de5;
+        
+        --text-primary: #e4e4e7;
+        --text-secondary: #9ca3af;
+        --text-muted: #6b7280;
+        --text-on-gradient: rgba(255, 255, 255, 0.9);
+        
+        --bg-primary: #1a1a3e;
+        --bg-secondary: #1e1e42;
+        --bg-light: #252550;
+        --bg-hover: #252550;
+        --bg-gradient: linear-gradient(135deg, var(--ls-gradient-start) 0%, var(--ls-gradient-end) 100%);
+        
+        --border-color: #2a2a5e;
+        --border-light: #374151;
+        
+        --accent-color: #7c7ff3;
+        --accent-hover: #9b5de5;
+        --accent-bg: #3730a3;
+        --accent-focus: rgba(124, 127, 243, 0.1);
+        --accent-shadow: rgba(124, 127, 243, 0.3);
+        
+        --success-bg: #064e3b;
+        --success-color: #34d399;
+        --success-border: #065f46;
+        --success-accent: #10b981;
+        --success-dark: #34d399;
+        
+        --danger-bg: #7f1d1d;
+        --danger-color: #fca5a5;
+        --danger-border: #991b1b;
+        --danger-accent: #ef4444;
+        --danger-hover: #dc2626;
+        
+        --warning-bg: #78350f;
+        --warning-color: #fbbf24;
+        --warning-border: #92400e;
+        
+        --info-bg: #1e3a8a;
+        --info-color: #93c5fd;
+        --info-border: #1e40af;
+        
+        --shadow-light: rgba(0,0,0,0.3);
+        --shadow-medium: rgba(0,0,0,0.4);
+        --shadow-color: rgba(0,0,0,0.5);
+        
+        --console-bg: #0f0f23;
+        --console-text: #4ade80;
+    }
     .modern-container {
         max-width: 1200px;
         margin: 0 auto;
@@ -275,7 +328,7 @@
     }
     
     .btn-primary {
-        background: #667eea;
+        background: var(--accent-color);
         color: white;
     }
     
@@ -336,7 +389,7 @@
     }
     
     .module-item:hover {
-        background: #667eea;
+        background: var(--accent-color);
         color: white;
         border-color: var(--accent-color);
     }
@@ -367,7 +420,6 @@
     
     .alert-message {
         font-size: 0.875rem;
-        color: var(--text-secondary);
     }
     
     .alert-success {
@@ -463,6 +515,7 @@
         font-size: 0.875rem;
         transition: all 0.3s ease;
         background: var(--bg-primary);
+        color: var(--text-primary);
     }
     
     .form-control:focus {
@@ -474,7 +527,7 @@
     .loading-spinner {
         width: 20px;
         height: 20px;
-        border: 2px solid #f3f3f3;
+        border: 2px solid var(--border-color);
         border-top: 2px solid var(--accent-color);
         border-radius: 50%;
         animation: spin 1s linear infinite;
@@ -805,7 +858,7 @@
                             <i class="fas fa-exchange-alt"></i>
                             {% trans "Switch to Enterprise" %}
                         </button>
-                        <button type="button" ng-click="confrimtril()" class="btn btn-primary" style="background: #8b5cf6;">
+                        <button type="button" ng-click="confrimtril()" class="btn btn-primary" style="background: var(--accent-hover);">
                             <i class="fas fa-clock"></i>
                             {% trans "Get 15 Days Trial" %}
                         </button>
