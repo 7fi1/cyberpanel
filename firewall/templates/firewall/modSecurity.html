@@ -116,10 +116,10 @@
     
     /* Install Panel */
     .install-panel {
-        background: white;
+        background: var(--bg-primary, white);
         border-radius: 16px;
         box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 10px 40px rgba(0,0,0,0.08);
-        border: 1px solid #e8e9ff;
+        border: 1px solid var(--border-color, #e8e9ff);
         overflow: hidden;
         animation: fadeInUp 0.5s ease-out;
         text-align: center;
@@ -135,12 +135,12 @@
     .install-title {
         font-size: 1.5rem;
         font-weight: 600;
-        color: #1e293b;
+        color: var(--text-primary, #1e293b);
         margin-bottom: 1rem;
     }
     
     .install-subtitle {
-        color: #64748b;
+        color: var(--text-secondary, #64748b);
         margin-bottom: 2rem;
     }
     
@@ -166,10 +166,10 @@
     
     /* Installation Progress */
     .install-progress {
-        background: white;
+        background: var(--bg-primary, white);
         border-radius: 16px;
         box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 10px 40px rgba(0,0,0,0.08);
-        border: 1px solid #e8e9ff;
+        border: 1px solid var(--border-color, #e8e9ff);
         overflow: hidden;
         animation: fadeInUp 0.5s ease-out;
         padding: 2rem;
@@ -191,28 +191,28 @@
     .progress-title {
         font-size: 1.25rem;
         font-weight: 600;
-        color: #1e293b;
+        color: var(--text-primary, #1e293b);
     }
     
     .log-textarea {
         width: 100%;
         padding: 1rem;
-        border: 2px solid #e8e9ff;
+        border: 2px solid var(--border-color, #e8e9ff);
         border-radius: 10px;
         font-family: 'Monaco', 'Consolas', monospace;
         font-size: 0.875rem;
-        background: #1e293b;
-        color: #5b5fcf;
+        background: var(--bg-tertiary, #1e293b);
+        color: var(--text-accent, #5b5fcf);
         resize: vertical;
         min-height: 300px;
     }
     
     /* Configuration Panel */
     .config-panel {
-        background: white;
+        background: var(--bg-primary, white);
         border-radius: 16px;
         box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 10px 40px rgba(0,0,0,0.08);
-        border: 1px solid #e8e9ff;
+        border: 1px solid var(--border-color, #e8e9ff);
         overflow: hidden;
         animation: fadeInUp 0.5s ease-out;
     }
@@ -259,7 +259,7 @@
     .form-label {
         flex: 0 0 200px;
         font-weight: 600;
-        color: #334155;
+        color: var(--text-secondary, #334155);
         font-size: 0.875rem;
         text-transform: uppercase;
         letter-spacing: 0.05em;
@@ -268,17 +268,18 @@
     .form-control {
         flex: 1;
         padding: 0.75rem 1rem;
-        border: 2px solid #e8e9ff;
+        border: 2px solid var(--border-color, #e8e9ff);
         border-radius: 10px;
         font-size: 0.9375rem;
         transition: all 0.3s ease;
-        background: #f8f9ff;
+        background: var(--bg-secondary, #f8f9ff);
+        color: var(--text-primary, #1e293b);
     }
     
     .form-control:focus {
         outline: none;
         border-color: #22c55e;
-        background: white;
+        background: var(--bg-primary, white);
         box-shadow: 0 0 0 3px rgba(91, 95, 207, 0.1);
     }
     
@@ -312,7 +313,7 @@
         left: 0;
         right: 0;
         bottom: 0;
-        background-color: #cbd5e1;
+        background-color: var(--bg-tertiary, #cbd5e1);
         transition: .4s;
         border-radius: 26px;
     }
@@ -376,15 +377,15 @@
     }
     
     .alert-success {
-        background: #e8e6ff;
-        color: #5856d6;
-        border: 1px solid #d4d4ff;
+        background: var(--alert-success-bg, #e8e6ff);
+        color: var(--alert-success-text, #5856d6);
+        border: 1px solid var(--alert-success-border, #d4d4ff);
     }
     
     .alert-danger {
-        background: #fee2e2;
-        color: #991b1b;
-        border: 1px solid #fecaca;
+        background: var(--alert-error-bg, #fee2e2);
+        color: var(--alert-error-text, #991b1b);
+        border: 1px solid var(--alert-error-border, #fecaca);
     }
     
     .alert-icon {
@@ -393,8 +394,8 @@
     
     /* Info Box */
     .info-box {
-        background: #f0f9ff;
-        border: 1px solid #bae6fd;
+        background: var(--alert-info-bg, #f0f9ff);
+        border: 1px solid var(--alert-info-border, #bae6fd);
         border-radius: 10px;
         padding: 1rem 1.5rem;
         margin-bottom: 1.5rem;
@@ -404,12 +405,12 @@
     }
     
     .info-icon {
-        color: #0284c7;
+        color: var(--alert-info-text, #0284c7);
         font-size: 1.25rem;
     }
     
     .info-text {
-        color: #075985;
+        color: var(--alert-info-text, #075985);
         font-size: 0.875rem;
     }
     
@@ -417,7 +418,7 @@
     .loading-spinner {
         width: 20px;
         height: 20px;
-        border: 2px solid #f3f3f3;
+        border: 2px solid var(--border-color, #f3f3f3);
         border-top: 2px solid #5b5fcf;
         border-radius: 50%;
         animation: spin 1s linear infinite;
@@ -537,7 +538,7 @@
                     </div>
                     {% trans "ModSecurity Configuration" %}
                 </div>
-                <div ng-show="!modsecLoading" class="loading-spinner"></div>
+                <div ng-show="modsecLoading" class="loading-spinner"></div>
             </div>
             
             <div class="panel-content">

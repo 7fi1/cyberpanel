@@ -20,18 +20,18 @@ AI Security Scanner - CyberPanel
     
     /* Section Headers */
     .scanner-section {
-        background: white;
+        background: var(--bg-primary, white);
         border-radius: 12px;
         padding: 25px;
         margin-bottom: 25px;
         box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        border: 1px solid #e8e9ff;
+        border: 1px solid var(--border-primary, #e8e9ff);
     }
     
     .scanner-title {
         font-size: 16px;
         font-weight: 700;
-        color: #2f3640;
+        color: var(--text-primary, #2f3640);
         margin-bottom: 20px;
         display: flex;
         align-items: center;
@@ -60,27 +60,27 @@ AI Security Scanner - CyberPanel
     }
     
     .scanner-alert-info {
-        background: #e0f2fe;
-        border-color: #0ea5e9;
-        color: #0c4a6e;
+        background: var(--alert-info-bg, #e0f2fe);
+        border-color: var(--alert-info-border, #0ea5e9);
+        color: var(--alert-info-text, #0c4a6e);
     }
     
     .scanner-alert-success {
-        background: #d1fae5;
-        border-color: #10b981;
-        color: #065f46;
+        background: var(--alert-success-bg, #d1fae5);
+        border-color: var(--alert-success-border, #10b981);
+        color: var(--alert-success-text, #065f46);
     }
     
     .scanner-alert-warning {
-        background: #fef3c7;
-        border-color: #f59e0b;
-        color: #92400e;
+        background: var(--alert-warning-bg, #fef3c7);
+        border-color: var(--alert-warning-border, #f59e0b);
+        color: var(--alert-warning-text, #92400e);
     }
     
     .scanner-alert-danger {
-        background: #fee2e2;
-        border-color: #ef4444;
-        color: #991b1b;
+        background: var(--alert-danger-bg, #fee2e2);
+        border-color: var(--alert-danger-border, #ef4444);
+        color: var(--alert-danger-text, #991b1b);
     }
     
     .scanner-alert i {
@@ -112,8 +112,8 @@ AI Security Scanner - CyberPanel
     }
     
     .stat-card {
-        background: white;
-        border: 1px solid #e8e9ff;
+        background: var(--bg-primary, white);
+        border: 1px solid var(--border-primary, #e8e9ff);
         border-radius: 12px;
         padding: 25px;
         text-align: center;
@@ -157,12 +157,12 @@ AI Security Scanner - CyberPanel
         font-size: 32px;
         font-weight: 700;
         margin: 0 0 8px 0;
-        color: #2f3640;
+        color: var(--text-primary, #2f3640);
     }
     
     .stat-card p {
         margin: 0;
-        color: #64748b;
+        color: var(--text-secondary, #64748b);
         font-size: 14px;
         font-weight: 500;
     }
@@ -170,7 +170,7 @@ AI Security Scanner - CyberPanel
     .stat-card small {
         display: block;
         margin-top: 8px;
-        color: #94a3b8;
+        color: var(--text-muted, #94a3b8);
         font-size: 12px;
     }
     
@@ -203,8 +203,8 @@ AI Security Scanner - CyberPanel
     }
     
     .btn-default {
-        background: #f8f9ff;
-        border: 1px solid #e8e9ff;
+        background: var(--bg-secondary, #f8f9ff);
+        border: 1px solid var(--border-primary, #e8e9ff);
         padding: 10px 20px;
         border-radius: 8px;
         font-weight: 600;
@@ -217,7 +217,7 @@ AI Security Scanner - CyberPanel
     }
     
     .btn-default:hover {
-        background: #e8e9ff;
+        background: var(--border-primary, #e8e9ff);
         color: #4644c0;
     }
     
@@ -240,18 +240,19 @@ AI Security Scanner - CyberPanel
         display: block;
         margin-bottom: 8px;
         font-weight: 600;
-        color: #2f3640;
+        color: var(--text-primary, #2f3640);
         font-size: 14px;
     }
     
     .form-control {
         width: 100%;
         padding: 10px 15px;
-        border: 1px solid #e8e9ff;
+        border: 1px solid var(--border-primary, #e8e9ff);
         border-radius: 8px;
         font-size: 14px;
         transition: all 0.3s ease;
-        background: white;
+        background: var(--bg-primary, white);
+        color: var(--text-primary, #2f3640);
     }
     
     .form-control:focus {
@@ -262,7 +263,7 @@ AI Security Scanner - CyberPanel
     
     /* Table Styles */
     .table-container {
-        background: white;
+        background: var(--bg-primary, white);
         border-radius: 12px;
         overflow: hidden;
         box-shadow: 0 2px 8px rgba(0,0,0,0.08);
@@ -274,31 +275,31 @@ AI Security Scanner - CyberPanel
     }
     
     .scanner-table th {
-        background: #f8f9ff;
+        background: var(--bg-secondary, #f8f9ff);
         padding: 15px;
         text-align: left;
         font-size: 12px;
         font-weight: 700;
-        color: #64748b;
+        color: var(--text-secondary, #64748b);
         text-transform: uppercase;
         letter-spacing: 0.8px;
-        border-bottom: 2px solid #e8e9ff;
+        border-bottom: 2px solid var(--border-primary, #e8e9ff);
     }
     
     .scanner-table td {
         padding: 15px;
-        border-bottom: 1px solid #f0f0ff;
-        color: #2f3640;
+        border-bottom: 1px solid var(--border-light, #f0f0ff);
+        color: var(--text-primary, #2f3640);
         font-size: 14px;
     }
     
     .scanner-table tr:hover {
-        background: #f8f9ff;
+        background: var(--bg-secondary, #f8f9ff);
     }
     
     /* Progress Bar */
     .progress {
-        background: #e8e9ff;
+        background: var(--border-primary, #e8e9ff);
         height: 8px;
         border-radius: 4px;
         overflow: hidden;
@@ -335,23 +336,23 @@ AI Security Scanner - CyberPanel
     }
     
     .status-label.success {
-        background: #d1fae5;
-        color: #10b981;
+        background: var(--alert-success-bg, #d1fae5);
+        color: var(--alert-success-border, #10b981);
     }
     
     .status-label.warning {
-        background: #fef3c7;
-        color: #f59e0b;
+        background: var(--alert-warning-bg, #fef3c7);
+        color: var(--alert-warning-border, #f59e0b);
     }
     
     .status-label.danger {
-        background: #fee2e2;
-        color: #ef4444;
+        background: var(--alert-danger-bg, #fee2e2);
+        color: var(--alert-danger-border, #ef4444);
     }
     
     .status-label.info {
-        background: #e0f2fe;
-        color: #3b82f6;
+        background: var(--alert-info-bg, #e0f2fe);
+        color: var(--alert-info-border, #3b82f6);
     }
     
     /* Modal Styles */
@@ -367,8 +368,8 @@ AI Security Scanner - CyberPanel
     }
     
     .modal-header {
-        background: #f8f9ff;
-        border-bottom: 1px solid #e8e9ff;
+        background: var(--bg-secondary, #f8f9ff);
+        border-bottom: 1px solid var(--border-primary, #e8e9ff);
         border-radius: 16px 16px 0 0;
         padding: 20px 25px;
     }
@@ -376,7 +377,7 @@ AI Security Scanner - CyberPanel
     .modal-title {
         font-size: 18px;
         font-weight: 700;
-        color: #2f3640;
+        color: var(--text-primary, #2f3640);
         display: flex;
         align-items: center;
         gap: 10px;
@@ -384,11 +385,13 @@ AI Security Scanner - CyberPanel
     
     .modal-body {
         padding: 25px;
+        background: var(--bg-primary, white);
+        color: var(--text-primary, #2f3640);
     }
     
     .modal-footer {
-        background: #f8f9ff;
-        border-top: 1px solid #e8e9ff;
+        background: var(--bg-secondary, #f8f9ff);
+        border-top: 1px solid var(--border-primary, #e8e9ff);
         border-radius: 0 0 16px 16px;
         padding: 15px 25px;
     }
@@ -468,16 +471,16 @@ AI Security Scanner - CyberPanel
                             <h6 style="font-weight: 600; margin-bottom: 10px;">Current Pricing:</h6>
                             <ul style="list-style: none; padding: 0; margin: 0;">
                                 <li style="margin-bottom: 5px;"><strong>{{ pricing_data.plan.name }}</strong></li>
-                                <li style="margin-bottom: 5px; color: #64748b;">Max Files: {{ pricing_data.plan.limits.max_files_per_scan|floatformat:0 }}</li>
-                                <li style="color: #64748b;">Max File Size: {{ pricing_data.plan.limits.max_file_size_mb }}MB</li>
+                                <li style="margin-bottom: 5px; color: var(--text-secondary, #64748b);">Max Files: {{ pricing_data.plan.limits.max_files_per_scan|floatformat:0 }}</li>
+                                <li style="color: var(--text-secondary, #64748b);">Max File Size: {{ pricing_data.plan.limits.max_file_size_mb }}MB</li>
                             </ul>
                         </div>
                         <div>
                             <h6 style="font-weight: 600; margin-bottom: 10px;">Example Costs:</h6>
                             <ul style="list-style: none; padding: 0; margin: 0;">
-                                <li style="margin-bottom: 5px; color: #64748b;">Small Scan: ${{ pricing_data.plan.example_costs.small_scan.estimated_cost_usd }}</li>
-                                <li style="margin-bottom: 5px; color: #64748b;">Medium Scan: ${{ pricing_data.plan.example_costs.medium_scan.estimated_cost_usd }}</li>
-                                <li style="color: #64748b;">Large Scan: ${{ pricing_data.plan.example_costs.large_scan.estimated_cost_usd }}</li>
+                                <li style="margin-bottom: 5px; color: var(--text-secondary, #64748b);">Small Scan: ${{ pricing_data.plan.example_costs.small_scan.estimated_cost_usd }}</li>
+                                <li style="margin-bottom: 5px; color: var(--text-secondary, #64748b);">Medium Scan: ${{ pricing_data.plan.example_costs.medium_scan.estimated_cost_usd }}</li>
+                                <li style="color: var(--text-secondary, #64748b);">Large Scan: ${{ pricing_data.plan.example_costs.large_scan.estimated_cost_usd }}</li>
                             </ul>
                         </div>
                     </div>
@@ -500,7 +503,7 @@ AI Security Scanner - CyberPanel
                     <h4>VPS Free Scans Available</h4>
                     <p>Great news! Your CyberPanel VPS hosting includes <strong>{{ vps_info.free_scans_available|default:0 }} free AI security scans</strong> this month ({{ vps_info.scans_used_this_month|default:0 }}/{{ vps_info.free_scans_per_month|default:0 }} used).</p>
                     {% if not is_payment_configured %}
-                    <p style="margin-top: 10px;"><small style="color: #64748b;">You can still add a payment method below for additional scans beyond your free allowance.</small></p>
+                    <p style="margin-top: 10px;"><small style="color: var(--text-secondary, #64748b);">You can still add a payment method below for additional scans beyond your free allowance.</small></p>
                     {% endif %}
                 </div>
             </div>
@@ -581,21 +584,21 @@ AI Security Scanner - CyberPanel
             </div>
             
             {% if vps_info.is_vps|default:False and not is_payment_configured %}
-            <p style="color: #64748b; margin-bottom: 15px;">
+            <p style="color: var(--text-secondary, #64748b); margin-bottom: 15px;">
                 <i class="fas fa-info-circle"></i> 
                 Payment setup is optional for VPS users. You have {{ vps_info.free_scans_available|default:0 }} free scans available.
             </p>
             {% else %}
-            <p style="color: #64748b; margin-bottom: 15px;">
+            <p style="color: var(--text-secondary, #64748b); margin-bottom: 15px;">
                 <i class="fas fa-info-circle"></i> 
                 Your account uses automatic billing. Add multiple payment methods for backup security.
             </p>
             {% endif %}
             <div id="paymentMethodsList">
                 {% if is_payment_configured %}
-                <p style="color: #94a3b8;">Payment methods will be managed through the platform.</p>
+                <p style="color: var(--text-muted, #94a3b8);">Payment methods will be managed through the platform.</p>
                 {% else %}
-                <p style="color: #94a3b8;">No payment methods configured yet.</p>
+                <p style="color: var(--text-muted, #94a3b8);">No payment methods configured yet.</p>
                 {% endif %}
             </div>
         </div>
@@ -716,7 +719,7 @@ AI Security Scanner - CyberPanel
                                     <div class="progress" style="height: 20px;">
                                         <div class="progress-bar progress-bar-animated" 
                                              role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
-                                            <span class="progress-text" style="position: absolute; width: 100%; text-align: center; line-height: 20px; color: #2f3640; font-size: 12px;">0%</span>
+                                            <span class="progress-text" style="position: absolute; width: 100%; text-align: center; line-height: 20px; color: var(--text-primary, #2f3640); font-size: 12px;">0%</span>
                                         </div>
                                     </div>
                                 {% else %}
@@ -791,7 +794,7 @@ AI Security Scanner - CyberPanel
                             <div class="progress" style="height: 25px;">
                                 <div id="scanProgressBar" class="progress-bar progress-bar-animated" 
                                      role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
-                                    <span id="scanProgressText" style="position: absolute; width: 100%; text-align: center; line-height: 25px; color: #2f3640; font-weight: 600;">0%</span>
+                                    <span id="scanProgressText" style="position: absolute; width: 100%; text-align: center; line-height: 25px; color: var(--text-primary, #2f3640); font-weight: 600;">0%</span>
                                 </div>
                             </div>
                         </div>
@@ -801,38 +804,38 @@ AI Security Scanner - CyberPanel
                     <div class="row" style="margin-bottom: 15px;">
                         <div class="col-md-6">
                             <strong>Current Activity:</strong>
-                            <br><span id="currentActivity" class="text-muted">Initializing...</span>
+                            <br><span id="currentActivity" style="color: var(--text-secondary, #64748b);">Initializing...</span>
                         </div>
                         <div class="col-md-6">
                             <strong>Current File:</strong>
-                            <br><code id="currentFile" class="text-primary">N/A</code>
+                            <br><code id="currentFile" style="color: #5856d6;">N/A</code>
                         </div>
                     </div>
 
                     <!-- Statistics -->
                     <div class="row">
                         <div class="col-md-3">
-                            <div style="background: #e0f2fe; border-radius: 8px; padding: 15px; text-align: center;">
-                                <h4 id="filesDiscovered" style="margin: 0 0 5px 0; color: #3b82f6;">0</h4>
-                                <small style="color: #64748b;">Files Discovered</small>
+                            <div style="background: var(--alert-info-bg, #e0f2fe); border-radius: 8px; padding: 15px; text-align: center;">
+                                <h4 id="filesDiscovered" style="margin: 0 0 5px 0; color: var(--alert-info-border, #3b82f6);">0</h4>
+                                <small style="color: var(--text-secondary, #64748b);">Files Discovered</small>
                             </div>
                         </div>
                         <div class="col-md-3">
-                            <div style="background: #e8e6ff; border-radius: 8px; padding: 15px; text-align: center;">
+                            <div style="background: var(--bg-secondary, #e8e6ff); border-radius: 8px; padding: 15px; text-align: center;">
                                 <h4 id="filesScanned" style="margin: 0 0 5px 0; color: #5856d6;">0</h4>
-                                <small style="color: #64748b;">Files Scanned</small>
+                                <small style="color: var(--text-secondary, #64748b);">Files Scanned</small>
                             </div>
                         </div>
                         <div class="col-md-3">
-                            <div style="background: #fef3c7; border-radius: 8px; padding: 15px; text-align: center;">
-                                <h4 id="filesRemaining" style="margin: 0 0 5px 0; color: #f59e0b;">0</h4>
-                                <small style="color: #64748b;">Files Remaining</small>
+                            <div style="background: var(--alert-warning-bg, #fef3c7); border-radius: 8px; padding: 15px; text-align: center;">
+                                <h4 id="filesRemaining" style="margin: 0 0 5px 0; color: var(--alert-warning-border, #f59e0b);">0</h4>
+                                <small style="color: var(--text-secondary, #64748b);">Files Remaining</small>
                             </div>
                         </div>
                         <div class="col-md-3">
-                            <div style="background: #fee2e2; border-radius: 8px; padding: 15px; text-align: center;">
-                                <h4 id="threatsFound" style="margin: 0 0 5px 0; color: #ef4444;">0</h4>
-                                <small style="color: #64748b;">Threats Found</small>
+                            <div style="background: var(--alert-danger-bg, #fee2e2); border-radius: 8px; padding: 15px; text-align: center;">
+                                <h4 id="threatsFound" style="margin: 0 0 5px 0; color: var(--alert-danger-border, #ef4444);">0</h4>
+                                <small style="color: var(--text-secondary, #64748b);">Threats Found</small>
                             </div>
                         </div>
                     </div>
@@ -849,7 +852,7 @@ AI Security Scanner - CyberPanel
                     <!-- Last Updated -->
                     <div class="row" style="margin-top: 15px;">
                         <div class="col-md-12">
-                            <small class="text-muted">Last updated: <span id="lastUpdated">Never</span></small>
+                            <small style="color: var(--text-muted, #94a3b8);">Last updated: <span id="lastUpdated">Never</span></small>
                         </div>
                     </div>
                 </div>
@@ -1240,13 +1243,13 @@ function displayCompletedScanDetails(scan) {
                                 finding.severity === 'medium' ? 'warning' : 'info';
             
             findingsHtml += `
-                <div style="background: white; border: 1px solid #e8e9ff; border-radius: 8px; padding: 15px;">
-                    <h6 style="margin: 0 0 10px 0; display: flex; align-items: center; gap: 10px;">
+                <div style="background: var(--bg-primary, white); border: 1px solid var(--border-primary, #e8e9ff); border-radius: 8px; padding: 15px;">
+                    <h6 style="margin: 0 0 10px 0; display: flex; align-items: center; gap: 10px; color: var(--text-primary, #2f3640);">
                         <span class="status-label ${severityClass}" style="text-transform: uppercase;">${finding.severity}</span>
                         ${finding.title}
                     </h6>
-                    <p style="margin: 0 0 10px 0; color: #64748b;">${finding.description}</p>
-                    ${finding.file ? `<small style="color: #94a3b8;">File: ${finding.file}</small>` : ''}
+                    <p style="margin: 0 0 10px 0; color: var(--text-secondary, #64748b);">${finding.description}</p>
+                    ${finding.file ? `<small style="color: var(--text-muted, #94a3b8);">File: ${finding.file}</small>` : ''}
                 </div>
             `;
         });
@@ -1282,7 +1285,7 @@ function displayCompletedScanDetails(scan) {
                 </div>
                 <h4 style="margin: 0; font-size: 24px; font-weight: 700;">${threatsFound}</h4>
                 <p style="margin: 5px 0 0 0; font-size: 13px;">Threats Found</p>
-                ${(criticalThreats > 0 || highThreats > 0) ? `<small style="color: #ef4444; font-size: 11px;">${criticalThreats > 0 ? `${criticalThreats} Critical` : ''}${criticalThreats > 0 && highThreats > 0 ? ', ' : ''}${highThreats > 0 ? `${highThreats} High` : ''}</small>` : ''}
+                ${(criticalThreats > 0 || highThreats > 0) ? `<small style="color: var(--alert-danger-border, #ef4444); font-size: 11px;">${criticalThreats > 0 ? `${criticalThreats} Critical` : ''}${criticalThreats > 0 && highThreats > 0 ? ', ' : ''}${highThreats > 0 ? `${highThreats} High` : ''}</small>` : ''}
             </div>
             <div class="stat-card" style="padding: 20px;">
                 <div class="stat-card-icon info" style="width: 40px; height: 40px; font-size: 18px; margin-bottom: 10px;">
@@ -1412,7 +1415,7 @@ function updateTableRowProgress(row, data) {
                     <div class="progress-bar progress-bar-animated" 
                          role="progressbar" style="width: ${data.progress}%" 
                          aria-valuenow="${data.progress}" aria-valuemin="0" aria-valuemax="100">
-                        <span class="progress-text" style="position: absolute; width: 100%; text-align: center; line-height: 20px; color: #2f3640; font-size: 12px;">${data.progress}%</span>
+                        <span class="progress-text" style="position: absolute; width: 100%; text-align: center; line-height: 20px; color: var(--text-primary, #2f3640); font-size: 12px;">${data.progress}%</span>
                     </div>
                 </div>
             `;
@@ -1598,7 +1601,7 @@ function displayScheduledScans(scans) {
     const container = document.getElementById('scheduledScansContainer');
     
     if (!scans || scans.length === 0) {
-        container.innerHTML = '<p style="color: #94a3b8; text-align: center; padding: 20px;">No scheduled scans configured yet.</p>';
+        container.innerHTML = '<p style="color: var(--text-muted, #94a3b8); text-align: center; padding: 20px;">No scheduled scans configured yet.</p>';
         return;
     }
     
@@ -1970,10 +1973,10 @@ document.addEventListener('DOMContentLoaded', function() {
 }
 
 .scheduled-scan-card {
-    border: 1px solid #e8e9ff;
+    border: 1px solid var(--border-primary, #e8e9ff);
     border-radius: 8px;
     padding: 20px;
-    background: white;
+    background: var(--bg-primary, white);
 }
 
 .scheduled-scan-header {
@@ -1985,13 +1988,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
 .scheduled-scan-header h4 {
     margin: 0;
-    color: #2f3640;
+    color: var(--text-primary, #2f3640);
     font-size: 16px;
 }
 
 .scheduled-scan-info p {
     margin: 5px 0;
-    color: #64748b;
+    color: var(--text-secondary, #64748b);
     font-size: 14px;
 }
 
@@ -2003,7 +2006,8 @@ document.addEventListener('DOMContentLoaded', function() {
 }
 
 .checkbox-group {
-    background: #f8f9fa;
+    background: var(--bg-secondary, #f8f9fa);
+    border-color: var(--border-primary, #ddd);
 }
 
 .form-check {

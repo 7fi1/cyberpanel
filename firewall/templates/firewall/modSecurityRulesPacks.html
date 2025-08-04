@@ -117,10 +117,10 @@
     
     /* Install Panel */
     .install-panel {
-        background: white;
+        background: var(--bg-primary, white);
         border-radius: 16px;
         box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 10px 40px rgba(0,0,0,0.08);
-        border: 1px solid #e8e9ff;
+        border: 1px solid var(--border-light, #e8e9ff);
         overflow: hidden;
         animation: fadeInUp 0.5s ease-out;
         text-align: center;
@@ -136,7 +136,7 @@
     .install-title {
         font-size: 1.5rem;
         font-weight: 600;
-        color: #1e293b;
+        color: var(--text-primary, #1e293b);
         margin-bottom: 1rem;
     }
     
@@ -162,10 +162,10 @@
     
     /* Rules Panel */
     .rules-panel {
-        background: white;
+        background: var(--bg-primary, white);
         border-radius: 16px;
         box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 10px 40px rgba(0,0,0,0.08);
-        border: 1px solid #e8e9ff;
+        border: 1px solid var(--border-light, #e8e9ff);
         overflow: hidden;
         animation: fadeInUp 0.5s ease-out;
     }
@@ -177,25 +177,25 @@
     }
     
     .custom-table thead th {
-        background: #f8f9ff;
+        background: var(--bg-secondary, #f8f9ff);
         padding: 1rem 1.5rem;
         text-align: left;
         font-weight: 600;
-        color: #334155;
+        color: var(--text-secondary, #334155);
         font-size: 0.875rem;
         text-transform: uppercase;
         letter-spacing: 0.05em;
-        border-bottom: 2px solid #e8e9ff;
+        border-bottom: 2px solid var(--border-light, #e8e9ff);
     }
     
     .custom-table tbody td {
         padding: 1.25rem 1.5rem;
-        border-bottom: 1px solid #e8e9ff;
+        border-bottom: 1px solid var(--border-light, #e8e9ff);
         vertical-align: middle;
     }
     
     .custom-table tbody tr:hover {
-        background: #f8f9ff;
+        background: var(--bg-secondary, #f8f9ff);
     }
     
     .custom-table tbody tr:last-child td {
@@ -204,7 +204,7 @@
     
     .package-name {
         font-weight: 600;
-        color: #1e293b;
+        color: var(--text-primary, #1e293b);
         font-size: 1rem;
     }
     
@@ -229,7 +229,7 @@
         left: 0;
         right: 0;
         bottom: 0;
-        background-color: #cbd5e1;
+        background-color: var(--bg-tertiary, #cbd5e1);
         transition: .4s;
         border-radius: 26px;
     }
@@ -256,8 +256,8 @@
     
     /* Buttons */
     .btn-configure {
-        background: #f8f9ff;
-        border: 2px solid #e8e9ff;
+        background: var(--bg-secondary, #f8f9ff);
+        border: 2px solid var(--border-light, #e8e9ff);
         color: #5b5fcf;
         padding: 0.75rem 1.5rem;
         border-radius: 10px;
@@ -295,15 +295,15 @@
     }
     
     .alert-success {
-        background: #e8e6ff;
-        color: #5856d6;
-        border: 1px solid #d4d4ff;
+        background: var(--alert-success-bg, #e8e6ff);
+        color: var(--alert-success-text, #5856d6);
+        border: 1px solid var(--alert-success-border, #d4d4ff);
     }
     
     .alert-danger {
-        background: #fee2e2;
-        color: #991b1b;
-        border: 1px solid #fecaca;
+        background: var(--alert-danger-bg, #fee2e2);
+        color: var(--alert-danger-text, #991b1b);
+        border: 1px solid var(--alert-danger-border, #fecaca);
     }
     
     .alert-icon {
@@ -313,10 +313,10 @@
     /* Rule Files Table */
     .rule-files-section {
         margin-top: 2rem;
-        background: white;
+        background: var(--bg-primary, white);
         border-radius: 16px;
         box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 10px 40px rgba(0,0,0,0.08);
-        border: 1px solid #e8e9ff;
+        border: 1px solid var(--border-light, #e8e9ff);
         overflow: hidden;
         padding: 2rem;
     }
@@ -327,25 +327,25 @@
     }
     
     .rule-files-table thead th {
-        background: #f8f9ff;
+        background: var(--bg-secondary, #f8f9ff);
         padding: 1rem;
         text-align: left;
         font-weight: 600;
-        color: #334155;
+        color: var(--text-secondary, #334155);
         font-size: 0.875rem;
         text-transform: uppercase;
         letter-spacing: 0.05em;
-        border-bottom: 2px solid #e8e9ff;
+        border-bottom: 2px solid var(--border-light, #e8e9ff);
     }
     
     .rule-files-table tbody td {
         padding: 1rem;
-        border-bottom: 1px solid #e8e9ff;
+        border-bottom: 1px solid var(--border-light, #e8e9ff);
         vertical-align: middle;
     }
     
     .rule-files-table tbody tr:hover {
-        background: #f8f9ff;
+        background: var(--bg-secondary, #f8f9ff);
     }
     
     .rule-files-table tbody tr:last-child td {
@@ -362,7 +362,7 @@
     .loading-spinner {
         width: 20px;
         height: 20px;
-        border: 2px solid #f3f3f3;
+        border: 2px solid var(--bg-tertiary, #f3f3f3);
         border-top: 2px solid #5b5fcf;
         border-radius: 50%;
         animation: spin 1s linear infinite;
@@ -490,7 +490,7 @@
         
         <!-- Rule Files Section -->
         <div ng-hide="ruleFiles" class="rule-files-section">
-            <h3 style="font-size: 1.25rem; font-weight: 600; color: #1e293b; margin-bottom: 1.5rem;">
+            <h3 style="font-size: 1.25rem; font-weight: 600; color: var(--text-primary, #1e293b); margin-bottom: 1.5rem;">
                 <i class="fas fa-file-code" style="color: #5b5fcf; margin-right: 0.5rem;"></i>
                 {% trans "Rule Files" %}
             </h3>

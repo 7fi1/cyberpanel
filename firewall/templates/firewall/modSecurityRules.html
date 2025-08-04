@@ -116,10 +116,10 @@
     
     /* Rules Editor Panel */
     .rules-panel {
-        background: white;
+        background: var(--bg-primary, white);
         border-radius: 16px;
         box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 10px 40px rgba(0,0,0,0.08);
-        border: 1px solid #e8e9ff;
+        border: 1px solid var(--border-color, #e8e9ff);
         overflow: hidden;
         animation: fadeInUp 0.5s ease-out;
     }
@@ -153,12 +153,13 @@
     
     .panel-content {
         padding: 2rem;
+        background: var(--bg-primary, white);
     }
     
     /* Info Box */
     .info-box {
-        background: #f0f9ff;
-        border: 1px solid #bae6fd;
+        background: var(--bg-secondary, #f0f9ff);
+        border: 1px solid var(--border-color-light, #bae6fd);
         border-radius: 10px;
         padding: 1rem 1.5rem;
         margin-bottom: 1.5rem;
@@ -168,12 +169,12 @@
     }
     
     .info-icon {
-        color: #0284c7;
+        color: var(--accent-primary, #0284c7);
         font-size: 1.25rem;
     }
     
     .info-text {
-        color: #075985;
+        color: var(--text-secondary, #075985);
         font-size: 0.875rem;
     }
     
@@ -181,12 +182,12 @@
     .rules-textarea {
         width: 100%;
         padding: 1rem;
-        border: 2px solid #e8e9ff;
+        border: 2px solid var(--border-color, #e8e9ff);
         border-radius: 10px;
         font-family: 'Monaco', 'Consolas', monospace;
         font-size: 0.875rem;
         background: #1e293b;
-        color: #5b5fcf;
+        color: var(--text-primary, #5b5fcf);
         resize: vertical;
         min-height: 400px;
         transition: all 0.3s ease;
@@ -194,16 +195,16 @@
     
     .rules-textarea:focus {
         outline: none;
-        border-color: #5b5fcf;
+        border-color: var(--accent-primary, #5b5fcf);
         box-shadow: 0 0 0 3px rgba(91, 95, 207, 0.1);
     }
     
     /* Install Panel */
     .install-panel {
-        background: white;
+        background: var(--bg-primary, white);
         border-radius: 16px;
         box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 10px 40px rgba(0,0,0,0.08);
-        border: 1px solid #e8e9ff;
+        border: 1px solid var(--border-color, #e8e9ff);
         overflow: hidden;
         animation: fadeInUp 0.5s ease-out;
         text-align: center;
@@ -212,19 +213,19 @@
     
     .install-icon {
         font-size: 4rem;
-        color: #5b5fcf;
+        color: var(--accent-primary, #5b5fcf);
         margin-bottom: 1.5rem;
     }
     
     .install-title {
         font-size: 1.5rem;
         font-weight: 600;
-        color: #1e293b;
+        color: var(--text-primary, #1e293b);
         margin-bottom: 1rem;
     }
     
     .install-subtitle {
-        color: #64748b;
+        color: var(--text-secondary, #64748b);
         margin-bottom: 2rem;
     }
     
@@ -281,15 +282,15 @@
     }
     
     .alert-success {
-        background: #e8e6ff;
-        color: #5856d6;
-        border: 1px solid #d4d4ff;
+        background: var(--success-bg, #e8e6ff);
+        color: var(--success-text, #5856d6);
+        border: 1px solid var(--success-border, #d4d4ff);
     }
     
     .alert-danger {
-        background: #fee2e2;
-        color: #991b1b;
-        border: 1px solid #fecaca;
+        background: var(--danger-bg, #fee2e2);
+        color: var(--danger-text, #991b1b);
+        border: 1px solid var(--danger-border, #fecaca);
     }
     
     .alert-icon {
@@ -300,8 +301,8 @@
     .loading-spinner {
         width: 20px;
         height: 20px;
-        border: 2px solid #f3f3f3;
-        border-top: 2px solid #5b5fcf;
+        border: 2px solid var(--border-color-light, #f3f3f3);
+        border-top: 2px solid var(--accent-primary, #5b5fcf);
         border-radius: 50%;
         animation: spin 1s linear infinite;
         display: inline-block;
@@ -376,7 +377,7 @@
                     </div>
                     {% trans "Edit Rules" %}
                 </div>
-                <div ng-show="!modsecLoading" class="loading-spinner"></div>
+                <div ng-show="modsecLoading" class="loading-spinner"></div>
             </div>
             
             <div class="panel-content">
