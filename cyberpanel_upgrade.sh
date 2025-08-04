@@ -604,7 +604,12 @@ fi
 if [[ -f /usr/local/CyberPanel/bin/python2 ]]; then
   echo -e "\nPython 2 dectected, doing re-setup...\n"
   rm -rf /usr/local/CyberPanel/bin
-  virtualenv -p /usr/bin/python3 --system-site-packages /usr/local/CyberPanel
+  if [[ "$Server_OS" = "CentOS" ]] && [[ "$Server_OS_Version" = "9" ]]; then
+    PYTHON_PATH=$(which python3 2>/dev/null || which python3.9 2>/dev/null || echo "/usr/bin/python3")
+    virtualenv -p "$PYTHON_PATH" --system-site-packages /usr/local/CyberPanel
+  else
+    virtualenv -p /usr/bin/python3 --system-site-packages /usr/local/CyberPanel
+  fi
   Check_Return
 elif [[ -d /usr/local/CyberPanel/bin/ ]]; then
   echo -e "\nNo need to re-setup virtualenv at /usr/local/CyberPanel...\n"
@@ -614,7 +619,12 @@ else
 echo -e "\nNothing found, need fresh setup...\n"
 
 # Attempt to create a virtual environment
-virtualenv -p /usr/bin/python3 --system-site-packages /usr/local/CyberPanel
+if [[ "$Server_OS" = "CentOS" ]] && [[ "$Server_OS_Version" = "9" ]]; then
+  PYTHON_PATH=$(which python3 2>/dev/null || which python3.9 2>/dev/null || echo "/usr/bin/python3")
+  virtualenv -p "$PYTHON_PATH" --system-site-packages /usr/local/CyberPanel
+else
+  virtualenv -p /usr/bin/python3 --system-site-packages /usr/local/CyberPanel
+fi
 
 # Check if the virtualenv command failed
 if [ $? -ne 0 ]; then
@@ -641,7 +651,12 @@ if [ $? -ne 0 ]; then
                 # Verify the installation
                 if [ $? -eq 0 ]; then
                     echo "'packaging' module reinstalled and upgraded successfully."
-                    virtualenv -p /usr/bin/python3 --system-site-packages /usr/local/CyberPanel
+                    if [[ "$Server_OS" = "CentOS" ]] && [[ "$Server_OS_Version" = "9" ]]; then
+                        PYTHON_PATH=$(which python3 2>/dev/null || which python3.9 2>/dev/null || echo "/usr/bin/python3")
+                        virtualenv -p "$PYTHON_PATH" --system-site-packages /usr/local/CyberPanel
+                    else
+                        virtualenv -p /usr/bin/python3 --system-site-packages /usr/local/CyberPanel
+                    fi
                 else
                     echo "Failed to install 'packaging' module using pip."
                 fi
@@ -856,9 +871,19 @@ if [[ $NEEDS_RECREATE -eq 1 ]] || [[ ! -d /usr/local/CyberCP/bin ]]; then
     if [[ "$Server_OS" = "Ubuntu" ]] && [[ "$Server_OS_Version" = "22" ]]; then
       echo -e "[$(date +"%Y-%m-%d %H:%M:%S")] Ubuntu 22.04 detected, ensuring virtualenv is properly installed..." | tee -a /var/log/cyberpanel_upgrade_debug.log
       pip3 install --upgrade virtualenv 2>&1 | tee -a /var/log/cyberpanel_upgrade_debug.log
+    elif [[ "$Server_OS" = "CentOS" ]] && [[ "$Server_OS_Version" = "9" ]]; then
+      echo -e "[$(date +"%Y-%m-%d %H:%M:%S")] AlmaLinux/Rocky Linux 9 detected, ensuring virtualenv is properly installed..." | tee -a /var/log/cyberpanel_upgrade_debug.log
+      pip3 install --upgrade virtualenv 2>&1 | tee -a /var/log/cyberpanel_upgrade_debug.log
     fi
     
-    virtualenv_output=$(virtualenv -p /usr/bin/python3 /usr/local/CyberCP 2>&1)
+    # Find the correct python3 path
+    if [[ "$Server_OS" = "CentOS" ]] && [[ "$Server_OS_Version" = "9" ]]; then
+      PYTHON_PATH=$(which python3 2>/dev/null || which python3.9 2>/dev/null || echo "/usr/bin/python3")
+      echo -e "[$(date +"%Y-%m-%d %H:%M:%S")] Using Python path: $PYTHON_PATH" | tee -a /var/log/cyberpanel_upgrade_debug.log
+      virtualenv_output=$(virtualenv -p "$PYTHON_PATH" /usr/local/CyberCP 2>&1)
+    else
+      virtualenv_output=$(virtualenv -p /usr/bin/python3 /usr/local/CyberCP 2>&1)
+    fi
     VENV_CODE=$?
     echo "$virtualenv_output" | tee -a /var/log/cyberpanel_upgrade_debug.log
     
