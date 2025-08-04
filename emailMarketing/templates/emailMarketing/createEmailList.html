@@ -13,8 +13,8 @@
    <h2>{% trans "Create Email List" %} - <span id="domainNamePage">{{ domain }}</span> </h2>
    <p>{% trans "Create email list, to send out news letters and marketing emails." %}</p>
 </div>
-<div class="panel">
-    <div class="panel-body">
+<div class="panel" style="background: var(--bg-primary, white); border-color: var(--border-color, #ddd);">
+    <div class="panel-body" style="background: var(--bg-primary, white); color: var(--text-primary, #333);">
         <h3 class="title-hero">
             {% trans "Create Email List" %} <img ng-hide="cyberPanelLoading" src="{% static 'images/loading.gif' %}">
         </h3>
@@ -47,7 +47,7 @@
                 <div ng-hide="installationProgress" class="form-group">
                     <label class="col-sm-2 control-label"></label>
                     <div class="col-sm-7">
-                            <div class="alert alert-success text-center">
+                            <div class="alert alert-success text-center" style="background: var(--bg-secondary, #f8f9ff); color: var(--text-primary, #333); border-color: var(--border-color, #ddd);">
                                         <h2>{$ currentStatus $}</h2>
                             </div>
                     </div>

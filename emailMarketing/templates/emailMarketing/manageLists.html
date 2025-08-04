@@ -13,8 +13,8 @@
             <h2>{% trans "Manage Email Lists" %} - <span id="domainNamePage">{{ domain }}</span></h2>
             <p>{% trans "On this page you can manage your email lists (Delete, Verify, Add More Emails)." %}</p>
         </div>
-        <div ng-controller="manageEmailLists" class="panel">
-            <div class="panel-body">
+        <div ng-controller="manageEmailLists" class="panel" style="background: var(--bg-primary, white); border-color: var(--border-color, #ddd);">
+            <div class="panel-body" style="background: var(--bg-primary, white); color: var(--text-primary, #333);">
                 <h3 class="title-hero">
                     {% trans "Manage Email Lists" %} <img ng-hide="cyberPanelLoading"
                                                           src="{% static 'images/loading.gif' %}">
@@ -45,7 +45,7 @@
                                     <div class="modal fade" id="deleteList" tabindex="-1" role="dialog"
                                          aria-labelledby="myModalLabel" aria-hidden="true">
                                         <div class="modal-dialog">
-                                            <div class="modal-content">
+                                            <div class="modal-content" style="background: var(--bg-primary, white); color: var(--text-primary, #333); border-color: var(--border-color, #ddd);">
                                                 <div class="modal-header">
                                                     <button type="button" class="close" data-dismiss="modal"
                                                             aria-hidden="true">&times;
@@ -83,7 +83,7 @@
                                     <div class="modal fade" id="verificationLogs" tabindex="-1" role="dialog"
                                          aria-labelledby="myModalLabel" aria-hidden="true">
                                         <div class="modal-dialog modal-lg">
-                                            <div class="modal-content">
+                                            <div class="modal-content" style="background: var(--bg-primary, white); color: var(--text-primary, #333); border-color: var(--border-color, #ddd);">
                                                 <div class="modal-header">
                                                     <button type="button" class="close" data-dismiss="modal"
                                                             aria-hidden="true">&times;
@@ -97,7 +97,7 @@
 
                                                     <div ng-hide="currentRecords" class="form-group">
 
-                                                        <table style="margin: 0px; padding-bottom: 2%" class="table">
+                                                        <table style="margin: 0px; padding-bottom: 2%; background: var(--bg-primary, white); color: var(--text-primary, #333); border-color: var(--border-color, #ddd);" class="table">
                                                             <thead>
                                                             <tr>
                                                                 <th>{% trans "Total Emails" %}</th>
@@ -132,7 +132,7 @@
 
                                                         <div class="col-sm-12">
 
-                                                            <table style="margin: 0px" class="table">
+                                                            <table style="margin: 0px; background: var(--bg-primary, white); color: var(--text-primary, #333); border-color: var(--border-color, #ddd);" class="table">
                                                                 <thead>
                                                                 <tr>
                                                                     <th>{% trans "Status" %}</th>
@@ -211,7 +211,7 @@
                         <div ng-hide="installationProgress" class="form-group">
                             <label class="col-sm-2 control-label"></label>
                             <div class="col-sm-7">
-                                <div class="alert alert-success text-center">
+                                <div class="alert alert-success text-center" style="background: var(--bg-secondary, #f8f9ff); color: var(--text-primary, #333); border-color: var(--border-color, #ddd);">
                                     <h2>{$ currentStatus $}</h2>
                                 </div>
                             </div>
@@ -232,7 +232,7 @@
                         <div ng-hide="verificationStatus" class="form-group">
                             <label class="col-sm-2 control-label"></label>
                             <div class="col-sm-7">
-                                <div class="alert alert-success text-center">
+                                <div class="alert alert-success text-center" style="background: var(--bg-secondary, #f8f9ff); color: var(--text-primary, #333); border-color: var(--border-color, #ddd);">
                                     <h2>{$ currentStatusVerification $}</h2>
                                 </div>
                             </div>
@@ -260,7 +260,7 @@
 
                             <div class="col-sm-12">
 
-                                <table class="table">
+                                <table class="table" style="background: var(--bg-primary, white); color: var(--text-primary, #333); border-color: var(--border-color, #ddd);">
                                     <thead>
                                     <tr>
                                         <th>{% trans "ID" %}</th>

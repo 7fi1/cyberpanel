@@ -15,8 +15,8 @@
        <p>{% trans "Select users to Enable/Disable Email Marketing feature!" %}</p>
     </div>
 
-<div ng-controller="emailMarketing" class="panel">
-    <div class="panel-body">
+<div ng-controller="emailMarketing" class="panel" style="background: var(--bg-primary, white); border-color: var(--border-color, #ddd);">
+    <div class="panel-body" style="background: var(--bg-primary, white); color: var(--text-primary, #333);">
 
     <h3 class="content-box-header">
             {% trans "Email Marketing" %} <img ng-hide="cyberPanelLoading" src="{% static 'images/loading.gif' %}">
@@ -37,7 +37,7 @@
     {% else %}
         <div class="example-box-wrapper">
 
-                <table cellpadding="0" cellspacing="0" border="0" class="table table-striped" id="datatable-example">
+                <table cellpadding="0" cellspacing="0" border="0" class="table table-striped" id="datatable-example" style="background: var(--bg-primary, white); color: var(--text-primary, #333); border-color: var(--border-color, #ddd);">
                 <thead>
                 <tr>
                     <th>{% trans 'ID' %}</th>
