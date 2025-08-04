@@ -4,60 +4,6 @@
 
 {% block header_scripts %}
 <style>
-    /* CSS Variables for Dark Mode Support */
-    :root {
-        /* Text colors */
-        --text-primary: #2f3640;
-        --text-secondary: #64748b;
-        --text-muted: #8893a7;
-        
-        /* Background colors */
-        --bg-primary: #ffffff;
-        --bg-secondary: #f8f9ff;
-        --bg-light: #f3f4f6;
-        --bg-hover: #f8f9ff;
-        
-        /* Border colors */
-        --border-color: #e8e9ff;
-        --border-light: #f1f5f9;
-        
-        /* Accent colors */
-        --accent-color: #5856d6;
-        --accent-hover: #4b4fbf;
-        --accent-bg: #f3e8ff;
-        --accent-focus: rgba(88, 86, 214, 0.1);
-        --accent-shadow: rgba(88, 86, 214, 0.3);
-        
-        /* Status colors */
-        --success-bg: #d1fae5;
-        --success-color: #065f46;
-        --success-border: #a7f3d0;
-        --success-accent: #10b981;
-        --success-hover: #059669;
-        
-        --danger-bg: #fee2e2;
-        --danger-color: #991b1b;
-        --danger-border: #fecaca;
-        --danger-accent: #ef4444;
-        
-        --warning-bg: #fef3c7;
-        --warning-color: #92400e;
-        --warning-accent: #f59e0b;
-        --warning-hover: #d97706;
-        
-        --info-bg: #dbeafe;
-        --info-color: #1e40af;
-        --info-border: #bfdbfe;
-        
-        /* Shadow colors */
-        --shadow-light: rgba(0,0,0,0.08);
-        --shadow-medium: rgba(0,0,0,0.1);
-        
-        /* Neutral colors */
-        --neutral-bg: #6b7280;
-        --neutral-hover: #4b5563;
-        --neutral-shadow: rgba(107, 114, 128, 0.3);
-    }
     
     /* Services Status Specific Styles */
     .services-wrapper {
@@ -72,18 +18,18 @@
     
     /* Page Header */
     .page-header {
-        background: var(--bg-primary);
+        background: var(--bg-primary, white);
         border-radius: 12px;
         padding: 25px;
         margin-bottom: 25px;
-        box-shadow: 0 2px 8px var(--shadow-light);
-        border: 1px solid var(--border-color);
+        box-shadow: 0 2px 8px var(--shadow-light, rgba(0,0,0,0.08));
+        border: 1px solid var(--border-color, #e8e9ff);
     }
     
     .page-header h1 {
         font-size: 28px;
         font-weight: 700;
-        color: var(--text-primary);
+        color: var(--text-primary, #2f3640);
         margin: 0 0 10px 0;
         display: flex;
         align-items: center;
@@ -100,29 +46,29 @@
         justify-content: center;
         color: white;
         font-size: 24px;
-        box-shadow: 0 4px 12px var(--accent-shadow);
+        box-shadow: 0 4px 12px var(--accent-shadow, rgba(88, 86, 214, 0.3));
     }
     
     .page-header p {
         font-size: 15px;
-        color: var(--text-secondary);
+        color: var(--text-secondary, #64748b);
         margin: 0;
     }
     
     /* Content Section */
     .content-section {
-        background: var(--bg-primary);
+        background: var(--bg-primary, white);
         border-radius: 12px;
         padding: 25px;
         margin-bottom: 25px;
-        box-shadow: 0 2px 8px var(--shadow-light);
-        border: 1px solid var(--border-color);
+        box-shadow: 0 2px 8px var(--shadow-light, rgba(0,0,0,0.08));
+        border: 1px solid var(--border-color, #e8e9ff);
     }
     
     .section-title {
         font-size: 18px;
         font-weight: 700;
-        color: var(--text-primary);
+        color: var(--text-primary, #2f3640);
         margin-bottom: 20px;
         display: flex;
         align-items: center;
@@ -145,8 +91,8 @@
     }
     
     .service-card {
-        background: var(--bg-primary);
-        border: 1px solid var(--border-color);
+        background: var(--bg-primary, white);
+        border: 1px solid var(--border-color, #e8e9ff);
         border-radius: 12px;
         padding: 25px;
         transition: all 0.3s ease;
@@ -156,16 +102,16 @@
     
     .service-card:hover {
         transform: translateY(-5px);
-        box-shadow: 0 8px 24px var(--shadow-medium);
-        border-color: var(--accent-color);
+        box-shadow: 0 8px 24px var(--shadow-medium, rgba(0,0,0,0.1));
+        border-color: var(--accent-color, #5856d6);
     }
     
     .service-card.running {
-        border-top: 4px solid var(--success-accent);
+        border-top: 4px solid var(--success-accent, #10b981);
     }
     
     .service-card.stopped {
-        border-top: 4px solid var(--danger-accent);
+        border-top: 4px solid var(--danger-accent, #ef4444);
     }
     
     .service-icon {
@@ -175,7 +121,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        background: var(--bg-secondary);
+        background: var(--bg-secondary, #f8f9ff);
         border-radius: 16px;
         padding: 15px;
     }
@@ -194,7 +140,7 @@
     .service-name {
         font-size: 20px;
         font-weight: 700;
-        color: var(--text-primary);
+        color: var(--text-primary, #2f3640);
         margin-bottom: 8px;
     }
     
@@ -209,22 +155,22 @@
     }
     
     .service-status.running {
-        background: var(--success-bg);
-        color: var(--success-color);
+        background: var(--success-bg, #d1fae5);
+        color: var(--success-color, #065f46);
     }
     
     .service-status.running i {
-        color: var(--success-accent);
+        color: var(--success-accent, #10b981);
         animation: pulse 2s infinite;
     }
     
     .service-status.stopped {
-        background: var(--danger-bg);
-        color: var(--danger-color);
+        background: var(--danger-bg, #fee2e2);
+        color: var(--danger-color, #991b1b);
     }
     
     .service-status.stopped i {
-        color: var(--danger-accent);
+        color: var(--danger-accent, #ef4444);
     }
     
     @keyframes pulse {
@@ -241,12 +187,12 @@
     
     .service-stats p {
         font-size: 14px;
-        color: var(--text-secondary);
+        color: var(--text-secondary, #64748b);
         margin: 0;
     }
     
     .service-stats strong {
-        color: var(--accent-color);
+        color: var(--accent-color, #5856d6);
         font-weight: 600;
     }
     
@@ -275,36 +221,36 @@
     }
     
     .action-btn.start {
-        background: var(--success-accent);
+        background: var(--success-accent, #10b981);
         color: white;
     }
     
     .action-btn.start:hover:not(:disabled) {
-        background: var(--success-hover);
+        background: var(--success-hover, #059669);
         transform: translateY(-1px);
         box-shadow: 0 4px 12px rgba(16,185,129,0.3);
     }
     
     .action-btn.stop {
-        background: var(--warning-accent);
+        background: var(--warning-accent, #f59e0b);
         color: white;
     }
     
     .action-btn.stop:hover:not(:disabled) {
-        background: var(--warning-hover);
+        background: var(--warning-hover, #d97706);
         transform: translateY(-1px);
         box-shadow: 0 4px 12px rgba(245,158,11,0.3);
     }
     
     .action-btn.restart {
-        background: var(--neutral-bg);
+        background: var(--neutral-bg, #6b7280);
         color: white;
     }
     
     .action-btn.restart:hover:not(:disabled) {
-        background: var(--neutral-hover);
+        background: var(--neutral-hover, #4b5563);
         transform: translateY(-1px);
-        box-shadow: 0 4px 12px var(--neutral-shadow);
+        box-shadow: 0 4px 12px var(--neutral-shadow, rgba(107, 114, 128, 0.3));
     }
     
     /* Alert Messages */
@@ -328,31 +274,31 @@
     }
     
     .alert-success {
-        background: var(--success-bg);
-        color: var(--success-color);
-        border: 1px solid var(--success-border);
+        background: var(--success-bg, #d1fae5);
+        color: var(--success-color, #065f46);
+        border: 1px solid var(--success-border, #a7f3d0);
     }
     
     .alert-success .alert-icon {
-        color: var(--success-accent);
+        color: var(--success-accent, #10b981);
     }
     
     .alert-danger {
-        background: var(--danger-bg);
-        color: var(--danger-color);
-        border: 1px solid var(--danger-border);
+        background: var(--danger-bg, #fee2e2);
+        color: var(--danger-color, #991b1b);
+        border: 1px solid var(--danger-border, #fecaca);
     }
     
     .alert-danger .alert-icon {
-        color: var(--danger-accent);
+        color: var(--danger-accent, #ef4444);
     }
     
     /* Loading Spinner */
     .loading-spinner {
         width: 24px;
         height: 24px;
-        border: 3px solid var(--border-color);
-        border-top-color: var(--accent-color);
+        border: 3px solid var(--border-color, #e8e9ff);
+        border-top-color: var(--accent-color, #5856d6);
         border-radius: 50%;
         animation: spin 1s linear infinite;
         display: inline-block;
@@ -366,7 +312,7 @@
     
     /* System Overview */
     .system-overview {
-        background: var(--bg-secondary);
+        background: var(--bg-secondary, #f8f9ff);
         border-radius: 12px;
         padding: 20px;
         margin-bottom: 20px;
@@ -381,7 +327,7 @@
     
     .overview-label {
         font-size: 13px;
-        color: var(--text-secondary);
+        color: var(--text-secondary, #64748b);
         text-transform: uppercase;
         letter-spacing: 0.5px;
         margin-bottom: 5px;
@@ -390,7 +336,7 @@
     .overview-value {
         font-size: 24px;
         font-weight: 700;
-        color: var(--accent-color);
+        color: var(--accent-color, #5856d6);
     }
     
     /* Responsive */
