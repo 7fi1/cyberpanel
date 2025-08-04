@@ -63,6 +63,76 @@
         /* Console colors */
         --console-bg: #1e293b;
         --console-text: #10b981;
+        
+        /* Lock colors */
+        --lock-color: #dc2626;
+        --unlock-color: #10b981;
+        
+        /* Table specific */
+        --table-header-bg: #f8f9ff;
+        --version-badge-bg: #f3f4f6;
+        --package-type-bg: #f3e8ff;
+        --lock-hover-bg: #f3f4f6;
+        --empty-icon-bg: #f3f4f6;
+    }
+    
+    [data-theme="dark"] {
+        /* Dark mode overrides */
+        --text-primary: #e4e4e7;
+        --text-secondary: #9ca3af;
+        --text-muted: #6b7280;
+        --text-on-gradient: rgba(255, 255, 255, 0.9);
+        
+        --bg-primary: #1a1a3e;
+        --bg-secondary: #1e1e42;
+        --bg-light: #252550;
+        --bg-hover: #252550;
+        --bg-gradient: linear-gradient(135deg, #7c7ff3 0%, #9b5de5 100%);
+        
+        --border-color: #2a2a5e;
+        --border-light: #374151;
+        
+        --accent-color: #7c7ff3;
+        --accent-hover: #9b5de5;
+        --accent-bg: #3730a3;
+        --accent-focus: rgba(124, 127, 243, 0.1);
+        --accent-shadow: rgba(124, 127, 243, 0.3);
+        
+        --success-bg: #064e3b;
+        --success-color: #34d399;
+        --success-border: #065f46;
+        --success-accent: #10b981;
+        --success-hover: #15803d;
+        
+        --danger-bg: #7f1d1d;
+        --danger-color: #fca5a5;
+        --danger-border: #991b1b;
+        --danger-accent: #ef4444;
+        --danger-hover: #dc2626;
+        
+        --warning-bg: #78350f;
+        --warning-color: #fbbf24;
+        --warning-border: #92400e;
+        
+        --info-bg: #1e3a8a;
+        --info-color: #93c5fd;
+        --info-border: #1e40af;
+        
+        --shadow-light: rgba(0,0,0,0.3);
+        --shadow-medium: rgba(0,0,0,0.4);
+        --shadow-color: rgba(0,0,0,0.5);
+        
+        --console-bg: #0f0f23;
+        --console-text: #4ade80;
+        
+        --lock-color: #ef4444;
+        --unlock-color: #10b981;
+        
+        --table-header-bg: #252550;
+        --version-badge-bg: #16162e;
+        --package-type-bg: #3730a3;
+        --lock-hover-bg: #252550;
+        --empty-icon-bg: #252550;
     }
     .modern-container {
         max-width: 1400px;
@@ -231,6 +301,8 @@
         border-radius: 8px;
         font-size: 0.875rem;
         transition: all 0.3s ease;
+        background: var(--bg-primary);
+        color: var(--text-primary);
     }
     
     .search-input:focus {
@@ -259,6 +331,7 @@
         border-radius: 8px;
         font-size: 0.875rem;
         background: var(--bg-primary);
+        color: var(--text-primary);
         appearance: none;
         background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
         background-position: right 0.5rem center;
@@ -281,7 +354,7 @@
     }
     
     .btn-primary {
-        background: #667eea;
+        background: var(--accent-color);
         color: white;
     }
     
@@ -310,7 +383,7 @@
     .btn-info:hover {
         background: #2563eb;
         transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        box-shadow: 0 4px 12px var(--accent-shadow);
     }
     
     .btn-secondary {
@@ -321,7 +394,7 @@
     
     .btn-secondary:hover {
         background: var(--bg-secondary);
-        border-color: #cbd5e1;
+        border-color: var(--border-color);
     }
     
     .package-table {
@@ -331,7 +404,7 @@
     }
     
     .package-table thead {
-        background: var(--bg-secondary);
+        background: var(--table-header-bg);
         position: sticky;
         top: 0;
         z-index: 10;
@@ -375,7 +448,7 @@
         font-size: 0.625rem;
         padding: 0.125rem 0.5rem;
         border-radius: 4px;
-        background: #f3e8ff;
+        background: var(--package-type-bg);
         color: var(--accent-color);
         font-weight: 500;
     }
@@ -383,10 +456,11 @@
     .version-badge {
         font-family: 'Monaco', 'Consolas', monospace;
         font-size: 0.875rem;
-        background: #f3f4f6;
+        background: var(--version-badge-bg);
         padding: 0.25rem 0.75rem;
         border-radius: 6px;
         display: inline-block;
+        color: var(--text-primary);
     }
     
     .upgrade-badge {
@@ -414,15 +488,15 @@
     }
     
     .lock-toggle:hover {
-        background: #f3f4f6;
+        background: var(--lock-hover-bg);
     }
     
     .lock-toggle.locked {
-        color: #dc2626;
+        color: var(--lock-color);
     }
     
     .lock-toggle.unlocked {
-        color: #10b981;
+        color: var(--unlock-color);
     }
     
     .action-buttons {
@@ -438,8 +512,8 @@
     .loading-spinner {
         width: 20px;
         height: 20px;
-        border: 2px solid #f3f3f3;
-        border-top: 2px solid #667eea;
+        border: 2px solid var(--border-color);
+        border-top: 2px solid var(--accent-color);
         border-radius: 50%;
         animation: spin 1s linear infinite;
         display: inline-block;
@@ -451,7 +525,7 @@
         align-items: center;
         margin-top: 2rem;
         padding-top: 2rem;
-        border-top: 1px solid #e8e9ff;
+        border-top: 1px solid var(--border-color);
     }
     
     .pagination-info {
@@ -470,6 +544,8 @@
         border: 1px solid var(--border-color);
         border-radius: 6px;
         font-size: 0.875rem;
+        background: var(--bg-primary);
+        color: var(--text-primary);
     }
     
     /* Modal Styles */
@@ -542,8 +618,8 @@
     }
     
     .console-output {
-        background: #1e293b;
-        color: #10b981;
+        background: var(--console-bg);
+        color: var(--console-text);
         font-family: 'Monaco', 'Consolas', monospace;
         font-size: 0.875rem;
         padding: 1.5rem;
@@ -575,7 +651,7 @@
     .empty-icon {
         width: 80px;
         height: 80px;
-        background: #f3f4f6;
+        background: var(--empty-icon-bg);
         border-radius: 50%;
         display: flex;
         align-items: center;
@@ -596,7 +672,7 @@
     }
     
     .alert-info {
-        background: #dbeafe;
+        background: var(--info-bg);
         border: 1px solid var(--info-border);
         color: var(--info-color);
     }

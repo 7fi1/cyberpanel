@@ -15,6 +15,7 @@
         --bg-primary: #ffffff;
         --bg-secondary: #f8f9ff;
         --bg-light: #f0f0ff;
+        --bg-card: #ffffff;
         
         /* Border colors */
         --border-color: #e8e9ff;
@@ -33,9 +34,50 @@
         
         /* Shadow colors */
         --shadow-light: rgba(0,0,0,0.08);
+        --shadow-medium: rgba(0,0,0,0.1);
         
         /* Neutral colors */
         --neutral-disabled: #94a3b8;
+        
+        /* Info colors */
+        --info-bg: #e3f2fd;
+        --info-border: #90caf9;
+        --info-color: #1565c0;
+        --info-accent: #2196f3;
+    }
+    
+    [data-theme="dark"] {
+        /* Dark mode overrides */
+        --text-primary: #e4e4e7;
+        --text-secondary: #9ca3af;
+        --text-muted: #6b7280;
+        
+        --bg-primary: #0f0f23;
+        --bg-secondary: #1e1e42;
+        --bg-light: #252550;
+        --bg-card: #1a1a3e;
+        
+        --border-color: #2a2a5e;
+        
+        --accent-color: #7c7ff3;
+        --accent-hover: #6b6ee8;
+        --accent-focus: rgba(124,127,243,0.1);
+        --accent-shadow: rgba(124,127,243,0.3);
+        
+        --warning-bg: #78350f;
+        --warning-border: #92400e;
+        --warning-color: #fbbf24;
+        --warning-accent: #f59e0b;
+        
+        --shadow-light: rgba(0,0,0,0.3);
+        --shadow-medium: rgba(0,0,0,0.4);
+        
+        --neutral-disabled: #4b5563;
+        
+        --info-bg: #1e3a8a;
+        --info-border: #1e40af;
+        --info-color: #93c5fd;
+        --info-accent: #3b82f6;
     }
     
     /* Angular cloak to prevent flashing */
@@ -78,7 +120,7 @@
     
     /* Form Section */
     .form-section {
-        background: white;
+        background: var(--bg-card);
         border-radius: 12px;
         padding: 30px;
         margin-bottom: 25px;
@@ -150,13 +192,13 @@
     .form-control:focus {
         outline: none;
         border-color: var(--accent-color);
-        background: white;
+        background: var(--bg-card);
         box-shadow: 0 0 0 3px var(--accent-focus);
     }
     
     .form-help {
         font-size: 12px;
-        color: #8893a7;
+        color: var(--text-muted);
         margin-top: 8px;
         display: flex;
         align-items: center;
@@ -222,8 +264,8 @@
     
     /* Info Box */
     .info-box {
-        background: var(--bg-secondary);
-        border: 1px solid var(--border-color);
+        background: var(--info-bg);
+        border: 1px solid var(--info-border);
         border-radius: 8px;
         padding: 16px;
         margin-bottom: 25px;
@@ -232,7 +274,7 @@
     .info-box-title {
         font-size: 13px;
         font-weight: 600;
-        color: var(--text-primary);
+        color: var(--info-color);
         margin-bottom: 8px;
         display: flex;
         align-items: center;
@@ -240,18 +282,18 @@
     }
     
     .info-box-title i {
-        color: var(--accent-color);
+        color: var(--info-accent);
         font-size: 16px;
     }
     
     .info-box-content {
         font-size: 13px;
-        color: var(--text-secondary);
+        color: var(--info-color);
         line-height: 1.6;
     }
     
     .info-box-content strong {
-        color: var(--text-primary);
+        color: var(--info-color);
         font-weight: 600;
     }
     
@@ -292,17 +334,17 @@
         width: 70px !important;
         height: 32px !important;
         border-radius: 8px !important;
-        border: 1px solid #e8e9ff !important;
+        border: 1px solid var(--border-color) !important;
     }
     
     .toggle.off {
-        background: #f8f9ff !important;
-        border-color: #e8e9ff !important;
+        background: var(--bg-secondary) !important;
+        border-color: var(--border-color) !important;
     }
     
     .toggle.on {
-        background: #5b5fcf !important;
-        border-color: #5b5fcf !important;
+        background: var(--accent-color) !important;
+        border-color: var(--accent-color) !important;
     }
     
     .toggle .toggle-handle {
@@ -344,7 +386,7 @@
     
     .toggle-off {
         background: transparent !important;
-        color: #64748b !important;
+        color: var(--text-secondary) !important;
         box-shadow: none !important;
     }
     
@@ -370,7 +412,7 @@
     
     .toggle-help {
         font-size: 12px;
-        color: #8893a7;
+        color: var(--text-muted);
         margin-top: 8px;
         display: flex;
         align-items: center;
