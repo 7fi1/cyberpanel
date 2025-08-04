@@ -19,9 +19,9 @@
         animation: fadeInDown 0.5s ease-out;
         position: relative;
         overflow: hidden;
-        color: var(--text-primary, white);
+        color: white;
     }
-    
+
     .page-header::before {
         content: '';
         position: absolute;
@@ -32,12 +32,12 @@
         background: radial-gradient(circle at 70% 30%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
         animation: rotate 30s linear infinite;
     }
-    
+
     @keyframes rotate {
         from { transform: rotate(0deg); }
         to { transform: rotate(360deg); }
     }
-    
+
     @keyframes fadeInDown {
         from {
             opacity: 0;
@@ -48,7 +48,7 @@
             transform: translateY(0);
         }
     }
-    
+
     @keyframes fadeInUp {
         from {
             opacity: 0;
@@ -59,12 +59,12 @@
             transform: translateY(0);
         }
     }
-    
+
     .header-content {
         position: relative;
         z-index: 1;
     }
-    
+
     .page-title {
         font-size: 2.5rem;
         font-weight: 700;
@@ -74,7 +74,7 @@
         justify-content: center;
         gap: 1rem;
     }
-    
+
     .mail-icon {
         width: 60px;
         height: 60px;
@@ -86,14 +86,14 @@
         justify-content: center;
         box-shadow: var(--shadow-light, 0 4px 12px rgba(0,0,0,0.1));
     }
-    
+
     .page-subtitle {
         font-size: 1.125rem;
-        color: var(--text-secondary, rgba(255, 255, 255, 0.9));
+        color: rgba(255, 255, 255, 0.9);
         max-width: 600px;
         margin: 0 auto;
     }
-    
+
     .docs-link {
         margin-top: 1rem;
         display: inline-flex;
@@ -103,19 +103,19 @@
         backdrop-filter: blur(10px);
         padding: 0.5rem 1.5rem;
         border-radius: 20px;
-        color: var(--text-primary, white);
+        color: white;
         text-decoration: none;
         font-size: 0.875rem;
         transition: all 0.3s ease;
     }
-    
+
     .docs-link:hover {
         background: var(--accent-hover, rgba(255, 255, 255, 0.3));
         transform: translateY(-2px);
-        color: var(--text-primary, white);
+        color: white;
         text-decoration: none;
     }
-    
+
     .mail-config-panel {
         background: var(--bg-secondary, white);
         border-radius: 16px;
@@ -124,16 +124,16 @@
         overflow: hidden;
         animation: fadeInUp 0.5s ease-out;
     }
-    
+
     .panel-header {
         background: linear-gradient(135deg, var(--log-gradient-start, #667eea) 0%, var(--log-gradient-end, #764ba2) 100%);
-        color: var(--text-primary, white);
+        color: white;
         padding: 1.5rem 2rem;
         display: flex;
         align-items: center;
         justify-content: space-between;
     }
-    
+
     .panel-title {
         font-size: 1.25rem;
         font-weight: 600;
@@ -141,7 +141,7 @@
         align-items: center;
         gap: 0.75rem;
     }
-    
+
     .panel-icon {
         width: 32px;
         height: 32px;
@@ -151,11 +151,11 @@
         align-items: center;
         justify-content: center;
     }
-    
+
     .form-section {
         padding: 2rem;
     }
-    
+
     .form-row {
         display: grid;
         grid-template-columns: 200px 1fr;
@@ -163,14 +163,14 @@
         gap: 1rem;
         margin-bottom: 1.5rem;
     }
-    
+
     .form-label {
         font-weight: 500;
-        color: var(--text-secondary, #475569);
+        color: var(--text-secondary, #64748b);
         font-size: 0.875rem;
         text-align: right;
     }
-    
+
     .form-control {
         padding: 0.75rem 1rem;
         border: 1px solid var(--border-light, #e8e9ff);
@@ -182,22 +182,53 @@
         width: 100%;
         max-width: 400px;
     }
-    
+
     .form-control:focus {
         outline: none;
         border-color: var(--accent-color, #667eea);
         box-shadow: var(--accent-focus, 0 0 0 3px rgba(102, 126, 234, 0.1));
     }
-    
+
     .select-control {
+        -webkit-appearance: none;
+        -moz-appearance: none;
         appearance: none;
-        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+        background-color: var(--bg-secondary, white);
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%235b5fcf' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
         background-position: right 0.5rem center;
         background-repeat: no-repeat;
         background-size: 1.5em 1.5em;
         padding-right: 2.5rem;
+        color: var(--text-primary, #1e293b) !important;
+        font-size: 0.875rem !important;
+        line-height: 1.5;
     }
-    
+
+    /* Ensure option text is visible */
+    .select-control option {
+        color: var(--text-primary, #1e293b);
+        background-color: var(--bg-secondary, white);
+        padding: 8px;
+        font-size: 0.875rem;
+    }
+
+    /* Fix for Windows high contrast mode */
+    @media screen and (-ms-high-contrast: active) {
+        .select-control {
+            border: 2px solid;
+        }
+        .select-control option {
+            background: var(--bg-secondary, white);
+            color: var(--text-primary, black);
+        }
+    }
+
+    /* Specific focus styles for select */
+    .select-control:focus {
+        background-color: var(--bg-secondary, white);
+        color: var(--text-primary, #1e293b);
+    }
+
     .mailer-type-selector {
         background: var(--bg-light, #f8f9ff);
         border-radius: 12px;
@@ -205,7 +236,7 @@
         margin-bottom: 2rem;
         border: 1px solid var(--border-light, #e8e9ff);
     }
-    
+
     .smtp-fields {
         background: var(--bg-light, #fafbff);
         border-radius: 12px;
@@ -214,7 +245,7 @@
         border: 1px solid var(--border-light, #e8e9ff);
         animation: fadeInUp 0.3s ease-out;
     }
-    
+
     .section-header {
         display: flex;
         align-items: center;
@@ -223,7 +254,7 @@
         padding-bottom: 1rem;
         border-bottom: 1px solid var(--border-light, #e8e9ff);
     }
-    
+
     .section-icon {
         width: 32px;
         height: 32px;
@@ -234,13 +265,13 @@
         justify-content: center;
         color: var(--accent-color, #667eea);
     }
-    
+
     .section-title {
         font-size: 1rem;
         font-weight: 600;
         color: var(--text-primary, #1e293b);
     }
-    
+
     .action-buttons {
         display: flex;
         gap: 1rem;
@@ -249,7 +280,7 @@
         border-top: 1px solid var(--border-light, #e8e9ff);
         justify-content: center;
     }
-    
+
     .btn {
         padding: 0.75rem 2rem;
         border-radius: 8px;
@@ -262,17 +293,17 @@
         align-items: center;
         gap: 0.5rem;
     }
-    
+
     .btn-primary {
         background: linear-gradient(135deg, var(--log-gradient-start, #667eea) 0%, var(--log-gradient-end, #764ba2) 100%);
-        color: var(--text-primary, white);
+        color: white;
     }
-    
+
     .btn-primary:hover {
         transform: translateY(-2px);
         box-shadow: var(--accent-shadow, 0 4px 12px rgba(102, 126, 234, 0.3));
     }
-    
+
     .loading-spinner {
         width: 20px;
         height: 20px;
@@ -282,12 +313,12 @@
         animation: spin 1s linear infinite;
         display: inline-block;
     }
-    
+
     @keyframes spin {
         0% { transform: rotate(0deg); }
         100% { transform: rotate(360deg); }
     }
-    
+
     .info-box {
         background: var(--info-bg, #eff6ff);
         border: 1px solid var(--info-border, #bfdbfe);
@@ -298,19 +329,19 @@
         align-items: center;
         gap: 0.75rem;
     }
-    
+
     .info-icon {
         color: var(--info-color, #3b82f6);
         font-size: 1.25rem;
         flex-shrink: 0;
     }
-    
+
     .info-text {
         font-size: 0.875rem;
         color: var(--info-text, #1e40af);
         line-height: 1.6;
     }
-    
+
     /* Status Indicator */
     .status-indicator {
         display: flex;
@@ -323,7 +354,7 @@
         border: 1px solid var(--border-light, #e8e9ff);
         color: var(--text-primary, #1e293b);
     }
-    
+
     .status-dot {
         width: 8px;
         height: 8px;
@@ -331,7 +362,7 @@
         background: var(--success-color, #10b981);
         animation: pulse 2s infinite;
     }
-    
+
     @keyframes pulse {
         0% {
             box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
@@ -343,26 +374,26 @@
             box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
         }
     }
-    
+
     /* Responsive */
     @media (max-width: 768px) {
         .modern-container {
             padding: 1rem;
         }
-        
+
         .page-title {
             font-size: 2rem;
         }
-        
+
         .form-row {
             grid-template-columns: 1fr;
             gap: 0.5rem;
         }
-        
+
         .form-label {
             text-align: left;
         }
-        
+
         .form-control {
             max-width: 100%;
         }
@@ -394,7 +425,7 @@
             </a>
         </div>
     </div>
-    
+
     <!-- Mail Configuration Panel -->
     <div class="mail-config-panel">
         <div class="panel-header">
@@ -408,7 +439,7 @@
                 <span class="status-dot"></span>
                 <span>{% trans "Ready" %}</span>
             </div>
-            <div ng-show="!cyberPanelLoading" class="loading-spinner"></div>
+            <div ng-show="cyberPanelLoading" class="loading-spinner"></div>
         </div>
         
         <div class="form-section">
