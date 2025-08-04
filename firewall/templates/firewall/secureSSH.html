@@ -14,7 +14,7 @@
         text-align: center;
         margin-bottom: 3rem;
         padding: 3rem 0;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, var(--ssh-gradient-start, #667eea) 0%, var(--ssh-gradient-end, #764ba2) 100%);
         border-radius: 20px;
         animation: fadeInDown 0.5s ease-out;
         position: relative;
@@ -119,7 +119,7 @@
         display: flex;
         gap: 1rem;
         margin-bottom: 2rem;
-        background: white;
+        background: var(--bg-secondary, white);
         padding: 1rem;
         border-radius: 12px;
         box-shadow: 0 1px 3px rgba(0,0,0,0.05);
@@ -130,7 +130,7 @@
     .tab-btn {
         flex: 1;
         padding: 1rem;
-        background: #f8f9ff;
+        background: var(--ssh-tab-bg, #f8f9ff);
         border: 2px solid transparent;
         border-radius: 10px;
         cursor: pointer;
@@ -140,16 +140,16 @@
         justify-content: center;
         gap: 0.75rem;
         font-weight: 500;
-        color: #64748b;
+        color: var(--text-muted, #64748b);
     }
     
     .tab-btn:hover {
-        background: #e8e9ff;
-        border-color: #667eea;
+        background: var(--ssh-tab-hover-bg, #e8e9ff);
+        border-color: var(--ssh-gradient-start, #667eea);
     }
     
     .tab-btn.active {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, var(--ssh-gradient-start, #667eea) 0%, var(--ssh-gradient-end, #764ba2) 100%);
         color: white;
         border-color: transparent;
     }
@@ -165,17 +165,17 @@
     
     /* Main Panel */
     .main-panel {
-        background: white;
+        background: var(--bg-secondary, white);
         border-radius: 16px;
         box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 10px 40px rgba(0,0,0,0.08);
-        border: 1px solid #e8e9ff;
+        border: 1px solid var(--border-color, #e8e9ff);
         overflow: hidden;
         animation: fadeInUp 0.5s ease-out 0.2s;
         animation-fill-mode: both;
     }
     
     .panel-header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, var(--ssh-gradient-start, #667eea) 0%, var(--ssh-gradient-end, #764ba2) 100%);
         color: white;
         padding: 1.5rem 2rem;
         display: flex;
@@ -213,7 +213,7 @@
     .form-label {
         display: block;
         font-weight: 600;
-        color: #334155;
+        color: var(--text-primary, #334155);
         margin-bottom: 0.5rem;
         font-size: 0.875rem;
         text-transform: uppercase;
@@ -223,18 +223,18 @@
     .form-control {
         width: 100%;
         padding: 0.75rem 1rem;
-        border: 2px solid #e8e9ff;
+        border: 2px solid var(--border-color, #e8e9ff);
         border-radius: 10px;
         font-size: 0.9375rem;
         transition: all 0.3s ease;
-        background: #f8f9ff;
+        background: var(--ssh-input-bg, #f8f9ff);
     }
     
     .form-control:focus {
         outline: none;
-        border-color: #667eea;
-        background: white;
-        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        border-color: var(--ssh-gradient-start, #667eea);
+        background: var(--bg-primary, white);
+        box-shadow: 0 0 0 3px var(--ssh-focus-shadow, rgba(102, 126, 234, 0.1));
     }
     
     /* Custom Switch */
@@ -258,7 +258,7 @@
         left: 0;
         right: 0;
         bottom: 0;
-        background-color: #cbd5e1;
+        background-color: var(--switch-bg, #cbd5e1);
         transition: .4s;
         border-radius: 26px;
     }
@@ -270,13 +270,13 @@
         width: 18px;
         left: 4px;
         bottom: 4px;
-        background-color: white;
+        background-color: var(--bg-primary, white);
         transition: .4s;
         border-radius: 50%;
     }
     
     input:checked + .slider {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, var(--ssh-gradient-start, #667eea) 0%, var(--ssh-gradient-end, #764ba2) 100%);
     }
     
     input:checked + .slider:before {
@@ -291,7 +291,7 @@
     
     /* Buttons */
     .btn-primary {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, var(--ssh-gradient-start, #667eea) 0%, var(--ssh-gradient-end, #764ba2) 100%);
         color: white;
         padding: 0.75rem 2rem;
         border-radius: 10px;
@@ -307,12 +307,12 @@
     
     .btn-primary:hover {
         transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        box-shadow: 0 4px 12px var(--ssh-btn-shadow, rgba(102, 126, 234, 0.4));
     }
     
     .btn-secondary {
-        background: #f3f4f6;
-        color: #4b5563;
+        background: var(--btn-secondary-bg, #f3f4f6);
+        color: var(--btn-secondary-text, #4b5563);
         padding: 0.75rem 2rem;
         border-radius: 10px;
         font-weight: 500;
@@ -326,39 +326,39 @@
     }
     
     .btn-secondary:hover {
-        background: #e5e7eb;
+        background: var(--btn-secondary-hover-bg, #e5e7eb);
         transform: translateY(-2px);
     }
     
     /* SSH Keys Table */
     .keys-table {
         width: 100%;
-        background: white;
+        background: var(--bg-secondary, white);
         border-radius: 8px;
         overflow: hidden;
-        border: 1px solid #e8e9ff;
+        border: 1px solid var(--border-color, #e8e9ff);
         margin-bottom: 2rem;
     }
     
     .keys-table thead {
-        background: #f8f9ff;
+        background: var(--ssh-table-header-bg, #f8f9ff);
     }
     
     .keys-table th {
         padding: 1rem;
         text-align: left;
         font-weight: 600;
-        color: #475569;
+        color: var(--text-secondary, #475569);
         font-size: 0.75rem;
         text-transform: uppercase;
         letter-spacing: 0.05em;
-        border-bottom: 1px solid #e8e9ff;
+        border-bottom: 1px solid var(--border-color, #e8e9ff);
     }
     
     .keys-table td {
         padding: 1rem;
-        border-bottom: 1px solid #f1f5f9;
-        color: #334155;
+        border-bottom: 1px solid var(--border-light, #f1f5f9);
+        color: var(--text-primary, #334155);
         font-size: 0.875rem;
     }
     
@@ -367,18 +367,18 @@
     }
     
     .keys-table tbody tr:hover {
-        background: #f8f9ff;
+        background: var(--ssh-table-hover-bg, #f8f9ff);
     }
     
     .key-user {
         font-weight: 600;
-        color: #1e293b;
+        color: var(--text-dark, #1e293b);
     }
     
     .key-value {
         font-family: 'Monaco', 'Consolas', monospace;
         font-size: 0.75rem;
-        color: #64748b;
+        color: var(--text-muted, #64748b);
         max-width: 300px;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -386,8 +386,8 @@
     }
     
     .btn-delete {
-        background: #fee2e2;
-        color: #ef4444;
+        background: var(--danger-bg, #fee2e2);
+        color: var(--danger-text, #ef4444);
         width: 32px;
         height: 32px;
         border-radius: 6px;
@@ -401,8 +401,8 @@
     }
     
     .btn-delete:hover {
-        background: #ef4444;
-        color: white;
+        background: var(--danger-text, #ef4444);
+        color: var(--bg-primary, white);
         transform: scale(1.1);
     }
     
@@ -410,11 +410,11 @@
     .key-textarea {
         width: 100%;
         padding: 1rem;
-        border: 2px solid #e8e9ff;
+        border: 2px solid var(--border-color, #e8e9ff);
         border-radius: 10px;
         font-family: 'Monaco', 'Consolas', monospace;
         font-size: 0.875rem;
-        background: #f8f9ff;
+        background: var(--ssh-input-bg, #f8f9ff);
         transition: all 0.3s ease;
         resize: vertical;
         min-height: 120px;
@@ -422,9 +422,9 @@
     
     .key-textarea:focus {
         outline: none;
-        border-color: #667eea;
-        background: white;
-        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        border-color: var(--ssh-gradient-start, #667eea);
+        background: var(--bg-primary, white);
+        box-shadow: 0 0 0 3px var(--ssh-focus-shadow, rgba(102, 126, 234, 0.1));
     }
     
     /* Alerts */
@@ -439,21 +439,21 @@
     }
     
     .alert-warning {
-        background: #fef3c7;
-        color: #92400e;
-        border: 1px solid #fde68a;
+        background: var(--warning-bg, #fef3c7);
+        color: var(--warning-text, #92400e);
+        border: 1px solid var(--warning-border, #fde68a);
     }
     
     .alert-success {
-        background: #d1fae5;
-        color: #065f46;
-        border: 1px solid #a7f3d0;
+        background: var(--success-bg, #d1fae5);
+        color: var(--success-text, #065f46);
+        border: 1px solid var(--success-border, #a7f3d0);
     }
     
     .alert-danger {
-        background: #fee2e2;
-        color: #991b1b;
-        border: 1px solid #fecaca;
+        background: var(--danger-bg, #fee2e2);
+        color: var(--danger-dark-text, #991b1b);
+        border: 1px solid var(--danger-border, #fecaca);
     }
     
     .alert-icon {
@@ -464,8 +464,8 @@
     .loading-spinner {
         width: 20px;
         height: 20px;
-        border: 2px solid #f3f3f3;
-        border-top: 2px solid #667eea;
+        border: 2px solid var(--spinner-bg, #f3f3f3);
+        border-top: 2px solid var(--ssh-gradient-start, #667eea);
         border-radius: 50%;
         animation: spin 1s linear infinite;
         display: inline-block;
@@ -480,18 +480,18 @@
     .empty-state {
         text-align: center;
         padding: 3rem;
-        color: #64748b;
+        color: var(--text-muted, #64748b);
     }
     
     .empty-icon {
         font-size: 3rem;
-        color: #94a3b8;
+        color: var(--text-light, #94a3b8);
         margin-bottom: 1rem;
     }
     
     .empty-text {
         font-size: 0.875rem;
-        color: #64748b;
+        color: var(--text-muted, #64748b);
     }
     
     /* Responsive */
@@ -570,7 +570,7 @@
                     </div>
                     {% trans "Basic SSH Settings" %}
                 </div>
-                <div ng-show="!secureSSHLoading" class="loading-spinner"></div>
+                <div ng-show="secureSSHLoading" class="loading-spinner"></div>
             </div>
             
             <div class="panel-content">
