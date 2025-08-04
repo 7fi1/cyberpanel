@@ -22,12 +22,12 @@
     &quot;assignee&quot;: &quot;usmannasir&quot;
   }
 }</component>
-  <component name="GithubPullRequestsUISettings"><![CDATA[{
-  "selectedUrlAndAccountId": {
-    "url": "git@github.com:usmannasir/cyberpanel.git",
-    "accountId": "3c646e5c-b11f-4d8e-a791-3ddc15576bed"
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;git@github.com:usmannasir/cyberpanel.git&quot;,
+    &quot;accountId&quot;: &quot;3c646e5c-b11f-4d8e-a791-3ddc15576bed&quot;
   }
-}]]></component>
+}</component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 3
 }</component>
@@ -46,7 +46,7 @@
     "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager": "true",
     "RunOnceActivity.git.unshallow": "true",
     "SHELLCHECK.PATH": "/Users/cyberpersons/Library/Application Support/JetBrains/PyCharm2025.1/plugins/Shell Script/shellcheck",
-    "git-widget-placeholder": "v2.4.3",
+    "git-widget-placeholder": "v2.4.4-dev",
     "last_opened_file_path": "/Users/cyberpersons/cyberpanel",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",

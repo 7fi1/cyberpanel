@@ -976,11 +976,9 @@
                     <i class="fab fa-twitter"></i>
                 </a>
             </div>
-            <!-- Dark mode toggle temporarily disabled
             <button id="theme-toggle" class="theme-toggle" title="Toggle Dark Mode">
                 <i class="fas fa-moon" id="theme-icon"></i>
             </button>
-            -->
             <a href="{% url 'logout' %}" class="logout-btn">
                 <i class="fas fa-arrow-right-from-bracket"></i>
                 Logout
@@ -1946,15 +1944,9 @@
         }
     </script>
     
-    <!-- Force light theme until dark mode is fully implemented -->
-    <script>
-        // Force light theme
-        document.documentElement.setAttribute('data-theme', 'light');
-        localStorage.setItem('cyberPanelTheme', 'light');
-    </script>
     
-    <!-- Dark Mode Toggle Script - Temporarily disabled until fully implemented -->
-    <!-- <script>
+    <!-- Dark Mode Toggle Script -->
+    <script>
         // Theme switching functionality
         (function() {
             // Get saved theme from localStorage or default to light
@@ -1991,7 +1983,7 @@
                 });
             }
         })();
-    </script> -->
+    </script>
     
     {% block footer_scripts %}{% endblock %}
 </body>
