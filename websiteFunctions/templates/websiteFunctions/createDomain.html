@@ -22,7 +22,7 @@
     .page-title {
         font-size: 28px;
         font-weight: 700;
-        color: #2f3640;
+        color: var(--text-primary, #2f3640);
         margin-bottom: 8px;
         display: flex;
         align-items: center;
@@ -32,7 +32,7 @@
     
     .page-subtitle {
         font-size: 14px;
-        color: #8893a7;
+        color: var(--text-secondary, #8893a7);
     }
     
     .learn-more-link {
@@ -43,8 +43,8 @@
         align-items: center;
         gap: 6px;
         padding: 6px 12px;
-        background: #f8f9ff;
-        border: 1px solid #e8e9ff;
+        background: var(--bg-secondary, #f8f9ff);
+        border: 1px solid var(--border-primary, #e8e9ff);
         border-radius: 6px;
         transition: all 0.2s ease;
     }
@@ -58,18 +58,18 @@
     
     /* Card styles */
     .content-card {
-        background: white;
+        background: var(--bg-primary, white);
         border-radius: 12px;
         padding: 30px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        border: 1px solid #e8e9ff;
+        box-shadow: var(--shadow-md, 0 2px 8px rgba(0,0,0,0.08));
+        border: 1px solid var(--border-primary, #e8e9ff);
         margin-bottom: 25px;
     }
     
     .card-title {
         font-size: 18px;
         font-weight: 700;
-        color: #2f3640;
+        color: var(--text-primary, #2f3640);
         margin-bottom: 25px;
         display: flex;
         align-items: center;
@@ -93,7 +93,7 @@
         display: block;
         font-size: 13px;
         font-weight: 600;
-        color: #64748b;
+        color: var(--text-secondary, #64748b);
         margin-bottom: 8px;
         text-transform: uppercase;
         letter-spacing: 0.5px;
@@ -102,11 +102,11 @@
     .form-control {
         width: 100%;
         padding: 10px 14px;
-        border: 1px solid #e8e9ff;
+        border: 1px solid var(--border-primary, #e8e9ff);
         border-radius: 8px;
         font-size: 14px;
-        color: #2f3640;
-        background: white;
+        color: var(--text-primary, #2f3640);
+        background: var(--bg-primary, white);
         transition: all 0.2s ease;
     }
     
@@ -117,7 +117,7 @@
     .form-control:focus {
         outline: none;
         border-color: #5b5fcf;
-        box-shadow: 0 0 0 3px rgba(91,95,207,0.1);
+        box-shadow: var(--shadow-sm, 0 0 0 3px rgba(91,95,207,0.1));
     }
     
     /* Select dropdown styles for Windows compatibility */
@@ -138,8 +138,8 @@
     /* Windows-specific fixes */
     @media screen and (-ms-high-contrast: active), (-ms-high-contrast: none) {
         select.form-control {
-            color: #2f3640 !important;
-            background-color: white !important;
+            color: var(--text-primary, #2f3640) !important;
+            background-color: var(--bg-primary, white) !important;
         }
     }
     
@@ -149,14 +149,14 @@
     }
     
     select.form-control option {
-        color: #2f3640;
-        background-color: white;
+        color: var(--text-primary, #2f3640);
+        background-color: var(--bg-primary, white);
         padding: 8px;
     }
     
     select.form-control:focus {
-        color: #2f3640;
-        background-color: white;
+        color: var(--text-primary, #2f3640);
+        background-color: var(--bg-primary, white);
     }
     
     /* Path input group */
@@ -167,13 +167,13 @@
     }
     
     .input-group-prefix {
-        background: #f8f9ff;
-        border: 1px solid #e8e9ff;
+        background: var(--bg-secondary, #f8f9ff);
+        border: 1px solid var(--border-primary, #e8e9ff);
         border-right: none;
         padding: 10px 14px;
         border-radius: 8px 0 0 8px;
         font-size: 13px;
-        color: #64748b;
+        color: var(--text-secondary, #64748b);
         font-weight: 600;
         white-space: nowrap;
     }
@@ -193,8 +193,8 @@
         align-items: center;
         gap: 10px;
         padding: 12px 16px;
-        background: #f8f9ff;
-        border: 1px solid #e8e9ff;
+        background: var(--bg-secondary, #f8f9ff);
+        border: 1px solid var(--border-primary, #e8e9ff);
         border-radius: 8px;
         transition: all 0.2s ease;
         cursor: pointer;
@@ -215,7 +215,7 @@
     
     .checkbox-label {
         font-size: 14px;
-        color: #2f3640;
+        color: var(--text-primary, #2f3640);
         font-weight: 500;
         cursor: pointer;
         user-select: none;
@@ -254,7 +254,7 @@
     
     .btn-primary:hover {
         background: #4a4fc4;
-        box-shadow: 0 4px 12px rgba(91,95,207,0.3);
+        box-shadow: var(--shadow-lg, 0 4px 12px rgba(91,95,207,0.3));
         transform: translateY(-1px);
     }
     
@@ -266,9 +266,9 @@
     }
     
     .btn-secondary {
-        background: #f8f9ff;
+        background: var(--bg-secondary, #f8f9ff);
         color: #5b5fcf;
-        border: 1px solid #e8e9ff;
+        border: 1px solid var(--border-primary, #e8e9ff);
     }
     
     .btn-secondary:hover {
@@ -277,14 +277,14 @@
     }
     
     .btn-secondary:disabled {
-        background: #f8f9ff;
+        background: var(--bg-secondary, #f8f9ff);
         color: #ccc;
         cursor: not-allowed;
     }
     
     /* Progress section */
     .progress-section {
-        background: #f8f9ff;
+        background: var(--bg-secondary, #f8f9ff);
         border-radius: 10px;
         padding: 25px;
         margin-top: 20px;
@@ -293,13 +293,13 @@
     .progress-status {
         font-size: 16px;
         font-weight: 600;
-        color: #2f3640;
+        color: var(--text-primary, #2f3640);
         text-align: center;
         margin-bottom: 20px;
     }
     
     .progress-bar-container {
-        background: #e8e9ff;
+        background: var(--border-primary, #e8e9ff);
         height: 8px;
         border-radius: 4px;
         overflow: hidden;
@@ -494,7 +494,7 @@
                                     <input ng-model="apacheBackend" type="checkbox" id="apacheBackend">
                                     <label for="apacheBackend" class="checkbox-label">
                                         OpenLiteSpeed + Apache (Backend)
-                                        <small style="display: block; color: #8893a7; font-weight: normal; margin-top: 4px;">
+                                        <small style="display: block; color: var(--text-secondary, #8893a7); font-weight: normal; margin-top: 4px;">
                                             {% trans "For Ubuntu 22, AlmaLinux 8 and AlmaLinux 9" %}
                                         </small>
                                     </label>
@@ -506,7 +506,7 @@
                                             Premium Feature
                                             <i class="fas fa-external-link-alt" style="font-size: 10px;"></i>
                                         </a>
-                                        <small style="display: block; color: #8893a7; font-weight: normal; margin-top: 4px;">
+                                        <small style="display: block; color: var(--text-secondary, #8893a7); font-weight: normal; margin-top: 4px;">
                                             {% trans "For Ubuntu 22, AlmaLinux 8 and AlmaLinux 9" %}
                                         </small>
                                     </label>
