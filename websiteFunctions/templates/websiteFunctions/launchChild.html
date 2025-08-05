@@ -58,7 +58,7 @@
             margin: 0 auto;
             padding: 20px;
             min-height: 100vh;
-            background: linear-gradient(180deg, var(--bg-secondary, #f8fafc) 0%, var(--border-light, #e2e8f0) 100%);
+            background: transparent;
         }
         
         /* Page Title Section */
@@ -112,10 +112,10 @@
         
         /* Main Panel */
         .panel {
-            background: var(--bg-primary, #ffffff);
+            background: var(--bg-secondary, white);
             border-radius: var(--radius-xl);
-            box-shadow: var(--shadow-lg);
-            border: 1px solid var(--border-color);
+            box-shadow: 0 2px 8px var(--shadow-color, rgba(0,0,0,0.08));
+            border: 1px solid var(--border-color, #e8e9ff);
             overflow: hidden;
             position: relative;
             margin-bottom: 20px;
@@ -131,11 +131,16 @@
         
         /* Content Box */
         .content-box {
-            background: var(--bg-primary, #ffffff);
+            background: var(--bg-secondary, white);
             border-radius: var(--radius-xl);
-            box-shadow: var(--shadow-lg);
-            border: 1px solid var(--border-color);
+            box-shadow: 0 2px 8px var(--shadow-color, rgba(0,0,0,0.08));
+            border: 1px solid var(--border-color, #e8e9ff);
             overflow: hidden;
+            transition: box-shadow 0.2s;
+        }
+        
+        .content-box:hover {
+            box-shadow: 0 4px 16px var(--shadow-color-hover, rgba(0,0,0,0.12));
         }
         
         /* Content Box Header */
@@ -145,8 +150,8 @@
             margin: 0;
             font-size: 20px;
             font-weight: 700;
-            color: var(--text-primary);
-            border-bottom: 1px solid var(--border-color);
+            color: var(--text-primary, #2f3640);
+            border-bottom: 1px solid var(--border-color, #e8e9ff);
             letter-spacing: -0.3px;
             display: flex;
             align-items: center;
@@ -242,10 +247,10 @@
         /* Table Styling */
         .table {
             margin: 0;
-            background: var(--bg-primary, white);
+            background: var(--bg-secondary, white);
             border-radius: var(--radius-lg);
             overflow: hidden;
-            box-shadow: var(--shadow-sm);
+            box-shadow: 0 2px 8px var(--shadow-color, rgba(0,0,0,0.08));
         }
         
         .table thead {
@@ -264,7 +269,7 @@
         
         .table tbody tr {
             transition: all var(--transition-base);
-            border-bottom: 1px solid var(--border-light);
+            border-bottom: 1px solid var(--border-light, #f0f0ff);
         }
         
         .table tbody tr:last-child {
@@ -272,20 +277,20 @@
         }
         
         .table tbody tr:hover {
-            background: var(--bg-hover, #f1f5f9);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+            background: var(--bg-hover, #f8f9ff);
+            box-shadow: 0 2px 4px var(--shadow-color, rgba(0,0,0,0.08));
         }
         
         .table tbody td {
             padding: 18px;
             border: none;
             vertical-align: middle;
-            color: var(--text-primary);
+            color: var(--text-primary, #2f3640);
         }
         
         .row-title {
             font-weight: 600;
-            color: var(--text-primary);
+            color: var(--text-primary, #2f3640);
         }
         
         /* Progress Bar */
@@ -293,11 +298,11 @@
             position: relative;
             width: 100%;
             height: 30px;
-            background: var(--border-light, #e2e8f0);
+            background: var(--border-color, #e8e9ff);
             border-radius: var(--radius-full);
             overflow: hidden;
             margin-bottom: 20px;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.06);
+            box-shadow: inset 0 2px 4px var(--shadow-color, rgba(0,0,0,0.08));
         }
         
         .progressbar-value {
@@ -319,7 +324,7 @@
         .title-hero {
             font-size: 16px;
             font-weight: 700;
-            color: var(--text-primary);
+            color: var(--text-primary, #2f3640);
             margin-bottom: 15px;
             display: flex;
             align-items: center;
@@ -377,17 +382,20 @@
             align-items: center;
             gap: 15px;
             padding: 20px;
-            background: var(--bg-secondary, #f8fafc);
+            background: var(--bg-hover, #f8f9ff);
+            border: 1px solid var(--border-color, #e8e9ff);
             border-radius: var(--radius-lg);
             transition: var(--transition-base);
             text-decoration: none;
-            color: var(--text-primary);
+            color: var(--text-primary, #2f3640);
         }
         
         .icon-box:hover {
-            background: var(--bg-hover);
+            background: var(--border-color, #e8e9ff);
+            border-color: var(--accent-color, #5b5fcf);
             transform: translateY(-2px);
-            box-shadow: var(--shadow-md);
+            box-shadow: 0 4px 12px var(--accent-shadow-light, rgba(91,95,207,0.15));
+            color: var(--accent-color, #5b5fcf);
         }
         
         .icon-box img {
@@ -400,15 +408,19 @@
             margin: 0;
             font-size: 16px;
             font-weight: 600;
-            color: var(--text-primary);
+            color: var(--text-primary, #2f3640);
+        }
+        
+        .icon-box:hover .h4 {
+            color: var(--accent-color, #5b5fcf);
         }
         
         /* Form Styling */
         .form-horizontal {
-            background: var(--bg-light);
+            background: var(--bg-secondary, white);
             padding: 25px;
             border-radius: var(--radius-lg);
-            border: 1px solid var(--border-color);
+            border: 1px solid var(--border-color, #e8e9ff);
         }
         
         .form-group {
@@ -417,23 +429,24 @@
         
         .control-label {
             font-weight: 600;
-            color: var(--text-primary);
+            color: var(--text-primary, #2f3640);
             margin-bottom: 8px;
             font-size: 14px;
         }
         
         .form-control {
-            border: 2px solid var(--border-color);
+            border: 2px solid var(--border-color, #e8e9ff);
             border-radius: var(--radius-md);
             padding: 12px 16px;
             font-size: 15px;
             transition: var(--transition-base);
-            background: var(--bg-primary, white);
+            background: var(--bg-secondary, white);
+            color: var(--text-primary, #2f3640);
         }
         
         .form-control:focus {
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+            border-color: var(--accent-color, #5b5fcf);
+            box-shadow: 0 0 0 3px var(--accent-focus, rgba(91,95,207,0.1));
             outline: none;
         }
         
@@ -445,11 +458,11 @@
         
         /* Modal and Form Modal Styling */
         .form-horizontal.bordered-row {
-            background: var(--bg-primary, white);
+            background: var(--bg-secondary, white);
             padding: 30px;
             border-radius: var(--radius-xl);
-            box-shadow: var(--shadow-lg);
-            border: 1px solid var(--border-color);
+            box-shadow: 0 10px 40px var(--shadow-color, rgba(0,0,0,0.08));
+            border: 1px solid var(--border-color, #e8e9ff);
             margin: 20px 0;
         }
         
@@ -469,22 +482,22 @@
         /* Rewrite Rules and Config Specific Styling */
         textarea[ng-model="rewriteRules"],
         textarea[ng-model="configData"] {
-            background: var(--bg-secondary, #f8fafc);
-            border: 2px solid var(--border-light, #e2e8f0);
+            background: var(--bg-code, #f8fafc);
+            border: 2px solid var(--border-color, #e8e9ff);
             border-radius: var(--radius-lg);
             padding: 16px;
             font-family: 'Monaco', 'Consolas', 'Courier New', monospace;
             font-size: 14px;
             line-height: 1.6;
-            color: var(--text-primary, #1e293b);
+            color: var(--text-primary, #2f3640);
             min-height: 300px;
         }
         
         textarea[ng-model="rewriteRules"]:focus,
         textarea[ng-model="configData"]:focus {
-            background: var(--bg-primary, white);
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+            background: var(--bg-secondary, white);
+            border-color: var(--accent-color, #5b5fcf);
+            box-shadow: 0 0 0 4px var(--accent-focus, rgba(91, 95, 207, 0.1));
         }
         
         /* Save button styling */
@@ -493,12 +506,12 @@
             font-size: 16px;
             font-weight: 600;
             border-radius: var(--radius-lg);
-            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.2);
+            box-shadow: 0 4px 15px var(--accent-shadow, rgba(91, 95, 207, 0.2));
         }
         
         .btn-primary.btn-lg:hover {
             transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.3);
+            box-shadow: 0 8px 25px var(--accent-shadow, rgba(91, 95, 207, 0.3));
         }
         
         /* Form group spacing */

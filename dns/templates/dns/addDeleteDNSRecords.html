@@ -5,6 +5,7 @@
 {% block header_scripts %}
 <style>
     /* Modern DNS Manager Styles with Dark Mode Support */
+    /* Commented out hardcoded :root variables - now using base template variables for proper dark mode support
     :root {
         --primary-color: #5b5fcf;
         --primary-hover: #4a4fc4;
@@ -43,7 +44,7 @@
         --radius-2xl: 16px;
         
         --transition-base: all 0.2s ease;
-    }
+    } */
     
     .dns-manager {
         background: transparent;
@@ -69,13 +70,13 @@
     .dns-title {
         font-size: 28px;
         font-weight: 700;
-        color: var(--text-primary);
+        color: var(--text-primary, #1e293b);
         margin-bottom: 8px;
     }
     
     .dns-subtitle {
         font-size: 14px;
-        color: var(--text-secondary);
+        color: var(--text-secondary, #64748b);
         line-height: 1.6;
     }
     
@@ -84,28 +85,28 @@
         align-items: center;
         gap: 8px;
         padding: 10px 20px;
-        background: var(--bg-secondary);
-        color: var(--primary-color);
-        border: 1px solid var(--border-color);
-        border-radius: var(--radius-md);
+        background: var(--bg-secondary, #f8f9ff);
+        color: var(--accent-color, #5b5fcf);
+        border: 1px solid var(--border-primary, #e8e9ff);
+        border-radius: 8px;
         text-decoration: none;
         font-size: 14px;
         font-weight: 600;
-        transition: var(--transition-base);
+        transition: all 0.2s ease;
     }
     
     .docs-link:hover {
-        background: var(--primary-color);
-        color: var(--bg-primary);
+        background: var(--accent-color, #5b5fcf);
+        color: var(--bg-primary, #ffffff);
         transform: translateY(-1px);
-        box-shadow: var(--shadow-primary);
+        box-shadow: var(--accent-shadow, 0 4px 12px rgba(91,95,207,0.2));
     }
     
     /* PowerDNS Disabled State */
     .powerdns-disabled {
-        background: #fff8e1;
-        border: 1px solid #ffe082;
-        border-radius: var(--radius-xl);
+        background: var(--warning-light, #fff8e1);
+        border: 1px solid var(--warning-border, #ffe082);
+        border-radius: 12px;
         padding: 40px;
         text-align: center;
         margin-bottom: 30px;
@@ -113,30 +114,30 @@
     
     .powerdns-disabled i {
         font-size: 48px;
-        color: var(--warning-color);
+        color: var(--warning-color, #ffa000);
         margin-bottom: 20px;
     }
     
     .powerdns-disabled h3 {
         font-size: 20px;
-        color: var(--text-primary);
+        color: var(--text-primary, #1e293b);
         margin-bottom: 20px;
     }
     
     /* Main Content Card */
     .dns-content-card {
-        background: var(--bg-primary);
-        border-radius: var(--radius-2xl);
-        box-shadow: var(--shadow-sm), var(--shadow-lg);
-        border: 1px solid var(--border-color);
+        background: var(--bg-primary, #ffffff);
+        border-radius: 16px;
+        box-shadow: var(--shadow-sm, 0 1px 3px rgba(0,0,0,0.05)), var(--shadow-lg, 0 10px 40px rgba(0,0,0,0.08));
+        border: 1px solid var(--border-primary, #e8e9ff);
         overflow: hidden;
     }
     
     /* Domain Selector */
     .domain-selector-section {
         padding: 30px;
-        background: var(--bg-gradient);
-        border-bottom: 1px solid var(--border-color);
+        background: linear-gradient(135deg, var(--bg-secondary, #f8f9ff) 0%, var(--bg-primary, #fff) 100%);
+        border-bottom: 1px solid var(--border-primary, #e8e9ff);
     }
     
     .domain-selector-wrapper {
@@ -147,7 +148,7 @@
     .domain-selector-label {
         font-size: 13px;
         font-weight: 600;
-        color: var(--text-secondary);
+        color: var(--text-secondary, #64748b);
         text-transform: uppercase;
         letter-spacing: 0.5px;
         margin-bottom: 12px;
@@ -157,22 +158,22 @@
     .domain-select {
         width: 100%;
         padding: 12px 16px;
-        border: 2px solid var(--border-color);
-        border-radius: var(--radius-lg);
+        border: 2px solid var(--border-primary, #e8e9ff);
+        border-radius: 10px;
         font-size: 15px;
-        color: var(--text-primary);
-        background: var(--bg-primary);
-        transition: var(--transition-base);
+        color: var(--text-primary, #1e293b);
+        background: var(--bg-primary, #ffffff);
+        transition: all 0.2s ease;
         cursor: pointer;
     }
     
     .domain-select:hover {
-        border-color: var(--border-hover);
+        border-color: var(--accent-color, #5b5fcf);
     }
     
     .domain-select:focus {
         outline: none;
-        border-color: var(--border-hover);
+        border-color: var(--accent-color, #5b5fcf);
         box-shadow: 0 0 0 3px rgba(91,95,207,0.1);
     }
     
@@ -183,8 +184,8 @@
     
     /* Record Type Tabs */
     .record-type-tabs {
-        background: var(--bg-tertiary);
-        border-bottom: 1px solid var(--border-color);
+        background: var(--bg-secondary, #fafbff);
+        border-bottom: 1px solid var(--border-primary, #e8e9ff);
         padding: 0 30px;
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
@@ -206,17 +207,17 @@
         display: flex;
         align-items: center;
         padding: 20px 24px;
-        color: var(--text-secondary);
+        color: var(--text-secondary, #64748b);
         text-decoration: none;
         font-weight: 600;
         font-size: 14px;
-        transition: var(--transition-base);
+        transition: all 0.2s ease;
         position: relative;
         white-space: nowrap;
     }
     
     .record-type-tabs li.active a {
-        color: var(--primary-color);
+        color: var(--accent-color, #5b5fcf);
     }
     
     .record-type-tabs li.active::after {
@@ -226,12 +227,12 @@
         left: 0;
         right: 0;
         height: 3px;
-        background: var(--primary-color);
+        background: var(--accent-color, #5b5fcf);
         border-radius: 3px 3px 0 0;
     }
     
     .record-type-tabs a:hover {
-        color: var(--primary-color);
+        color: var(--accent-color, #5b5fcf);
     }
     
     /* Record Type Badge */
@@ -241,24 +242,24 @@
         justify-content: center;
         width: 32px;
         height: 32px;
-        background: var(--border-color);
-        border-radius: var(--radius-md);
+        background: var(--border-primary, #e8e9ff);
+        border-radius: 8px;
         font-size: 11px;
         font-weight: 700;
         margin-right: 10px;
-        transition: var(--transition-base);
+        transition: all 0.2s ease;
     }
     
     .record-type-tabs li.active .record-type-badge {
-        background: var(--primary-color);
-        color: var(--bg-primary);
+        background: var(--accent-color, #5b5fcf);
+        color: var(--bg-primary, #ffffff);
     }
     
     /* Add Record Form */
     .add-record-form {
         padding: 30px;
-        background: var(--bg-tertiary);
-        border-bottom: 1px solid var(--border-color);
+        background: var(--bg-secondary, #fafbff);
+        border-bottom: 1px solid var(--border-primary, #e8e9ff);
     }
     
     .record-form-grid {
@@ -284,7 +285,7 @@
         display: block;
         font-size: 12px;
         font-weight: 600;
-        color: var(--text-secondary);
+        color: var(--text-secondary, #64748b);
         margin-bottom: 8px;
         text-transform: uppercase;
         letter-spacing: 0.5px;
@@ -294,42 +295,42 @@
     .form-field select {
         width: 100%;
         padding: 10px 14px;
-        border: 1px solid var(--border-light);
-        border-radius: var(--radius-md);
+        border: 1px solid var(--border-light, #e2e8f0);
+        border-radius: 8px;
         font-size: 14px;
-        color: var(--text-primary);
-        background: var(--bg-primary);
-        transition: var(--transition-base);
+        color: var(--text-primary, #1e293b);
+        background: var(--bg-primary, #ffffff);
+        transition: all 0.2s ease;
     }
     
     .form-field input:hover,
     .form-field select:hover {
-        border-color: var(--border-hover);
+        border-color: var(--accent-color, #5b5fcf);
     }
     
     .form-field input:focus,
     .form-field select:focus {
         outline: none;
-        border-color: var(--border-hover);
+        border-color: var(--accent-color, #5b5fcf);
         box-shadow: 0 0 0 3px rgba(91,95,207,0.1);
     }
     
     .form-field input[disabled] {
-        background: var(--bg-light);
+        background: var(--bg-hover, #f1f5f9);
         cursor: not-allowed;
     }
     
     /* Add Button */
     .btn-add-record {
         padding: 10px 20px;
-        background: var(--primary-color);
-        color: var(--bg-primary);
+        background: var(--accent-color, #5b5fcf);
+        color: var(--bg-primary, #ffffff);
         border: none;
-        border-radius: var(--radius-md);
+        border-radius: 8px;
         font-size: 14px;
         font-weight: 600;
         cursor: pointer;
-        transition: var(--transition-base);
+        transition: all 0.2s ease;
         display: flex;
         align-items: center;
         gap: 8px;
@@ -337,7 +338,7 @@
     }
     
     .btn-add-record:hover {
-        background: var(--primary-hover);
+        background: var(--accent-hover, #4a4fc4);
         transform: translateY(-1px);
         box-shadow: 0 4px 12px rgba(91,95,207,0.3);
     }
@@ -357,7 +358,7 @@
     .records-table-title {
         font-size: 18px;
         font-weight: 700;
-        color: var(--text-primary);
+        color: var(--text-primary, #1e293b);
         display: flex;
         align-items: center;
         gap: 10px;
@@ -370,8 +371,8 @@
         min-width: 28px;
         height: 28px;
         padding: 0 10px;
-        background: var(--border-color);
-        color: var(--primary-color);
+        background: var(--border-primary, #e8e9ff);
+        color: var(--accent-color, #5b5fcf);
         border-radius: 14px;
         font-size: 13px;
         font-weight: 700;
@@ -380,32 +381,32 @@
     /* Modern Table */
     .modern-dns-table {
         width: 100%;
-        background: var(--bg-primary);
-        border-radius: var(--radius-xl);
+        background: var(--bg-primary, #ffffff);
+        border-radius: 12px;
         overflow: hidden;
-        border: 1px solid var(--border-color);
+        border: 1px solid var(--border-primary, #e8e9ff);
     }
     
     .modern-dns-table thead {
-        background: var(--bg-secondary);
+        background: var(--bg-secondary, #f8f9ff);
     }
     
     .modern-dns-table th {
         padding: 16px 20px;
         font-size: 12px;
         font-weight: 600;
-        color: var(--text-secondary);
+        color: var(--text-secondary, #64748b);
         text-transform: uppercase;
         letter-spacing: 0.5px;
         text-align: left;
-        border-bottom: 1px solid var(--border-color);
+        border-bottom: 1px solid var(--border-primary, #e8e9ff);
     }
     
     .modern-dns-table td {
         padding: 12px 20px;
         font-size: 14px;
-        color: var(--text-primary);
-        border-bottom: 1px solid #f0f0f0;
+        color: var(--text-primary, #1e293b);
+        border-bottom: 1px solid var(--border-light, #f0f0f0);
     }
     
     .modern-dns-table tbody tr:last-child td {
@@ -413,7 +414,7 @@
     }
     
     .modern-dns-table tbody tr:hover {
-        background: var(--bg-tertiary);
+        background: var(--bg-secondary, #fafbff);
     }
     
     /* Type Badge in Table */
@@ -421,9 +422,9 @@
         display: inline-flex;
         align-items: center;
         padding: 4px 10px;
-        background: var(--border-color);
-        color: var(--primary-color);
-        border-radius: var(--radius-sm);
+        background: var(--border-primary, #e8e9ff);
+        color: var(--accent-color, #5b5fcf);
+        border-radius: 6px;
         font-size: 11px;
         font-weight: 700;
         text-transform: uppercase;
@@ -435,22 +436,22 @@
         width: 100%;
         padding: 6px 10px;
         border: 1px solid transparent;
-        border-radius: var(--radius-sm);
+        border-radius: 6px;
         font-size: 14px;
         font-family: 'Courier New', monospace;
         background: transparent;
-        transition: var(--transition-base);
+        transition: all 0.2s ease;
     }
     
     .editable-input:hover {
-        background: var(--bg-secondary);
-        border-color: var(--border-color);
+        background: var(--bg-secondary, #f8f9ff);
+        border-color: var(--border-primary, #e8e9ff);
     }
     
     .editable-input:focus {
         outline: none;
-        background: var(--bg-primary);
-        border-color: var(--border-hover);
+        background: var(--bg-primary, #ffffff);
+        border-color: var(--accent-color, #5b5fcf);
         box-shadow: 0 0 0 3px rgba(91,95,207,0.1);
     }
     
@@ -464,36 +465,36 @@
     .btn-action {
         padding: 6px 12px;
         border: none;
-        border-radius: var(--radius-sm);
+        border-radius: 6px;
         font-size: 13px;
         font-weight: 600;
         cursor: pointer;
-        transition: var(--transition-base);
+        transition: all 0.2s ease;
         display: inline-flex;
         align-items: center;
         gap: 6px;
     }
     
     .btn-save {
-        background: var(--success-color);
-        color: var(--bg-primary);
+        background: var(--success-color, #10b981);
+        color: var(--bg-primary, #ffffff);
     }
     
     .btn-save:hover {
         background: #059669;
         transform: translateY(-1px);
-        box-shadow: var(--shadow-success);
+        box-shadow: var(--success-shadow, 0 2px 8px rgba(16,185,129,0.3));
     }
     
     .btn-delete {
         background: transparent;
-        color: var(--danger-color);
+        color: var(--danger-color, #ef4444);
         padding: 8px;
     }
     
     .btn-delete:hover {
-        background: #fee2e2;
-        border-radius: var(--radius-sm);
+        background: var(--danger-light, #fee2e2);
+        border-radius: 6px;
     }
     
     /* Loading State */
@@ -501,8 +502,8 @@
         display: inline-block;
         width: 16px;
         height: 16px;
-        border: 2px solid var(--border-color);
-        border-top-color: var(--primary-color);
+        border: 2px solid var(--border-primary, #e8e9ff);
+        border-top-color: var(--accent-color, #5b5fcf);
         border-radius: 50%;
         animation: spin 0.8s linear infinite;
     }
@@ -515,24 +516,24 @@
     .empty-state {
         text-align: center;
         padding: 60px 30px;
-        color: var(--text-muted);
+        color: var(--text-muted, #94a3b8);
     }
     
     .empty-state i {
         font-size: 48px;
-        color: var(--text-light);
+        color: var(--text-muted, #cbd5e1);
         margin-bottom: 20px;
     }
     
     .empty-state-text {
         font-size: 16px;
-        color: var(--text-secondary);
+        color: var(--text-secondary, #64748b);
         margin-bottom: 8px;
     }
     
     .empty-state-subtext {
         font-size: 14px;
-        color: var(--text-muted);
+        color: var(--text-muted, #94a3b8);
     }
     
     /* Alerts */
@@ -546,13 +547,13 @@
     
     .dns-alert {
         padding: 16px 20px;
-        border-radius: var(--radius-lg);
+        border-radius: 10px;
         margin-bottom: 12px;
         display: flex;
         align-items: center;
         gap: 12px;
         animation: slideIn 0.3s ease-out;
-        box-shadow: var(--shadow-md);
+        box-shadow: var(--shadow-md, 0 4px 12px rgba(0,0,0,0.1));
     }
     
     @keyframes slideIn {
@@ -567,15 +568,15 @@
     }
     
     .dns-alert-success {
-        background: #e8f5e9;
-        border: 1px solid #c8e6c9;
-        color: #2e7d32;
+        background: var(--success-light, #e8f5e9);
+        border: 1px solid var(--success-border, #c8e6c9);
+        color: var(--success-text, #2e7d32);
     }
     
     .dns-alert-error {
-        background: #ffebee;
-        border: 1px solid #ffcdd2;
-        color: #c62828;
+        background: var(--danger-light, #ffebee);
+        border: 1px solid var(--danger-border, #ffcdd2);
+        color: var(--danger-text, #c62828);
     }
     
     /* Tooltips */
@@ -590,8 +591,8 @@
         justify-content: center;
         width: 16px;
         height: 16px;
-        background: var(--border-color);
-        color: var(--primary-color);
+        background: var(--border-primary, #e8e9ff);
+        color: var(--accent-color, #5b5fcf);
         border-radius: 50%;
         font-size: 10px;
         cursor: help;
@@ -666,7 +667,7 @@
         <div class="powerdns-disabled">
             <i class="fas fa-exclamation-circle"></i>
             <h3>{% trans "PowerDNS is disabled" %}</h3>
-            <p style="margin-bottom: 24px; color: #64748b;">{% trans "You need to enable PowerDNS to manage DNS records" %}</p>
+            <p style="margin-bottom: 24px; color: var(--text-secondary, #64748b);">{% trans "You need to enable PowerDNS to manage DNS records" %}</p>
             <a href="{% url 'managePowerDNS' %}" class="btn-add-record" style="display: inline-flex;">
                 <i class="fas fa-power-off"></i>
                 {% trans "Enable PowerDNS" %}
