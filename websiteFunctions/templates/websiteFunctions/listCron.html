@@ -530,8 +530,7 @@
                             <td ng-bind="cron.month"></td>
                             <td ng-bind="cron.weekday"></td>
                             <td>
-                                <code style="background: var(--bg-light); padding: 4px 8px; border-radius: 4px; font-size: 12px;">
-                                    {{ cron.command }}
+                                <code style="background: var(--bg-light); padding: 4px 8px; border-radius: 4px; font-size: 12px;" ng-bind="cron.command">
                                 </code>
                             </td>
                             <td>
