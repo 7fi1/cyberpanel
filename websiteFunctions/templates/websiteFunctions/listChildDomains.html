@@ -31,22 +31,22 @@
     .page-title {
         font-size: 28px;
         font-weight: 700;
-        color: #2f3640;
+        color: var(--text-primary, #2f3640);
         margin-bottom: 8px;
     }
     
     .page-subtitle {
         font-size: 14px;
-        color: #8893a7;
+        color: var(--text-secondary, #8893a7);
     }
     
     /* Search and Filter Section */
     .search-section {
-        background: white;
+        background: var(--bg-primary, white);
         border-radius: 12px;
         padding: 20px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        border: 1px solid #e8e9ff;
+        box-shadow: var(--shadow-md, 0 2px 8px rgba(0,0,0,0.08));
+        border: 1px solid var(--border-primary, #e8e9ff);
         margin-bottom: 25px;
     }
     
@@ -63,12 +63,31 @@
     .form-control {
         width: 100%;
         padding: 10px 14px;
-        border: 1px solid #e8e9ff;
+        border: 1px solid var(--border-primary, #e8e9ff);
         border-radius: 8px;
         font-size: 14px;
-        color: #2f3640;
-        background: white;
+        color: var(--text-primary, #2f3640);
+        background: var(--bg-primary, white);
         transition: all 0.2s ease;
+    }
+    
+    /* Select dropdown Windows compatibility */
+    select.form-control {
+        background-color: var(--bg-primary, white) !important;
+        color: var(--text-primary, #2f3640) !important;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+        background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232f3640' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right 12px center;
+        background-size: 20px;
+        padding-right: 40px;
+    }
+    
+    select.form-control option {
+        background-color: var(--bg-primary, white);
+        color: var(--text-primary, #2f3640);
     }
     
     .form-control:hover {
@@ -84,28 +103,28 @@
     .form-select {
         width: 120px;
         padding: 10px 14px;
-        border: 1px solid #e8e9ff;
+        border: 1px solid var(--border-primary, #e8e9ff);
         border-radius: 8px;
         font-size: 14px;
-        color: #2f3640;
-        background: white;
+        color: var(--text-primary, #2f3640);
+        background: var(--bg-primary, white);
         transition: all 0.2s ease;
         cursor: pointer;
     }
     
     /* Domain Cards */
     .domain-card {
-        background: white;
+        background: var(--bg-primary, white);
         border-radius: 12px;
         padding: 20px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        border: 1px solid #e8e9ff;
+        box-shadow: var(--shadow-md, 0 2px 8px rgba(0,0,0,0.08));
+        border: 1px solid var(--border-primary, #e8e9ff);
         margin-bottom: 20px;
         transition: all 0.3s ease;
     }
     
     .domain-card:hover {
-        box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+        box-shadow: var(--shadow-lg, 0 4px 16px rgba(0,0,0,0.12));
         border-color: #5b5fcf;
     }
     
@@ -115,7 +134,7 @@
         align-items: center;
         margin-bottom: 20px;
         padding-bottom: 20px;
-        border-bottom: 1px solid #e8e9ff;
+        border-bottom: 1px solid var(--border-primary, #e8e9ff);
     }
     
     .domain-info {
@@ -125,7 +144,7 @@
     .domain-name {
         font-size: 20px;
         font-weight: 700;
-        color: #2f3640;
+        color: var(--text-primary, #2f3640);
         text-decoration: none;
         display: inline-block;
         margin-bottom: 5px;
@@ -138,7 +157,7 @@
     
     .master-domain {
         font-size: 13px;
-        color: #8893a7;
+        color: var(--text-secondary, #8893a7);
         margin-top: 5px;
     }
     
@@ -189,7 +208,7 @@
     .detail-icon {
         width: 36px;
         height: 36px;
-        background: #f8f9ff;
+        background: var(--bg-secondary, #f8f9ff);
         border-radius: 8px;
         display: flex;
         align-items: center;
@@ -205,7 +224,7 @@
     
     .detail-label {
         font-size: 11px;
-        color: #8893a7;
+        color: var(--text-secondary, #8893a7);
         text-transform: uppercase;
         letter-spacing: 0.5px;
         margin-bottom: 2px;
@@ -213,7 +232,7 @@
     
     .detail-value {
         font-size: 14px;
-        color: #2f3640;
+        color: var(--text-primary, #2f3640);
         font-weight: 600;
     }
     
@@ -233,7 +252,7 @@
         gap: 12px;
         margin-top: 20px;
         padding-top: 20px;
-        border-top: 1px solid #e8e9ff;
+        border-top: 1px solid var(--border-primary, #e8e9ff);
     }
     
     .action-btn {
@@ -248,7 +267,7 @@
         transition: all 0.2s ease;
         cursor: pointer;
         border: none;
-        background: #f8f9ff;
+        background: var(--bg-secondary, #f8f9ff);
         color: #5b5fcf;
     }
     
@@ -270,7 +289,7 @@
     }
     
     .action-btn.convert:hover {
-        background: #fff3e0;
+        background: var(--bg-warning-light, #fff3e0);
     }
     
     /* Pagination */
@@ -283,41 +302,59 @@
     .pagination-select {
         width: 120px;
         padding: 10px 14px;
-        border: 1px solid #e8e9ff;
+        border: 1px solid var(--border-primary, #e8e9ff);
         border-radius: 8px;
         font-size: 14px;
-        color: #2f3640;
-        background: white;
+        color: var(--text-primary, #2f3640);
+        background: var(--bg-primary, white);
         cursor: pointer;
+        background-color: var(--bg-primary, white) !important;
+    }
+    
+    select.pagination-select option {
+        background-color: var(--bg-primary, white);
+        color: var(--text-primary, #2f3640);
     }
     
     /* Modal Styles */
     .modal-content {
+        background: var(--bg-primary, white);
         border-radius: 12px;
         border: none;
         box-shadow: 0 8px 32px rgba(0,0,0,0.1);
     }
     
     .modal-header {
-        background: #f8f9ff;
-        border-bottom: 1px solid #e8e9ff;
+        background: var(--bg-secondary, #f8f9ff);
+        border-bottom: 1px solid var(--border-primary, #e8e9ff);
         border-radius: 12px 12px 0 0;
         padding: 20px 25px;
+    }
+    
+    .modal-header .close {
+        color: var(--text-primary, #2f3640);
+        opacity: 0.8;
+    }
+    
+    .modal-header .close:hover {
+        color: var(--text-primary, #2f3640);
+        opacity: 1;
     }
     
     .modal-title {
         font-size: 18px;
         font-weight: 700;
-        color: #2f3640;
+        color: var(--text-primary, #2f3640);
     }
     
     .modal-body {
         padding: 25px;
+        background: var(--bg-primary, white);
     }
     
     .modal-footer {
-        background: #f8f9ff;
-        border-top: 1px solid #e8e9ff;
+        background: var(--bg-secondary, #f8f9ff);
+        border-top: 1px solid var(--border-primary, #e8e9ff);
         border-radius: 0 0 12px 12px;
         padding: 15px 25px;
         display: flex;
@@ -363,9 +400,9 @@
     }
     
     .btn-secondary {
-        background: #f8f9ff;
+        background: var(--bg-secondary, #f8f9ff);
         color: #5b5fcf;
-        border: 1px solid #e8e9ff;
+        border: 1px solid var(--border-primary, #e8e9ff);
     }
     
     .btn-secondary:hover {
@@ -382,7 +419,7 @@
         display: block;
         font-size: 13px;
         font-weight: 600;
-        color: #64748b;
+        color: var(--text-secondary, #64748b);
         margin-bottom: 8px;
         text-transform: uppercase;
         letter-spacing: 0.5px;
@@ -394,15 +431,15 @@
         align-items: center;
         gap: 10px;
         padding: 12px 16px;
-        background: #f8f9ff;
-        border: 1px solid #e8e9ff;
+        background: var(--bg-secondary, #f8f9ff);
+        border: 1px solid var(--border-primary, #e8e9ff);
         border-radius: 8px;
         cursor: pointer;
     }
     
     .checkbox-wrapper:hover {
         border-color: #5b5fcf;
-        background: #f0f1ff;
+        background: var(--bg-hover, #f0f1ff);
     }
     
     .checkbox-wrapper input[type="checkbox"] {
@@ -415,7 +452,7 @@
     
     .checkbox-label {
         font-size: 14px;
-        color: #2f3640;
+        color: var(--text-primary, #2f3640);
         font-weight: 500;
         cursor: pointer;
         user-select: none;
@@ -423,7 +460,7 @@
     
     /* Progress styles */
     .progress-section {
-        background: #f8f9ff;
+        background: var(--bg-secondary, #f8f9ff);
         border-radius: 10px;
         padding: 25px;
         margin-top: 20px;
@@ -432,7 +469,7 @@
     .progress-status {
         font-size: 16px;
         font-weight: 600;
-        color: #2f3640;
+        color: var(--text-primary, #2f3640);
         text-align: center;
         margin-bottom: 20px;
     }
@@ -457,7 +494,7 @@
         display: inline-block;
         width: 16px;
         height: 16px;
-        border: 2px solid #f3f3f3;
+        border: 2px solid var(--border-light, #f3f3f3);
         border-top: 2px solid #5b5fcf;
         border-radius: 50%;
         animation: spin 1s linear infinite;
@@ -492,6 +529,21 @@
     }
     
     /* Responsive */
+    /* Ensure modal form controls have proper backgrounds */
+    .modal-body .form-control,
+    .modal-body select {
+        background-color: var(--bg-primary, white) !important;
+        color: var(--text-primary, #2f3640) !important;
+    }
+    
+    /* Additional fixes for select dropdowns in dark mode */
+    select.form-select option,
+    select.pagination-select option,
+    .modal-body select option {
+        background-color: var(--bg-primary, white) !important;
+        color: var(--text-primary, #2f3640) !important;
+    }
+    
     @media (max-width: 768px) {
         .domain-header {
             flex-direction: column;
@@ -678,7 +730,7 @@
                                     {% trans "Delete Document Root" %}
                                 </label>
                             </div>
-                            <p style="margin-top: 10px; font-size: 13px; color: #8893a7;">
+                            <p style="margin-top: 10px; font-size: 13px; color: var(--text-secondary, #8893a7);">
                                 {% trans "Warning: This will permanently delete all files in the document root directory." %}
                             </p>
                         </div>

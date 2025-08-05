@@ -11,6 +11,7 @@
 
     <style>
         /* Ultra-Modern CyberPanel Design System */
+        /* :root block commented out to allow dark mode variables from base template
         :root {
             --primary-color: #6366f1;
             --primary-hover: #5558e3;
@@ -49,6 +50,7 @@
             
             --transition-base: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
+        */
         
         /* Container Styling */
         .container {
@@ -56,7 +58,7 @@
             margin: 0 auto;
             padding: 20px;
             min-height: 100vh;
-            background: linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%);
+            background: linear-gradient(180deg, var(--bg-secondary, #f8fafc) 0%, var(--border-light, #e2e8f0) 100%);
         }
         
         /* Page Title Section */
@@ -110,7 +112,7 @@
         
         /* Main Panel */
         .panel {
-            background: var(--bg-card);
+            background: var(--bg-primary, #ffffff);
             border-radius: var(--radius-xl);
             box-shadow: var(--shadow-lg);
             border: 1px solid var(--border-color);
@@ -129,7 +131,7 @@
         
         /* Content Box */
         .content-box {
-            background: var(--bg-card);
+            background: var(--bg-primary, #ffffff);
             border-radius: var(--radius-xl);
             box-shadow: var(--shadow-lg);
             border: 1px solid var(--border-color);
@@ -138,7 +140,7 @@
         
         /* Content Box Header */
         .content-box-header {
-            background: linear-gradient(135deg, var(--primary-light) 0%, var(--bg-light) 100%);
+            background: linear-gradient(135deg, var(--primary-light, #eef2ff) 0%, var(--bg-secondary, #f8fafc) 100%);
             padding: 25px 30px;
             margin: 0;
             font-size: 20px;
@@ -211,7 +213,7 @@
         }
         
         .btn-preview {
-            background: linear-gradient(135deg, var(--accent-color) 0%, #db2777 100%);
+            background: linear-gradient(135deg, var(--accent-color, #ec4899) 0%, #db2777 100%);
             color: white;
             box-shadow: 0 4px 15px rgba(236, 72, 153, 0.3);
         }
@@ -223,12 +225,12 @@
         }
         
         .btn-git {
-            background: linear-gradient(135deg, #f59e0b 0%, #dc2626 100%);
+            background: linear-gradient(135deg, var(--warning-color, #f59e0b) 0%, #dc2626 100%);
             color: white;
         }
         
         .btn-sync {
-            background: linear-gradient(135deg, var(--info-color) 0%, #2563eb 100%);
+            background: linear-gradient(135deg, var(--info-color, #3b82f6) 0%, #2563eb 100%);}
             color: white;
         }
         
@@ -240,7 +242,7 @@
         /* Table Styling */
         .table {
             margin: 0;
-            background: white;
+            background: var(--bg-primary, white);
             border-radius: var(--radius-lg);
             overflow: hidden;
             box-shadow: var(--shadow-sm);
@@ -270,7 +272,7 @@
         }
         
         .table tbody tr:hover {
-            background: var(--bg-hover);
+            background: var(--bg-hover, #f1f5f9);
             box-shadow: 0 2px 4px rgba(0,0,0,0.04);
         }
         
@@ -291,7 +293,7 @@
             position: relative;
             width: 100%;
             height: 30px;
-            background: var(--border-color);
+            background: var(--border-light, #e2e8f0);
             border-radius: var(--radius-full);
             overflow: hidden;
             margin-bottom: 20px;
@@ -346,14 +348,14 @@
         
         .alert-success {
             background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
-            color: #065f46;
-            border: 1px solid #6ee7b7;
+            color: var(--success-text, #065f46);
+            border: 1px solid var(--success-border, #6ee7b7);
         }
         
         .alert-danger {
             background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
-            color: #991b1b;
-            border: 1px solid #fca5a5;
+            color: var(--danger-text, #991b1b);
+            border: 1px solid var(--danger-border, #fca5a5);
         }
         
         /* Loading Animation */
@@ -375,7 +377,7 @@
             align-items: center;
             gap: 15px;
             padding: 20px;
-            background: var(--bg-light);
+            background: var(--bg-secondary, #f8fafc);
             border-radius: var(--radius-lg);
             transition: var(--transition-base);
             text-decoration: none;
@@ -426,7 +428,7 @@
             padding: 12px 16px;
             font-size: 15px;
             transition: var(--transition-base);
-            background: white;
+            background: var(--bg-primary, white);
         }
         
         .form-control:focus {
@@ -443,7 +445,7 @@
         
         /* Modal and Form Modal Styling */
         .form-horizontal.bordered-row {
-            background: white;
+            background: var(--bg-primary, white);
             padding: 30px;
             border-radius: var(--radius-xl);
             box-shadow: var(--shadow-lg);
@@ -461,26 +463,26 @@
         
         .glyph-icon.icon-close:hover {
             transform: scale(1.2);
-            color: #dc2626;
+            color: var(--danger-color, #dc2626);
         }
         
         /* Rewrite Rules and Config Specific Styling */
         textarea[ng-model="rewriteRules"],
         textarea[ng-model="configData"] {
-            background: #f8fafc;
-            border: 2px solid #e2e8f0;
+            background: var(--bg-secondary, #f8fafc);
+            border: 2px solid var(--border-light, #e2e8f0);
             border-radius: var(--radius-lg);
             padding: 16px;
             font-family: 'Monaco', 'Consolas', 'Courier New', monospace;
             font-size: 14px;
             line-height: 1.6;
-            color: #1e293b;
+            color: var(--text-primary, #1e293b);
             min-height: 300px;
         }
         
         textarea[ng-model="rewriteRules"]:focus,
         textarea[ng-model="configData"]:focus {
-            background: white;
+            background: var(--bg-primary, white);
             border-color: var(--primary-color);
             box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
         }
