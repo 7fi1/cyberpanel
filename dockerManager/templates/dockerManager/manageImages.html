@@ -18,7 +18,7 @@
         text-align: center;
         margin-bottom: 3rem;
         padding: 3rem 0;
-        background: linear-gradient(135deg, var(--bg-hover, #f8f9ff) 0%, var(--bg-gradient, #f0f1ff) 100%);
+        background: linear-gradient(135deg, var(--bg-hover, #f8f9ff) 0%, var(--bg-hover, #f0f1ff) 100%);
         border-radius: 20px;
         animation: fadeInDown 0.5s ease-out;
         position: relative;
@@ -52,12 +52,12 @@
     .docker-icon {
         width: 60px;
         height: 60px;
-        background: var(--bg-secondary, white);
+        background: var(--bg-primary, white);
         border-radius: 12px;
         display: flex;
         align-items: center;
         justify-content: center;
-        box-shadow: 0 4px 12px var(--shadow-medium, rgba(0,0,0,0.1));
+        box-shadow: 0 4px 12px var(--shadow-md, rgba(0,0,0,0.1));
     }
     
     .page-subtitle {
@@ -79,7 +79,7 @@
     
     .btn-primary {
         background: var(--accent-color, #5b5fcf);
-        color: var(--bg-secondary, white);
+        color: white;
         border: none;
         padding: 0.75rem 2rem;
         border-radius: 10px;
@@ -97,7 +97,7 @@
         background: var(--accent-hover, #4547a9);
         transform: translateY(-2px);
         box-shadow: 0 8px 20px var(--accent-shadow-hover, rgba(91, 95, 207, 0.4));
-        color: var(--bg-secondary, white);
+        color: white;
     }
     
     .btn-secondary {
@@ -120,12 +120,12 @@
         background: var(--bg-hover, #f8f9ff);
         border-color: var(--accent-color, #5b5fcf);
         transform: translateY(-2px);
-        box-shadow: 0 4px 12px var(--accent-shadow-soft, rgba(91, 95, 207, 0.2));
+        box-shadow: 0 4px 12px var(--accent-shadow-light, rgba(91, 95, 207, 0.2));
     }
     
     .btn-warning {
         background: var(--warning-color, #f59e0b);
-        color: var(--bg-secondary, white);
+        color: white;
         border: none;
         padding: 0.75rem 2rem;
         border-radius: 10px;
@@ -146,7 +146,7 @@
     
     .btn-danger {
         background: var(--danger-color, #ef4444);
-        color: var(--bg-secondary, white);
+        color: white;
         border: none;
         padding: 0.5rem 1rem;
         border-radius: 8px;
@@ -167,7 +167,7 @@
     
     .btn-info {
         background: var(--info-color, #3b82f6);
-        color: var(--bg-secondary, white);
+        color: white;
         border: none;
         padding: 0.5rem 1rem;
         border-radius: 8px;
@@ -187,7 +187,7 @@
     }
     
     .main-card {
-        background: var(--bg-secondary, white);
+        background: var(--bg-primary, white);
         border-radius: 16px;
         box-shadow: 0 1px 3px var(--shadow-light, rgba(0,0,0,0.05)), 0 10px 40px var(--shadow-color, rgba(0,0,0,0.08));
         border: 1px solid var(--border-color, #e8e9ff);
@@ -197,7 +197,7 @@
     }
     
     .card-header {
-        background: linear-gradient(135deg, var(--bg-hover, #f8f9ff) 0%, var(--bg-gradient, #f0f1ff) 100%);
+        background: linear-gradient(135deg, var(--bg-hover, #f8f9ff) 0%, var(--bg-hover, #f0f1ff) 100%);
         padding: 1.5rem 2rem;
         border-bottom: 1px solid var(--border-color, #e8e9ff);
         display: flex;
@@ -252,12 +252,12 @@
     .form-control:focus {
         outline: none;
         border-color: var(--accent-color, #5b5fcf);
-        box-shadow: 0 0 0 3px var(--accent-focus, rgba(91, 95, 207, 0.1));
+        box-shadow: 0 0 0 3px var(--accent-shadow-light, rgba(91, 95, 207, 0.1));
     }
     
     .images-table {
         width: 100%;
-        background: var(--bg-secondary, white);
+        background: var(--bg-primary, white);
         border-radius: 12px;
         overflow: hidden;
         border: 1px solid var(--border-color, #e8e9ff);
@@ -265,7 +265,7 @@
     }
     
     .images-table thead {
-        background: linear-gradient(135deg, var(--bg-hover, #f8f9ff) 0%, var(--bg-gradient, #f0f1ff) 100%);
+        background: linear-gradient(135deg, var(--bg-hover, #f8f9ff) 0%, var(--bg-hover, #f0f1ff) 100%);
     }
     
     .images-table th {
@@ -307,7 +307,7 @@
     .image-icon {
         width: 32px;
         height: 32px;
-        background: var(--accent-bg, #e0e7ff);
+        background: var(--accent-light, #e0e7ff);
         border-radius: 8px;
         display: flex;
         align-items: center;
@@ -317,7 +317,7 @@
     }
     
     .official-badge {
-        background: var(--success-bg, #d1fae5);
+        background: var(--success-light, #d1fae5);
         color: var(--success-text, #065f46);
         padding: 0.25rem 0.75rem;
         border-radius: 20px;
@@ -349,11 +349,11 @@
         border-radius: 16px;
         overflow: hidden;
         border: none;
-        box-shadow: 0 25px 50px -12px var(--shadow-dark, rgba(0, 0, 0, 0.25));
+        box-shadow: 0 25px 50px -12px var(--shadow-lg, rgba(0, 0, 0, 0.25));
     }
     
     .modal-header {
-        background: linear-gradient(135deg, var(--bg-hover, #f8f9ff) 0%, var(--bg-gradient, #f0f1ff) 100%);
+        background: linear-gradient(135deg, var(--bg-hover, #f8f9ff) 0%, var(--bg-hover, #f0f1ff) 100%);
         border-bottom: 1px solid var(--border-color, #e8e9ff);
         padding: 1.5rem 2rem;
     }
