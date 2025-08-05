@@ -6,9 +6,10 @@
   <component name="ChangeListManager">
     <list default="true" id="5251c5c9-f2a1-41f2-bc76-10b517091df1" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dns/templates/dns/addDeleteDNSRecordsCloudFlare.html" beforeDir="false" afterPath="$PROJECT_DIR$/dns/templates/dns/addDeleteDNSRecordsCloudFlare.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mailServer/templates/mailServer/EmailLimits.html" beforeDir="false" afterPath="$PROJECT_DIR$/mailServer/templates/mailServer/EmailLimits.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mailServer/templates/mailServer/dkimManager.html" beforeDir="false" afterPath="$PROJECT_DIR$/mailServer/templates/mailServer/dkimManager.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup/templates/backup/backupDestinations.html" beforeDir="false" afterPath="$PROJECT_DIR$/backup/templates/backup/backupDestinations.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup/templates/backup/googleDrive.html" beforeDir="false" afterPath="$PROJECT_DIR$/backup/templates/backup/googleDrive.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup/templates/backup/remoteBackups.html" beforeDir="false" afterPath="$PROJECT_DIR$/backup/templates/backup/remoteBackups.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/manageSSL/templates/manageSSL/v2ManageSSL.html" beforeDir="false" afterPath="$PROJECT_DIR$/manageSSL/templates/manageSSL/v2ManageSSL.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

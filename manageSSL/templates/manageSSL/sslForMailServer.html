@@ -17,7 +17,7 @@
     }
     
     .ssl-section {
-        background: var(--bg-secondary, white);
+        background: var(--bg-primary, white);
         border-radius: 12px;
         padding: 25px;
         margin-bottom: 25px;
@@ -63,7 +63,7 @@
     
     .ssl-docs-link:hover {
         background: var(--accent-color, #5b5fcf);
-        color: var(--bg-secondary, white);
+        color: white;
         border-color: var(--accent-color, #5b5fcf);
         box-shadow: 0 2px 4px var(--accent-shadow, rgba(91,95,207,0.3));
         text-decoration: none;
@@ -77,23 +77,23 @@
     }
     
     .deprecation-notice {
-        background: #e3f2fd;
-        border: 1px solid #bbdefb;
+        background: var(--info-light, #e3f2fd);
+        border: 1px solid var(--info-border, #bbdefb);
         border-radius: 8px;
         padding: 15px;
         margin-bottom: 25px;
-        color: #1976d2;
+        color: var(--info-text, #1976d2);
         font-size: 14px;
     }
     
     .deprecation-notice a {
-        color: #1976d2;
+        color: var(--info-text, #1976d2);
         font-weight: 600;
         text-decoration: underline;
     }
     
     .form-container {
-        background: var(--bg-light, #fafbff);
+        background: var(--bg-secondary, #fafbff);
         border: 1px solid var(--border-color, #e8e9ff);
         border-radius: 8px;
         padding: 25px;
@@ -119,14 +119,14 @@
         border-radius: 8px;
         font-size: 14px;
         color: var(--text-primary, #2f3640);
-        background: var(--bg-secondary, white);
+        background: var(--bg-primary, white);
         transition: all 0.2s ease;
     }
     
     .form-control:focus {
         outline: none;
         border-color: var(--accent-color, #5b5fcf);
-        box-shadow: 0 0 0 3px var(--accent-focus, rgba(91,95,207,0.1));
+        box-shadow: 0 0 0 3px var(--accent-shadow-light, rgba(91,95,207,0.1));
     }
     
     /* Windows selectbox fixes */
@@ -147,7 +147,7 @@
     /* Windows-specific fixes */
     @media screen and (-ms-high-contrast: active), (-ms-high-contrast: none) {
         select.form-control {
-            color: #2f3640 !important;
+            color: var(--text-primary, #2f3640) !important;
             background-color: var(--bg-secondary, white) !important;
         }
     }
@@ -165,7 +165,7 @@
     .btn-primary {
         background: var(--accent-color, #5b5fcf);
         border: 1px solid var(--accent-color, #5b5fcf);
-        color: var(--bg-secondary, white);
+        color: white;
         padding: 12px 24px;
         border-radius: 8px;
         font-size: 14px;
@@ -202,13 +202,13 @@
     }
     
     .alert-success {
-        background: var(--info-bg, #f0f9ff);
+        background: var(--success-light, #f0f9ff);
         border: 1px solid var(--info-border, #bae6fd);
         color: var(--info-text, #0c4a6e);
     }
     
     .alert-danger {
-        background: var(--danger-bg, #fef2f2);
+        background: var(--danger-light, #fef2f2);
         border: 1px solid var(--danger-border, #fecaca);
         color: var(--danger-text, #991b1b);
     }

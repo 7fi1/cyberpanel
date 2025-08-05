@@ -17,7 +17,7 @@
     }
     
     .ssl-section {
-        background: var(--bg-secondary, white);
+        background: var(--bg-primary, white);
         border-radius: 12px;
         padding: 25px;
         margin-bottom: 25px;
@@ -63,7 +63,7 @@
     
     .ssl-docs-link:hover {
         background: var(--accent-color, #5b5fcf);
-        color: var(--bg-secondary, white);
+        color: white;
         border-color: var(--accent-color, #5b5fcf);
         box-shadow: 0 2px 4px rgba(91,95,207,0.3);
         text-decoration: none;
@@ -77,7 +77,7 @@
     }
     
     .video-container {
-        background: var(--bg-light, #fafbff);
+        background: var(--bg-secondary, #fafbff);
         border: 1px solid var(--border-color, #e8e9ff);
         border-radius: 8px;
         padding: 20px;
@@ -110,7 +110,7 @@
         justify-content: center;
         gap: 10px;
         padding: 15px 20px;
-        background: var(--bg-light, #fafbff);
+        background: var(--bg-secondary, #fafbff);
         border: 1px solid var(--border-color, #e8e9ff);
         border-radius: 8px;
         color: var(--text-primary, #2f3640);
@@ -122,13 +122,13 @@
     .nav-tabs li.active a,
     .nav-tabs a:hover {
         background: var(--accent-color, #5b5fcf);
-        color: var(--bg-secondary, white);
+        color: white;
         border-color: var(--accent-color, #5b5fcf);
         box-shadow: 0 2px 8px var(--accent-shadow, rgba(91,95,207,0.3));
     }
     
     .tab-content {
-        background: var(--bg-light, #fafbff);
+        background: var(--bg-secondary, #fafbff);
         border: 1px solid var(--border-color, #e8e9ff);
         border-radius: 8px;
         padding: 25px;
@@ -156,14 +156,14 @@
         border-radius: 8px;
         font-size: 14px;
         color: var(--text-primary, #2f3640);
-        background: var(--bg-secondary, white);
+        background: var(--bg-primary, white);
         transition: all 0.2s ease;
     }
     
     .form-control:focus {
         outline: none;
         border-color: var(--accent-color, #5b5fcf);
-        box-shadow: 0 0 0 3px var(--accent-focus, rgba(91,95,207,0.1));
+        box-shadow: 0 0 0 3px var(--accent-shadow-light, rgba(91,95,207,0.1));
     }
     
     /* Windows selectbox fix */
@@ -184,7 +184,7 @@
     /* Windows-specific fixes */
     @media screen and (-ms-high-contrast: active), (-ms-high-contrast: none) {
         select.form-control {
-            color: #2f3640 !important;
+            color: var(--text-primary, #2f3640) !important;
             background-color: var(--bg-secondary, white) !important;
         }
     }
@@ -209,7 +209,7 @@
     .btn-primary {
         background: var(--accent-color, #5b5fcf);
         border: 1px solid var(--accent-color, #5b5fcf);
-        color: var(--bg-secondary, white);
+        color: white;
         padding: 12px 24px;
         border-radius: 8px;
         font-size: 14px;
@@ -239,7 +239,7 @@
     
     /* SSL Details Panel */
     .ssl-details-panel {
-        background: var(--bg-secondary, white);
+        background: var(--bg-primary, white);
         border: 1px solid var(--border-color, #e8e9ff);
         border-radius: 8px;
         padding: 20px;
@@ -252,7 +252,7 @@
         color: var(--text-primary, #2f3640);
         margin-bottom: 15px;
         padding-bottom: 10px;
-        border-bottom: 1px solid #e8e9ff;
+        border-bottom: 1px solid var(--border-primary, #e8e9ff);
     }
     
     .ssl-details-panel p {
@@ -276,15 +276,15 @@
     }
     
     .alert-success {
-        background: var(--info-bg, #f0f9ff);
+        background: var(--info-light, #f0f9ff);
         border: 1px solid var(--info-border, #bae6fd);
         color: var(--info-text, #0c4a6e);
     }
     
     .alert-info {
-        background: #e3f2fd;
-        border: 1px solid #bbdefb;
-        color: #1976d2;
+        background: var(--info-light, #e3f2fd);
+        border: 1px solid var(--info-border, #bbdefb);
+        color: var(--info-text, #1976d2);
     }
     
     .loading-spinner {
