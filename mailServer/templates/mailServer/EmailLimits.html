@@ -23,7 +23,7 @@
         .page-title {
             font-size: 2.5rem;
             font-weight: 700;
-            color: #1e293b;
+            color: var(--text-primary, #1e293b);
             margin-bottom: 0.5rem;
             display: flex;
             align-items: center;
@@ -33,7 +33,7 @@
         
         .page-subtitle {
             font-size: 1.125rem;
-            color: #64748b;
+            color: var(--text-secondary, #64748b);
             margin-bottom: 0;
         }
         
@@ -42,8 +42,8 @@
             align-items: center;
             gap: 0.5rem;
             padding: 0.5rem 1rem;
-            background: #fff;
-            border: 1px solid #e8e9ff;
+            background: var(--bg-primary, #fff);
+            border: 1px solid var(--border-primary, #e8e9ff);
             border-radius: 8px;
             color: #5b5fcf;
             text-decoration: none;
@@ -60,24 +60,24 @@
         }
         
         .main-card {
-            background: white;
+            background: var(--bg-primary, white);
             border-radius: 16px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 10px 40px rgba(0,0,0,0.08);
-            border: 1px solid #e8e9ff;
+            box-shadow: var(--shadow-sm, 0 1px 3px rgba(0,0,0,0.05)), var(--shadow-lg, 0 10px 40px rgba(0,0,0,0.08));
+            border: 1px solid var(--border-primary, #e8e9ff);
             overflow: hidden;
             animation: fadeInUp 0.5s ease-out;
         }
         
         .card-header {
-            background: linear-gradient(135deg, #f8f9ff 0%, #f0f1ff 100%);
+            background: linear-gradient(135deg, var(--bg-secondary, #f8f9ff) 0%, var(--bg-hover, #f0f1ff) 100%);
             padding: 1.5rem 2rem;
-            border-bottom: 1px solid #e8e9ff;
+            border-bottom: 1px solid var(--border-primary, #e8e9ff);
         }
         
         .card-title {
             font-size: 1.25rem;
             font-weight: 600;
-            color: #1e293b;
+            color: var(--text-primary, #1e293b);
             margin: 0;
             display: flex;
             align-items: center;
@@ -100,18 +100,18 @@
             display: block;
             margin-bottom: 0.5rem;
             font-weight: 500;
-            color: #1e293b;
+            color: var(--text-primary, #1e293b);
             font-size: 0.875rem;
         }
         
         .form-control {
             width: 100%;
             padding: 0.75rem 1rem;
-            border: 1px solid #e8e9ff;
+            border: 1px solid var(--border-primary, #e8e9ff);
             border-radius: 8px;
             font-size: 0.875rem;
             transition: all 0.3s ease;
-            background: #fff;
+            background: var(--bg-primary, #fff);
         }
         
         .form-control:focus {
@@ -151,26 +151,26 @@
         }
         
         .alert-success {
-            background: #d1fae5;
-            color: #065f46;
-            border: 1px solid #a7f3d0;
+            background: var(--success-light, #d1fae5);
+            color: var(--success-text, #065f46);
+            border: 1px solid var(--success-border, #a7f3d0);
         }
         
         .alert-danger {
-            background: #fee2e2;
-            color: #991b1b;
-            border: 1px solid #fecaca;
+            background: var(--danger-light, #fee2e2);
+            color: var(--danger-text, #991b1b);
+            border: 1px solid var(--danger-border, #fecaca);
         }
         
         .alert-info {
-            background: #dbeafe;
-            color: #1e40af;
-            border: 1px solid #bfdbfe;
+            background: var(--info-light, #dbeafe);
+            color: var(--info-text, #1e40af);
+            border: 1px solid var(--info-border, #bfdbfe);
         }
         
         .disabled-notice {
-            background: #fef3c7;
-            border: 1px solid #fde68a;
+            background: var(--warning-light, #fef3c7);
+            border: 1px solid var(--warning-border, #fde68a);
             border-radius: 12px;
             padding: 2rem;
             text-align: center;
@@ -178,22 +178,22 @@
         }
         
         .disabled-notice h3 {
-            color: #92400e;
+            color: var(--warning-text, #92400e);
             margin-bottom: 1rem;
         }
         
         .loading-spinner {
             width: 20px;
             height: 20px;
-            border: 2px solid #e8e9ff;
+            border: 2px solid var(--border-primary, #e8e9ff);
             border-top-color: #5b5fcf;
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
         
         .limits-config {
-            background: #f8f9ff;
-            border: 1px solid #e8e9ff;
+            background: var(--bg-secondary, #f8f9ff);
+            border: 1px solid var(--border-primary, #e8e9ff);
             border-radius: 12px;
             padding: 2rem;
             margin-top: 1.5rem;
@@ -214,13 +214,13 @@
         }
         
         .preview-box {
-            background: #e0e7ff;
-            border: 1px solid #c7d2fe;
+            background: var(--accent-light, #e0e7ff);
+            border: 1px solid var(--accent-border, #c7d2fe);
             border-radius: 8px;
             padding: 1rem 1.5rem;
             margin-bottom: 1.5rem;
             font-size: 0.95rem;
-            color: #3730a3;
+            color: var(--info-dark, #3730a3);
         }
         
         .preview-box i {
@@ -334,7 +334,7 @@
                         </div>
 
                         <div ng-hide="creationBox" class="limits-config">
-                            <h3 style="color: #1e293b; font-size: 1.125rem; font-weight: 600; margin-bottom: 1rem;">
+                            <h3 style="color: var(--text-primary, #1e293b); font-size: 1.125rem; font-weight: 600; margin-bottom: 1rem;">
                                 <i class="fas fa-sliders-h"></i>
                                 {% trans "Configure Email Limits" %}
                             </h3>
