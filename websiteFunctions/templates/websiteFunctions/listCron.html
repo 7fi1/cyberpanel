@@ -8,77 +8,15 @@
 <!-- Current language: {{ LANGUAGE_CODE }} -->
 
 <style>
-    /* Ultra-Modern CyberPanel Design System with Dark Mode Support */
-    :root {
-        /* Light mode colors */
-        --primary-color: #6366f1;
-        --primary-hover: #5558e3;
-        --primary-light: #eef2ff;
-        --secondary-color: #8b5cf6;
-        --accent-color: #ec4899;
-        --success-color: #10b981;
-        --danger-color: #ef4444;
-        --warning-color: #f59e0b;
-        --info-color: #3b82f6;
-        
-        --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        --bg-gradient-alt: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-        --bg-gradient-success: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-        
-        --bg-light: #f8fafc;
-        --bg-card: #ffffff;
-        --bg-hover: #f1f5f9;
-        --border-color: #e2e8f0;
-        --border-light: #f1f5f9;
-        
-        --text-primary: #1e293b;
-        --text-secondary: #64748b;
-        --text-muted: #94a3b8;
-        
-        --shadow-sm: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.06);
-        --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
-        --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
-        --shadow-xl: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
-        
-        --radius-sm: 6px;
-        --radius-md: 8px;
-        --radius-lg: 12px;
-        --radius-xl: 16px;
-        --radius-full: 9999px;
-        
-        --transition-base: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    /* Modern page styles matching new design with dark mode support */
+    .page-wrapper {
+        background: transparent;
+        padding: 20px;
     }
     
-    /* Dark mode colors */
-    [data-theme="dark"] {
-        --primary-color: #818cf8;
-        --primary-hover: #6366f1;
-        --primary-light: #312e81;
-        --secondary-color: #a78bfa;
-        --accent-color: #f472b6;
-        --success-color: #34d399;
-        --danger-color: #f87171;
-        --warning-color: #fbbf24;
-        --info-color: #60a5fa;
-        
-        --bg-gradient: linear-gradient(135deg, #4c1d95 0%, #5b21b6 100%);
-        --bg-gradient-alt: linear-gradient(135deg, #831843 0%, #be123c 100%);
-        --bg-gradient-success: linear-gradient(135deg, #064e3b 0%, #047857 100%);
-        
-        --bg-light: #1e1e42;
-        --bg-card: #1a1a3e;
-        --bg-hover: #252550;
-        --border-color: #2a2a5e;
-        --border-light: #2a2a5e;
-        
-        --text-primary: #e4e4e7;
-        --text-secondary: #9ca3af;
-        --text-muted: #6b7280;
-        
-        --shadow-sm: 0 1px 3px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.24);
-        --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.3), 0 2px 4px -1px rgba(0,0,0,0.24);
-        --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.3), 0 4px 6px -2px rgba(0,0,0,0.25);
-        --shadow-xl: 0 20px 25px -5px rgba(0,0,0,0.3), 0 10px 10px -5px rgba(0,0,0,0.24);
+    .page-container {
+        max-width: 1200px;
+        margin: 0 auto;
     }
     
     /* Container Styling */
