@@ -19,6 +19,86 @@ class sslUtilities:
     redisConf = '/usr/local/lsws/conf/dvhost_redis.conf'
     
     @staticmethod
+    def parseACMEError(error_output):
+        """Parse ACME error output to extract meaningful error messages"""
+        if not error_output:
+            return "Unknown error occurred"
+        
+        error_output = str(error_output)
+        
+        # Common ACME/Let's Encrypt errors
+        error_patterns = {
+            r"rateLimited": "Rate limit exceeded. Too many certificates issued for this domain. Please wait before retrying.",
+            r"urn:ietf:params:acme:error:rateLimited": "Rate limit exceeded. Please wait before retrying.",
+            r"too many certificates": "Rate limit: Too many certificates issued recently.",
+            r"DNS problem: NXDOMAIN": "DNS Error: Domain does not exist or DNS not propagated.",
+            r"DNS problem": "DNS validation failed. Ensure domain points to this server.",
+            r"Connection refused": "Cannot connect to ACME server. Check firewall/network settings.",
+            r"Connection timeout": "Connection to ACME server timed out. Check network connectivity.",
+            r"Timeout during connect": "Connection timeout. The ACME server may be unreachable.",
+            r"unauthorized": "Authorization failed. Domain validation unsuccessful.",
+            r"urn:ietf:params:acme:error:unauthorized": "Domain authorization failed. Verify domain ownership.",
+            r"Invalid response from": "Invalid response from domain during validation.",
+            r"404": "Challenge file not found. Check web server configuration.",
+            r"403": "Access forbidden. Check file permissions and .htaccess rules.",
+            r"CAA record": "CAA record prevents certificate issuance. Update DNS CAA records.",
+            r"urn:ietf:params:acme:error:caa": "CAA record forbids issuance. Check DNS CAA settings.",
+            r"Challenge failed": "ACME challenge failed. Ensure port 80 is accessible.",
+            r"No valid IP addresses": "No valid IP addresses found for domain.",
+            r"Could not connect to": "Cannot connect to domain for validation.",
+            r"conflictingRequest": "A conflicting request exists. Previous request may still be processing.",
+            r"urn:ietf:params:acme:error:malformed": "Malformed request. Check domain format.",
+            r"urn:ietf:params:acme:error:serverInternal": "ACME server internal error. Try again later.",
+            r"urn:ietf:params:acme:error:orderNotReady": "Order not ready. Domain validation incomplete.",
+            r"badNonce": "Bad nonce error. This is usually temporary, please retry.",
+            r"JWS has an invalid anti-replay nonce": "Invalid nonce. Please retry the request.",
+            r"Account registration error": "Account registration failed. Check email address.",
+            r"Error creating new account": "Cannot create ACME account. Check email validity.",
+            r"Verify error": "Certificate verification failed.",
+            r"Fetching http://": "HTTP validation failed. Ensure port 80 is open.",
+            r"Fetching https://": "HTTPS validation issue detected.",
+            r"Invalid email address": "Invalid email address provided for registration.",
+            r"blacklisted": "Domain is blacklisted by the certificate authority.",
+            r"PolicyForbids": "Certificate authority policy forbids issuance for this domain."
+        }
+        
+        # Check each pattern
+        import re
+        for pattern, message in error_patterns.items():
+            if re.search(pattern, error_output, re.IGNORECASE):
+                # Try to extract additional context
+                lines = error_output.split('\n')
+                for line in lines:
+                    if 'Detail:' in line:
+                        message += f" Detail: {line.split('Detail:')[1].strip()}"
+                        break
+                return message
+        
+        # Try to extract specific error details from acme.sh output
+        if "[" in error_output and "]" in error_output:
+            # Extract content between brackets which often contains the error
+            import re
+            bracket_content = re.findall(r'\[([^\]]+)\]', error_output)
+            if bracket_content:
+                # Get the last bracketed content as it's usually the error
+                potential_error = bracket_content[-1]
+                if len(potential_error) > 10:  # Make sure it's meaningful
+                    return f"SSL issuance failed: {potential_error}"
+        
+        # Look for lines starting with "Error:" or containing "error:"
+        lines = error_output.split('\n')
+        for line in lines:
+            if line.strip().startswith('Error:') or 'error:' in line.lower():
+                return line.strip()
+        
+        # If we can't parse a specific error, return a portion of the output
+        if len(error_output) > 200:
+            # Get the last 200 characters which likely contain the error
+            return f"SSL issuance failed: ...{error_output[-200:]}"
+        
+        return f"SSL issuance failed: {error_output}"
+    
+    @staticmethod
     def checkDNSRecords(domain):
         """Check if domain has valid DNS records using external DNS query"""
         try:
@@ -648,8 +728,19 @@ context /.well-known/acme-challenge {
                     f"Successfully obtained SSL using Let's Encrypt for: {virtualHostName}")
                 return 1
         except Exception as e:
+            error_msg = str(e)
+            # Try to extract more detailed error information
+            if hasattr(e, '__dict__'):
+                error_details = str(e.__dict__)
+            else:
+                error_details = error_msg
+            
             logging.CyberCPLogFileWriter.writeToFile(
-                f"Let's Encrypt failed: {str(e)}. Trying ZeroSSL...")
+                f"Let's Encrypt failed for {virtualHostName}: {error_msg}"
+            )
+            logging.CyberCPLogFileWriter.writeToFile(
+                f"Detailed error: {error_details}. Trying ZeroSSL..."
+            )
 
         # Try ZeroSSL if Let's Encrypt fails
         try:
@@ -787,6 +878,22 @@ def issueSSLForDomain(domain, adminEmail, sslpath, aliasDomain=None, isHostname=
         # Check if certificate already exists and try to renew it first
         existingCertPath = '/etc/letsencrypt/live/' + domain + '/fullchain.pem'
         if os.path.exists(existingCertPath):
+            # Check if certificate is expired
+            is_expired = False
+            try:
+                import OpenSSL
+                from datetime import datetime
+                with open(existingCertPath, 'r') as cert_file:
+                    x509 = OpenSSL.crypto.load_certificate(OpenSSL.crypto.FILETYPE_PEM, cert_file.read())
+                expire_data = x509.get_notAfter().decode('ascii')
+                final_date = datetime.strptime(expire_data, '%Y%m%d%H%M%SZ')
+                now = datetime.now()
+                diff = final_date - now
+                is_expired = diff.days < 0
+                logging.CyberCPLogFileWriter.writeToFile(f"Certificate for {domain} expires in {diff.days} days")
+            except Exception as e:
+                logging.CyberCPLogFileWriter.writeToFile(f"Could not check certificate expiry: {str(e)}")
+            
             logging.CyberCPLogFileWriter.writeToFile(f"Certificate exists for {domain}, attempting renewal...")
             
             # Try to renew using acme.sh
@@ -801,8 +908,14 @@ def issueSSLForDomain(domain, adminEmail, sslpath, aliasDomain=None, isHostname=
                 if not isHostname and sslUtilities.checkDNSRecords(f'www.{domain}'):
                     renewal_domains += f' -d www.{domain}'
                 
-                # Try to renew with explicit webroot
-                command = f'{acmePath} --renew {renewal_domains} --webroot /usr/local/lsws/Example/html --force'
+                # For expired certificates, use --issue --force instead of --renew
+                if is_expired:
+                    logging.CyberCPLogFileWriter.writeToFile(f"Certificate is expired, using --issue --force for {domain}")
+                    command = f'{acmePath} --issue {renewal_domains} --webroot /usr/local/lsws/Example/html --force'
+                else:
+                    # Try to renew with explicit webroot
+                    command = f'{acmePath} --renew {renewal_domains} --webroot /usr/local/lsws/Example/html --force'
+                
                 try:
                     result = subprocess.run(command, capture_output=True, text=True, shell=True)
                 except TypeError:
@@ -812,9 +925,13 @@ def issueSSLForDomain(domain, adminEmail, sslpath, aliasDomain=None, isHostname=
                 if result.returncode == 0:
                     logging.CyberCPLogFileWriter.writeToFile(f"Successfully renewed SSL for {domain}")
                     if sslUtilities.installSSLForDomain(domain, adminEmail) == 1:
-                        return [1, "None"]
+                        return [1, "SSL successfully renewed"]
                 else:
-                    logging.CyberCPLogFileWriter.writeToFile(f"Renewal failed for {domain}, falling back to new issuance")
+                    # Parse ACME error details
+                    error_output = result.stderr if hasattr(result, 'stderr') and result.stderr else result.stdout
+                    error_details = sslUtilities.parseACMEError(error_output)
+                    logging.CyberCPLogFileWriter.writeToFile(f"Renewal failed for {domain}. Error: {error_details}")
+                    logging.CyberCPLogFileWriter.writeToFile(f"Full error output: {error_output}")
         
         if sslUtilities.obtainSSLForADomain(domain, adminEmail, sslpath, aliasDomain, isHostname) == 1:
             if sslUtilities.installSSLForDomain(domain, adminEmail) == 1:

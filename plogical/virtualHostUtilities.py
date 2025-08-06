@@ -749,9 +749,16 @@ local_name %s {
             retValues = sslUtilities.issueSSLForDomain(virtualHost, adminEmail, path)
 
             if retValues[0] == 0:
-                print("0," + str(retValues[1]))
-                logging.CyberCPLogFileWriter.writeToFile(str(retValues[1]))
-                return 0, str(retValues[1])
+                # Enhanced error reporting
+                error_msg = str(retValues[1])
+                logging.CyberCPLogFileWriter.writeToFile(f"SSL issuance failed for {virtualHost}: {error_msg}")
+                
+                # Parse and format the error message for better readability
+                from plogical.sslUtilities import sslUtilities as sslUtil
+                parsed_error = sslUtil.parseACMEError(error_msg)
+                
+                print("0," + parsed_error)
+                return 0, parsed_error
 
             installUtilities.installUtilities.reStartLiteSpeed()
 
@@ -762,10 +769,12 @@ local_name %s {
             ProcessUtilities.executioner(command)
 
             print("1,None")
+            logging.CyberCPLogFileWriter.writeToFile(f"SSL successfully issued for {virtualHost}")
             return 1, None
 
         except BaseException as msg:
-            logging.CyberCPLogFileWriter.writeToFile(str(msg) + " [issueSSL]")
+            error_detail = f"Exception in issueSSL for {virtualHost}: {str(msg)}"
+            logging.CyberCPLogFileWriter.writeToFile(error_detail + " [issueSSL]")
             print("0," + str(msg))
             return 0, str(msg)
 

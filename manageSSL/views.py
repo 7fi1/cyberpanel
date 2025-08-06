@@ -103,14 +103,46 @@ def v2IssueSSL(request):
 
                         website.ssl = 1
                         website.save()
+                        
+                        # Extract detailed logs from output
+                        logs = output.split("1,", 1)[1] if "1," in output else output
 
                         data_ret = {'status': 1, "SSL": 1,
-                                    'error_message': "None", 'sslLogs': output}
+                                    'error_message': "None", 'sslLogs': logs, 'fullOutput': output}
                         json_data = json.dumps(data_ret)
                         return HttpResponse(json_data)
                     else:
+                        # Parse error details from output
+                        error_message = output
+                        detailed_error = "SSL issuance failed"
+                        
+                        # Check for common ACME errors
+                        if "Rate limit" in output or "rate limit" in output:
+                            detailed_error = "Let's Encrypt rate limit exceeded. Please wait before retrying."
+                        elif "DNS problem" in output or "NXDOMAIN" in output:
+                            detailed_error = "DNS validation failed. Please ensure your domain points to this server."
+                        elif "Connection refused" in output or "Connection timeout" in output:
+                            detailed_error = "Could not connect to ACME server. Check your firewall settings."
+                        elif "Unauthorized" in output or "authorization" in output:
+                            detailed_error = "Domain authorization failed. Verify domain ownership and DNS settings."
+                        elif "CAA record" in output:
+                            detailed_error = "CAA record prevents issuance. Check your DNS CAA records."
+                        elif "Challenge failed" in output or "challenge failed" in output:
+                            detailed_error = "ACME challenge failed. Ensure port 80 is accessible and .well-known path is not blocked."
+                        elif "Invalid response" in output:
+                            detailed_error = "Invalid response from ACME challenge. Check your web server configuration."
+                        else:
+                            # Try to extract the actual error message
+                            if "0," in output:
+                                error_parts = output.split("0,", 1)
+                                if len(error_parts) > 1:
+                                    detailed_error = error_parts[1].strip()
+                        
                         data_ret = {'status': 0, "SSL": 0,
-                                    'error_message': output, 'sslLogs': output}
+                                    'error_message': detailed_error, 
+                                    'sslLogs': output,
+                                    'fullOutput': output,
+                                    'technicalDetails': error_message}
                         json_data = json.dumps(data_ret)
                         return HttpResponse(json_data)
         except BaseException as msg:

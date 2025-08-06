@@ -41,14 +41,30 @@ class Renew:
             ssl_provider = x509.get_issuer().get_components()[1][1].decode('utf-8')
             logging.writeToFile(f'Provider: {ssl_provider}, Days until expiration: {diff.days}', 0)
 
-            if diff.days >= 15 and ssl_provider != 'Denial':
+            # Check if certificate is expired or needs renewal
+            needs_renewal = diff.days < 15  # This handles both negative (expired) and soon-to-expire certs
+            
+            if not needs_renewal and ssl_provider != 'Denial':
                 logging.writeToFile(f'SSL exists for {domain} and is not ready to renew, skipping..', 0)
                 return
 
-            if ssl_provider == 'Denial' or ssl_provider == "Let's Encrypt":
-                logging.writeToFile(f'SSL exists for {domain} and ready to renew..', 0)
-                logging.writeToFile(f'Renewing SSL for {domain}..', 0)
-                virtualHostUtilities.issueSSL(domain, path, admin_email)
+            # Handle expired certificates (negative days) with higher priority
+            if diff.days < 0:
+                logging.writeToFile(f'SSL for {domain} is EXPIRED ({abs(diff.days)} days ago). Forcing renewal..', 0)
+                logging.writeToFile(f'Attempting SSL renewal for expired certificate: {domain}..', 0)
+                result = virtualHostUtilities.issueSSL(domain, path, admin_email)
+                if result[0] == 0:
+                    logging.writeToFile(f'SSL renewal FAILED for {domain}: {result[1]}', 1)
+                else:
+                    logging.writeToFile(f'SSL renewal SUCCESSFUL for {domain}', 0)
+            elif ssl_provider == 'Denial' or ssl_provider == "Let's Encrypt":
+                logging.writeToFile(f'SSL exists for {domain} and ready to renew (expires in {diff.days} days)..', 0)
+                logging.writeToFile(f'Attempting SSL renewal for {domain}..', 0)
+                result = virtualHostUtilities.issueSSL(domain, path, admin_email)
+                if result[0] == 0:
+                    logging.writeToFile(f'SSL renewal FAILED for {domain}: {result[1]}', 1)
+                else:
+                    logging.writeToFile(f'SSL renewal SUCCESSFUL for {domain}', 0)
             elif ssl_provider != "Let's Encrypt":
                 logging.writeToFile(f'Custom SSL exists for {domain} and ready to renew..', 1)
 
