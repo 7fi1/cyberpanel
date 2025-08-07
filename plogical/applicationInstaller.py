@@ -654,17 +654,17 @@ class ApplicationInstaller(multi.Thread):
             completePathToConfigFile = f'/usr/local/lsws/conf/vhosts/{domainName}/vhost.conf'
 
             execPath = "/usr/local/CyberCP/bin/python " + virtualHostUtilities.cyberPanel + "/plogical/virtualHostUtilities.py"
-            execPath = execPath + " changePHP --phpVersion 'PHP 8.2' --path " + completePathToConfigFile
+            execPath = execPath + " changePHP --phpVersion 'PHP 8.3' --path " + completePathToConfigFile
             ProcessUtilities.executioner(execPath)
 
             ### lets first find php path
 
             
 
-            command = "sed -i.bak 's/^memory_limit = .*/memory_limit = 256M/' /usr/local/lsws/lsphp82/etc/php/8.2/litespeed/php.ini"
+            command = "sed -i.bak 's/^memory_limit = .*/memory_limit = 256M/' /usr/local/lsws/lsphp83/etc/php/8.3/litespeed/php.ini"
             ProcessUtilities.executioner(command)
 
-            command = "sed -i.bak 's/^memory_limit = .*/memory_limit = 256M/' /usr/local/lsws/lsphp82/etc/php.ini"
+            command = "sed -i.bak 's/^memory_limit = .*/memory_limit = 256M/' /usr/local/lsws/lsphp83/etc/php.ini"
             ProcessUtilities.executioner(command)
 
             from plogical.phpUtilities import phpUtilities
@@ -674,16 +674,16 @@ class ApplicationInstaller(multi.Thread):
             try:
                 phpPath = phpUtilities.GetPHPVersionFromFile(vhFile)
             except:
-                phpPath = '/usr/local/lsws/lsphp80/bin/php'
+                phpPath = '/usr/local/lsws/lsphp83/bin/php'
 
 
-            ### basically for now php 8.2 is being checked
+            ### basically for now php 8.3 is being checked
 
             if not os.path.exists(phpPath):
                 statusFile = open(tempStatusPath, 'w')
-                statusFile.writelines('PHP 8.2 missing installing now..,20')
+                statusFile.writelines('PHP 8.3 missing installing now..,20')
                 statusFile.close()
-                phpUtilities.InstallSaidPHP('82')
+                phpUtilities.InstallSaidPHP('83')
 
 
             finalPath = ''
@@ -745,8 +745,16 @@ class ApplicationInstaller(multi.Thread):
             command = "rm -rf " + finalPath + "index.html"
             ProcessUtilities.executioner(command, externalApp)
 
-            #php = PHPManager.getPHPString(website.phpSelection)
-            FinalPHPPath = phpPath
+            # Always use PHP 8.3 for WordPress installation
+            FinalPHPPath = '/usr/local/lsws/lsphp83/bin/php'
+            
+            # Ensure PHP 8.3 is installed
+            if not os.path.exists(FinalPHPPath):
+                from plogical.phpUtilities import phpUtilities
+                phpUtilities.InstallSaidPHP('83')
+                if not os.path.exists(FinalPHPPath):
+                    # Fallback to detected PHP path if 8.3 install fails
+                    FinalPHPPath = phpPath
 
             ## Security Check
 
@@ -774,7 +782,8 @@ class ApplicationInstaller(multi.Thread):
             try:
                 command = f"{FinalPHPPath} -d error_reporting=0 /usr/bin/wp core download --allow-root --path={finalPath} --version={self.extraArgs['WPVersion']}"
             except:
-                command = "wp core download --allow-root --path=" + finalPath
+                # Fallback to using explicit PHP 8.3 path even in exception
+                command = f"/usr/local/lsws/lsphp83/bin/php -d error_reporting=0 /usr/bin/wp core download --allow-root --path={finalPath}"
 
             result = ProcessUtilities.outputExecutioner(command, externalApp)
 
@@ -1914,7 +1923,7 @@ class ApplicationInstaller(multi.Thread):
 
             DataToPass['domainName'] = self.data['domainName']
             DataToPass['adminEmail'] = self.data['adminEmail']
-            DataToPass['phpSelection'] = "PHP 8.2"
+            DataToPass['phpSelection'] = "PHP 8.3"
             DataToPass['websiteOwner'] = self.data['websiteOwner']
             DataToPass['package'] = self.data['package']
             DataToPass['ssl'] = 1
@@ -1930,8 +1939,8 @@ class ApplicationInstaller(multi.Thread):
             try:
                 website = Websites.objects.get(domain=DataToPass['domainName'])
 
-                if website.phpSelection == 'PHP 7.3':
-                    website.phpSelection = 'PHP 8.2'
+                if website.phpSelection == 'PHP 7.3' or website.phpSelection == 'PHP 8.2':
+                    website.phpSelection = 'PHP 8.3'
                     website.save()
 
                 admin = Administrator.objects.get(pk=self.extraArgs['adminID'])

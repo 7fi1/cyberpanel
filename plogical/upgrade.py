@@ -3645,15 +3645,32 @@ pm.max_spare_servers = 3
     @staticmethod
     def setupPHPSymlink():
         try:
+            # Check if PHP 8.3 exists
+            if not os.path.exists('/usr/local/lsws/lsphp83/bin/php'):
+                Upgrade.stdOut("PHP 8.3 not found, installing it first...")
+                
+                # Install PHP 8.3 based on OS
+                if os.path.exists(Upgrade.CentOSPath) or os.path.exists(Upgrade.openEulerPath):
+                    command = 'yum install lsphp83 lsphp83-* -y'
+                    Upgrade.executioner(command, 'Install PHP 8.3', 0)
+                else:
+                    command = 'DEBIAN_FRONTEND=noninteractive apt-get update && DEBIAN_FRONTEND=noninteractive apt-get -y install lsphp83 lsphp83-*'
+                    Upgrade.executioner(command, 'Install PHP 8.3', 0)
+                
+                # Verify installation
+                if not os.path.exists('/usr/local/lsws/lsphp83/bin/php'):
+                    Upgrade.stdOut('[ERROR] Failed to install PHP 8.3')
+                    return 0
+            
             # Remove existing PHP symlink if it exists
             if os.path.exists('/usr/bin/php'):
                 os.remove('/usr/bin/php')
 
-            # Create symlink to PHP 8.1
-            command = 'ln -s /usr/local/lsws/lsphp81/bin/php /usr/bin/php'
-            Upgrade.executioner(command, 'Setup PHP Symlink', 0)
+            # Create symlink to PHP 8.3
+            command = 'ln -s /usr/local/lsws/lsphp83/bin/php /usr/bin/php'
+            Upgrade.executioner(command, 'Setup PHP Symlink to 8.3', 0)
 
-            Upgrade.stdOut("PHP symlink created successfully.")
+            Upgrade.stdOut("PHP symlink updated to PHP 8.3 successfully.")
 
         except BaseException as msg:
             Upgrade.stdOut('[ERROR] ' + str(msg) + " [setupPHPSymlink]")
