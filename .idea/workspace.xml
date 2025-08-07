@@ -6,12 +6,7 @@
   <component name="ChangeListManager">
     <list default="true" id="5251c5c9-f2a1-41f2-bc76-10b517091df1" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/loginSystem/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/loginSystem/views.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/plogical/adminPass.py" beforeDir="false" afterPath="$PROJECT_DIR$/plogical/adminPass.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/plogical/customACME.py" beforeDir="false" afterPath="$PROJECT_DIR$/plogical/customACME.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/plogical/sslUtilities.py" beforeDir="false" afterPath="$PROJECT_DIR$/plogical/sslUtilities.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/plogical/sslv2.py" beforeDir="false" afterPath="$PROJECT_DIR$/plogical/sslv2.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/websiteFunctions/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/websiteFunctions/views.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/plogical/upgrade.py" beforeDir="false" afterPath="$PROJECT_DIR$/plogical/upgrade.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -123,7 +118,7 @@
       <workItem from="1754429757112" duration="3503000" />
       <workItem from="1754433799097" duration="517000" />
       <workItem from="1754448353513" duration="2970000" />
-      <workItem from="1754511414251" duration="12135000" />
+      <workItem from="1754511414251" duration="14901000" />
     </task>
     <servers />
   </component>

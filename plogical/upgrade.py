@@ -2312,13 +2312,75 @@ CREATE TABLE `websiteFunctions_backupsv2` (`id` integer AUTO_INCREMENT NOT NULL 
             pass
 
     @staticmethod
+    def backupCriticalFiles():
+        """Backup all critical configuration files before upgrade"""
+        import tempfile
+        backup_dir = tempfile.mkdtemp(prefix='cyberpanel_backup_')
+        
+        critical_files = [
+            '/usr/local/CyberCP/CyberCP/settings.py',
+            '/usr/local/CyberCP/CyberCP/SecurityLevel.py',
+            '/usr/local/CyberCP/plogical/acl.py',  # Custom ACL settings
+            '/usr/local/CyberCP/.git/config',  # Git configuration
+        ]
+        
+        # Also backup any custom configurations
+        custom_configs = [
+            '/usr/local/CyberCP/baseTemplate/static/baseTemplate/custom/',
+            '/usr/local/CyberCP/public/phpmyadmin/config.inc.php',
+            '/usr/local/CyberCP/rainloop/data/_data_/',
+        ]
+        
+        backed_up_files = {}
+        
+        for file_path in critical_files:
+            if os.path.exists(file_path):
+                try:
+                    backup_path = os.path.join(backup_dir, os.path.basename(file_path))
+                    shutil.copy2(file_path, backup_path)
+                    backed_up_files[file_path] = backup_path
+                    Upgrade.stdOut(f"Backed up {file_path}")
+                except Exception as e:
+                    Upgrade.stdOut(f"Failed to backup {file_path}: {str(e)}")
+        
+        # Backup directories
+        for dir_path in custom_configs:
+            if os.path.exists(dir_path):
+                try:
+                    backup_path = os.path.join(backup_dir, os.path.basename(dir_path))
+                    shutil.copytree(dir_path, backup_path)
+                    backed_up_files[dir_path] = backup_path
+                    Upgrade.stdOut(f"Backed up directory {dir_path}")
+                except Exception as e:
+                    Upgrade.stdOut(f"Failed to backup {dir_path}: {str(e)}")
+        
+        return backup_dir, backed_up_files
+    
+    @staticmethod
+    def restoreCriticalFiles(backup_dir, backed_up_files):
+        """Restore critical configuration files after upgrade"""
+        for original_path, backup_path in backed_up_files.items():
+            try:
+                if os.path.isdir(backup_path):
+                    if os.path.exists(original_path):
+                        shutil.rmtree(original_path)
+                    shutil.copytree(backup_path, original_path)
+                else:
+                    # Create directory if it doesn't exist
+                    os.makedirs(os.path.dirname(original_path), exist_ok=True)
+                    shutil.copy2(backup_path, original_path)
+                Upgrade.stdOut(f"Restored {original_path}")
+            except Exception as e:
+                Upgrade.stdOut(f"Failed to restore {original_path}: {str(e)}")
+    
+    @staticmethod
     def downloadAndUpgrade(versionNumbring, branch):
         try:
             ## Download latest version.
 
-            ## Backup settings file.
-
-            Upgrade.stdOut("Backing up settings file.")
+            ## Backup all critical files
+            Upgrade.stdOut("Backing up critical configuration files...")
+            backup_dir, backed_up_files = Upgrade.backupCriticalFiles()
 
             ## CyberPanel DB Creds
             dbName = settings.DATABASES['default']['NAME']
@@ -2356,74 +2418,54 @@ CREATE TABLE `websiteFunctions_backupsv2` (`id` integer AUTO_INCREMENT NOT NULL 
 
             settingsFile = '/usr/local/CyberCP/CyberCP/settings.py'
 
-            Upgrade.stdOut("Settings file backed up.")
+            Upgrade.stdOut("Critical files backed up to: " + backup_dir)
 
-            ## Check git branch status
-
-            os.chdir('/usr/local/CyberCP')
-
+            ## Always do a fresh clone for clean upgrade
+            
+            Upgrade.stdOut("Performing clean upgrade by removing and re-cloning CyberPanel...")
+            
+            # Set git config first
             command = 'git config --global user.email "support@cyberpanel.net"'
-
             if not Upgrade.executioner(command, command, 1):
                 return 0, 'Failed to execute %s' % (command)
 
             command = 'git config --global user.name "CyberPanel"'
-
             if not Upgrade.executioner(command, command, 1):
                 return 0, 'Failed to execute %s' % (command)
+            
+            # Change to parent directory
+            os.chdir('/usr/local')
 
-            command = 'git status'
-            try:
-                currentBranch = subprocess.check_output(shlex.split(command)).decode()
-            except Exception as e:
-                Upgrade.stdOut(f"Error checking git status: {str(e)}")
-                currentBranch = ""
-
-            if currentBranch.find('On branch %s' % (branch)) > -1 and currentBranch.find(
-                    'On branch %s-dev' % (branch)) == -1:
-
-                command = 'git stash'
-                if not Upgrade.executioner(command, command, 1):
-                    return 0, 'Failed to execute %s' % (command)
-
-                command = 'git clean -f'
-                if not Upgrade.executioner(command, command, 1):
-                    return 0, 'Failed to execute %s' % (command)
-
-                command = 'git pull'
-                if not Upgrade.executioner(command, command, 1):
-                    return 0, 'Failed to execute %s' % (command)
-
-            elif currentBranch.find('not a git repository') > -1:
-
-                os.chdir('/usr/local')
-
-                command = 'git clone https://github.com/usmannasir/cyberpanel'
-                if not Upgrade.executioner(command, command, 1):
-                    return 0, 'Failed to execute %s' % (command)
-
-                if os.path.exists('CyberCP'):
+            # Remove old CyberCP directory
+            if os.path.exists('CyberCP'):
+                Upgrade.stdOut("Removing old CyberCP directory...")
+                try:
                     shutil.rmtree('CyberCP')
+                    Upgrade.stdOut("Old CyberCP directory removed successfully.")
+                except Exception as e:
+                    Upgrade.stdOut(f"Error removing CyberCP directory: {str(e)}")
+                    # Try to restore backup if removal fails
+                    Upgrade.restoreCriticalFiles(backup_dir, backed_up_files)
+                    return 0, 'Failed to remove old CyberCP directory'
 
-                shutil.move('cyberpanel', 'CyberCP')
-
-            else:
-
-                command = 'git fetch'
-                if not Upgrade.executioner(command, command, 1):
-                    return 0, 'Failed to execute %s' % (command)
-
-                command = 'git stash'
-                if not Upgrade.executioner(command, command, 1):
-                    return 0, 'Failed to execute %s' % (command)
-
-                command = 'git checkout %s' % (branch)
-                if not Upgrade.executioner(command, command, 1):
-                    return 0, 'Failed to execute %s' % (command)
-
-                command = 'git pull'
-                if not Upgrade.executioner(command, command, 1):
-                    return 0, 'Failed to execute %s' % (command)
+            # Clone the new repository directly to CyberCP
+            Upgrade.stdOut("Cloning fresh CyberPanel repository...")
+            command = 'git clone https://github.com/usmannasir/cyberpanel CyberCP'
+            if not Upgrade.executioner(command, command, 1):
+                # Try to restore backup if clone fails
+                Upgrade.stdOut("Clone failed, attempting to restore backup...")
+                Upgrade.restoreCriticalFiles(backup_dir, backed_up_files)
+                return 0, 'Failed to clone CyberPanel repository'
+            
+            # Checkout the correct branch
+            os.chdir('/usr/local/CyberCP')
+            command = 'git checkout %s' % (branch)
+            if not Upgrade.executioner(command, command, 1):
+                Upgrade.stdOut(f"Warning: Failed to checkout branch {branch}, continuing with default branch")
+            
+            # Restore all backed up configuration files
+            Upgrade.stdOut("Restoring configuration files...")
+            Upgrade.restoreCriticalFiles(backup_dir, backed_up_files)
 
             ## Copy settings file
 
