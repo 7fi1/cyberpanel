@@ -222,7 +222,7 @@ def loadLoginPage(request):
 
             token = hashPassword.generateToken('admin', '1234567')
 
-            email = 'example@example.org'
+            email = 'admin@cyberpanel.net'
             admin = Administrator(userName="admin", password=password, type=1, email=email,
                                   firstName="Cyber", lastName="Panel", acl=acl, token=token)
             admin.save()
