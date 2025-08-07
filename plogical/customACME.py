@@ -632,7 +632,13 @@ class CustomACME:
                         logging.CyberCPLogFileWriter.writeToFile('Failed to get nonce for order status check')
                         return False
                     
-                    response = requests.get(self.order_url, headers=headers)
+                    # Use POST-as-GET for order status check
+                    jws = self._create_jws(None, self.order_url)
+                    if not jws:
+                        logging.CyberCPLogFileWriter.writeToFile('Failed to create JWS for order status check')
+                        return False
+                    
+                    response = requests.post(self.order_url, data=jws, headers=headers)
                     logging.CyberCPLogFileWriter.writeToFile(f'Order status check response: {response.text}')
                     
                     if response.status_code == 200:
@@ -688,10 +694,16 @@ class CustomACME:
                     logging.CyberCPLogFileWriter.writeToFile('Failed to get nonce for challenge status check')
                     return False
                 
+                # Use POST-as-GET for challenge status check
+                jws = self._create_jws(None, challenge_url)
+                if not jws:
+                    logging.CyberCPLogFileWriter.writeToFile('Failed to create JWS for challenge status check')
+                    return False
+                
                 headers = {
                     'Content-Type': 'application/jose+json'
                 }
-                response = requests.get(challenge_url, headers=headers)
+                response = requests.post(challenge_url, data=jws, headers=headers)
                 logging.CyberCPLogFileWriter.writeToFile(f'Challenge status check response: {response.text}')
                 
                 if response.status_code == 200:
@@ -842,10 +854,16 @@ class CustomACME:
                     logging.CyberCPLogFileWriter.writeToFile('Failed to get nonce for order status check')
                     return False
                 
+                # Use POST-as-GET for order status check
+                jws = self._create_jws(None, self.order_url)
+                if not jws:
+                    logging.CyberCPLogFileWriter.writeToFile('Failed to create JWS for order status check')
+                    return False
+                
                 headers = {
                     'Content-Type': 'application/jose+json'
                 }
-                response = requests.get(self.order_url, headers=headers)
+                response = requests.post(self.order_url, data=jws, headers=headers)
                 logging.CyberCPLogFileWriter.writeToFile(f'Order status check response: {response.text}')
                 
                 if response.status_code == 200:
@@ -941,11 +959,18 @@ class CustomACME:
                     logging.CyberCPLogFileWriter.writeToFile('Failed to get nonce for authorization')
                     return False
                 
-                # Get authorization details with GET request
+                # Get authorization details with POST-as-GET request
+                # ACME protocol requires POST with empty payload for fetching resources
+                logging.CyberCPLogFileWriter.writeToFile(f'Fetching authorization details for: {auth_url}')
+                jws = self._create_jws(None, auth_url)  # None payload for POST-as-GET
+                if not jws:
+                    logging.CyberCPLogFileWriter.writeToFile('Failed to create JWS for authorization request')
+                    return False
+                
                 headers = {
                     'Content-Type': 'application/jose+json'
                 }
-                response = requests.get(auth_url, headers=headers)
+                response = requests.post(auth_url, data=jws, headers=headers)
                 logging.CyberCPLogFileWriter.writeToFile(f'Authorization response status: {response.status_code}')
                 logging.CyberCPLogFileWriter.writeToFile(f'Authorization response: {response.text}')
                 
@@ -990,7 +1015,12 @@ class CustomACME:
             )
             
             # Get the domain from the order response
-            order_response = requests.get(self.order_url, headers=headers).json()
+            # Use POST-as-GET to get order details
+            jws = self._create_jws(None, self.order_url)
+            if not jws:
+                logging.CyberCPLogFileWriter.writeToFile('Failed to create JWS for order details')
+                return False
+            order_response = requests.post(self.order_url, data=jws, headers=headers).json()
             order_domains = [identifier['value'] for identifier in order_response['identifiers']]
             logging.CyberCPLogFileWriter.writeToFile(f'Order domains: {order_domains}')
             
