@@ -2467,28 +2467,27 @@ CREATE TABLE `websiteFunctions_backupsv2` (`id` integer AUTO_INCREMENT NOT NULL 
             Upgrade.stdOut("Restoring configuration files...")
             Upgrade.restoreCriticalFiles(backup_dir, backed_up_files)
 
-            ## Copy settings file
-
-            settingsData = open(settingsFile, 'r').readlines()
-
-            DATABASESCHECK = 0
+            ## Update settings file with database credentials while preserving other settings
+            
+            # Read the current settings file (which was just restored from backup)
+            settingsData = open(settingsFile, 'r').read()
+            
+            # Replace only the DATABASES section while keeping everything else (including INSTALLED_APPS)
+            import re
+            
+            # More precise pattern to match the entire DATABASES dictionary including nested dictionaries
+            # This pattern looks for DATABASES = { ... } including the 'default' and 'rootdb' nested dicts
+            database_pattern = r'DATABASES\s*=\s*\{[^}]*\{[^}]*\}[^}]*\{[^}]*\}[^}]*\}'
+            
+            # Replace the DATABASES section with our saved credentials
+            settingsData = re.sub(database_pattern, completDBString.strip(), settingsData, flags=re.DOTALL)
+            
+            # Write back the updated settings
             writeToFile = open(settingsFile, 'w')
-
-            for items in settingsData:
-                if items.find('DATABASES = {') > -1:
-                    DATABASESCHECK = 1
-
-                if DATABASESCHECK == 0:
-                    writeToFile.write(items)
-
-                if items.find('DATABASE_ROUTERS = [') > -1:
-                    DATABASESCHECK = 0
-                    writeToFile.write(completDBString)
-                    writeToFile.write(items)
-
+            writeToFile.write(settingsData)
             writeToFile.close()
 
-            Upgrade.stdOut('Settings file restored!')
+            Upgrade.stdOut('Settings file restored with database credentials!')
 
             Upgrade.staticContent()
 
