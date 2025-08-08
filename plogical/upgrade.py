@@ -2360,6 +2360,11 @@ CREATE TABLE `websiteFunctions_backupsv2` (`id` integer AUTO_INCREMENT NOT NULL 
     def restoreCriticalFiles(backup_dir, backed_up_files):
         """Restore critical configuration files after upgrade"""
         for original_path, backup_path in backed_up_files.items():
+            # Skip settings.py - we'll handle it separately to preserve INSTALLED_APPS
+            if 'settings.py' in original_path:
+                Upgrade.stdOut(f"Skipping {original_path} - will be handled separately")
+                continue
+            
             try:
                 if os.path.isdir(backup_path):
                     if os.path.exists(original_path):
@@ -2463,23 +2468,23 @@ CREATE TABLE `websiteFunctions_backupsv2` (`id` integer AUTO_INCREMENT NOT NULL 
             if not Upgrade.executioner(command, command, 1):
                 Upgrade.stdOut(f"Warning: Failed to checkout branch {branch}, continuing with default branch")
             
-            # Restore all backed up configuration files
+            # Restore all backed up configuration files (except settings.py)
             Upgrade.stdOut("Restoring configuration files...")
             Upgrade.restoreCriticalFiles(backup_dir, backed_up_files)
 
-            ## Update settings file with database credentials while preserving other settings
+            ## Handle settings.py separately to preserve NEW INSTALLED_APPS while keeping old database credentials
             
-            # Read the current settings file (which was just restored from backup)
+            # Read the NEW settings file from the fresh clone (has new INSTALLED_APPS like 'aiScanner')
             settingsData = open(settingsFile, 'r').read()
             
-            # Replace only the DATABASES section while keeping everything else (including INSTALLED_APPS)
+            # Replace only the DATABASES section with our saved credentials
             import re
             
             # More precise pattern to match the entire DATABASES dictionary including nested dictionaries
             # This pattern looks for DATABASES = { ... } including the 'default' and 'rootdb' nested dicts
             database_pattern = r'DATABASES\s*=\s*\{[^}]*\{[^}]*\}[^}]*\{[^}]*\}[^}]*\}'
             
-            # Replace the DATABASES section with our saved credentials
+            # Replace the DATABASES section with our saved credentials from before upgrade
             settingsData = re.sub(database_pattern, completDBString.strip(), settingsData, flags=re.DOTALL)
             
             # Write back the updated settings
@@ -2487,7 +2492,7 @@ CREATE TABLE `websiteFunctions_backupsv2` (`id` integer AUTO_INCREMENT NOT NULL 
             writeToFile.write(settingsData)
             writeToFile.close()
 
-            Upgrade.stdOut('Settings file restored with database credentials!')
+            Upgrade.stdOut('Settings file updated with database credentials while preserving new INSTALLED_APPS!')
 
             Upgrade.staticContent()
 
