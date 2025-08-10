@@ -166,8 +166,17 @@ class DNSManager:
         else:
             finalData = {"status": 1}
 
-        # Get DNS zones directly from the Domains table instead of just websites
-        finalData['domainsList'] = ACLManager.findAllDNSZones(currentACL, userID)
+        tempList = ACLManager.findAllDomains(currentACL, userID)
+
+        finalData['domainsList'] = []
+        import tldextract
+
+        no_cache_extract = tldextract.TLDExtract(cache_dir=None)
+        for items in tempList:
+            extractDomain = no_cache_extract(items)
+            subDomain = extractDomain.subdomain
+            if len(subDomain) == 0:
+                finalData['domainsList'].append(items)
 
 
         template = 'dns/addDeleteDNSRecords.html'
@@ -511,8 +520,7 @@ class DNSManager:
         else:
             finalData = {"status": 1}
 
-        # Get DNS zones directly from the Domains table instead of just websites
-        finalData['domainsList'] = ACLManager.findAllDNSZones(currentACL, userID)
+        finalData['domainsList'] = ACLManager.findAllDomains(currentACL, userID)
         template = 'dns/deleteDNSZone.html'
         proc = httpProc(request, template, finalData, 'deleteZone')
         return proc.render()
