@@ -3895,91 +3895,24 @@ pm.max_spare_servers = 3
             except:
                 pass
 
-        #command = 'csf -uf'
-        #Upgrade.executioner(command, 'fix csf if there', 0)
-
+        # Remove CSF if installed and restore firewalld (CSF is being discontinued on August 31, 2025)
         if os.path.exists('/etc/csf'):
-            ##### Function to backup custom csf files and restore
-
-            from datetime import datetime
-
-            # List of files to backup
-            FILES = [
-                "/etc/csf/csf.allow",
-                "/etc/csf/csf.deny",
-                "/etc/csf/csf.conf",
-                "/etc/csf/csf.ignore",
-                "/etc/csf/csf.rignore",
-                "/etc/csf/csf.blocklists",
-                "/etc/csf/csf.dyndns"
-            ]
-
-            # Directory for backups
-            BACKUP_DIR = f"/home/cyberpanel/csf_backup_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-
-            # Backup function
-            def backup_files():
-                os.makedirs(BACKUP_DIR, exist_ok=True)
-                for file in FILES:
-                    if os.path.exists(file):
-                        shutil.copy(file, BACKUP_DIR)
-                        print(f"Backed up: {file}")
-                    else:
-                        print(f"File not found, skipping: {file}")
-
-            # Restore function
-            def restore_files():
-                for file in FILES:
-                    backup_file = os.path.join(BACKUP_DIR, os.path.basename(file))
-                    if os.path.exists(backup_file):
-                        try:
-                            shutil.copy(backup_file, file)
-                            print(f"Restored: {file}")
-                        except Exception as e:
-                            print(f"Failed to restore {file}: {str(e)}")
-                    else:
-                        print(f"Backup not found for: {file}")
-
-            # Backup the files
-            print("Backing up files...")
-            backup_files()
-
+            print("CSF detected - removing CSF and restoring firewalld...")
+            print("Note: ConfigServer Firewall (CSF) is being discontinued on August 31, 2025")
+            
+            # Remove CSF and restore firewalld
             execPath = "sudo /usr/local/CyberCP/bin/python /usr/local/CyberCP/plogical/csf.py"
             execPath = execPath + " removeCSF"
-            Upgrade.executioner(execPath, 'Remove CSF before reinstall', 0)
-
-            execPath = "sudo /usr/local/CyberCP/bin/python /usr/local/CyberCP/plogical/csf.py"
-            execPath = execPath + " installCSF"
-            Upgrade.executioner(execPath, 'Install CSF', 0)
-
-            # Restore the files AFTER installation
-            print("Restoring CSF configuration files...")
-            restore_files()
+            Upgrade.executioner(execPath, 'Remove CSF and restore firewalld', 0)
             
-            # Restart CSF to apply restored configuration
-            command = 'csf -r'
-            Upgrade.executioner(command, 'Restart CSF with restored config', 0)
+            print("CSF has been removed and firewalld has been restored.")
 
 
 
+        # Remove configservercsf directory if it exists
         if os.path.exists('/usr/local/CyberCP/configservercsf'):
-            command = 'rm -f /usr/local/CyberCP/configservercsf/signals.py'
-            Upgrade.executioner(command, 'remove /usr/local/CyberCP/configservercsf/signals.py', 1)
-
-            sed_commands = [
-                'sed -i "s/url(r\'^configservercsf/path(\'configservercsf/g" /usr/local/CyberCP/CyberCP/urls.py',
-                'sed -i "s/from django.conf.urls import url/from django.urls import path/g" /usr/local/CyberCP/configservercsf/urls.py',
-                'sed -i "s/import signals/from . import signals/g" /usr/local/CyberCP/configservercsf/apps.py',
-                'sed -i "s/url(r\'^$\'/path(\'\'/g" /usr/local/CyberCP/configservercsf/urls.py',
-                'sed -i "s|url(r\'^iframe/$\'|path(\'iframe/\'|g" /usr/local/CyberCP/configservercsf/urls.py',
-                'sed -i -E "s/from.*, response/from plogical.httpProc import httpProc/g" /usr/local/CyberCP/configservercsf/views.py',
-                'find /usr/local/CyberCP -name "*.pyc" -delete',
-                'find /usr/local/CyberCP -name "__pycache__" -type d -exec rm -rf {} + 2>/dev/null || true',
-                'killall lswsgi'
-            ]
-
-            for cmd in sed_commands:
-                Upgrade.executioner(cmd, 'fix csf if there', 1)
+            command = 'rm -rf /usr/local/CyberCP/configservercsf'
+            Upgrade.executioner(command, 'Remove configservercsf directory', 1)
 
 
 
