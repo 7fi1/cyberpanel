@@ -6,8 +6,6 @@
   <component name="ChangeListManager">
     <list default="true" id="5251c5c9-f2a1-41f2-bc76-10b517091df1" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/baseTemplate/templates/baseTemplate/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/baseTemplate/templates/baseTemplate/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/plogical/upgrade.py" beforeDir="false" afterPath="$PROJECT_DIR$/plogical/upgrade.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -119,7 +117,7 @@
       <workItem from="1754429757112" duration="3503000" />
       <workItem from="1754433799097" duration="517000" />
       <workItem from="1754448353513" duration="2970000" />
-      <workItem from="1754511414251" duration="40030000" />
+      <workItem from="1754511414251" duration="47027000" />
     </task>
     <servers />
   </component>

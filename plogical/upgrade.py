@@ -2319,8 +2319,6 @@ CREATE TABLE `websiteFunctions_backupsv2` (`id` integer AUTO_INCREMENT NOT NULL 
         
         critical_files = [
             '/usr/local/CyberCP/CyberCP/settings.py',
-            '/usr/local/CyberCP/CyberCP/SecurityLevel.py',
-            '/usr/local/CyberCP/plogical/acl.py',  # Custom ACL settings
             '/usr/local/CyberCP/.git/config',  # Git configuration
         ]
         
