@@ -42,35 +42,12 @@ class installUtilities:
     @staticmethod
     def addLiteSpeedRepo():
         try:
-            # Detect OS version to use the correct repository
-            el_version = "7"  # Default to el7
+            # Use the official LiteSpeed repository installation script
+            # This supports all OS versions including CentOS/AlmaLinux/Rocky 7, 8, and 9
+            cmd = "wget -O - https://repo.litespeed.sh | bash"
             
-            # Check for OS version
-            if os.path.exists('/etc/os-release'):
-                with open('/etc/os-release', 'r') as f:
-                    content = f.read()
-                    # Check for RHEL/CentOS/AlmaLinux/Rocky 9
-                    if 'VERSION_ID="9' in content or 'VERSION_ID=9' in content:
-                        el_version = "9"
-                    # Check for RHEL/CentOS/AlmaLinux/Rocky 8
-                    elif 'VERSION_ID="8' in content or 'VERSION_ID=8' in content:
-                        el_version = "8"
+            res = subprocess.call(cmd, shell=True)
             
-            # Use the appropriate repository URL based on version
-            repo_urls = {
-                "7": "http://rpms.litespeedtech.com/centos/litespeed-repo-1.1-1.el7.noarch.rpm",
-                "8": "http://rpms.litespeedtech.com/centos/litespeed-repo-1.3-1.el8.noarch.rpm",
-                "9": "http://rpms.litespeedtech.com/centos/litespeed-repo-1.3-1.el9.noarch.rpm"
-            }
-            
-            repo_url = repo_urls.get(el_version, repo_urls["7"])
-            
-            cmd = []
-            cmd.append("rpm")
-            cmd.append("-ivh")
-            cmd.append(repo_url)
-            
-            res = subprocess.call(cmd)
             if res == 1:
                 print("###############################################")
                 print("         Could not add Litespeed repo         " )
