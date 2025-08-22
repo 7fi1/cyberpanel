@@ -4,7 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="5251c5c9-f2a1-41f2-bc76-10b517091df1" name="Changes" comment="" />
+    <list default="true" id="5251c5c9-f2a1-41f2-bc76-10b517091df1" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -46,7 +48,7 @@
     "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager": "true",
     "RunOnceActivity.git.unshallow": "true",
     "SHELLCHECK.PATH": "/Users/cyberpersons/Library/Application Support/JetBrains/PyCharm2025.1/plugins/Shell Script/shellcheck",
-    "git-widget-placeholder": "v2.4.3",
+    "git-widget-placeholder": "v2.4.4-dev",
     "last_opened_file_path": "/Users/cyberpersons/cyberpanel",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",

@@ -2626,8 +2626,31 @@ Require valid-user
                 if cn and cn.startswith('*.'):
                     is_wildcard = True
             
+            # Check if it's self-signed by comparing issuer and subject
+            is_self_signed = False
+            issuer_cn = None
+            subject_cn = None
+            
+            for component in x509.get_issuer().get_components():
+                if component[0].decode('utf-8') == 'CN':
+                    issuer_cn = component[1].decode('utf-8')
+                    break
+                    
+            for component in x509.get_subject().get_components():
+                if component[0].decode('utf-8') == 'CN':
+                    subject_cn = component[1].decode('utf-8')
+                    break
+            
+            # Certificate is self-signed if issuer CN equals subject CN
+            if issuer_cn and subject_cn and issuer_cn == subject_cn:
+                is_self_signed = True
+            
+            # Also check if issuer equals subject entirely
+            if x509.get_issuer() == x509.get_subject():
+                is_self_signed = True
+            
             # Determine status
-            if issuer_org == 'Denial':
+            if is_self_signed:
                 status = 'self-signed'
             elif days < 0:
                 status = 'expired'
