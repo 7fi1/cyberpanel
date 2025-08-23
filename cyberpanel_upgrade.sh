@@ -575,6 +575,79 @@ done
 
 Pre_Upgrade_Required_Components() {
 
+# Check if CyberCP directory exists but is incomplete/damaged
+echo -e "[$(date +"%Y-%m-%d %H:%M:%S")] Checking CyberCP directory integrity..." | tee -a /var/log/cyberpanel_upgrade_debug.log
+
+# Define essential CyberCP components
+CYBERCP_ESSENTIAL_DIRS=(
+    "/usr/local/CyberCP/CyberCP"
+    "/usr/local/CyberCP/plogical"
+    "/usr/local/CyberCP/websiteFunctions"
+    "/usr/local/CyberCP/manage"
+)
+
+CYBERCP_MISSING=0
+for dir in "${CYBERCP_ESSENTIAL_DIRS[@]}"; do
+    if [ ! -d "$dir" ]; then
+        echo -e "[$(date +"%Y-%m-%d %H:%M:%S")] WARNING: Essential directory missing: $dir" | tee -a /var/log/cyberpanel_upgrade_debug.log
+        CYBERCP_MISSING=1
+    fi
+done
+
+# If essential directories are missing, perform recovery
+if [ $CYBERCP_MISSING -eq 1 ]; then
+    echo -e "[$(date +"%Y-%m-%d %H:%M:%S")] RECOVERY: CyberCP installation appears damaged or incomplete. Initiating recovery..." | tee -a /var/log/cyberpanel_upgrade_debug.log
+    
+    # Backup any remaining configuration files if they exist
+    if [ -f "/usr/local/CyberCP/CyberCP/settings.py" ]; then
+        echo -e "[$(date +"%Y-%m-%d %H:%M:%S")] Backing up existing settings.py..." | tee -a /var/log/cyberpanel_upgrade_debug.log
+        cp /usr/local/CyberCP/CyberCP/settings.py /tmp/cyberpanel_settings_backup.py
+    fi
+    
+    # Clone fresh CyberPanel repository
+    echo -e "[$(date +"%Y-%m-%d %H:%M:%S")] Cloning fresh CyberPanel repository for recovery..." | tee -a /var/log/cyberpanel_upgrade_debug.log
+    cd /usr/local
+    rm -rf CyberCP_recovery_tmp
+    
+    if git clone https://github.com/usmannasir/cyberpanel CyberCP_recovery_tmp; then
+        echo -e "[$(date +"%Y-%m-%d %H:%M:%S")] Repository cloned successfully for recovery" | tee -a /var/log/cyberpanel_upgrade_debug.log
+        
+        # Checkout the appropriate branch
+        cd CyberCP_recovery_tmp
+        git checkout "$Branch_Name" 2>/dev/null || git checkout stable
+        
+        # Copy missing components while preserving existing configurations
+        for dir in "${CYBERCP_ESSENTIAL_DIRS[@]}"; do
+            if [ ! -d "$dir" ]; then
+                # Extract relative path after /usr/local/CyberCP/
+                relative_path=${dir#/usr/local/CyberCP/}
+                if [ -d "/usr/local/CyberCP_recovery_tmp/$relative_path" ]; then
+                    echo -e "[$(date +"%Y-%m-%d %H:%M:%S")] Restoring missing directory: $dir" | tee -a /var/log/cyberpanel_upgrade_debug.log
+                    mkdir -p "$(dirname "$dir")"
+                    cp -r "/usr/local/CyberCP_recovery_tmp/$relative_path" "$dir"
+                fi
+            fi
+        done
+        
+        # Restore settings.py if it was backed up
+        if [ -f "/tmp/cyberpanel_settings_backup.py" ]; then
+            echo -e "[$(date +"%Y-%m-%d %H:%M:%S")] Restoring backed up settings.py..." | tee -a /var/log/cyberpanel_upgrade_debug.log
+            cp /tmp/cyberpanel_settings_backup.py /usr/local/CyberCP/CyberCP/settings.py
+        fi
+        
+        # Clean up temporary clone
+        rm -rf /usr/local/CyberCP_recovery_tmp
+        
+        echo -e "[$(date +"%Y-%m-%d %H:%M:%S")] Recovery completed. CyberCP structure restored." | tee -a /var/log/cyberpanel_upgrade_debug.log
+    else
+        echo -e "[$(date +"%Y-%m-%d %H:%M:%S")] ERROR: Failed to clone repository for recovery" | tee -a /var/log/cyberpanel_upgrade_debug.log
+        echo -e "[$(date +"%Y-%m-%d %H:%M:%S")] Please run full installation instead of upgrade" | tee -a /var/log/cyberpanel_upgrade_debug.log
+        exit 1
+    fi
+    
+    cd /root/cyberpanel_upgrade_tmp || cd /root
+fi
+
 if [ "$Server_OS" = "Ubuntu" ]; then
   echo -e "[$(date +"%Y-%m-%d %H:%M:%S")] Preparing Ubuntu environment for virtualenv..." | tee -a /var/log/cyberpanel_upgrade_debug.log
   rm -rf /usr/local/CyberPanel
