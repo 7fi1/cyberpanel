@@ -1197,7 +1197,58 @@ rm -f /usr/local/requirments.txt
 chown -R cyberpanel:cyberpanel /usr/local/CyberCP/lib
 chown -R cyberpanel:cyberpanel /usr/local/CyberCP/lib64
 
-
+# Fix missing lsphp binary in /usr/local/lscp/fcgi-bin/ after upgrade
+echo -e "[$(date +"%Y-%m-%d %H:%M:%S")] Checking and restoring lsphp binary if missing..." | tee -a /var/log/cyberpanel_upgrade_debug.log
+if [[ ! -f /usr/local/lscp/fcgi-bin/lsphp ]] || [[ ! -s /usr/local/lscp/fcgi-bin/lsphp ]]; then
+    echo -e "[$(date +"%Y-%m-%d %H:%M:%S")] lsphp binary missing or empty, attempting to restore..." | tee -a /var/log/cyberpanel_upgrade_debug.log
+    
+    # Find the latest available PHP version and use it
+    PHP_RESTORED=0
+    
+    # Try to find the latest lsphp version (check from newest to oldest)
+    for PHP_VER in 83 82 81 80 74 73 72; do
+        if [[ -f /usr/local/lsws/lsphp${PHP_VER}/bin/lsphp ]]; then
+            cp -f /usr/local/lsws/lsphp${PHP_VER}/bin/lsphp /usr/local/lscp/fcgi-bin/lsphp
+            chown root:root /usr/local/lscp/fcgi-bin/lsphp
+            chmod 755 /usr/local/lscp/fcgi-bin/lsphp
+            echo -e "[$(date +"%Y-%m-%d %H:%M:%S")] lsphp binary restored from lsphp${PHP_VER}" | tee -a /var/log/cyberpanel_upgrade_debug.log
+            PHP_RESTORED=1
+            break
+        fi
+    done
+    
+    # If no lsphp version found, try admin_php5 as fallback
+    if [[ $PHP_RESTORED -eq 0 ]]; then
+        if [[ -f /usr/local/lscp/admin/fcgi-bin/admin_php5 ]]; then
+            cp -f /usr/local/lscp/admin/fcgi-bin/admin_php5 /usr/local/lscp/fcgi-bin/lsphp
+            chown root:root /usr/local/lscp/fcgi-bin/lsphp
+            chmod 755 /usr/local/lscp/fcgi-bin/lsphp
+            echo -e "[$(date +"%Y-%m-%d %H:%M:%S")] lsphp binary restored from admin_php5 (fallback)" | tee -a /var/log/cyberpanel_upgrade_debug.log
+        elif [[ -f /usr/local/lscp/admin/fcgi-bin/admin_php ]]; then
+            cp -f /usr/local/lscp/admin/fcgi-bin/admin_php /usr/local/lscp/fcgi-bin/lsphp
+            chown root:root /usr/local/lscp/fcgi-bin/lsphp
+            chmod 755 /usr/local/lscp/fcgi-bin/lsphp
+            echo -e "[$(date +"%Y-%m-%d %H:%M:%S")] lsphp binary restored from admin_php (fallback)" | tee -a /var/log/cyberpanel_upgrade_debug.log
+        elif [[ -f /usr/local/lsws/admin/fcgi-bin/admin_php5 ]]; then
+            cp -f /usr/local/lsws/admin/fcgi-bin/admin_php5 /usr/local/lscp/fcgi-bin/lsphp
+            chown root:root /usr/local/lscp/fcgi-bin/lsphp
+            chmod 755 /usr/local/lscp/fcgi-bin/lsphp
+            echo -e "[$(date +"%Y-%m-%d %H:%M:%S")] lsphp binary restored from lsws admin_php5 (fallback)" | tee -a /var/log/cyberpanel_upgrade_debug.log
+        else
+            echo -e "[$(date +"%Y-%m-%d %H:%M:%S")] ERROR: Could not find any PHP binary to restore lsphp" | tee -a /var/log/cyberpanel_upgrade_debug.log
+        fi
+    fi
+    
+    # Create symlinks if they don't exist
+    if [[ -f /usr/local/lscp/fcgi-bin/lsphp ]]; then
+        if [[ ! -f /usr/local/lscp/fcgi-bin/lsphp4 ]]; then
+            ln -sf ./lsphp /usr/local/lscp/fcgi-bin/lsphp4
+        fi
+        if [[ ! -f /usr/local/lscp/fcgi-bin/lsphp5 ]]; then
+            ln -sf ./lsphp /usr/local/lscp/fcgi-bin/lsphp5
+        fi
+    fi
+fi
 
 if [[ "$Server_OS_Version" = "9" ]] || [[ "$Server_OS_Version" = "18" ]] || [[ "$Server_OS_Version" = "8" ]] || [[ "$Server_OS_Version" = "20" ]]; then
     echo "PYTHONHOME=/usr" > /usr/local/lscp/conf/pythonenv.conf
