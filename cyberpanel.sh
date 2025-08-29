@@ -1366,7 +1366,20 @@ export LC_CTYPE=en_US.UTF-8
 export LC_ALL=en_US.UTF-8
 #need to set lang to address some pip module installation issue.
 
-Retry_Command "pip install --default-timeout=3600 virtualenv"
+# Install virtualenv - handle Ubuntu 24.04's externally-managed-environment policy
+if [[ "$Server_OS" = "Ubuntu" ]]; then
+  if [[ "$Server_OS_Version" = "24" ]]; then
+    # Ubuntu 24.04 has python3-venv by default, no need to install virtualenv
+    echo -e "Ubuntu 24.04 detected - using built-in python3-venv"
+  else
+    # For older Ubuntu versions, install virtualenv via apt
+    Retry_Command "DEBIAN_FRONTEND=noninteractive apt-get update"
+    Retry_Command "DEBIAN_FRONTEND=noninteractive apt-get install -y python3-virtualenv"
+  fi
+else
+  # For non-Ubuntu systems, use pip (may need --break-system-packages on newer systems)
+  Retry_Command "pip install --default-timeout=3600 virtualenv"
+fi
 
 Download_Requirement
 
@@ -1381,8 +1394,13 @@ if [[ "$Server_OS" = "Ubuntu" ]] && ([[ "$Server_OS_Version" = "22" ]] || [[ "$S
     echo -e "Virtual environment created successfully"
   else
     echo -e "python3 -m venv failed, trying virtualenv..."
-    # Ensure virtualenv is properly installed
-    pip3 install --upgrade virtualenv
+    # For Ubuntu 24.04, python3-venv should work, but if not, try apt install
+    if [[ "$Server_OS_Version" = "24" ]]; then
+      Retry_Command "DEBIAN_FRONTEND=noninteractive apt-get install -y python3-venv"
+    else
+      # For Ubuntu 22.04, install virtualenv via apt
+      Retry_Command "DEBIAN_FRONTEND=noninteractive apt-get install -y python3-virtualenv"
+    fi
     virtualenv -p /usr/bin/python3 /usr/local/CyberPanel
   fi
 else

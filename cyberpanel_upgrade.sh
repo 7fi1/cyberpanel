@@ -505,12 +505,18 @@ elif [[ "$Server_OS" = "Ubuntu" ]] ; then
   DEBIAN_FRONTEND=noninteractive apt install -y build-essential libssl-dev libffi-dev python3-dev
   DEBIAN_FRONTEND=noninteractive apt install -y python3-venv
 
-  ### fix for pip issue on ubuntu 22
+  ### fix for pip issue on ubuntu 22 and 24
 
   apt-get remove --purge virtualenv -y
-  pip uninstall -y virtualenv
-  rm -rf /usr/lib/python3/dist-packages/virtualenv*
-  pip3 install --upgrade virtualenv
+  # Handle Ubuntu 24.04's externally-managed-environment policy
+  if [[ "$Server_OS_Version" = "24" ]]; then
+    echo -e "Ubuntu 24.04 detected - using apt for virtualenv installation"
+    DEBIAN_FRONTEND=noninteractive apt-get install -y python3-virtualenv
+  else
+    pip uninstall -y virtualenv 2>/dev/null || true
+    rm -rf /usr/lib/python3/dist-packages/virtualenv*
+    pip3 install --upgrade virtualenv
+  fi
 
 
   if [[ "$Server_OS_Version" = "18" ]] ; then
@@ -652,14 +658,20 @@ if [ "$Server_OS" = "Ubuntu" ]; then
   echo -e "[$(date +"%Y-%m-%d %H:%M:%S")] Preparing Ubuntu environment for virtualenv..." | tee -a /var/log/cyberpanel_upgrade_debug.log
   rm -rf /usr/local/CyberPanel
   
-  # For Ubuntu 22.04, ensure we have the latest virtualenv that's compatible
-  if [[ "$Server_OS_Version" = "22" ]]; then
-    echo -e "[$(date +"%Y-%m-%d %H:%M:%S")] Ubuntu 22.04: Installing/upgrading virtualenv with proper dependencies..." | tee -a /var/log/cyberpanel_upgrade_debug.log
-    # Remove system virtualenv if it exists to avoid conflicts
-    apt remove -y python3-virtualenv 2>/dev/null || true
-    # Install latest virtualenv via pip
-    pip3 install --upgrade pip setuptools wheel
-    pip3 install --upgrade virtualenv
+  # For Ubuntu 22.04 and 24.04, handle virtualenv installation properly
+  if [[ "$Server_OS_Version" = "22" ]] || [[ "$Server_OS_Version" = "24" ]]; then
+    if [[ "$Server_OS_Version" = "24" ]]; then
+      echo -e "[$(date +"%Y-%m-%d %H:%M:%S")] Ubuntu 24.04: Using apt for virtualenv installation (externally-managed-environment policy)..." | tee -a /var/log/cyberpanel_upgrade_debug.log
+      # Ubuntu 24.04 has externally-managed-environment, use apt
+      DEBIAN_FRONTEND=noninteractive apt-get install -y python3-virtualenv
+    else
+      echo -e "[$(date +"%Y-%m-%d %H:%M:%S")] Ubuntu 22.04: Installing/upgrading virtualenv with proper dependencies..." | tee -a /var/log/cyberpanel_upgrade_debug.log
+      # Remove system virtualenv if it exists to avoid conflicts
+      apt remove -y python3-virtualenv 2>/dev/null || true
+      # Install latest virtualenv via pip
+      pip3 install --upgrade pip setuptools wheel
+      pip3 install --upgrade virtualenv
+    fi
   else
     pip3 install --upgrade virtualenv
   fi

@@ -2039,16 +2039,26 @@ $cfg['Servers'][$i]['LogoutURL'] = 'phpmyadminsignin.php?logout';
             latest = getVersion.json()
         except BaseException as msg:
 
-            command = "pip uninstall --yes urllib3"
+            # Handle Ubuntu 24.04's externally-managed-environment policy
+            pip_flags = ""
+            if self.distro == ubuntu:
+                try:
+                    release = install_utils.get_Ubuntu_release(use_print=False, exit_on_error=False)
+                    if release and release >= 24.04:
+                        pip_flags = " --break-system-packages"
+                except:
+                    pass  # If version detection fails, try without flags
+
+            command = f"pip uninstall --yes{pip_flags} urllib3"
             preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
 
-            command = "pip uninstall --yes requests"
+            command = f"pip uninstall --yes{pip_flags} requests"
             preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
 
-            command = "pip install http://mirror.cyberpanel.net/urllib3-1.22.tar.gz"
+            command = f"pip install{pip_flags} http://mirror.cyberpanel.net/urllib3-1.22.tar.gz"
             preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
 
-            command = "pip install http://mirror.cyberpanel.net/requests-2.18.4.tar.gz"
+            command = f"pip install{pip_flags} http://mirror.cyberpanel.net/requests-2.18.4.tar.gz"
             preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
 
     def installation_successfull(self):
