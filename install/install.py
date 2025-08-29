@@ -1654,7 +1654,7 @@ $cfg['Servers'][$i]['LogoutURL'] = 'phpmyadminsignin.php?logout';
             #     lscpdSelection = 'lscpd-0.3.1'
             #     if os.path.exists('/etc/lsb-release'):
             #         result = open('/etc/lsb-release', 'r').read()
-            #         if result.find('22.04') > -1:
+            #         if result.find('22.04') > -1 or result.find('24.04') > -1:
             #             lscpdSelection = 'lscpd.0.4.0'
             # else:
             #     lscpdSelection = 'lscpd.aarch64'
@@ -1669,7 +1669,7 @@ $cfg['Servers'][$i]['LogoutURL'] = 'phpmyadminsignin.php?logout';
                     lscpdSelection = 'lscpd-0.3.1'
                     if os.path.exists('/etc/lsb-release'):
                         result = open('/etc/lsb-release', 'r').read()
-                        if result.find('22.04') > -1:
+                        if result.find('22.04') > -1 or result.find('24.04') > -1:
                             lscpdSelection = 'lscpd.0.4.0'
                 else:
                     lscpdSelection = 'lscpd.aarch64'
@@ -1679,7 +1679,7 @@ $cfg['Servers'][$i]['LogoutURL'] = 'phpmyadminsignin.php?logout';
                 lscpdSelection = 'lscpd-0.3.1'
                 if os.path.exists('/etc/lsb-release'):
                     result = open('/etc/lsb-release', 'r').read()
-                    if result.find('22.04') > -1:
+                    if result.find('22.04') > -1 or result.find('24.04') > -1:
                         lscpdSelection = 'lscpd.0.4.0'
 
 
