@@ -667,7 +667,7 @@ if [ "$Server_OS" = "Ubuntu" ]; then
     if [[ "$Server_OS_Version" = "24" ]]; then
       echo -e "[$(date +"%Y-%m-%d %H:%M:%S")] Ubuntu 24.04: Using apt for virtualenv installation (externally-managed-environment policy)..." | tee -a /var/log/cyberpanel_upgrade_debug.log
       # Ubuntu 24.04 has externally-managed-environment, use apt
-      DEBIAN_FRONTEND=noninteractive apt-get install -y python3-virtualenv
+      DEBIAN_FRONTEND=noninteractive apt-get install -y python3-virtualenv python3-venv
     else
       echo -e "[$(date +"%Y-%m-%d %H:%M:%S")] Ubuntu 22.04: Installing/upgrading virtualenv with proper dependencies..." | tee -a /var/log/cyberpanel_upgrade_debug.log
       # Remove system virtualenv if it exists to avoid conflicts
@@ -693,7 +693,10 @@ fi
 if [[ -f /usr/local/CyberPanel/bin/python2 ]]; then
   echo -e "\nPython 2 dectected, doing re-setup...\n"
   rm -rf /usr/local/CyberPanel/bin
-  if [[ "$Server_OS" = "CentOS" ]] && [[ "$Server_OS_Version" = "9" ]]; then
+  if [[ "$Server_OS" = "Ubuntu" ]] && ([[ "$Server_OS_Version" = "22" ]] || [[ "$Server_OS_Version" = "24" ]]); then
+    echo -e "[$(date +"%Y-%m-%d %H:%M:%S")] Ubuntu $Server_OS_Version detected, using python3 -m venv..." | tee -a /var/log/cyberpanel_upgrade_debug.log
+    python3 -m venv /usr/local/CyberPanel
+  elif [[ "$Server_OS" = "CentOS" ]] && [[ "$Server_OS_Version" = "9" ]]; then
     PYTHON_PATH=$(which python3 2>/dev/null || which python3.9 2>/dev/null || echo "/usr/bin/python3")
     virtualenv -p "$PYTHON_PATH" --system-site-packages /usr/local/CyberPanel
   else
@@ -708,7 +711,10 @@ else
 echo -e "\nNothing found, need fresh setup...\n"
 
 # Attempt to create a virtual environment
-if [[ "$Server_OS" = "CentOS" ]] && [[ "$Server_OS_Version" = "9" ]]; then
+if [[ "$Server_OS" = "Ubuntu" ]] && ([[ "$Server_OS_Version" = "22" ]] || [[ "$Server_OS_Version" = "24" ]]); then
+  echo -e "[$(date +"%Y-%m-%d %H:%M:%S")] Ubuntu $Server_OS_Version detected, using python3 -m venv..." | tee -a /var/log/cyberpanel_upgrade_debug.log
+  python3 -m venv /usr/local/CyberPanel
+elif [[ "$Server_OS" = "CentOS" ]] && [[ "$Server_OS_Version" = "9" ]]; then
   PYTHON_PATH=$(which python3 2>/dev/null || which python3.9 2>/dev/null || echo "/usr/bin/python3")
   virtualenv -p "$PYTHON_PATH" --system-site-packages /usr/local/CyberPanel
 else
@@ -740,7 +746,10 @@ if [ $? -ne 0 ]; then
                 # Verify the installation
                 if [ $? -eq 0 ]; then
                     echo "'packaging' module reinstalled and upgraded successfully."
-                    if [[ "$Server_OS" = "CentOS" ]] && [[ "$Server_OS_Version" = "9" ]]; then
+                    if [[ "$Server_OS" = "Ubuntu" ]] && ([[ "$Server_OS_Version" = "22" ]] || [[ "$Server_OS_Version" = "24" ]]); then
+                        echo -e "[$(date +"%Y-%m-%d %H:%M:%S")] Ubuntu $Server_OS_Version detected, using python3 -m venv..." | tee -a /var/log/cyberpanel_upgrade_debug.log
+                        python3 -m venv /usr/local/CyberPanel
+                    elif [[ "$Server_OS" = "CentOS" ]] && [[ "$Server_OS_Version" = "9" ]]; then
                         PYTHON_PATH=$(which python3 2>/dev/null || which python3.9 2>/dev/null || echo "/usr/bin/python3")
                         virtualenv -p "$PYTHON_PATH" --system-site-packages /usr/local/CyberPanel
                     else
@@ -1295,7 +1304,48 @@ if [[ ! -f /usr/local/lscp/fcgi-bin/lsphp ]] || [[ ! -s /usr/local/lscp/fcgi-bin
     fi
 fi
 
-if [[ "$Server_OS_Version" = "9" ]] || [[ "$Server_OS_Version" = "18" ]] || [[ "$Server_OS_Version" = "8" ]] || [[ "$Server_OS_Version" = "20" ]]; then
+# Fix missing lscpd binary in /usr/local/lscp/bin/ after upgrade
+echo -e "[$(date +"%Y-%m-%d %H:%M:%S")] Checking and restoring lscpd binary if missing..." | tee -a /var/log/cyberpanel_upgrade_debug.log
+if [[ ! -f /usr/local/lscp/bin/lscpd ]] || [[ ! -s /usr/local/lscp/bin/lscpd ]]; then
+    echo -e "[$(date +"%Y-%m-%d %H:%M:%S")] lscpd binary missing or empty, attempting to restore..." | tee -a /var/log/cyberpanel_upgrade_debug.log
+
+    # Ensure lscp bin directory exists
+    mkdir -p /usr/local/lscp/bin
+
+    # Select the correct lscpd binary based on OS and version
+    lscpd_selection='lscpd-0.3.1'
+
+    # Check if this is an ARM system
+    if uname -a | grep -q 'aarch64'; then
+        lscpd_selection='lscpd.aarch64'
+    else
+        # For x86_64 systems, check Ubuntu version
+        if [[ "$Server_OS" = "Ubuntu" ]] && [[ -f /etc/lsb-release ]]; then
+            ubuntu_version=$(grep 'DISTRIB_RELEASE' /etc/lsb-release | cut -d'=' -f2 | cut -d'.' -f1)
+            if [[ "$ubuntu_version" = "22" ]] || [[ "$ubuntu_version" = "24" ]]; then
+                lscpd_selection='lscpd.0.4.0'
+            fi
+        fi
+    fi
+
+    echo -e "[$(date +"%Y-%m-%d %H:%M:%S")] Selected lscpd binary: $lscpd_selection" | tee -a /var/log/cyberpanel_upgrade_debug.log
+
+    # Copy the selected binary from CyberCP to lscp bin
+    if [[ -f /usr/local/CyberCP/${lscpd_selection} ]]; then
+        cp -f /usr/local/CyberCP/${lscpd_selection} /usr/local/lscp/bin/${lscpd_selection}
+        rm -f /usr/local/lscp/bin/lscpd
+        mv /usr/local/lscp/bin/${lscpd_selection} /usr/local/lscp/bin/lscpd
+        chmod 755 /usr/local/lscp/bin/lscpd
+        chown root:root /usr/local/lscp/bin/lscpd
+        echo -e "[$(date +"%Y-%m-%d %H:%M:%S")] lscpd binary restored successfully from ${lscpd_selection}" | tee -a /var/log/cyberpanel_upgrade_debug.log
+    else
+        echo -e "[$(date +"%Y-%m-%d %H:%M:%S")] ERROR: Could not find lscpd source binary ${lscpd_selection} in /usr/local/CyberCP/" | tee -a /var/log/cyberpanel_upgrade_debug.log
+    fi
+else
+    echo -e "[$(date +"%Y-%m-%d %H:%M:%S")] lscpd binary exists and is valid" | tee -a /var/log/cyberpanel_upgrade_debug.log
+fi
+
+if [[ "$Server_OS_Version" = "9" ]] || [[ "$Server_OS_Version" = "18" ]] || [[ "$Server_OS_Version" = "8" ]] || [[ "$Server_OS_Version" = "20" ]] || [[ "$Server_OS_Version" = "24" ]]; then
     echo "PYTHONHOME=/usr" > /usr/local/lscp/conf/pythonenv.conf
   else
     # Uncomment and use the following lines if necessary for other OS versions
