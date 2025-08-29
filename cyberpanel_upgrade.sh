@@ -1213,21 +1213,50 @@ chown -R cyberpanel:cyberpanel /usr/local/CyberCP/lib64
 echo -e "[$(date +"%Y-%m-%d %H:%M:%S")] Checking and restoring lsphp binary if missing..." | tee -a /var/log/cyberpanel_upgrade_debug.log
 if [[ ! -f /usr/local/lscp/fcgi-bin/lsphp ]] || [[ ! -s /usr/local/lscp/fcgi-bin/lsphp ]]; then
     echo -e "[$(date +"%Y-%m-%d %H:%M:%S")] lsphp binary missing or empty, attempting to restore..." | tee -a /var/log/cyberpanel_upgrade_debug.log
-    
+
+    # Ensure fcgi-bin directory exists
+    mkdir -p /usr/local/lscp/fcgi-bin
+
     # Find the latest available PHP version and use it
     PHP_RESTORED=0
     
     # Try to find the latest lsphp version (check from newest to oldest)
     for PHP_VER in 83 82 81 80 74 73 72; do
         if [[ -f /usr/local/lsws/lsphp${PHP_VER}/bin/lsphp ]]; then
-            cp -f /usr/local/lsws/lsphp${PHP_VER}/bin/lsphp /usr/local/lscp/fcgi-bin/lsphp
+            # Try to create symlink first (preferred)
+            if ln -sf /usr/local/lsws/lsphp${PHP_VER}/bin/lsphp /usr/local/lscp/fcgi-bin/lsphp 2>/dev/null; then
+                echo -e "[$(date +"%Y-%m-%d %H:%M:%S")] lsphp symlink created from lsphp${PHP_VER}" | tee -a /var/log/cyberpanel_upgrade_debug.log
+            else
+                # If symlink fails, copy the file
+                cp -f /usr/local/lsws/lsphp${PHP_VER}/bin/lsphp /usr/local/lscp/fcgi-bin/lsphp
+                echo -e "[$(date +"%Y-%m-%d %H:%M:%S")] lsphp binary copied from lsphp${PHP_VER}" | tee -a /var/log/cyberpanel_upgrade_debug.log
+            fi
             chown root:root /usr/local/lscp/fcgi-bin/lsphp
             chmod 755 /usr/local/lscp/fcgi-bin/lsphp
-            echo -e "[$(date +"%Y-%m-%d %H:%M:%S")] lsphp binary restored from lsphp${PHP_VER}" | tee -a /var/log/cyberpanel_upgrade_debug.log
             PHP_RESTORED=1
             break
         fi
     done
+
+    # If no lsphp version found, try php binary as fallback
+    if [[ $PHP_RESTORED -eq 0 ]]; then
+        for PHP_VER in 83 82 81 80 74 73 72; do
+            if [[ -f /usr/local/lsws/lsphp${PHP_VER}/bin/php ]]; then
+                # Try to create symlink first (preferred)
+                if ln -sf /usr/local/lsws/lsphp${PHP_VER}/bin/php /usr/local/lscp/fcgi-bin/lsphp 2>/dev/null; then
+                    echo -e "[$(date +"%Y-%m-%d %H:%M:%S")] lsphp symlink created from php${PHP_VER} (lsphp fallback)" | tee -a /var/log/cyberpanel_upgrade_debug.log
+                else
+                    # If symlink fails, copy the file
+                    cp -f /usr/local/lsws/lsphp${PHP_VER}/bin/php /usr/local/lscp/fcgi-bin/lsphp
+                    echo -e "[$(date +"%Y-%m-%d %H:%M:%S")] lsphp binary copied from php${PHP_VER} (lsphp fallback)" | tee -a /var/log/cyberpanel_upgrade_debug.log
+                fi
+                chown root:root /usr/local/lscp/fcgi-bin/lsphp
+                chmod 755 /usr/local/lscp/fcgi-bin/lsphp
+                PHP_RESTORED=1
+                break
+            fi
+        done
+    fi
     
     # If no lsphp version found, try admin_php5 as fallback
     if [[ $PHP_RESTORED -eq 0 ]]; then

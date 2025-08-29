@@ -1700,11 +1700,8 @@ $cfg['Servers'][$i]['LogoutURL'] = 'phpmyadminsignin.php?logout';
             command = 'openssl req -newkey rsa:1024 -new -nodes -x509 -days 3650 -subj "/C=US/ST=Denial/L=Springfield/O=Dis/CN=www.example.com" -keyout /usr/local/lscp/conf/key.pem -out /usr/local/lscp/conf/cert.pem'
             preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
 
-            try:
-                os.remove("/usr/local/lscp/fcgi-bin/lsphp")
-                shutil.copy("/usr/local/lsws/lsphp80/bin/lsphp", "/usr/local/lscp/fcgi-bin/lsphp")
-            except:
-                pass
+            # Create lsphp symlink for fcgi-bin with better error handling
+            self.setup_lsphp_symlink()
 
             if self.is_centos_family():
                 command = 'adduser lscpd -M -d /usr/local/lscp'
@@ -2196,6 +2193,85 @@ milter_default_action = accept
         except OSError as msg:
             logging.InstallLog.writeToFile('[ERROR] ' + str(msg) + " [setupPHPSymlink]")
             return 0
+
+    def setup_lsphp_symlink(self):
+        """Create lsphp symlink in fcgi-bin directory with robust error handling"""
+        try:
+            fcgi_bin_dir = "/usr/local/lscp/fcgi-bin"
+            lsphp_target = os.path.join(fcgi_bin_dir, "lsphp")
+
+            # Ensure fcgi-bin directory exists
+            if not os.path.exists(fcgi_bin_dir):
+                os.makedirs(fcgi_bin_dir, exist_ok=True)
+                logging.InstallLog.writeToFile(f"[setup_lsphp_symlink] Created fcgi-bin directory: {fcgi_bin_dir}")
+
+            # Remove existing lsphp file/symlink if it exists
+            if os.path.exists(lsphp_target) or os.path.islink(lsphp_target):
+                os.remove(lsphp_target)
+                logging.InstallLog.writeToFile("[setup_lsphp_symlink] Removed existing lsphp file/symlink")
+
+            # Try to find and use the best available PHP version
+            # Priority: 83, 82, 81, 80, 74, 73, 72 (newest to oldest)
+            php_versions = ['83', '82', '81', '80', '74', '73', '72']
+            lsphp_source = None
+
+            for php_ver in php_versions:
+                candidate_path = f"/usr/local/lsws/lsphp{php_ver}/bin/lsphp"
+                if os.path.exists(candidate_path):
+                    lsphp_source = candidate_path
+                    logging.InstallLog.writeToFile(f"[setup_lsphp_symlink] Found lsphp binary: {candidate_path}")
+                    break
+
+            # If no lsphp binary found, try to find php binary as fallback
+            if not lsphp_source:
+                for php_ver in php_versions:
+                    candidate_path = f"/usr/local/lsws/lsphp{php_ver}/bin/php"
+                    if os.path.exists(candidate_path):
+                        lsphp_source = candidate_path
+                        logging.InstallLog.writeToFile(f"[setup_lsphp_symlink] Using php binary as fallback: {candidate_path}")
+                        break
+
+            # If still no source found, try admin_php as last resort
+            if not lsphp_source:
+                admin_php_path = "/usr/local/lscp/admin/fcgi-bin/admin_php"
+                if os.path.exists(admin_php_path):
+                    lsphp_source = admin_php_path
+                    logging.InstallLog.writeToFile(f"[setup_lsphp_symlink] Using admin_php as fallback: {admin_php_path}")
+
+                admin_php5_path = "/usr/local/lscp/admin/fcgi-bin/admin_php5"
+                if not lsphp_source and os.path.exists(admin_php5_path):
+                    lsphp_source = admin_php5_path
+                    logging.InstallLog.writeToFile(f"[setup_lsphp_symlink] Using admin_php5 as fallback: {admin_php5_path}")
+
+            # Create the symlink/copy
+            if lsphp_source:
+                try:
+                    # Try to create symlink first (preferred)
+                    os.symlink(lsphp_source, lsphp_target)
+                    logging.InstallLog.writeToFile(f"[setup_lsphp_symlink] Created symlink: {lsphp_target} -> {lsphp_source}")
+                except OSError:
+                    # If symlink fails (e.g., cross-filesystem), copy the file
+                    shutil.copy2(lsphp_source, lsphp_target)
+                    logging.InstallLog.writeToFile(f"[setup_lsphp_symlink] Copied file: {lsphp_source} -> {lsphp_target}")
+
+                # Set proper permissions
+                os.chmod(lsphp_target, 0o755)
+                logging.InstallLog.writeToFile("[setup_lsphp_symlink] Set permissions to 755")
+
+                # Verify the file was created successfully
+                if os.path.exists(lsphp_target):
+                    logging.InstallLog.writeToFile("[setup_lsphp_symlink] lsphp symlink creation successful")
+                    return True
+                else:
+                    logging.InstallLog.writeToFile("[setup_lsphp_symlink] ERROR: lsphp file was not created")
+                    return False
+            else:
+                logging.InstallLog.writeToFile("[setup_lsphp_symlink] ERROR: No suitable PHP binary found")
+                return False
+
+        except Exception as e:
+            logging.InstallLog.writeToFile(f"[setup_lsphp_symlink] ERROR: {str(e)}")
+            return False
 
     def setupPHPAndComposer(self):
         try:
