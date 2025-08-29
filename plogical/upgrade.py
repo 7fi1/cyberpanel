@@ -302,6 +302,7 @@ CloudLinux8 = 5
 openEuler20 = 6
 openEuler22 = 7
 Ubuntu22 = 8
+Ubuntu24 = 9
 
 
 class Upgrade:
@@ -402,6 +403,8 @@ class Upgrade:
                 return Ubuntu20
             elif result.find('22.04') > -1:
                 return Ubuntu22
+            elif result.find('24.04') > -1:
+                return Ubuntu24
             else:
                 return Ubuntu18
 
@@ -1651,7 +1654,7 @@ CREATE TABLE `websiteFunctions_backupsv2` (`id` integer AUTO_INCREMENT NOT NULL 
             except:
                 pass
 
-            if Upgrade.FindOperatingSytem() == Ubuntu22:
+            if Upgrade.FindOperatingSytem() == Ubuntu22 or Upgrade.FindOperatingSytem() == Ubuntu24:
                 ### If ftp not installed then upgrade will fail so this command should not do exit
 
                 command = "sed -i 's/MYSQLCrypt md5/MYSQLCrypt crypt/g' /etc/pure-ftpd/db/mysql.conf"
@@ -2804,7 +2807,7 @@ CREATE TABLE `websiteFunctions_backupsv2` (`id` integer AUTO_INCREMENT NOT NULL 
                         lscpdSelection = 'lscpd-0.3.1'
                         if os.path.exists(Upgrade.UbuntuPath):
                             result = open(Upgrade.UbuntuPath, 'r').read()
-                            if result.find('22.04') > -1:
+                            if result.find('22.04') > -1 or result.find('24.04') > -1:
                                 lscpdSelection = 'lscpd.0.4.0'
                     else:
                         lscpdSelection = 'lscpd.aarch64'
@@ -2814,7 +2817,7 @@ CREATE TABLE `websiteFunctions_backupsv2` (`id` integer AUTO_INCREMENT NOT NULL 
                     lscpdSelection = 'lscpd-0.3.1'
                     if os.path.exists(Upgrade.UbuntuPath):
                         result = open(Upgrade.UbuntuPath, 'r').read()
-                        if result.find('22.04') > -1:
+                        if result.find('22.04') > -1 or result.find('24.04') > -1:
                             lscpdSelection = 'lscpd.0.4.0'
 
                 command = f'cp -f /usr/local/CyberCP/{lscpdSelection} /usr/local/lscp/bin/{lscpdSelection}'
@@ -3318,7 +3321,7 @@ echo $oConfig->Save() ? 'Done' : 'Error';
 
                 command = 'systemctl restart postfix'
                 Upgrade.executioner(command, 0)
-            elif Upgrade.FindOperatingSytem() == Ubuntu20 or Upgrade.FindOperatingSytem() == Ubuntu22:
+            elif Upgrade.FindOperatingSytem() == Ubuntu20 or Upgrade.FindOperatingSytem() == Ubuntu22 or Upgrade.FindOperatingSytem() == Ubuntu24:
 
                 debPath = '/etc/apt/sources.list.d/dovecot.list'
                 # writeToFile = open(debPath, 'w')
@@ -4367,7 +4370,7 @@ extprocessor proxyApacheBackendSSL {
 
             ##
 
-            if Upgrade.FindOperatingSytem() == Ubuntu22 or Upgrade.FindOperatingSytem() == Ubuntu18 \
+            if Upgrade.FindOperatingSytem() == Ubuntu22 or Upgrade.FindOperatingSytem() == Ubuntu24 or Upgrade.FindOperatingSytem() == Ubuntu18 \
                     or Upgrade.FindOperatingSytem() == Ubuntu20:
 
                 print("Install Quota on Ubuntu")
