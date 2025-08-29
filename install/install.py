@@ -2591,6 +2591,19 @@ vmail
         
         # Start Pure-FTPd if it was installed
         if os.path.exists('/home/cyberpanel/pureftpd'):
+            # Configure Pure-FTPd for Ubuntu 24.04 (SHA512 password hashing compatibility)
+            if self.distro == ubuntu:
+                import install_utils
+                try:
+                    release = install_utils.get_Ubuntu_release(use_print=False, exit_on_error=False)
+                    if release and release >= 24.04:
+                        preFlightsChecks.stdOut("Configuring Pure-FTPd for Ubuntu 24.04...")
+                        # Change MYSQLCrypt from md5 to crypt for SHA512 compatibility
+                        command = "sed -i 's/MYSQLCrypt md5/MYSQLCrypt crypt/g' /etc/pure-ftpd/db/mysql.conf"
+                        preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
+                except:
+                    pass  # If version detection fails, continue without configuration change
+
             preFlightsChecks.stdOut("Starting Pure-FTPd service...")
             ftpService = self.pureFTPDServiceName(self.distro)
             command = f'systemctl start {ftpService}'
