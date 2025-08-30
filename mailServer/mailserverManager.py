@@ -1546,7 +1546,34 @@ milter_default_action = accept
         command = "chown -R root:root /usr/local/lscp"
         ProcessUtilities.executioner(command)
 
-        command = "chown -R lscpd:lscpd /usr/local/lscp/cyberpanel/snappymail/data"
+        # Ensure SnappyMail directories exist before setting permissions
+        command = "mkdir -p /usr/local/lscp/cyberpanel/snappymail/data/_data_/_default_/configs/"
+        ProcessUtilities.executioner(command)
+
+        command = "mkdir -p /usr/local/lscp/cyberpanel/snappymail/data/_data_/_default_/domains/"
+        ProcessUtilities.executioner(command)
+
+        command = "mkdir -p /usr/local/lscp/cyberpanel/snappymail/data/_data_/_default_/storage/"
+        ProcessUtilities.executioner(command)
+
+        command = "mkdir -p /usr/local/lscp/cyberpanel/snappymail/data/_data_/_default_/temp/"
+        ProcessUtilities.executioner(command)
+
+        command = "mkdir -p /usr/local/lscp/cyberpanel/snappymail/data/_data_/_default_/cache/"
+        ProcessUtilities.executioner(command)
+
+        command = "chown -R lscpd:lscpd /usr/local/lscp/cyberpanel/snappymail/"
+        ProcessUtilities.executioner(command)
+
+        # Set proper permissions for data directories
+        command = "chmod -R 755 /usr/local/lscp/cyberpanel/snappymail/data/"
+        ProcessUtilities.executioner(command)
+
+        # Ensure temp and cache directories are writable
+        command = "chmod -R 775 /usr/local/lscp/cyberpanel/snappymail/data/_data_/_default_/temp/"
+        ProcessUtilities.executioner(command)
+
+        command = "chmod -R 775 /usr/local/lscp/cyberpanel/snappymail/data/_data_/_default_/cache/"
         ProcessUtilities.executioner(command)
 
         command = "chmod 700 /usr/local/CyberCP/cli/cyberPanel.py"

@@ -1353,6 +1353,34 @@ if [[ "$Server_OS_Version" = "9" ]] || [[ "$Server_OS_Version" = "18" ]] || [[ "
     # Check_Return
     :
 fi
+
+# Fix SnappyMail directory permissions for Ubuntu 24.04 and other systems
+echo -e "[$(date +"%Y-%m-%d %H:%M:%S")] Checking SnappyMail directories..." | tee -a /var/log/cyberpanel_upgrade_debug.log
+
+# Create SnappyMail data directories if they don't exist
+mkdir -p /usr/local/lscp/cyberpanel/snappymail/data/_data_/_default_/configs/
+mkdir -p /usr/local/lscp/cyberpanel/snappymail/data/_data_/_default_/domains/
+mkdir -p /usr/local/lscp/cyberpanel/snappymail/data/_data_/_default_/storage/
+mkdir -p /usr/local/lscp/cyberpanel/snappymail/data/_data_/_default_/temp/
+mkdir -p /usr/local/lscp/cyberpanel/snappymail/data/_data_/_default_/cache/
+
+# Ensure proper ownership for SnappyMail data directories
+if id -u lscpd >/dev/null 2>&1; then
+    chown -R lscpd:lscpd /usr/local/lscp/cyberpanel/snappymail/
+    echo -e "[$(date +"%Y-%m-%d %H:%M:%S")] Set SnappyMail ownership to lscpd:lscpd" | tee -a /var/log/cyberpanel_upgrade_debug.log
+else
+    echo -e "[$(date +"%Y-%m-%d %H:%M:%S")] WARNING: lscpd user not found, skipping ownership change" | tee -a /var/log/cyberpanel_upgrade_debug.log
+fi
+
+# Set proper permissions for SnappyMail data directories
+chmod -R 755 /usr/local/lscp/cyberpanel/snappymail/data/
+echo -e "[$(date +"%Y-%m-%d %H:%M:%S")] Set SnappyMail data directory permissions to 755" | tee -a /var/log/cyberpanel_upgrade_debug.log
+
+# Ensure SnappyMail temp and cache directories are writable
+chmod -R 775 /usr/local/lscp/cyberpanel/snappymail/data/_data_/_default_/temp/
+chmod -R 775 /usr/local/lscp/cyberpanel/snappymail/data/_data_/_default_/cache/
+echo -e "[$(date +"%Y-%m-%d %H:%M:%S")] Set SnappyMail temp/cache permissions to 775" | tee -a /var/log/cyberpanel_upgrade_debug.log
+
 systemctl restart lscpd
 
 }

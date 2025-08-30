@@ -796,7 +796,7 @@ password="%s"
         command = 'chmod 640 /usr/local/lscp/cyberpanel/logs/access.log'
         preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
 
-        command = 'mkdir -p/usr/local/lscp/cyberpanel/snappymail/data/_data_/_default_/configs/'
+        command = 'mkdir -p /usr/local/lscp/cyberpanel/snappymail/data/_data_/_default_/configs/'
 
         snappymailinipath = '/usr/local/lscp/cyberpanel/snappymail/data/_data_/_default_/configs/application.ini'
 
@@ -1404,6 +1404,30 @@ $cfg['Servers'][$i]['LogoutURL'] = 'phpmyadminsignin.php?logout';
             preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
 
             ######
+
+            # Create SnappyMail data directories with proper structure
+            command = "mkdir -p /usr/local/lscp/cyberpanel/snappymail/data/_data_/_default_/configs/"
+            preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
+
+            command = "mkdir -p /usr/local/lscp/cyberpanel/snappymail/data/_data_/_default_/domains/"
+            preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
+
+            command = "mkdir -p /usr/local/lscp/cyberpanel/snappymail/data/_data_/_default_/storage/"
+            preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
+
+            command = "mkdir -p /usr/local/lscp/cyberpanel/snappymail/data/_data_/_default_/temp/"
+            preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
+
+            command = "mkdir -p /usr/local/lscp/cyberpanel/snappymail/data/_data_/_default_/cache/"
+            preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
+
+            # Set proper ownership for SnappyMail data directories
+            command = "chown -R lscpd:lscpd /usr/local/lscp/cyberpanel/snappymail/"
+            preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
+
+            # Set proper permissions for SnappyMail data directories
+            command = "chmod -R 755 /usr/local/lscp/cyberpanel/snappymail/data/"
+            preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
 
             command = "mkdir -p /usr/local/lscp/cyberpanel/rainloop/data"
             preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
