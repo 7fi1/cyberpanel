@@ -415,7 +415,7 @@ do
     log_error "Command failed after 50 retries: $1"
     exit 2
   else
-    $1  && break || {
+    eval "$1"  && break || {
       echo -e "\n$1 has failed for $i times\nWait and try again...\n"
       log_warning "Command failed, retry $i/50: $1"
       # Exponential backoff: 1s, 2s, 4s, 8s, then cap at 10s

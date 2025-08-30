@@ -303,7 +303,7 @@ Retry_Command() {
 # shellcheck disable=SC2034
 for i in {1..50};
 do
-  $1  && break || echo -e "\n$1 has failed for $i times\nWait for 3 seconds and try again...\n"; sleep 3;
+  eval "$1"  && break || echo -e "\n$1 has failed for $i times\nWait for 3 seconds and try again...\n"; sleep 3;
 done
 }
 
