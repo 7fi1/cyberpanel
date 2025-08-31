@@ -796,7 +796,36 @@ password="%s"
         command = 'chmod 640 /usr/local/lscp/cyberpanel/logs/access.log'
         preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
 
+        # Create complete SnappyMail directory structure early in installation
         command = 'mkdir -p /usr/local/lscp/cyberpanel/snappymail/data/_data_/_default_/configs/'
+        preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
+
+        command = 'mkdir -p /usr/local/lscp/cyberpanel/snappymail/data/_data_/_default_/domains/'
+        preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
+
+        command = 'mkdir -p /usr/local/lscp/cyberpanel/snappymail/data/_data_/_default_/storage/'
+        preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
+
+        command = 'mkdir -p /usr/local/lscp/cyberpanel/snappymail/data/_data_/_default_/temp/'
+        preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
+
+        command = 'mkdir -p /usr/local/lscp/cyberpanel/snappymail/data/_data_/_default_/cache/'
+        preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
+
+        # Set proper ownership early
+        command = "chown -R lscpd:lscpd /usr/local/lscp/cyberpanel/snappymail/"
+        preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
+
+        # Set proper permissions early
+        command = "chmod -R 755 /usr/local/lscp/cyberpanel/snappymail/data/"
+        preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
+
+        # Ensure temp and cache directories are writable
+        command = "chmod -R 775 /usr/local/lscp/cyberpanel/snappymail/data/_data_/_default_/temp/"
+        preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
+
+        command = "chmod -R 775 /usr/local/lscp/cyberpanel/snappymail/data/_data_/_default_/cache/"
+        preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
 
         snappymailinipath = '/usr/local/lscp/cyberpanel/snappymail/data/_data_/_default_/configs/application.ini'
 
