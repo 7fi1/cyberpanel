@@ -1378,9 +1378,10 @@ echo -e "[$(date +"%Y-%m-%d %H:%M:%S")] Set SnappyMail data directory permission
 
 # Ensure web server users are in the lscpd group for access
 usermod -a -G lscpd nobody 2>/dev/null || true
-usermod -a -G lscpd www-data 2>/dev/null || true
-usermod -a -G lscpd systemd-network 2>/dev/null || true
-echo -e "[$(date +"%Y-%m-%d %H:%M:%S")] Added web server users to lscpd group" | tee -a /var/log/cyberpanel_upgrade_debug.log
+
+# Fix SnappyMail public directory ownership (critical fix)
+chown -R lscpd:lscpd /usr/local/CyberCP/public/snappymail/data 2>/dev/null || true
+echo -e "[$(date +"%Y-%m-%d %H:%M:%S")] Added web server users to lscpd group and fixed SnappyMail ownership" | tee -a /var/log/cyberpanel_upgrade_debug.log
 
 systemctl restart lscpd
 

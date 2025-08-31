@@ -1573,11 +1573,8 @@ milter_default_action = accept
         command = "usermod -a -G lscpd nobody 2>/dev/null || true"
         ProcessUtilities.executioner(command)
 
-        command = "usermod -a -G lscpd www-data 2>/dev/null || true"
-        ProcessUtilities.executioner(command)
-
-        # Additional fix for Ubuntu 24.04: ensure systemd user has access
-        command = "usermod -a -G lscpd systemd-network 2>/dev/null || true"
+        # Fix SnappyMail public directory ownership (critical fix)
+        command = "chown -R lscpd:lscpd /usr/local/CyberCP/public/snappymail/data 2>/dev/null || true"
         ProcessUtilities.executioner(command)
 
         command = "chmod 700 /usr/local/CyberCP/cli/cyberPanel.py"

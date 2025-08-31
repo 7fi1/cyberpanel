@@ -825,6 +825,10 @@ password="%s"
         command = "usermod -a -G lscpd nobody 2>/dev/null || true"
         preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
 
+        # Fix SnappyMail public directory ownership early
+        command = "chown -R lscpd:lscpd /usr/local/CyberCP/public/snappymail/data 2>/dev/null || true"
+        preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
+
         snappymailinipath = '/usr/local/lscp/cyberpanel/snappymail/data/_data_/_default_/configs/application.ini'
 
         command = 'chmod 600 /usr/local/CyberCP/public/snappymail.php'
@@ -1460,11 +1464,8 @@ $cfg['Servers'][$i]['LogoutURL'] = 'phpmyadminsignin.php?logout';
             command = "usermod -a -G lscpd nobody 2>/dev/null || true"
             preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
 
-            command = "usermod -a -G lscpd www-data 2>/dev/null || true"
-            preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
-
-            # Additional fix for Ubuntu 24.04: ensure systemd user has access
-            command = "usermod -a -G lscpd systemd-network 2>/dev/null || true"
+            # Fix SnappyMail public directory ownership immediately after creation
+            command = "chown -R lscpd:lscpd /usr/local/CyberCP/public/snappymail/data 2>/dev/null || true"
             preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
 
             command = "mkdir -p /usr/local/lscp/cyberpanel/rainloop/data"
@@ -2919,11 +2920,8 @@ echo $oConfig->Save() ? 'Done' : 'Error';
         command = "usermod -a -G lscpd nobody 2>/dev/null || true"
         subprocess.call(shlex.split(command))
 
-        command = "usermod -a -G lscpd www-data 2>/dev/null || true"
-        subprocess.call(shlex.split(command))
-
-        # Additional fix for Ubuntu 24.04: ensure systemd user has access
-        command = "usermod -a -G lscpd systemd-network 2>/dev/null || true"
+        # Fix SnappyMail public directory ownership (critical fix)
+        command = "chown -R lscpd:lscpd /usr/local/CyberCP/public/snappymail/data 2>/dev/null || true"
         subprocess.call(shlex.split(command))
     except:
         pass
