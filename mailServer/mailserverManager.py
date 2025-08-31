@@ -1565,15 +1565,19 @@ milter_default_action = accept
         command = "chown -R lscpd:lscpd /usr/local/lscp/cyberpanel/snappymail/"
         ProcessUtilities.executioner(command)
 
-        # Set proper permissions for data directories
-        command = "chmod -R 755 /usr/local/lscp/cyberpanel/snappymail/data/"
+        # Set proper permissions for data directories (group writable)
+        command = "chmod -R 775 /usr/local/lscp/cyberpanel/snappymail/data/"
         ProcessUtilities.executioner(command)
 
-        # Ensure temp and cache directories are writable
-        command = "chmod -R 775 /usr/local/lscp/cyberpanel/snappymail/data/_data_/_default_/temp/"
+        # Ensure web server users are in the lscpd group for access
+        command = "usermod -a -G lscpd nobody 2>/dev/null || true"
         ProcessUtilities.executioner(command)
 
-        command = "chmod -R 775 /usr/local/lscp/cyberpanel/snappymail/data/_data_/_default_/cache/"
+        command = "usermod -a -G lscpd www-data 2>/dev/null || true"
+        ProcessUtilities.executioner(command)
+
+        # Additional fix for Ubuntu 24.04: ensure systemd user has access
+        command = "usermod -a -G lscpd systemd-network 2>/dev/null || true"
         ProcessUtilities.executioner(command)
 
         command = "chmod 700 /usr/local/CyberCP/cli/cyberPanel.py"

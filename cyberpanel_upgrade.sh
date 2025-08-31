@@ -1372,14 +1372,15 @@ else
     echo -e "[$(date +"%Y-%m-%d %H:%M:%S")] WARNING: lscpd user not found, skipping ownership change" | tee -a /var/log/cyberpanel_upgrade_debug.log
 fi
 
-# Set proper permissions for SnappyMail data directories
-chmod -R 755 /usr/local/lscp/cyberpanel/snappymail/data/
-echo -e "[$(date +"%Y-%m-%d %H:%M:%S")] Set SnappyMail data directory permissions to 755" | tee -a /var/log/cyberpanel_upgrade_debug.log
+# Set proper permissions for SnappyMail data directories (group writable)
+chmod -R 775 /usr/local/lscp/cyberpanel/snappymail/data/
+echo -e "[$(date +"%Y-%m-%d %H:%M:%S")] Set SnappyMail data directory permissions to 775 (group writable)" | tee -a /var/log/cyberpanel_upgrade_debug.log
 
-# Ensure SnappyMail temp and cache directories are writable
-chmod -R 775 /usr/local/lscp/cyberpanel/snappymail/data/_data_/_default_/temp/
-chmod -R 775 /usr/local/lscp/cyberpanel/snappymail/data/_data_/_default_/cache/
-echo -e "[$(date +"%Y-%m-%d %H:%M:%S")] Set SnappyMail temp/cache permissions to 775" | tee -a /var/log/cyberpanel_upgrade_debug.log
+# Ensure web server users are in the lscpd group for access
+usermod -a -G lscpd nobody 2>/dev/null || true
+usermod -a -G lscpd www-data 2>/dev/null || true
+usermod -a -G lscpd systemd-network 2>/dev/null || true
+echo -e "[$(date +"%Y-%m-%d %H:%M:%S")] Added web server users to lscpd group" | tee -a /var/log/cyberpanel_upgrade_debug.log
 
 systemctl restart lscpd
 

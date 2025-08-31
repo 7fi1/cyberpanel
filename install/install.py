@@ -816,15 +816,13 @@ password="%s"
         command = "chown -R lscpd:lscpd /usr/local/lscp/cyberpanel/snappymail/"
         preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
 
-        # Set proper permissions early
-        command = "chmod -R 755 /usr/local/lscp/cyberpanel/snappymail/data/"
+        # Set proper permissions - make all data directories group writable
+        command = "chmod -R 775 /usr/local/lscp/cyberpanel/snappymail/data/"
         preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
 
-        # Ensure temp and cache directories are writable
-        command = "chmod -R 775 /usr/local/lscp/cyberpanel/snappymail/data/_data_/_default_/temp/"
-        preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
-
-        command = "chmod -R 775 /usr/local/lscp/cyberpanel/snappymail/data/_data_/_default_/cache/"
+        # Ensure the web server user (nobody) can access the directories
+        # Note: lscpd is already added to nobody group earlier in the installation
+        command = "usermod -a -G lscpd nobody 2>/dev/null || true"
         preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
 
         snappymailinipath = '/usr/local/lscp/cyberpanel/snappymail/data/_data_/_default_/configs/application.ini'
@@ -1454,8 +1452,19 @@ $cfg['Servers'][$i]['LogoutURL'] = 'phpmyadminsignin.php?logout';
             command = "chown -R lscpd:lscpd /usr/local/lscp/cyberpanel/snappymail/"
             preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
 
-            # Set proper permissions for SnappyMail data directories
-            command = "chmod -R 755 /usr/local/lscp/cyberpanel/snappymail/data/"
+            # Set proper permissions for SnappyMail data directories (group writable)
+            command = "chmod -R 775 /usr/local/lscp/cyberpanel/snappymail/data/"
+            preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
+
+            # Ensure web server users are in the lscpd group for access
+            command = "usermod -a -G lscpd nobody 2>/dev/null || true"
+            preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
+
+            command = "usermod -a -G lscpd www-data 2>/dev/null || true"
+            preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
+
+            # Additional fix for Ubuntu 24.04: ensure systemd user has access
+            command = "usermod -a -G lscpd systemd-network 2>/dev/null || true"
             preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
 
             command = "mkdir -p /usr/local/lscp/cyberpanel/rainloop/data"
@@ -2900,6 +2909,21 @@ echo $oConfig->Save() ? 'Done' : 'Error';
         subprocess.call(shlex.split(command))
 
         command = "chown -R lscpd:lscpd /usr/local/lscp/cyberpanel/snappymail/data"
+        subprocess.call(shlex.split(command))
+
+        # Ensure all data directories have group write permissions
+        command = "chmod -R 775 /usr/local/lscp/cyberpanel/snappymail/data"
+        subprocess.call(shlex.split(command))
+
+        # Ensure web server users are in the lscpd group
+        command = "usermod -a -G lscpd nobody 2>/dev/null || true"
+        subprocess.call(shlex.split(command))
+
+        command = "usermod -a -G lscpd www-data 2>/dev/null || true"
+        subprocess.call(shlex.split(command))
+
+        # Additional fix for Ubuntu 24.04: ensure systemd user has access
+        command = "usermod -a -G lscpd systemd-network 2>/dev/null || true"
         subprocess.call(shlex.split(command))
     except:
         pass
