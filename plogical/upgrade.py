@@ -2604,6 +2604,20 @@ CREATE TABLE `websiteFunctions_backupsv2` (`id` integer AUTO_INCREMENT NOT NULL 
             '/usr/local/CyberCP/public/phpmyadmin/config.inc.php',
             '/usr/local/CyberCP/rainloop/data/_data_/',
         ]
+
+        # Backup Imunify360 directories and configuration
+        imunify_paths = [
+            '/usr/local/CyberCP/public/imunify',
+            '/usr/local/CyberCP/public/imunifyav',
+            '/etc/sysconfig/imunify360/integration.conf',
+        ]
+
+        for imunify_path in imunify_paths:
+            if os.path.exists(imunify_path):
+                if os.path.isdir(imunify_path):
+                    custom_configs.append(imunify_path)
+                else:
+                    critical_files.append(imunify_path)
         
         backed_up_files = {}
         
@@ -2769,6 +2783,9 @@ CREATE TABLE `websiteFunctions_backupsv2` (`id` integer AUTO_INCREMENT NOT NULL 
             Upgrade.stdOut('Settings file updated with database credentials while preserving new INSTALLED_APPS!')
 
             Upgrade.staticContent()
+
+            # Restore Imunify360 after upgrade
+            Upgrade.restoreImunify360()
 
             return 1, None
 
@@ -4221,6 +4238,66 @@ pm.max_spare_servers = 3
             command = f'chmod 755 {imfExecutePath}'
             Upgrade.executioner(command, command, 0)
 
+    @staticmethod
+    def restoreImunify360():
+        """Restore and reconfigure Imunify360 after upgrade"""
+        try:
+            Upgrade.stdOut("Checking for Imunify360 restoration...")
+
+            # Check if Imunify360 directories were restored
+            imunifyPath = '/usr/local/CyberCP/public/imunify'
+            imunifyAVPath = '/usr/local/CyberCP/public/imunifyav'
+            configPath = '/etc/sysconfig/imunify360/integration.conf'
+
+            restored = False
+
+            # Handle main Imunify360 firewall
+            if os.path.exists(imunifyPath):
+                Upgrade.stdOut("Imunify360 directory found, checking if reinstallation is needed...")
+                # Check if Imunify360 is actually installed on the system
+                if os.path.exists('/usr/bin/imunify360-agent') or os.path.exists('/opt/imunify360'):
+                    Upgrade.stdOut("Imunify360 appears to be installed on system, ensuring proper integration...")
+                    # Reinstall to ensure proper integration
+                    command = "yum reinstall imunify360-firewall-generic -y" if os.path.exists(Upgrade.CentOSPath) else "apt install --reinstall imunify360-firewall-generic -y"
+                    if Upgrade.executioner(command, command, 1):
+                        Upgrade.stdOut("Imunify360 firewall reinstalled successfully")
+                        restored = True
+                    else:
+                        Upgrade.stdOut("Warning: Failed to reinstall Imunify360 firewall")
+                else:
+                    Upgrade.stdOut("Imunify360 not found on system, skipping firewall reinstallation")
+
+            # Handle ImunifyAV
+            if os.path.exists(imunifyAVPath):
+                Upgrade.stdOut("ImunifyAV directory found, reconfiguring...")
+                if os.path.exists(configPath):
+                    execPath = "/usr/local/CyberCP/bin/python /usr/local/CyberCP/CLManager/CageFS.py"
+                    command = execPath + " --function submitinstallImunifyAV"
+                    if Upgrade.executioner(command, command, 1):
+                        Upgrade.stdOut("ImunifyAV reconfigured successfully")
+                        restored = True
+
+                    # Ensure execute permissions
+                    executePath = '/usr/local/CyberCP/public/imunifyav/bin/execute.py'
+                    if os.path.exists(executePath):
+                        command = f'chmod +x {executePath}'
+                        Upgrade.executioner(command, command, 1)
+
+            # Handle main Imunify execute permissions
+            imfExecutePath = '/usr/local/CyberCP/public/imunify/bin/execute.py'
+            if os.path.exists(imfExecutePath):
+                command = f'chmod 755 {imfExecutePath}'
+                Upgrade.executioner(command, command, 0)
+                Upgrade.stdOut("Imunify execute permissions restored")
+                restored = True
+
+            if restored:
+                Upgrade.stdOut("Imunify360 restoration completed successfully")
+            else:
+                Upgrade.stdOut("No Imunify360 components found to restore")
+
+        except Exception as e:
+            Upgrade.stdOut(f"Error during Imunify360 restoration: {str(e)}")
 
         Upgrade.installDNS_CyberPanelACMEFile()
 
