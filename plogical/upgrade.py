@@ -2787,6 +2787,9 @@ CREATE TABLE `websiteFunctions_backupsv2` (`id` integer AUTO_INCREMENT NOT NULL 
             # Restore Imunify360 after upgrade
             Upgrade.restoreImunify360()
 
+            # FINAL STEP: Ensure Imunify360 execute permissions are set
+            Upgrade.finalImunifyPermissions()
+
             return 1, None
 
         except BaseException as msg:
@@ -4242,12 +4245,16 @@ pm.max_spare_servers = 3
     def restoreImunify360():
         """Restore and reconfigure Imunify360 after upgrade"""
         try:
+            Upgrade.stdOut("=== STARTING IMUNIFY360 RESTORATION ===")
             Upgrade.stdOut("Checking for Imunify360 restoration...")
 
             # Check if Imunify360 directories were restored
             imunifyPath = '/usr/local/CyberCP/public/imunify'
             imunifyAVPath = '/usr/local/CyberCP/public/imunifyav'
             configPath = '/etc/sysconfig/imunify360/integration.conf'
+
+            Upgrade.stdOut(f"Checking if Imunify360 path exists: {imunifyPath}")
+            Upgrade.stdOut(f"Path exists: {os.path.exists(imunifyPath)}")
 
             restored = False
 
@@ -4305,37 +4312,49 @@ pm.max_spare_servers = 3
                     else:
                         Upgrade.stdOut("No execute.py files found in Imunify360 directory - installation may be incomplete")
                 else:
-                    # Bin directory exists, try the community solution
+                    # Bin directory exists, try the direct approach
                     Upgrade.stdOut(f"Bin directory exists at {binDir}, attempting to set execute permissions")
-                    command = f'cd {imunifyPath} && chmod +x ./bin/execute.py 2>/dev/null || true'
-                    Upgrade.stdOut(f"Executing command: {command}")
-                    execResult = Upgrade.executioner(command, 'Setting execute permissions on Imunify360 execute.py using community solution', 0)
-                    Upgrade.stdOut(f"Command execution result: {execResult}")
+                    Upgrade.stdOut(f"Checking if execute.py exists: {executeFile}")
+                    Upgrade.stdOut(f"File exists: {os.path.exists(executeFile)}")
 
-                    if execResult == True:  # Upgrade.executioner returns True on success
-                        Upgrade.stdOut("Imunify360 execute permissions set successfully using community method")
-                        restored = True
-                    else:
-                        Upgrade.stdOut("Warning: Community method failed, trying alternative approach")
+                    # Try direct chmod command first
+                    if os.path.exists(executeFile):
+                        Upgrade.stdOut("File exists, trying direct chmod command")
+                        command = f'chmod +x {executeFile}'
+                        Upgrade.stdOut(f"Executing direct command: {command}")
+                        directResult = Upgrade.executioner(command, f'Direct chmod on {executeFile}', 0)
+                        Upgrade.stdOut(f"Direct command result: {directResult}")
 
-                        # Alternative: use absolute path if file exists
-                        if os.path.exists(executeFile):
-                            command = f'chmod +x {executeFile}'
-                            Upgrade.stdOut(f"Trying alternative command: {command}")
-                            altResult = Upgrade.executioner(command, f'Setting execute permissions using absolute path: {executeFile}', 0)
-                            Upgrade.stdOut(f"Alternative command result: {altResult}")
-                            if altResult == True:
-                                restored = True
-                        else:
-                            Upgrade.stdOut(f"execute.py file not found at {executeFile}")
-
-                        # Also set permissions on any other execute.py files found
-                        command = f'find {imunifyPath} -name "execute.py" -type f -exec chmod +x {{}} \\; 2>/dev/null || true'
-                        Upgrade.stdOut(f"Trying find command: {command}")
-                        findResult = Upgrade.executioner(command, 'Setting execute permissions on all execute.py files', 0)
-                        Upgrade.stdOut(f"Find command result: {findResult}")
-                        if findResult == True:
+                        if directResult:
+                            Upgrade.stdOut("SUCCESS: Direct chmod worked!")
                             restored = True
+                        else:
+                            Upgrade.stdOut("FAILED: Direct chmod failed, trying alternative")
+
+                            # Try the community method as fallback
+                            command = f'cd {imunifyPath} && chmod +x ./bin/execute.py 2>/dev/null || true'
+                            Upgrade.stdOut(f"Trying community method: {command}")
+                            communityResult = Upgrade.executioner(command, 'Community method chmod', 0)
+                            Upgrade.stdOut(f"Community method result: {communityResult}")
+
+                            if communityResult:
+                                Upgrade.stdOut("SUCCESS: Community method worked!")
+                                restored = True
+                            else:
+                                Upgrade.stdOut("FAILED: Both methods failed")
+                    else:
+                        Upgrade.stdOut(f"ERROR: execute.py file not found at {executeFile}")
+
+                    # Try find method as final fallback
+                    Upgrade.stdOut("Trying find method as final fallback")
+                    command = f'find {imunifyPath} -name "execute.py" -type f -exec chmod +x {{}} \\; 2>/dev/null || true'
+                    Upgrade.stdOut(f"Find command: {command}")
+                    findResult = Upgrade.executioner(command, 'Find method chmod', 0)
+                    Upgrade.stdOut(f"Find result: {findResult}")
+
+                    if findResult and not restored:
+                        Upgrade.stdOut("SUCCESS: Find method worked!")
+                        restored = True
 
                 restored = True  # Mark as restored even if files are missing, to indicate we processed it
 
@@ -4346,6 +4365,43 @@ pm.max_spare_servers = 3
 
         except Exception as e:
             Upgrade.stdOut(f"Error during Imunify360 restoration: {str(e)}")
+
+    @staticmethod
+    def finalImunifyPermissions():
+        """FINAL STEP: Ensure Imunify360 execute permissions are set after everything else is complete"""
+        try:
+            Upgrade.stdOut("=== FINAL STEP: Setting Imunify360 Execute Permissions ===")
+
+            executeFile = '/usr/local/CyberCP/public/imunify/bin/execute.py'
+
+            if os.path.exists(executeFile):
+                Upgrade.stdOut(f"Setting execute permissions on: {executeFile}")
+                # Use the simplest, most reliable command
+                command = f'chmod +x {executeFile}'
+                result = Upgrade.executioner(command, f'Final chmod +x on {executeFile}', 0)
+
+                if result:
+                    Upgrade.stdOut("✅ SUCCESS: Imunify360 execute permissions set successfully!")
+                else:
+                    Upgrade.stdOut("❌ FAILED: Could not set Imunify360 execute permissions")
+
+                # Verify the permissions were set
+                try:
+                    import stat
+                    file_stat = os.stat(executeFile)
+                    if file_stat.st_mode & stat.S_IXUSR:
+                        Upgrade.stdOut("✅ VERIFIED: Execute permission confirmed on Imunify360 file")
+                    else:
+                        Upgrade.stdOut("❌ VERIFICATION FAILED: Execute permission not set")
+                except Exception as verify_error:
+                    Upgrade.stdOut(f"⚠️  Could not verify permissions: {str(verify_error)}")
+            else:
+                Upgrade.stdOut(f"⚠️  Imunify360 execute file not found: {executeFile}")
+
+            Upgrade.stdOut("=== FINAL STEP COMPLETE ===")
+
+        except Exception as e:
+            Upgrade.stdOut(f"❌ ERROR in final permission setting: {str(e)}")
 
         Upgrade.installDNS_CyberPanelACMEFile()
 
