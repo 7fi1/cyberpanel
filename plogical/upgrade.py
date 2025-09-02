@@ -4283,20 +4283,24 @@ pm.max_spare_servers = 3
                         command = f'chmod +x {executePath}'
                         Upgrade.executioner(command, command, 1)
 
-            # Handle main Imunify execute permissions - set recursively for all execute.py files
+            # Handle main Imunify execute permissions - set recursively for all Python files
             if os.path.exists(imunifyPath):
-                # Find and set permissions for all execute.py files in the imunify directory
-                command = f'find {imunifyPath} -name "execute.py" -type f -exec chmod 755 {{}} \\;'
-                if Upgrade.executioner(command, 'Setting execute permissions for all Imunify360 execute.py files', 0):
-                    Upgrade.stdOut("Imunify360 execute permissions restored for all files")
-                    restored = True
-                else:
-                    Upgrade.stdOut("Warning: Failed to set execute permissions for Imunify360 files")
-                    # Fallback: try individual files
-                    imfExecutePath = '/usr/local/CyberCP/public/imunify/bin/execute.py'
-                    if os.path.exists(imfExecutePath):
-                        command = f'chmod 755 {imfExecutePath}'
-                        Upgrade.executioner(command, command, 0)
+                # Set execute permissions for ALL Python files in the imunify directory
+                command = f'chmod -R 755 {imunifyPath}/*.py {imunifyPath}/*/*.py {imunifyPath}/*/*/*.py 2>/dev/null || true'
+                Upgrade.executioner(command, 'Setting execute permissions for Imunify360 Python files', 0)
+
+                # Also use find as a backup to catch any files in deeper subdirectories
+                command = f'find {imunifyPath} -name "*.py" -type f -exec chmod 755 {{}} \\; 2>/dev/null || true'
+                Upgrade.executioner(command, 'Using find to set permissions on all Python files', 0)
+
+                # Specifically handle the known problematic path
+                specificPath = '/usr/local/CyberCP/public/imunify/bin/execute.py'
+                if os.path.exists(specificPath):
+                    command = f'chmod 755 {specificPath}'
+                    Upgrade.executioner(command, f'Setting permissions on specific file: {specificPath}', 0)
+
+                Upgrade.stdOut("Imunify360 execute permissions restored for all Python files")
+                restored = True
 
             if restored:
                 Upgrade.stdOut("Imunify360 restoration completed successfully")
