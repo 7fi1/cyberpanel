@@ -4292,10 +4292,13 @@ pm.max_spare_servers = 3
                 if not os.path.exists(binDir):
                     Upgrade.stdOut(f"Warning: Imunify360 bin directory missing at {binDir}")
                     # Try to find if execute.py exists elsewhere
-                    command = f'find {imunifyPath} -name "execute.py" -type f 2>/dev/null'
-                    result = subprocess.getstatusoutput(command)
-                    if result[0] == 0 and result[1].strip():
-                        Upgrade.stdOut(f"Found execute.py files: {result[1]}")
+                    findCommand = f'find {imunifyPath} -name "execute.py" -type f 2>/dev/null'
+                    Upgrade.stdOut(f"Searching for execute.py files with command: {findCommand}")
+                    findResult = subprocess.getstatusoutput(findCommand)
+                    Upgrade.stdOut(f"Find command result: exit_code={findResult[0]}, output='{findResult[1]}'")
+
+                    if findResult[0] == 0 and findResult[1].strip():
+                        Upgrade.stdOut(f"Found execute.py files: {findResult[1]}")
                         # Set permissions on all found execute.py files
                         command = f'find {imunifyPath} -name "execute.py" -type f -exec chmod +x {{}} \\; 2>/dev/null || true'
                         Upgrade.executioner(command, 'Setting execute permissions on found execute.py files', 0)
@@ -4303,8 +4306,13 @@ pm.max_spare_servers = 3
                         Upgrade.stdOut("No execute.py files found in Imunify360 directory - installation may be incomplete")
                 else:
                     # Bin directory exists, try the community solution
+                    Upgrade.stdOut(f"Bin directory exists at {binDir}, attempting to set execute permissions")
                     command = f'cd {imunifyPath} && chmod +x ./bin/execute.py 2>/dev/null || true'
-                    if Upgrade.executioner(command, 'Setting execute permissions on Imunify360 execute.py using community solution', 0):
+                    Upgrade.stdOut(f"Executing command: {command}")
+                    execResult = Upgrade.executioner(command, 'Setting execute permissions on Imunify360 execute.py using community solution', 0)
+                    Upgrade.stdOut(f"Command execution result: {execResult}")
+
+                    if execResult == True:  # Upgrade.executioner returns True on success
                         Upgrade.stdOut("Imunify360 execute permissions set successfully using community method")
                         restored = True
                     else:
@@ -4313,14 +4321,21 @@ pm.max_spare_servers = 3
                         # Alternative: use absolute path if file exists
                         if os.path.exists(executeFile):
                             command = f'chmod +x {executeFile}'
-                            Upgrade.executioner(command, f'Setting execute permissions using absolute path: {executeFile}', 0)
-                            restored = True
+                            Upgrade.stdOut(f"Trying alternative command: {command}")
+                            altResult = Upgrade.executioner(command, f'Setting execute permissions using absolute path: {executeFile}', 0)
+                            Upgrade.stdOut(f"Alternative command result: {altResult}")
+                            if altResult == True:
+                                restored = True
                         else:
                             Upgrade.stdOut(f"execute.py file not found at {executeFile}")
 
                         # Also set permissions on any other execute.py files found
                         command = f'find {imunifyPath} -name "execute.py" -type f -exec chmod +x {{}} \\; 2>/dev/null || true'
-                        Upgrade.executioner(command, 'Setting execute permissions on all execute.py files', 0)
+                        Upgrade.stdOut(f"Trying find command: {command}")
+                        findResult = Upgrade.executioner(command, 'Setting execute permissions on all execute.py files', 0)
+                        Upgrade.stdOut(f"Find command result: {findResult}")
+                        if findResult == True:
+                            restored = True
 
                 restored = True  # Mark as restored even if files are missing, to indicate we processed it
 
