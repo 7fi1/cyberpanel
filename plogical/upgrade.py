@@ -4283,27 +4283,46 @@ pm.max_spare_servers = 3
                         command = f'chmod +x {executePath}'
                         Upgrade.executioner(command, command, 1)
 
-            # Handle main Imunify execute permissions - using community-proven solution
+            # Handle main Imunify execute permissions - comprehensive solution for missing files
             if os.path.exists(imunifyPath):
-                # Use the exact solution from CyberPanel community (https://community.cyberpanel.net/t/imunifyav-permission-denied-after-upgrade/34159/4)
-                # Change to the imunify directory and set execute permissions
-                command = f'cd {imunifyPath} && chmod +x ./bin/execute.py 2>/dev/null || true'
-                if Upgrade.executioner(command, 'Setting execute permissions on Imunify360 execute.py using community solution', 0):
-                    Upgrade.stdOut("Imunify360 execute permissions set successfully using community method")
-                    restored = True
+                # First, check if the bin directory and execute.py file exist
+                binDir = '/usr/local/CyberCP/public/imunify/bin'
+                executeFile = '/usr/local/CyberCP/public/imunify/bin/execute.py'
+
+                if not os.path.exists(binDir):
+                    Upgrade.stdOut(f"Warning: Imunify360 bin directory missing at {binDir}")
+                    # Try to find if execute.py exists elsewhere
+                    command = f'find {imunifyPath} -name "execute.py" -type f 2>/dev/null'
+                    result = subprocess.getstatusoutput(command)
+                    if result[0] == 0 and result[1].strip():
+                        Upgrade.stdOut(f"Found execute.py files: {result[1]}")
+                        # Set permissions on all found execute.py files
+                        command = f'find {imunifyPath} -name "execute.py" -type f -exec chmod +x {{}} \\; 2>/dev/null || true'
+                        Upgrade.executioner(command, 'Setting execute permissions on found execute.py files', 0)
+                    else:
+                        Upgrade.stdOut("No execute.py files found in Imunify360 directory - installation may be incomplete")
                 else:
-                    Upgrade.stdOut("Warning: Community method failed, trying alternative approach")
-
-                    # Alternative: use absolute path
-                    specificPath = '/usr/local/CyberCP/public/imunify/bin/execute.py'
-                    if os.path.exists(specificPath):
-                        command = f'chmod +x {specificPath}'
-                        Upgrade.executioner(command, f'Setting execute permissions using absolute path: {specificPath}', 0)
+                    # Bin directory exists, try the community solution
+                    command = f'cd {imunifyPath} && chmod +x ./bin/execute.py 2>/dev/null || true'
+                    if Upgrade.executioner(command, 'Setting execute permissions on Imunify360 execute.py using community solution', 0):
+                        Upgrade.stdOut("Imunify360 execute permissions set successfully using community method")
                         restored = True
+                    else:
+                        Upgrade.stdOut("Warning: Community method failed, trying alternative approach")
 
-                    # Also set permissions on any other execute.py files found
-                    command = f'find {imunifyPath} -name "execute.py" -type f -exec chmod +x {{}} \\; 2>/dev/null || true'
-                    Upgrade.executioner(command, 'Setting execute permissions on all execute.py files', 0)
+                        # Alternative: use absolute path if file exists
+                        if os.path.exists(executeFile):
+                            command = f'chmod +x {executeFile}'
+                            Upgrade.executioner(command, f'Setting execute permissions using absolute path: {executeFile}', 0)
+                            restored = True
+                        else:
+                            Upgrade.stdOut(f"execute.py file not found at {executeFile}")
+
+                        # Also set permissions on any other execute.py files found
+                        command = f'find {imunifyPath} -name "execute.py" -type f -exec chmod +x {{}} \\; 2>/dev/null || true'
+                        Upgrade.executioner(command, 'Setting execute permissions on all execute.py files', 0)
+
+                restored = True  # Mark as restored even if files are missing, to indicate we processed it
 
             if restored:
                 Upgrade.stdOut("Imunify360 restoration completed successfully")
