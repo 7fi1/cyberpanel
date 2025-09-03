@@ -2604,7 +2604,7 @@ CREATE TABLE `websiteFunctions_backupsv2` (`id` integer AUTO_INCREMENT NOT NULL 
             '/usr/local/CyberCP/public/phpmyadmin/config.inc.php',
             '/usr/local/CyberCP/rainloop/data/_data_/',
         ]
-
+        
         # Backup Imunify360 directories and configuration
         imunify_paths = [
             '/usr/local/CyberCP/public/imunify',
@@ -4218,28 +4218,76 @@ pm.max_spare_servers = 3
         Upgrade.FixRSPAMDConfig()
         Upgrade.CreateMissingPoolsforFPM()
 
-        # ## Move static files
-        #
-        # imunifyPath = '/usr/local/CyberCP/public/imunify'
-        #
-        # if os.path.exists(imunifyPath):
-        #     command = "yum reinstall imunify360-firewall-generic -y"
-        #     Upgrade.executioner(command, command, 1)
-        #
-        imunifyAVPath = '/etc/sysconfig/imunify360/integration.conf'
+                # ## Handle ImunifyAV and Imunify360 separately
 
-        if os.path.exists(imunifyAVPath):
-            execPath = "/usr/local/CyberCP/bin/python /usr/local/CyberCP/CLManager/CageFS.py"
-            command = execPath + " --function submitinstallImunifyAV"
-            Upgrade.executioner(command, command, 1)
+        # Both products use the same config file, so we need to read its content to determine which product
+        integrationConfig = '/etc/sysconfig/imunify360/integration.conf'
 
-            command = 'chmod +x /usr/local/CyberCP/public/imunifyav/bin/execute.py'
-            Upgrade.executioner(command, command, 1)
+        if os.path.exists(integrationConfig):
+            try:
+                with open(integrationConfig, 'r') as f:
+                    configContent = f.read()
 
-        imfExecutePath = '/usr/local/CyberCP/public/imunify/bin/execute.py'
-        if os.path.exists(imfExecutePath):
-            command = f'chmod 755 {imfExecutePath}'
-            Upgrade.executioner(command, command, 0)
+                # Check which product the config file is for by looking at the ui_path
+                if 'ui_path =/usr/local/CyberCP/public/imunifyav' in configContent:
+                    # This is ImunifyAV configuration
+                    Upgrade.stdOut("Detected ImunifyAV configuration, reconfiguring...")
+                    imunifyAVPath = '/usr/local/CyberCP/public/imunifyav'
+
+                    if os.path.exists(imunifyAVPath):
+                        execPath = "/usr/local/CyberCP/bin/python /usr/local/CyberCP/CLManager/CageFS.py"
+                        command = execPath + " --function submitinstallImunifyAV"
+                        Upgrade.executioner(command, command, 1)
+
+                        # Set permissions on ImunifyAV execute file
+                        imunifyAVExecute = '/usr/local/CyberCP/public/imunifyav/bin/execute.py'
+                        if os.path.exists(imunifyAVExecute):
+                            command = 'chmod +x ' + imunifyAVExecute
+                            Upgrade.executioner(command, command, 1)
+                            Upgrade.stdOut("ImunifyAV execute permissions set")
+                        else:
+                            Upgrade.stdOut("ImunifyAV execute.py file not found")
+                    else:
+                        Upgrade.stdOut("ImunifyAV directory not found despite config file existing")
+
+                elif 'ui_path =/usr/local/CyberCP/public/imunify' in configContent:
+                    # This is Imunify360 configuration
+                    Upgrade.stdOut("Detected Imunify360 configuration, checking system installation...")
+                    imunify360Path = '/usr/local/CyberCP/public/imunify'
+
+                    if os.path.exists(imunify360Path):
+                        # Check if Imunify360 is actually installed on the system
+                        imunify360Installed = False
+                        if os.path.exists('/usr/bin/imunify360-agent') or os.path.exists('/opt/imunify360'):
+                            imunify360Installed = True
+                            Upgrade.stdOut("Imunify360 system installation detected")
+
+                        if imunify360Installed:
+                            Upgrade.stdOut("Imunify360 directory found and system is installed, ensuring proper integration...")
+                            # Reinstall Imunify360 firewall to ensure integration
+                            command = "yum reinstall imunify360-firewall-generic -y" if os.path.exists(Upgrade.CentOSPath) else "apt install --reinstall imunify360-firewall-generic -y"
+                            Upgrade.executioner(command, command, 1)
+                        else:
+                            Upgrade.stdOut("Imunify360 directory found but system not installed - manual installation may be needed")
+
+                        # Set permissions on Imunify360 execute file
+                        imunify360Execute = '/usr/local/CyberCP/public/imunify/bin/execute.py'
+                        if os.path.exists(imunify360Execute):
+                            command = f'chmod +x {imunify360Execute}'
+                            Upgrade.executioner(command, f'Setting execute permissions on Imunify360 file', 0)
+                            Upgrade.stdOut("Imunify360 execute permissions set")
+                        else:
+                            Upgrade.stdOut("Imunify360 execute.py file not found")
+                    else:
+                        Upgrade.stdOut("Imunify360 directory not found despite config file existing")
+
+                else:
+                    Upgrade.stdOut(f"Unknown product in integration config file. Config content: {configContent[:200]}...")
+
+            except Exception as e:
+                Upgrade.stdOut(f"Error reading integration config file: {str(e)}")
+        else:
+            Upgrade.stdOut("No Imunify integration config file found")
 
     @staticmethod
     def restoreImunify360():
