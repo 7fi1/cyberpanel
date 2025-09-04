@@ -14,7 +14,7 @@ Web Hosting Control Panel powered by OpenLiteSpeed, designed to simplify hosting
 - 📧 **Email Support** (SnappyMail).
 - 🕌 **File Manager** for quick file access.
 - 🌐 **PHP Management** made easy.
-- 🔒 **Firewall** (âœ… FirewallD & ConfigServer Firewall Integration).
+- 🔒 **Firewall** (FirewallD & ConfigServer Firewall Integration).
 - 📀 **One-click Backups and Restores**.
 - 🐳 **Docker Management** with command execution capabilities.
 - 🤖 **AI-Powered Security Scanner** for enhanced protection.
