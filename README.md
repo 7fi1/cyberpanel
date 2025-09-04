@@ -14,132 +14,87 @@ Web Hosting Control Panel powered by OpenLiteSpeed, designed to simplify hosting
 - 📧 **Email Support** (SnappyMail).
 - 🕌 **File Manager** for quick file access.
 - 🌐 **PHP Management** made easy.
-- 🔒 **Firewall** (✅ FirewallD & ConfigServer Firewall Integration).
+- 🔒 **Firewall** (âœ… FirewallD & ConfigServer Firewall Integration).
 - 📀 **One-click Backups and Restores**.
+- 🐳 **Docker Management** with command execution capabilities.
+- 🤖 **AI-Powered Security Scanner** for enhanced protection.
+
+---
+
+## 📖 **Documentation & Guides**
+
+CyberPanel comes with comprehensive documentation and step-by-step guides:
+
+- 📚 **[Complete Guides Index](guides/INDEX.md)** - All available documentation in one place
+- 🐳 **[Docker Command Execution](guides/Docker_Command_Execution_Guide.md)** - Execute commands in Docker containers
+- 🤖 **[AI Scanner Setup](guides/AIScannerDocs.md)** - Configure AI-powered security scanning
+- 📧 **[Mautic Installation](guides/MAUTIC_INSTALLATION_GUIDE.md)** - Email marketing platform setup
 
 ---
 
 ## 🔢 Supported PHP Versions
 
-CyberPanel supports PHP versions based on your operating system:
+CyberPanel supports a wide range of PHP versions across different operating systems:
 
-### ☑️ **PHP 8.0 and Above**
-- Fully supported on modern systems such as Ubuntu 22.04 and AlmaLinux 9.x and higher.
+### ☑️ **Currently Supported PHP Versions**
 
-### ☑️ **PHP 7.4 and Below**
-- Compatible with AlmaLinux 8, Ubuntu 18.04, and similar environments.
+- **PHP 8.5** - Latest stable version (EOL: Dec 2028)
+- **PHP 8.4** - Stable version (EOL: Dec 2027)
+- **PHP 8.3** - Stable version (EOL: Dec 2027)
+- **PHP 8.2** - Stable version (EOL: Dec 2026)
+- **PHP 8.1** - Stable version (EOL: Dec 2025)
+- **PHP 8.0** - Legacy support (EOL: Nov 2023)
+- **PHP 7.4** - Legacy support (EOL: Nov 2022)
 
-### Adding PHP Versions as Third-Party Add-ons
+### 🔧 **Third-Party PHP Add-ons**
 
-Some PHP versions can be added to operating systems as third-party packages using external repositories or tools. Here's an overview by OS:
+For additional PHP versions or specific requirements, you can install third-party packages:
 
-#### **Ubuntu**:
-- **Ubuntu 22.04**:
-  - Highest: PHP 8.5 (default repository or Ondrej's PPA).
-  - Lowest: PHP 7.4 (via Ondrej's PPA).
-- **Ubuntu 20.04**:
-  - Highest: PHP 8.5 (default repository or Ondrej's PPA).
-  - Lowest: PHP 7.0 (via Ondrej's PPA).
-- **Ubuntu 18.04**:
-  - Highest: PHP 8.4 (via Ondrej's PPA).
-  - Lowest: PHP 5.6 (via Ondrej's PPA).
+#### **Ubuntu/Debian**
 
-#### **AlmaLinux**:
-- **AlmaLinux 9**:
-  - Highest: PHP 8.5 (default repository or Remi repository).
-  - Lowest: PHP 7.4 (via Remi repository).
-- **AlmaLinux 8**:
-  - Highest: PHP 8.4 (default repository or Remi repository).
-  - Lowest: PHP 5.6 (via Remi repository).
+- **Ondrej's PPA**: Provides PHP 5.6 to 8.5
+- **Sury's PPA**: Alternative repository with latest PHP versions
 
-#### **CentOS**:
-- **CentOS 9**:
-  - Highest: PHP 8.4 (via Remi repository).
-  - Lowest: PHP 7.4 (via Remi repository).
-- **CentOS 8**:
-  - Highest: PHP 8.4 (via Remi repository).
-  - Lowest: PHP 5.6 (via Remi repository).
-- **CentOS 7**:
-  - Highest: PHP 8.0 (via Remi repository).
-  - Lowest: PHP 5.4 (via Remi repository).
+#### **RHEL-based Systems** (AlmaLinux, RockyLinux, CentOS, RHEL)
 
-#### **RHEL**:
-- **RHEL 9**:
-  - Highest: PHP 8.4 (via Remi repository).
-  - Lowest: PHP 7.4 (via Remi repository).
-- **RHEL 8**:
-  - Highest: PHP 8.4 (via Remi repository).
-  - Lowest: PHP 5.6 (via Remi repository).
+- **Remi Repository**: Comprehensive PHP package collection
+- **EPEL Repository**: Additional packages for enterprise Linux
 
-#### **RockyLinux**:
-- **RockyLinux 8**:
-  - Highest: PHP 8.5 (via Remi repository).
-  - Lowest: PHP 5.6 (via Remi repository).
+#### **CloudLinux**
 
-#### **CloudLinux**:
-- **CloudLinux 8**:
-  - Highest: PHP 8.5 (via Remi repository).
-  - Lowest: PHP 5.6 (via Remi repository).
-- **CloudLinux 7**:
-  - Highest: PHP 8.0 (via Remi repository).
-  - Lowest: PHP 5.4 (via Remi repository).
+- **CloudLinux PHP Selector**: Built-in tool for managing multiple PHP versions
+- **Remi Repository**: Additional PHP versions and extensions
 
-#### **openEuler**:
-- **openEuler 22.03**:
-  - Highest: PHP 8.4 (default repository).
-  - Lowest: PHP 7.4 (default repository).
-- **openEuler 20.03**:
-  - Highest: PHP 7.3 (default repository).
-  - Lowest: PHP 7.0 (default repository).
-
-### Full List of PHP Versions and End of Life (EOL) Dates:
-- ✨ **PHP 8.5** - EOL: 31 Dec 2028.
-- ✨ **PHP 8.4** - EOL: 31 Dec 2027.
-- ✨ **PHP 8.3** - EOL: 31 Dec 2027.
-- ✨ **PHP 8.2** - EOL: 31 Dec 2026.
-- ✨ **PHP 8.1** - EOL: 31 Dec 2025.
-- 🛑 **PHP 8.0** - EOL: 26 Nov 2023.
-- 🛑 **PHP 7.4** - EOL: 28 Nov 2022.
-- 🛑 **PHP 7.3** - EOL: 6 Dec 2021.
-- 🛑 **PHP 7.2** - EOL: 30 Nov 2020.
-- 🛑 **PHP 7.1** - EOL: 1 Dec 2019.
-- 🛑 **PHP 7.0** - EOL: 10 Jan 2019.
-- 🛑 **PHP 5.6** - EOL: 31 Dec 2018.
-- 🛑 **PHP 5.5** - EOL: 21 Jul 2016.
-- 🛑 **PHP 5.4** - EOL: 3 Sep 2015.
-- 🛑 **PHP 5.3** - EOL: 14 Aug 2014.
+> **Note**: Third-party repositories may provide additional PHP versions beyond what's available in default repositories. Always verify compatibility with your specific use case.
 
 ---
 
-## 🌐 Supported OS Versions
+## 🌐 Supported Operating Systems
 
 CyberPanel runs on x86_64 architecture and supports the following operating systems:
 
-### **Ubuntu**:
-- Ubuntu 22.04 ✅ Supported until April 2027.
-- Ubuntu 20.04 ✅ Supported until April 2025.
-- Ubuntu 18.04 🛑 EOL: 31 May 2023.
+### **✅ Currently Supported**
 
-### **CentOS**:
-- CentOS 9 ✅ EOL: 31 May 2027.
-- CentOS 8 🛑 EOL: 31 Dec 2021.
-- CentOS 7 🛑 EOL: 30 June 2024.
+- **Ubuntu 22.04** - Supported until April 2027
+- **Ubuntu 20.04** - Supported until April 2025
+- **AlmaLinux 9** - Supported until May 2032
+- **AlmaLinux 8** - Supported until May 2029
+- **RockyLinux 9** - Supported until May 2032
+- **RockyLinux 8** - Supported until May 2029
+- **RHEL 9** - Supported until May 2032
+- **RHEL 8** - Supported until May 2029
+- **CloudLinux 8** - Supported until May 2029
+- **CentOS 9** - Supported until May 2027
 
-### **RHEL**:
-- RHEL 9 ✅ EOL: 31 May 2032.
-- RHEL 8 ✅ EOL: 31 May 2029.
+### **🔧 Third-Party OS Support**
 
-### **AlmaLinux**:
-- AlmaLinux 9 ✅ EOL: 31 May 2032.
-- AlmaLinux 8 ✅ EOL: 31 May 2029.
+Additional operating systems may be supported through third-party repositories or community efforts:
 
-### **Other OS**:
-- RockyLinux 9 ✅ EOL: 31 May 2032.
-- RockyLinux 8 ✅ EOL: 31 May 2029.
-- CloudLinux 8 ✅ EOL: 31 May 2029.
-- CloudLinux 7 🛑 EOL: 1 Jul 2024.
-- openEuler 22.03 🛑 EOL: March 2024.
-- openEuler 20.03 🛑 EOL: April 2022.
+- **Debian** - May work with Ubuntu-compatible packages
+- **openEuler** - Community-supported with limited testing
+- **Other RHEL derivatives** - May work with AlmaLinux/RockyLinux packages
+
+> **Note**: For unsupported operating systems, compatibility is not guaranteed. Always test in a non-production environment first.
 
 ---
 
@@ -168,10 +123,26 @@ sh <(curl https://raw.githubusercontent.com/usmannasir/cyberpanel/stable/preUpgr
 - 🌐 [Official Site](https://cyberpanel.net)
 - ✏️ [Docs (Old)](https://docs.cyberpanel.net)
 - 🎓 [Docs (New)](https://community.cyberpanel.net/docs)
+- 📖 [Additional Guides](guides/INDEX.md) - Detailed guides for Docker, AI Scanner, Mautic, and more
+- 📚 [Local Documentation](guides/) - All guides available in this repository
 - ✅ [Changelog](https://community.cyberpanel.net/t/change-logs/161)
 - 💬 [Forums](https://community.cyberpanel.net)
 - 📢 [Discord](https://discord.gg/g8k8Db3)
 - 📵 [Facebook Group](https://www.facebook.com/groups/cyberpanel)
 - 🎥 [YouTube Channel](https://www.youtube.com/@Cyber-Panel)
 
----
+### 📖 **Quick Start Guides**
+
+- 🐳 [Docker Command Execution](guides/Docker_Command_Execution_Guide.md) - Execute commands in Docker containers
+- 🤖 [AI Scanner Setup](guides/AIScannerDocs.md) - Configure AI-powered security scanning
+- 📧 [Mautic Installation](guides/MAUTIC_INSTALLATION_GUIDE.md) - Email marketing platform setup
+- 📚 [All Guides Index](guides/INDEX.md) - Complete documentation hub
+
+### 🔗 **Direct Guide Links**
+
+| Feature     | Guide                                                      | Description                    |
+| ----------- | ---------------------------------------------------------- | ------------------------------ |
+| 🐳 Docker   | [Command Execution](guides/Docker_Command_Execution_Guide.md) | Execute commands in containers |
+| 🤖 Security | [AI Scanner](guides/AIScannerDocs.md)                         | AI-powered security scanning   |
+| 📧 Email    | [Mautic Setup](guides/MAUTIC_INSTALLATION_GUIDE.md)           | Email marketing platform       |
+| 📚 All      | [Complete Index](guides/INDEX.md)                             | Browse all available guides    |
