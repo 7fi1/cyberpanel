@@ -2226,6 +2226,18 @@ milter_default_action = accept
 
     def setupPHPSymlink(self):
         try:
+            # Check if PHP 8.2 exists
+            if not os.path.exists('/usr/local/lsws/lsphp82/bin/php'):
+                logging.InstallLog.writeToFile("[setupPHPSymlink] PHP 8.2 not found, ensuring it's installed...")
+                
+                # Install PHP 8.2 based on OS
+                if self.distro == centos or self.distro == cent8 or self.distro == openeuler:
+                    command = 'yum install lsphp82 lsphp82-* -y'
+                else:
+                    command = 'DEBIAN_FRONTEND=noninteractive apt-get update && DEBIAN_FRONTEND=noninteractive apt-get -y install lsphp82 lsphp82-*'
+                
+                preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
+
             # Check if PHP 8.3 exists
             if not os.path.exists('/usr/local/lsws/lsphp83/bin/php'):
                 logging.InstallLog.writeToFile("[setupPHPSymlink] PHP 8.3 not found, ensuring it's installed...")
@@ -2242,12 +2254,34 @@ milter_default_action = accept
                 if not os.path.exists('/usr/local/lsws/lsphp83/bin/php'):
                     logging.InstallLog.writeToFile('[ERROR] Failed to install PHP 8.3')
                     return 0
+
+            # Install PHP 8.4
+            if not os.path.exists('/usr/local/lsws/lsphp84/bin/php'):
+                logging.InstallLog.writeToFile("[setupPHPSymlink] PHP 8.4 not found, ensuring it's installed...")
+                
+                if self.distro == centos or self.distro == cent8 or self.distro == openeuler:
+                    command = 'yum install lsphp84 lsphp84-* -y'
+                else:
+                    command = 'DEBIAN_FRONTEND=noninteractive apt-get update && DEBIAN_FRONTEND=noninteractive apt-get -y install lsphp84 lsphp84-*'
+                
+                preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
+
+            # Install PHP 8.5
+            if not os.path.exists('/usr/local/lsws/lsphp85/bin/php'):
+                logging.InstallLog.writeToFile("[setupPHPSymlink] PHP 8.5 not found, ensuring it's installed...")
+                
+                if self.distro == centos or self.distro == cent8 or self.distro == openeuler:
+                    command = 'yum install lsphp85 lsphp85-* -y'
+                else:
+                    command = 'DEBIAN_FRONTEND=noninteractive apt-get update && DEBIAN_FRONTEND=noninteractive apt-get -y install lsphp85 lsphp85-*'
+                
+                preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
             
             # Remove existing PHP symlink if it exists
             if os.path.exists('/usr/bin/php'):
                 os.remove('/usr/bin/php')
 
-            # Create symlink to PHP 8.3
+            # Create symlink to PHP 8.3 (default)
             command = 'ln -s /usr/local/lsws/lsphp83/bin/php /usr/bin/php'
             preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
 

@@ -77,6 +77,7 @@ CyberPanel runs on x86_64 architecture and supports the following operating syst
 
 - **Ubuntu 22.04** - Supported until April 2027
 - **Ubuntu 20.04** - Supported until April 2025
+- **AlmaLinux 10** - Active support until May 2030, security support until May 2035
 - **AlmaLinux 9** - Supported until May 2032
 - **AlmaLinux 8** - Supported until May 2029
 - **RockyLinux 9** - Supported until May 2032
