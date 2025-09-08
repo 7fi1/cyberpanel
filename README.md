@@ -77,7 +77,7 @@ CyberPanel runs on x86_64 architecture and supports the following operating syst
 
 - **Ubuntu 22.04** - Supported until April 2027
 - **Ubuntu 20.04** - Supported until April 2025
-- **AlmaLinux 10** - Active support until May 2030, security support until May 2035
+- **AlmaLinux 10** - Supported until May 2030
 - **AlmaLinux 9** - Supported until May 2032
 - **AlmaLinux 8** - Supported until May 2029
 - **RockyLinux 9** - Supported until May 2032
@@ -122,8 +122,8 @@ sh <(curl https://raw.githubusercontent.com/usmannasir/cyberpanel/stable/preUpgr
 ## 📚 Resources
 
 - 🌐 [Official Site](https://cyberpanel.net)
-- ✏️ [Docs (Old)](https://docs.cyberpanel.net)
-- 🎓 [Docs (New)](https://community.cyberpanel.net/docs)
+- ✏️ [Docs (New)](https://cyberpanel.net/KnowledgeBase/)
+- 🎓 [Docs (Old)](https://community.cyberpanel.net/docs)
 - 📖 [Additional Guides](guides/INDEX.md) - Detailed guides for Docker, AI Scanner, Mautic, and more
 - 📚 [Local Documentation](guides/) - All guides available in this repository
 - ✅ [Changelog](https://community.cyberpanel.net/t/change-logs/161)

@@ -2058,7 +2058,7 @@ echo -e "             Run \e[31mcyberpanel utility\e[39m to access some handy to
 echo "                                                                   "
 echo "              Website : https://www.cyberpanel.net                 "
 echo "              Forums  : https://forums.cyberpanel.net              "
-echo "              Wikipage: https://docs.cyberpanel.net                "
+echo "              Wikipage: https://cyberpanel.net/KnowledgeBase/                "
 echo "              Docs    : https://cyberpanel.net/docs/               "
 echo "                                                                   "
 echo -e "            Enjoy your accelerated Internet by                  "

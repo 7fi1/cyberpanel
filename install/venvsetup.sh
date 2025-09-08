@@ -1080,7 +1080,7 @@ echo -e "         \e[31m/etc/cyberpanel/mysqlPassword\e[39m with new password as
 echo "                                                                   "
 echo "              Website : https://www.cyberpanel.net                 "
 echo "              Forums  : https://forums.cyberpanel.net              "
-echo "              Wikipage: https://docs.cyberpanel.net                "
+echo "              Wikipage: https://cyberpanel.net/KnowledgeBase/                "
 echo "                                                                   "
 echo -e "            Enjoy your accelerated Internet by                  "
 echo -e "                CyberPanel & $WORD					                     "
