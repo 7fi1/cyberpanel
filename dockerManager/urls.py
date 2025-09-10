@@ -36,6 +36,7 @@ urlpatterns = [
     path('recreateappcontainer', views.recreateappcontainer, name='recreateappcontainer'),
     path('RestartContainerAPP', views.RestartContainerAPP, name='RestartContainerAPP'),
     path('StopContainerAPP', views.StopContainerAPP, name='StopContainerAPP'),
+    path('executeContainerCommand', views.executeContainerCommand, name='executeContainerCommand'),
 
     # Docker Container Actions
     path('startContainer', startContainer, name='startContainer'),

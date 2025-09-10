@@ -3215,6 +3215,12 @@ echo $oConfig->Save() ? 'Done' : 'Error';
             command = 'yum install lsphp83* -y'
             subprocess.call(command, shell=True)
 
+            command = 'yum install lsphp84* -y'
+            subprocess.call(command, shell=True)
+
+            command = 'yum install lsphp85* -y'
+            subprocess.call(command, shell=True)
+
         except:
             command = 'DEBIAN_FRONTEND=noninteractive apt-get -y install ' \
                       'lsphp7? lsphp7?-common lsphp7?-curl lsphp7?-dev lsphp7?-imap lsphp7?-intl lsphp7?-json ' \
@@ -3232,6 +3238,12 @@ echo $oConfig->Save() ? 'Done' : 'Error';
             os.system(command)
 
             command = 'DEBIAN_FRONTEND=noninteractive apt-get -y install lsphp83*'
+            os.system(command)
+
+            command = 'DEBIAN_FRONTEND=noninteractive apt-get -y install lsphp84*'
+            os.system(command)
+
+            command = 'DEBIAN_FRONTEND=noninteractive apt-get -y install lsphp85*'
             os.system(command)
 
         CentOSPath = '/etc/redhat-release'

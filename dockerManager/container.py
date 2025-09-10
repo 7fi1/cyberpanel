@@ -1320,3 +1320,96 @@ class ContainerManager(multi.Thread):
             data_ret = {'removeImageStatus': 0, 'error_message': str(msg)}
             json_data = json.dumps(data_ret)
             return HttpResponse(json_data)
+
+    def executeContainerCommand(self, userID=None, data=None):
+        """
+        Execute a command inside a running Docker container
+        """
+        try:
+            name = data['name']
+            command = data['command']
+            
+            # Check if container is registered in database or unlisted
+            if Containers.objects.filter(name=name).exists():
+                if ACLManager.checkContainerOwnership(name, userID) != 1:
+                    return ACLManager.loadErrorJson('commandStatus', 0)
+
+            client = docker.from_env()
+            dockerAPI = docker.APIClient()
+
+            try:
+                container = client.containers.get(name)
+            except docker.errors.NotFound as err:
+                data_ret = {'commandStatus': 0, 'error_message': 'Container does not exist'}
+                json_data = json.dumps(data_ret)
+                return HttpResponse(json_data)
+            except:
+                data_ret = {'commandStatus': 0, 'error_message': 'Unknown error'}
+                json_data = json.dumps(data_ret)
+                return HttpResponse(json_data)
+
+            # Check if container is running
+            if container.status != 'running':
+                data_ret = {'commandStatus': 0, 'error_message': 'Container must be running to execute commands'}
+                json_data = json.dumps(data_ret)
+                return HttpResponse(json_data)
+
+            try:
+                # Execute command in container
+                # Split command into parts for proper execution
+                import shlex
+                command_parts = shlex.split(command)
+                
+                # Execute command with proper shell
+                exec_result = container.exec_run(
+                    command_parts,
+                    stdout=True,
+                    stderr=True,
+                    stdin=False,
+                    tty=False,
+                    privileged=False,
+                    user='',
+                    detach=False,
+                    demux=False,
+                    workdir=None,
+                    environment=None
+                )
+                
+                # Get output and exit code
+                output = exec_result.output.decode('utf-8') if exec_result.output else ''
+                exit_code = exec_result.exit_code
+                
+                # Format the response
+                if exit_code == 0:
+                    data_ret = {
+                        'commandStatus': 1, 
+                        'error_message': 'None',
+                        'output': output,
+                        'exit_code': exit_code,
+                        'command': command
+                    }
+                else:
+                    data_ret = {
+                        'commandStatus': 1, 
+                        'error_message': 'Command executed with non-zero exit code',
+                        'output': output,
+                        'exit_code': exit_code,
+                        'command': command
+                    }
+                
+                json_data = json.dumps(data_ret, ensure_ascii=False)
+                return HttpResponse(json_data)
+                
+            except docker.errors.APIError as err:
+                data_ret = {'commandStatus': 0, 'error_message': f'Docker API error: {str(err)}'}
+                json_data = json.dumps(data_ret)
+                return HttpResponse(json_data)
+            except Exception as err:
+                data_ret = {'commandStatus': 0, 'error_message': f'Execution error: {str(err)}'}
+                json_data = json.dumps(data_ret)
+                return HttpResponse(json_data)
+
+        except BaseException as msg:
+            data_ret = {'commandStatus': 0, 'error_message': str(msg)}
+            json_data = json.dumps(data_ret)
+            return HttpResponse(json_data)

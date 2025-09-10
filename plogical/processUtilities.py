@@ -194,8 +194,8 @@ class ProcessUtilities(multi.Thread):
                 content = f.read()
                 if any(x in content for x in ['CentOS Linux release 8', 'AlmaLinux release 8', 'Rocky Linux release 8', 
                                             'Rocky Linux release 9', 'AlmaLinux release 9', 'CloudLinux release 9', 
-                                            'CloudLinux release 8']):
-                    if any(x in content for x in ['AlmaLinux release 9', 'Rocky Linux release 9']):
+                                            'CloudLinux release 8', 'AlmaLinux release 10']):
+                    if any(x in content for x in ['AlmaLinux release 9', 'Rocky Linux release 9', 'AlmaLinux release 10']):
                         ProcessUtilities.alma9check = 1
                     return ProcessUtilities.cent8
 

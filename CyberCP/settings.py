@@ -187,6 +187,7 @@ LANGUAGES = (
     ('de', _('Deutsch')),
     ('id', _('Indonesian')),
     ('bn', _('Bangla')),
+    ('nb', _('Norwegian Bokmål')),
 )
 
 MEDIA_URL = '/usr/local/CyberCP/tmp/'

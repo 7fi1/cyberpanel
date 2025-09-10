@@ -976,6 +976,101 @@ app.controller('viewContainer', function ($scope, $http, $interval, $timeout) {
         }
     };
 
+    // Command execution functionality
+    $scope.commandToExecute = '';
+    $scope.executingCommand = false;
+    $scope.commandOutput = null;
+    $scope.commandHistory = [];
+
+    $scope.showCommandModal = function() {
+        $scope.commandToExecute = '';
+        $scope.commandOutput = null;
+        $("#commandModal").modal("show");
+    };
+
+    $scope.executeCommand = function() {
+        if (!$scope.commandToExecute.trim()) {
+            new PNotify({
+                title: 'Error',
+                text: 'Please enter a command to execute',
+                type: 'error'
+            });
+            return;
+        }
+
+        $scope.executingCommand = true;
+        $scope.commandOutput = null;
+
+        url = "/docker/executeContainerCommand";
+        var data = {
+            name: $scope.cName,
+            command: $scope.commandToExecute.trim()
+        };
+
+        var config = {
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        };
+
+        $http.post(url, data, config).then(ListInitialData, cantLoadInitialData);
+
+        function ListInitialData(response) {
+            console.log(response);
+            $scope.executingCommand = false;
+
+            if (response.data.commandStatus === 1) {
+                $scope.commandOutput = {
+                    command: response.data.command,
+                    output: response.data.output,
+                    exit_code: response.data.exit_code
+                };
+
+                // Add to command history
+                $scope.commandHistory.unshift({
+                    command: response.data.command,
+                    timestamp: new Date()
+                });
+
+                // Keep only last 10 commands
+                if ($scope.commandHistory.length > 10) {
+                    $scope.commandHistory = $scope.commandHistory.slice(0, 10);
+                }
+
+                // Show success notification
+                new PNotify({
+                    title: 'Command Executed',
+                    text: 'Command completed with exit code: ' + response.data.exit_code,
+                    type: response.data.exit_code === 0 ? 'success' : 'warning'
+                });
+            }
+            else {
+                new PNotify({
+                    title: 'Command Execution Failed',
+                    text: response.data.error_message,
+                    type: 'error'
+                });
+            }
+        }
+
+        function cantLoadInitialData(response) {
+            $scope.executingCommand = false;
+            new PNotify({
+                title: 'Command Execution Failed',
+                text: 'Could not connect to server',
+                type: 'error'
+            });
+        }
+    };
+
+    $scope.selectCommand = function(command) {
+        $scope.commandToExecute = command;
+    };
+
+    $scope.clearOutput = function() {
+        $scope.commandOutput = null;
+    };
+
 });
 
 

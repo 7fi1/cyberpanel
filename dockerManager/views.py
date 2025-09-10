@@ -540,3 +540,21 @@ def StopContainerAPP(request):
         return coreResult
     except KeyError:
         return redirect(loadLoginPage)
+
+@preDockerRun
+def executeContainerCommand(request):
+    try:
+        userID = request.session['userID']
+        currentACL = ACLManager.loadedACL(userID)
+
+        if currentACL['admin'] == 1:
+            pass
+        else:
+            return ACLManager.loadErrorJson()
+
+        cm = ContainerManager()
+        coreResult = cm.executeContainerCommand(userID, json.loads(request.body))
+
+        return coreResult
+    except KeyError:
+        return redirect(loadLoginPage)
