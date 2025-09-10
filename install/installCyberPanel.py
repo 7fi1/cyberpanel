@@ -380,6 +380,29 @@ class InstallCyberPanel:
         if self.distro != ubuntu:
             InstallCyberPanel.stdOut("LiteSpeed PHPs successfully installed!", 1)
 
+    def installSieve(self):
+        """Install Sieve (Dovecot Sieve) for email filtering on all OS variants"""
+        try:
+            InstallCyberPanel.stdOut("Installing Sieve (Dovecot Sieve) for email filtering...", 1)
+            
+            if self.distro == ubuntu:
+                # Install dovecot-sieve and dovecot-managesieved
+                self.install_package('dovecot-sieve dovecot-managesieved')
+            else:
+                # For CentOS/AlmaLinux/OpenEuler
+                self.install_package('dovecot-pigeonhole')
+            
+            # Add Sieve port 4190 to firewall
+            from plogical.firewallUtilities import FirewallUtilities
+            FirewallUtilities.addSieveFirewallRule()
+            
+            InstallCyberPanel.stdOut("Sieve successfully installed and configured!", 1)
+            return 1
+            
+        except BaseException as msg:
+            logging.InstallLog.writeToFile('[ERROR] ' + str(msg) + " [installSieve]")
+            return 0
+
     def installMySQL(self, mysql):
 
         ############## Install mariadb ######################
@@ -989,6 +1012,9 @@ def Main(cwd, mysql, distro, ent, serial=None, port="8090", ftp=None, dns=None, 
     installer.installAllPHPVersions()
     if ent == 0:
         installer.fix_ols_configs()
+
+    logging.InstallLog.writeToFile('Installing Sieve for email filtering..,55')
+    installer.installSieve()
 
     logging.InstallLog.writeToFile('Installing MySQL,60')
     installer.installMySQL(mysql)
