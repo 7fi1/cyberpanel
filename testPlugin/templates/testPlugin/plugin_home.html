@@ -402,10 +402,15 @@
                         {% trans "Logs" %}
                     </a>
                     
-                    <a href="{% url 'testPlugin:plugin_docs' %}" class="btn-secondary">
-                        <i class="fas fa-book"></i>
-                        {% trans "Documentation" %}
-                    </a>
+        <a href="{% url 'testPlugin:plugin_docs' %}" class="btn-secondary">
+            <i class="fas fa-book"></i>
+            {% trans "Documentation" %}
+        </a>
+        
+        <a href="{% url 'testPlugin:security_info' %}" class="btn-secondary">
+            <i class="fas fa-shield-alt"></i>
+            {% trans "Security Info" %}
+        </a>
                 </div>
             </div>
         </div>

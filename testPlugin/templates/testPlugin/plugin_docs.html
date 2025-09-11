@@ -275,6 +275,10 @@
                 <i class="fas fa-book-open"></i>
                 {% trans "Advanced Guide" %}
             </a>
+            <a href="#" class="nav-button" data-section="os-compatibility">
+                <i class="fas fa-desktop"></i>
+                {% trans "OS Compatibility" %}
+            </a>
             <a href="{% url 'testPlugin:plugin_home' %}" class="nav-button">
                 <i class="fas fa-arrow-left"></i>
                 {% trans "Back to Plugin" %}
@@ -1300,9 +1304,273 @@ systemctl status cyberpanel</code></pre>
             </div>
         </div>
     </div>
-</div>
+        </div>
 
-<script>
+        <!-- OS Compatibility Guide -->
+        <div class="docs-section" id="os-compatibility">
+            <div class="docs-content">
+                <h1 class="section-title">Operating System Compatibility</h1>
+
+                <div class="feature-list">
+                    <div class="feature-item">
+                        <h4>🌐 Multi-OS Support</h4>
+                        <p>Comprehensive support for all CyberPanel-supported operating systems.</p>
+                    </div>
+                    <div class="feature-item">
+                        <h4>🔍 Automatic Detection</h4>
+                        <p>Intelligent OS detection and configuration for seamless installation.</p>
+                    </div>
+                    <div class="feature-item">
+                        <h4>🧪 Compatibility Testing</h4>
+                        <p>Built-in compatibility testing to verify system requirements.</p>
+                    </div>
+                </div>
+
+                <h2>Supported Operating Systems</h2>
+                
+                <div class="compatibility-grid">
+                    <div class="os-card">
+                        <h3>Ubuntu</h3>
+                        <ul>
+                            <li>✅ Ubuntu 22.04 (Full Support)</li>
+                            <li>✅ Ubuntu 20.04 (Full Support)</li>
+                            <li>✅ Debian 11+ (Compatible)</li>
+                        </ul>
+                        <p><strong>Package Manager:</strong> apt-get</p>
+                        <p><strong>Web Server:</strong> apache2</p>
+                    </div>
+
+                    <div class="os-card">
+                        <h3>RHEL-based</h3>
+                        <ul>
+                            <li>✅ AlmaLinux 8, 9, 10</li>
+                            <li>✅ RockyLinux 8, 9</li>
+                            <li>✅ RHEL 8, 9</li>
+                            <li>✅ CentOS 9</li>
+                        </ul>
+                        <p><strong>Package Manager:</strong> dnf/yum</p>
+                        <p><strong>Web Server:</strong> httpd</p>
+                    </div>
+
+                    <div class="os-card">
+                        <h3>CloudLinux</h3>
+                        <ul>
+                            <li>✅ CloudLinux 8</li>
+                            <li>✅ CloudLinux 7 (Limited)</li>
+                        </ul>
+                        <p><strong>Package Manager:</strong> yum</p>
+                        <p><strong>Web Server:</strong> httpd</p>
+                    </div>
+                </div>
+
+                <h2>Python Compatibility</h2>
+                <p>The plugin requires Python 3.6+ and automatically detects the correct Python executable:</p>
+                
+                <div class="code-block">
+                    <pre><code># Detection order:
+1. python3.12
+2. python3.11
+3. python3.10
+4. python3.9
+5. python3.8
+6. python3.7
+7. python3.6
+8. python3
+9. python (fallback)</code></pre>
+                </div>
+
+                <h2>Installation Compatibility</h2>
+                <p>The installation script automatically detects your operating system and configures the plugin accordingly:</p>
+
+                <div class="code-block">
+                    <pre><code># Automatic detection includes:
+- OS name and version
+- Python executable path
+- Package manager (apt-get, dnf, yum)
+- Service manager (systemctl, service)
+- Web server (apache2, httpd)
+- User and group permissions</code></pre>
+                </div>
+
+                <h2>Compatibility Testing</h2>
+                <p>Run the built-in compatibility test to verify your system:</p>
+
+                <div class="code-block">
+                    <pre><code># Navigate to plugin directory
+cd /usr/local/CyberCP/testPlugin
+
+# Run compatibility test
+python3 test_os_compatibility.py
+
+# Or make it executable and run
+chmod +x test_os_compatibility.py
+./test_os_compatibility.py</code></pre>
+                </div>
+
+                <h2>Test Results</h2>
+                <p>The compatibility test checks:</p>
+                <ul>
+                    <li>✅ OS detection and version</li>
+                    <li>✅ Python installation and version</li>
+                    <li>✅ Package manager availability</li>
+                    <li>✅ Service manager functionality</li>
+                    <li>✅ Web server configuration</li>
+                    <li>✅ File permissions and ownership</li>
+                    <li>✅ Network connectivity</li>
+                    <li>✅ CyberPanel integration</li>
+                </ul>
+
+                <h2>OS-Specific Configurations</h2>
+                
+                <h3>Ubuntu/Debian Systems</h3>
+                <div class="code-block">
+                    <pre><code># Package Manager: apt-get
+# Python: python3
+# Pip: pip3
+# Service Manager: systemctl
+# Web Server: apache2
+# User/Group: cyberpanel:cyberpanel
+
+# Installation commands
+sudo apt-get update
+sudo apt-get install -y python3 python3-pip python3-venv git curl
+sudo apt-get install -y build-essential python3-dev</code></pre>
+                </div>
+
+                <h3>RHEL-based Systems</h3>
+                <div class="code-block">
+                    <pre><code># Package Manager: dnf (RHEL 8+) / yum (RHEL 7)
+# Python: python3
+# Pip: pip3
+# Service Manager: systemctl
+# Web Server: httpd
+# User/Group: cyberpanel:cyberpanel
+
+# Installation commands (RHEL 8+)
+sudo dnf install -y python3 python3-pip python3-devel git curl
+sudo dnf install -y gcc gcc-c++ make
+
+# Installation commands (RHEL 7)
+sudo yum install -y python3 python3-pip python3-devel git curl
+sudo yum install -y gcc gcc-c++ make</code></pre>
+                </div>
+
+                <h3>CloudLinux</h3>
+                <div class="code-block">
+                    <pre><code># Package Manager: yum
+# Python: python3
+# Pip: pip3
+# Service Manager: systemctl
+# Web Server: httpd
+# User/Group: cyberpanel:cyberpanel
+
+# Installation commands
+sudo yum install -y python3 python3-pip python3-devel git curl
+sudo yum install -y gcc gcc-c++ make
+
+# CageFS configuration
+cagefsctl --enable cyberpanel
+cagefsctl --update</code></pre>
+                </div>
+
+                <h2>Security Compatibility</h2>
+                
+                <h3>SELinux (RHEL-based systems)</h3>
+                <div class="code-block">
+                    <pre><code># Check SELinux status
+sestatus
+
+# Set proper context for plugin files
+setsebool -P httpd_can_network_connect 1
+chcon -R -t httpd_exec_t /usr/local/CyberCP/testPlugin/</code></pre>
+                </div>
+
+                <h3>AppArmor (Ubuntu/Debian)</h3>
+                <div class="code-block">
+                    <pre><code># Check AppArmor status
+aa-status
+
+# Allow Apache to access plugin files
+aa-complain apache2</code></pre>
+                </div>
+
+                <h3>Firewall Configuration</h3>
+                <div class="code-block">
+                    <pre><code># Ubuntu/Debian (ufw)
+sudo ufw allow 8090/tcp
+sudo ufw allow 80/tcp
+sudo ufw allow 443/tcp
+
+# RHEL-based (firewalld)
+sudo firewall-cmd --permanent --add-port=8090/tcp
+sudo firewall-cmd --permanent --add-port=80/tcp
+sudo firewall-cmd --permanent --add-port=443/tcp
+sudo firewall-cmd --reload</code></pre>
+                </div>
+
+                <h2>Troubleshooting</h2>
+                
+                <h3>Common Issues</h3>
+                <div class="troubleshooting-section">
+                    <h4>Python not found</h4>
+                    <div class="code-block">
+                        <pre><code># Ubuntu/Debian
+sudo apt-get update
+sudo apt-get install -y python3 python3-pip
+
+# RHEL-based
+sudo dnf install -y python3 python3-pip
+# or
+sudo yum install -y python3 python3-pip</code></pre>
+                    </div>
+
+                    <h4>Permission denied</h4>
+                    <div class="code-block">
+                        <pre><code>sudo chown -R cyberpanel:cyberpanel /home/cyberpanel/plugins
+sudo chown -R cyberpanel:cyberpanel /usr/local/CyberCP/testPlugin</code></pre>
+                    </div>
+
+                    <h4>Service not starting</h4>
+                    <div class="code-block">
+                        <pre><code>sudo systemctl daemon-reload
+sudo systemctl restart lscpd
+sudo systemctl restart apache2  # Ubuntu/Debian
+sudo systemctl restart httpd    # RHEL-based</code></pre>
+                    </div>
+                </div>
+
+                <h2>Debug Commands</h2>
+                <div class="code-block">
+                    <pre><code># Check OS information
+cat /etc/os-release
+uname -a
+
+# Check Python installation
+python3 --version
+which python3
+which pip3
+
+# Check services
+systemctl status lscpd
+systemctl status apache2  # Ubuntu/Debian
+systemctl status httpd    # RHEL-based
+
+# Check file permissions
+ls -la /home/cyberpanel/plugins/
+ls -la /usr/local/CyberCP/testPlugin/
+
+# Check CyberPanel logs
+tail -f /home/cyberpanel/logs/cyberpanel.log
+tail -f /home/cyberpanel/logs/django.log</code></pre>
+                </div>
+
+                <blockquote>
+                    <strong>Note:</strong> The plugin is designed to work seamlessly across all supported operating systems. If you encounter any compatibility issues, please run the compatibility test and check the troubleshooting section above.
+                </blockquote>
+            </div>
+        </div>
+
+        <script>
 document.addEventListener('DOMContentLoaded', function() {
     const navButtons = document.querySelectorAll('.nav-button[data-section]');
     const sections = document.querySelectorAll('.docs-section');

@@ -14,4 +14,5 @@ urlpatterns = [
     path('uninstall/', views.uninstall_plugin, name='uninstall_plugin'),
     path('logs/', views.plugin_logs, name='plugin_logs'),
     path('docs/', views.plugin_docs, name='plugin_docs'),
+    path('security/', views.security_info, name='security_info'),
 ]

@@ -8,11 +8,14 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from django.contrib import messages
 from django.utils import timezone
+from django.core.cache import cache
 from plogical.httpProc import httpProc
 from .models import TestPluginSettings, TestPluginLog
+from .security import secure_view, admin_required, SecurityManager
 
 
-@login_required
+@admin_required
+@secure_view(require_csrf=False, rate_limit=True, log_activity=True)
 def plugin_home(request):
     """Main plugin page with inline integration"""
     try:
@@ -22,7 +25,7 @@ def plugin_home(request):
             defaults={'plugin_enabled': True}
         )
         
-        # Get recent logs
+        # Get recent logs (limit to user's own logs for security)
         recent_logs = TestPluginLog.objects.filter(user=request.user).order_by('-timestamp')[:10]
         
         context = {
@@ -42,10 +45,12 @@ def plugin_home(request):
         return proc.render()
         
     except Exception as e:
-        return JsonResponse({'status': 0, 'error_message': str(e)})
+        SecurityManager.log_security_event(request, f"Error in plugin_home: {str(e)}", "view_error")
+        return JsonResponse({'status': 0, 'error_message': 'An error occurred while loading the page.'})
 
 
-@login_required
+@admin_required
+@secure_view(require_csrf=True, rate_limit=True, log_activity=True)
 @require_http_methods(["POST"])
 def test_button(request):
     """Handle test button click and show popup message"""
@@ -56,10 +61,23 @@ def test_button(request):
         )
         
         if not settings.plugin_enabled:
+            SecurityManager.log_security_event(request, "Test button clicked while plugin disabled", "security_violation")
             return JsonResponse({
                 'status': 0, 
                 'error_message': 'Plugin is disabled. Please enable it first.'
             })
+        
+        # Rate limiting for test button (max 10 clicks per minute)
+        test_key = f"test_button_{request.user.id}"
+        test_count = cache.get(test_key, 0)
+        if test_count >= 10:
+            SecurityManager.record_failed_attempt(request, "Test button rate limit exceeded")
+            return JsonResponse({
+                'status': 0,
+                'error_message': 'Too many test button clicks. Please wait before trying again.'
+            }, status=429)
+        
+        cache.set(test_key, test_count + 1, 60)  # 1 minute window
         
         # Increment test count
         settings.test_count += 1
@@ -72,11 +90,14 @@ def test_button(request):
             message=f'Test button clicked (count: {settings.test_count})'
         )
         
+        # Sanitize custom message
+        safe_message = SecurityManager.sanitize_input(settings.custom_message)
+        
         # Prepare popup message
         popup_message = {
             'type': 'success',
             'title': 'Test Successful!',
-            'message': f'{settings.custom_message} (Clicked {settings.test_count} times)',
+            'message': f'{safe_message} (Clicked {settings.test_count} times)',
             'timestamp': timezone.now().strftime('%Y-%m-%d %H:%M:%S')
         }
         
@@ -87,10 +108,12 @@ def test_button(request):
         })
         
     except Exception as e:
-        return JsonResponse({'status': 0, 'error_message': str(e)})
+        SecurityManager.log_security_event(request, f"Error in test_button: {str(e)}", "view_error")
+        return JsonResponse({'status': 0, 'error_message': 'An error occurred while processing the test.'})
 
 
-@login_required
+@admin_required
+@secure_view(require_csrf=True, rate_limit=True, log_activity=True)
 @require_http_methods(["POST"])
 def toggle_plugin(request):
     """Toggle plugin enable/disable state"""
@@ -112,6 +135,8 @@ def toggle_plugin(request):
             message=f'Plugin {action}'
         )
         
+        SecurityManager.log_security_event(request, f"Plugin {action} by user", "plugin_toggle")
+        
         return JsonResponse({
             'status': 1,
             'enabled': settings.plugin_enabled,
@@ -119,10 +144,12 @@ def toggle_plugin(request):
         })
         
     except Exception as e:
-        return JsonResponse({'status': 0, 'error_message': str(e)})
+        SecurityManager.log_security_event(request, f"Error in toggle_plugin: {str(e)}", "view_error")
+        return JsonResponse({'status': 0, 'error_message': 'An error occurred while toggling the plugin.'})
 
 
-@login_required
+@admin_required
+@secure_view(require_csrf=False, rate_limit=True, log_activity=True)
 def plugin_settings(request):
     """Plugin settings page"""
     try:
@@ -139,10 +166,12 @@ def plugin_settings(request):
         return proc.render()
         
     except Exception as e:
-        return JsonResponse({'status': 0, 'error_message': str(e)})
+        SecurityManager.log_security_event(request, f"Error in plugin_settings: {str(e)}", "view_error")
+        return JsonResponse({'status': 0, 'error_message': 'An error occurred while loading settings.'})
 
 
-@login_required
+@admin_required
+@secure_view(require_csrf=True, rate_limit=True, log_activity=True)
 @require_http_methods(["POST"])
 def update_settings(request):
     """Update plugin settings"""
@@ -155,6 +184,18 @@ def update_settings(request):
         data = json.loads(request.body)
         custom_message = data.get('custom_message', settings.custom_message)
         
+        # Validate and sanitize input
+        is_valid, error_msg = SecurityManager.validate_input(custom_message, 'custom_message', 1000)
+        if not is_valid:
+            SecurityManager.record_failed_attempt(request, f"Invalid input: {error_msg}")
+            return JsonResponse({
+                'status': 0,
+                'error_message': f'Invalid input: {error_msg}'
+            }, status=400)
+        
+        # Sanitize the message
+        custom_message = SecurityManager.sanitize_input(custom_message)
+        
         settings.custom_message = custom_message
         settings.save()
         
@@ -162,19 +203,29 @@ def update_settings(request):
         TestPluginLog.objects.create(
             user=request.user,
             action='settings_update',
-            message=f'Settings updated: custom_message="{custom_message}"'
+            message=f'Settings updated: custom_message="{custom_message[:50]}..."'
         )
+        
+        SecurityManager.log_security_event(request, "Settings updated successfully", "settings_update")
         
         return JsonResponse({
             'status': 1,
             'message': 'Settings updated successfully'
         })
         
+    except json.JSONDecodeError:
+        SecurityManager.record_failed_attempt(request, "Invalid JSON in settings update")
+        return JsonResponse({
+            'status': 0,
+            'error_message': 'Invalid data format. Please try again.'
+        }, status=400)
     except Exception as e:
-        return JsonResponse({'status': 0, 'error_message': str(e)})
+        SecurityManager.log_security_event(request, f"Error in update_settings: {str(e)}", "view_error")
+        return JsonResponse({'status': 0, 'error_message': 'An error occurred while updating settings.'})
 
 
-@login_required
+@admin_required
+@secure_view(require_csrf=True, rate_limit=True, log_activity=True)
 @require_http_methods(["POST"])
 def install_plugin(request):
     """Install plugin (placeholder for future implementation)"""
@@ -186,16 +237,20 @@ def install_plugin(request):
             message='Plugin installation requested'
         )
         
+        SecurityManager.log_security_event(request, "Plugin installation requested", "plugin_install")
+        
         return JsonResponse({
             'status': 1,
             'message': 'Plugin installation completed successfully'
         })
         
     except Exception as e:
-        return JsonResponse({'status': 0, 'error_message': str(e)})
+        SecurityManager.log_security_event(request, f"Error in install_plugin: {str(e)}", "view_error")
+        return JsonResponse({'status': 0, 'error_message': 'An error occurred during installation.'})
 
 
-@login_required
+@admin_required
+@secure_view(require_csrf=True, rate_limit=True, log_activity=True)
 @require_http_methods(["POST"])
 def uninstall_plugin(request):
     """Uninstall plugin (placeholder for future implementation)"""
@@ -207,19 +262,24 @@ def uninstall_plugin(request):
             message='Plugin uninstallation requested'
         )
         
+        SecurityManager.log_security_event(request, "Plugin uninstallation requested", "plugin_uninstall")
+        
         return JsonResponse({
             'status': 1,
             'message': 'Plugin uninstallation completed successfully'
         })
         
     except Exception as e:
-        return JsonResponse({'status': 0, 'error_message': str(e)})
+        SecurityManager.log_security_event(request, f"Error in uninstall_plugin: {str(e)}", "view_error")
+        return JsonResponse({'status': 0, 'error_message': 'An error occurred during uninstallation.'})
 
 
-@login_required
+@admin_required
+@secure_view(require_csrf=False, rate_limit=True, log_activity=True)
 def plugin_logs(request):
     """View plugin logs"""
     try:
+        # Only show logs for the current user (security isolation)
         logs = TestPluginLog.objects.filter(user=request.user).order_by('-timestamp')[:50]
         
         context = {
@@ -230,10 +290,12 @@ def plugin_logs(request):
         return proc.render()
         
     except Exception as e:
-        return JsonResponse({'status': 0, 'error_message': str(e)})
+        SecurityManager.log_security_event(request, f"Error in plugin_logs: {str(e)}", "view_error")
+        return JsonResponse({'status': 0, 'error_message': 'An error occurred while loading logs.'})
 
 
-@login_required
+@admin_required
+@secure_view(require_csrf=False, rate_limit=True, log_activity=True)
 def plugin_docs(request):
     """View plugin documentation"""
     try:
@@ -243,4 +305,20 @@ def plugin_docs(request):
         return proc.render()
         
     except Exception as e:
-        return JsonResponse({'status': 0, 'error_message': str(e)})
+        SecurityManager.log_security_event(request, f"Error in plugin_docs: {str(e)}", "view_error")
+        return JsonResponse({'status': 0, 'error_message': 'An error occurred while loading documentation.'})
+
+
+@admin_required
+@secure_view(require_csrf=False, rate_limit=True, log_activity=True)
+def security_info(request):
+    """View security information"""
+    try:
+        context = {}
+        
+        proc = httpProc(request, 'testPlugin/security_info.html', context, 'admin')
+        return proc.render()
+        
+    except Exception as e:
+        SecurityManager.log_security_event(request, f"Error in security_info: {str(e)}", "view_error")
+        return JsonResponse({'status': 0, 'error_message': 'An error occurred while loading security information.'})
