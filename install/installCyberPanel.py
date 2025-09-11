@@ -66,8 +66,20 @@ class InstallCyberPanel:
         }
         
         actual_service = service_map.get(service_name, service_name)
-        command = f'systemctl {action} {actual_service}'
-        return install_utils.call(command, self.distro, command, command, 1, 1, os.EX_OSERR)
+        
+        # For AlmaLinux 9, try both mariadb and mysqld services
+        if service_name == 'mariadb' and (self.distro == cent8 or self.distro == openeuler):
+            # Try mariadb first, then mysqld if mariadb fails
+            command = f'systemctl {action} {actual_service}'
+            result = install_utils.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
+            if result != 0:
+                # If mariadb service fails, try mysqld
+                command = f'systemctl {action} mysqld'
+                return install_utils.call(command, self.distro, command, command, 1, 1, os.EX_OSERR)
+            return result
+        else:
+            command = f'systemctl {action} {actual_service}'
+            return install_utils.call(command, self.distro, command, command, 1, 1, os.EX_OSERR)
 
     def modify_file_content(self, file_path, replacements):
         """Generic file content modification"""
@@ -368,6 +380,29 @@ class InstallCyberPanel:
         if self.distro != ubuntu:
             InstallCyberPanel.stdOut("LiteSpeed PHPs successfully installed!", 1)
 
+    def installSieve(self):
+        """Install Sieve (Dovecot Sieve) for email filtering on all OS variants"""
+        try:
+            InstallCyberPanel.stdOut("Installing Sieve (Dovecot Sieve) for email filtering...", 1)
+            
+            if self.distro == ubuntu:
+                # Install dovecot-sieve and dovecot-managesieved
+                self.install_package('dovecot-sieve dovecot-managesieved')
+            else:
+                # For CentOS/AlmaLinux/OpenEuler
+                self.install_package('dovecot-pigeonhole')
+            
+            # Add Sieve port 4190 to firewall
+            from plogical.firewallUtilities import FirewallUtilities
+            FirewallUtilities.addSieveFirewallRule()
+            
+            InstallCyberPanel.stdOut("Sieve successfully installed and configured!", 1)
+            return 1
+            
+        except BaseException as msg:
+            logging.InstallLog.writeToFile('[ERROR] ' + str(msg) + " [installSieve]")
+            return 0
+
     def installMySQL(self, mysql):
 
         ############## Install mariadb ######################
@@ -487,6 +522,13 @@ gpgcheck=1
                 command = 'sudo dnf module reset mariadb -y'
                 install_utils.call(command, self.distro, command, command, 1, 1, os.EX_OSERR, True)
 
+                # Disable problematic mariadb-maxscale repository to avoid 404 errors
+                command = 'dnf config-manager --disable mariadb-maxscale'
+                install_utils.call(command, self.distro, command, command, 1, 0, os.EX_OSERR, True)
+
+                # Clear dnf cache to avoid repository issues
+                command = 'dnf clean all'
+                install_utils.call(command, self.distro, command, command, 1, 1, os.EX_OSERR, True)
 
                 command = 'dnf install MariaDB-server MariaDB-client MariaDB-backup -y'
 
@@ -505,9 +547,17 @@ gpgcheck=1
                 passwordCMD = "use mysql;DROP DATABASE IF EXISTS test;DELETE FROM mysql.db WHERE Db='test' OR Db='test\\_%%';GRANT ALL PRIVILEGES ON *.* TO 'root'@'localhost' IDENTIFIED BY '%s';flush privileges;" % (
                     InstallCyberPanel.mysql_Root_password)
 
-            command = 'mariadb -u root -e "' + passwordCMD + '"'
-
-            install_utils.call(command, self.distro, command, command, 0, 0, os.EX_OSERR)
+            # For AlmaLinux 9, try mysql command first, then mariadb
+            if self.distro == cent8 or self.distro == openeuler:
+                command = 'mysql -u root -e "' + passwordCMD + '"'
+                result = install_utils.call(command, self.distro, command, command, 0, 0, os.EX_OSERR)
+                if result != 0:
+                    # If mysql command fails, try mariadb
+                    command = 'mariadb -u root -e "' + passwordCMD + '"'
+                    install_utils.call(command, self.distro, command, command, 0, 0, os.EX_OSERR)
+            else:
+                command = 'mariadb -u root -e "' + passwordCMD + '"'
+                install_utils.call(command, self.distro, command, command, 0, 0, os.EX_OSERR)
 
     def startMariaDB(self):
 
@@ -549,7 +599,14 @@ gpgcheck=1
         except IOError as err:
             self.stdOut("[ERROR] Error in setting: " + fileName + ": " + str(err), 1, 1, os.EX_OSERR)
 
-        os.system('systemctl restart mariadb')
+        # Use the manage_service method for consistent service management
+        if self.distro == cent8 or self.distro == openeuler:
+            # Try mariadb first, then mysqld
+            result = os.system('systemctl restart mariadb')
+            if result != 0:
+                os.system('systemctl restart mysqld')
+        else:
+            os.system('systemctl restart mariadb')
 
         self.stdOut("MariaDB is now setup so it can support Cyberpanel's needs")
 
@@ -955,6 +1012,9 @@ def Main(cwd, mysql, distro, ent, serial=None, port="8090", ftp=None, dns=None, 
     installer.installAllPHPVersions()
     if ent == 0:
         installer.fix_ols_configs()
+
+    logging.InstallLog.writeToFile('Installing Sieve for email filtering..,55')
+    installer.installSieve()
 
     logging.InstallLog.writeToFile('Installing MySQL,60')
     installer.installMySQL(mysql)

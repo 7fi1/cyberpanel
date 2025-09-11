@@ -68,6 +68,18 @@ class FirewallUtilities:
         return 1
 
     @staticmethod
+    def addSieveFirewallRule():
+        """Add Sieve port 4190 to firewall for all OS variants"""
+        try:
+            # Add Sieve port 4190 to firewall
+            FirewallUtilities.addRule('tcp', '4190', '0.0.0.0/0')
+            logging.CyberCPLogFileWriter.writeToFile("Sieve port 4190 added to firewall successfully")
+            return 1
+        except BaseException as msg:
+            logging.CyberCPLogFileWriter.writeToFile("Failed to add Sieve port 4190 to firewall: " + str(msg))
+            return 0
+
+    @staticmethod
     def deleteRule(proto, port, ipAddress):
         ruleFamily = 'rule family="ipv4"'
         sourceAddress = 'source address="' + ipAddress + '"'

@@ -125,7 +125,7 @@ class mailUtilities:
         "authPlainLine": false
     },
     "Sieve": {
-        "host": "",
+        "host": "localhost",
         "port": 4190,
         "type": 0,
         "timeout": 10,
