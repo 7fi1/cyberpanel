@@ -53,7 +53,7 @@ def installDocker(request):
         json_data = json.dumps(data_ret)
         return HttpResponse(json_data)
 
-    except BaseException as msg:
+    except Exception as msg:
         data_ret = {'status': 0, 'error_message': str(msg)}
         json_data = json.dumps(data_ret)
         return HttpResponse(json_data)
@@ -421,6 +421,24 @@ def removeImage(request):
 
         cm = ContainerManager()
         coreResult = cm.removeImage(userID, json.loads(request.body))
+
+        return coreResult
+    except KeyError:
+        return redirect(loadLoginPage)
+
+@preDockerRun
+def pullImage(request):
+    try:
+        userID = request.session['userID']
+        currentACL = ACLManager.loadedACL(userID)
+
+        if currentACL['admin'] == 1:
+            pass
+        else:
+            return ACLManager.loadErrorJson()
+
+        cm = ContainerManager()
+        coreResult = cm.pullImage(userID, json.loads(request.body))
 
         return coreResult
     except KeyError:

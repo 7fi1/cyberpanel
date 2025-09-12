@@ -26,6 +26,7 @@ urlpatterns = [
     re_path(r'^manageImages$', views.manageImages, name='manageImages'),
     re_path(r'^getImageHistory$', views.getImageHistory, name='getImageHistory'),
     re_path(r'^removeImage$', views.removeImage, name='removeImage'),
+    re_path(r'^pullImage$', views.pullImage, name='pullImage'),
     re_path(r'^recreateContainer$', views.recreateContainer, name='recreateContainer'),
     re_path(r'^installDocker$', views.installDocker, name='installDocker'),
     re_path(r'^images$', views.images, name='containerImage'),
