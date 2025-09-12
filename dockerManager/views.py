@@ -558,3 +558,109 @@ def executeContainerCommand(request):
         return coreResult
     except KeyError:
         return redirect(loadLoginPage)
+
+
+def loadContainersForImport(request):
+    """
+    Load all containers for import selection, excluding the current container
+    """
+    try:
+        userID = request.session['userID']
+        currentACL = ACLManager.loadedACL(userID)
+
+        if currentACL['admin'] == 1:
+            pass
+        else:
+            return ACLManager.loadErrorJson()
+
+        currentContainer = request.GET.get('currentContainer', '')
+        
+        # Get all containers using Docker API
+        import docker
+        dockerClient = docker.from_env()
+        containers = dockerClient.containers.list(all=True)
+        
+        containerList = []
+        for container in containers:
+            # Skip the current container
+            if container.name == currentContainer:
+                continue
+                
+            # Get container info
+            containerInfo = {
+                'name': container.name,
+                'image': container.image.tags[0] if container.image.tags else container.image.id,
+                'status': container.status,
+                'id': container.short_id
+            }
+            
+            # Count environment variables
+            try:
+                envVars = container.attrs.get('Config', {}).get('Env', [])
+                containerInfo['envCount'] = len(envVars)
+            except:
+                containerInfo['envCount'] = 0
+                
+            containerList.append(containerInfo)
+        
+        return HttpResponse(json.dumps({
+            'success': 1,
+            'containers': containerList
+        }), content_type='application/json')
+        
+    except Exception as e:
+        return HttpResponse(json.dumps({
+            'success': 0,
+            'message': str(e)
+        }), content_type='application/json')
+    except KeyError:
+        return redirect(loadLoginPage)
+
+
+def getContainerEnv(request):
+    """
+    Get environment variables from a specific container
+    """
+    try:
+        userID = request.session['userID']
+        currentACL = ACLManager.loadedACL(userID)
+
+        if currentACL['admin'] == 1:
+            pass
+        else:
+            return ACLManager.loadErrorJson()
+
+        containerName = request.GET.get('containerName', '')
+        
+        if not containerName:
+            return HttpResponse(json.dumps({
+                'success': 0,
+                'message': 'Container name is required'
+            }), content_type='application/json')
+        
+        # Get container using Docker API
+        import docker
+        dockerClient = docker.from_env()
+        container = dockerClient.containers.get(containerName)
+        
+        # Extract environment variables
+        envVars = {}
+        envList = container.attrs.get('Config', {}).get('Env', [])
+        
+        for envVar in envList:
+            if '=' in envVar:
+                key, value = envVar.split('=', 1)
+                envVars[key] = value
+        
+        return HttpResponse(json.dumps({
+            'success': 1,
+            'envVars': envVars
+        }), content_type='application/json')
+        
+    except Exception as e:
+        return HttpResponse(json.dumps({
+            'success': 0,
+            'message': str(e)
+        }), content_type='application/json')
+    except KeyError:
+        return redirect(loadLoginPage)

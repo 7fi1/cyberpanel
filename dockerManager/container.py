@@ -302,11 +302,23 @@ class ContainerManager(multi.Thread):
             inspectImage = dockerAPI.inspect_image(image + ":" + tag)
             portConfig = {}
 
-            # Formatting envList for usage
+            # Formatting envList for usage - handle both simple and advanced modes
             envDict = {}
-            for key, value in envList.items():
-                if (value['name'] != '') or (value['value'] != ''):
-                    envDict[value['name']] = value['value']
+            
+            # Check if advanced mode is being used
+            advanced_mode = data.get('advancedEnvMode', False)
+            
+            if advanced_mode:
+                # Advanced mode: envList is already a dictionary of key-value pairs
+                envDict = envList
+            else:
+                # Simple mode: envList is an array of objects with name/value properties
+                for key, value in envList.items():
+                    if isinstance(value, dict) and (value.get('name', '') != '' or value.get('value', '') != ''):
+                        envDict[value['name']] = value['value']
+                    elif isinstance(value, str) and value != '':
+                        # Handle case where value might be a string (fallback)
+                        envDict[key] = value
 
             if 'ExposedPorts' in inspectImage['Config']:
                 for item in inspectImage['Config']['ExposedPorts']:
@@ -975,11 +987,23 @@ class ContainerManager(multi.Thread):
             con.startOnReboot = startOnReboot
 
             if 'envConfirmation' in data and data['envConfirmation']:
-                # Formatting envList for usage
+                # Formatting envList for usage - handle both simple and advanced modes
                 envDict = {}
-                for key, value in envList.items():
-                    if (value['name'] != '') or (value['value'] != ''):
-                        envDict[value['name']] = value['value']
+                
+                # Check if advanced mode is being used
+                advanced_mode = data.get('advancedEnvMode', False)
+                
+                if advanced_mode:
+                    # Advanced mode: envList is already a dictionary of key-value pairs
+                    envDict = envList
+                else:
+                    # Simple mode: envList is an array of objects with name/value properties
+                    for key, value in envList.items():
+                        if isinstance(value, dict) and (value.get('name', '') != '' or value.get('value', '') != ''):
+                            envDict[value['name']] = value['value']
+                        elif isinstance(value, str) and value != '':
+                            # Handle case where value might be a string (fallback)
+                            envDict[key] = value
 
                 volumes = {}
                 for index, volume in volList.items():

@@ -124,6 +124,12 @@ app.controller('runContainer', function ($scope, $http) {
     $scope.iport = {};
     $scope.portType = {};
     $scope.envList = {};
+    
+    // Advanced Environment Variable Mode
+    $scope.advancedEnvMode = false;
+    $scope.advancedEnvText = '';
+    $scope.advancedEnvCount = 0;
+    $scope.parsedEnvVars = {};
     $scope.addVolField = function () {
         $scope.volList[$scope.volListNumber] = {'dest': '', 'src': ''};
         $scope.volListNumber = $scope.volListNumber + 1;
@@ -137,6 +143,358 @@ app.controller('runContainer', function ($scope, $http) {
     $scope.addEnvField = function () {
         var countEnv = Object.keys($scope.envList).length;
         $scope.envList[countEnv + 1] = {'name': '', 'value': ''};
+    };
+
+    // Advanced Environment Variable Functions
+    $scope.toggleEnvMode = function() {
+        if ($scope.advancedEnvMode) {
+            // Switching to advanced mode - convert existing envList to text format
+            $scope.convertToAdvancedFormat();
+        } else {
+            // Switching to simple mode - convert advanced text to envList
+            $scope.convertToSimpleFormat();
+        }
+    };
+
+    $scope.convertToAdvancedFormat = function() {
+        var envLines = [];
+        for (var key in $scope.envList) {
+            if ($scope.envList[key].name && $scope.envList[key].value) {
+                envLines.push($scope.envList[key].name + '=' + $scope.envList[key].value);
+            }
+        }
+        $scope.advancedEnvText = envLines.join('\n');
+        $scope.parseAdvancedEnv();
+    };
+
+    $scope.convertToSimpleFormat = function() {
+        $scope.parseAdvancedEnv();
+        var newEnvList = {};
+        var index = 0;
+        for (var key in $scope.parsedEnvVars) {
+            newEnvList[index] = {'name': key, 'value': $scope.parsedEnvVars[key]};
+            index++;
+        }
+        $scope.envList = newEnvList;
+    };
+
+    $scope.parseAdvancedEnv = function() {
+        $scope.parsedEnvVars = {};
+        $scope.advancedEnvCount = 0;
+        
+        if (!$scope.advancedEnvText) {
+            return;
+        }
+        
+        var lines = $scope.advancedEnvText.split('\n');
+        for (var i = 0; i < lines.length; i++) {
+            var line = lines[i].trim();
+            
+            // Skip empty lines and comments
+            if (!line || line.startsWith('#')) {
+                continue;
+            }
+            
+            // Parse KEY=VALUE format
+            var equalIndex = line.indexOf('=');
+            if (equalIndex > 0) {
+                var key = line.substring(0, equalIndex).trim();
+                var value = line.substring(equalIndex + 1).trim();
+                
+                // Remove quotes if present
+                if ((value.startsWith('"') && value.endsWith('"')) || 
+                    (value.startsWith("'") && value.endsWith("'"))) {
+                    value = value.slice(1, -1);
+                }
+                
+                if (key && key.match(/^[A-Za-z_][A-Za-z0-9_]*$/)) {
+                    $scope.parsedEnvVars[key] = value;
+                    $scope.advancedEnvCount++;
+                }
+            }
+        }
+    };
+
+    $scope.loadEnvTemplate = function() {
+        var templates = {
+            'web-app': 'NODE_ENV=production\nPORT=3000\nDATABASE_URL=postgresql://user:pass@localhost/db\nREDIS_URL=redis://localhost:6379\nJWT_SECRET=your-jwt-secret\nAPI_KEY=your-api-key',
+            'database': 'POSTGRES_DB=myapp\nPOSTGRES_USER=user\nPOSTGRES_PASSWORD=password\nPOSTGRES_HOST=localhost\nPOSTGRES_PORT=5432',
+            'api': 'API_HOST=0.0.0.0\nAPI_PORT=8080\nLOG_LEVEL=info\nCORS_ORIGIN=*\nRATE_LIMIT=1000\nAPI_KEY=your-secret-key',
+            'monitoring': 'PROMETHEUS_PORT=9090\nGRAFANA_PORT=3000\nALERTMANAGER_PORT=9093\nRETENTION_TIME=15d\nSCRAPE_INTERVAL=15s'
+        };
+        
+        var templateNames = Object.keys(templates);
+        var templateChoice = prompt('Choose a template:\n' + templateNames.map((name, i) => (i + 1) + '. ' + name).join('\n') + '\n\nEnter number or template name:');
+        
+        if (templateChoice) {
+            var templateIndex = parseInt(templateChoice) - 1;
+            var selectedTemplate = null;
+            
+            if (templateIndex >= 0 && templateIndex < templateNames.length) {
+                selectedTemplate = templates[templateNames[templateIndex]];
+            } else {
+                // Try to find by name
+                var templateName = templateChoice.toLowerCase().replace(/\s+/g, '-');
+                if (templates[templateName]) {
+                    selectedTemplate = templates[templateName];
+                }
+            }
+            
+            if (selectedTemplate) {
+                if ($scope.advancedEnvMode) {
+                    $scope.advancedEnvText = selectedTemplate;
+                    $scope.parseAdvancedEnv();
+                } else {
+                    // Convert template to simple format
+                    var lines = selectedTemplate.split('\n');
+                    $scope.envList = {};
+                    var index = 0;
+                    for (var i = 0; i < lines.length; i++) {
+                        var line = lines[i].trim();
+                        if (line && !line.startsWith('#')) {
+                            var equalIndex = line.indexOf('=');
+                            if (equalIndex > 0) {
+                                $scope.envList[index] = {
+                                    'name': line.substring(0, equalIndex).trim(),
+                                    'value': line.substring(equalIndex + 1).trim()
+                                };
+                                index++;
+                            }
+                        }
+                    }
+                }
+                
+                new PNotify({
+                    title: 'Template Loaded',
+                    text: 'Environment variable template has been loaded successfully',
+                    type: 'success'
+                });
+            }
+        }
+    };
+
+    // Docker Compose Functions for runContainer
+    $scope.generateDockerCompose = function() {
+        // Get container information from form
+        var containerInfo = {
+            name: $scope.name || 'my-container',
+            image: $scope.image || 'nginx:latest',
+            ports: $scope.eport || {},
+            volumes: $scope.volList || {},
+            environment: {}
+        };
+        
+        // Collect environment variables
+        if ($scope.advancedEnvMode && $scope.parsedEnvVars) {
+            containerInfo.environment = $scope.parsedEnvVars;
+        } else {
+            for (var key in $scope.envList) {
+                if ($scope.envList[key].name && $scope.envList[key].value) {
+                    containerInfo.environment[$scope.envList[key].name] = $scope.envList[key].value;
+                }
+            }
+        }
+        
+        // Generate docker-compose.yml content
+        var composeContent = generateDockerComposeYml(containerInfo);
+        
+        // Create and download file
+        var blob = new Blob([composeContent], { type: 'text/yaml' });
+        var url = window.URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = 'docker-compose.yml';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+        
+        new PNotify({
+            title: 'Docker Compose Generated',
+            text: 'docker-compose.yml file has been generated and downloaded',
+            type: 'success'
+        });
+    };
+
+    $scope.generateEnvFile = function() {
+        var envText = '';
+        
+        if ($scope.advancedEnvMode && $scope.advancedEnvText) {
+            envText = $scope.advancedEnvText;
+        } else {
+            // Convert simple mode to .env format
+            for (var key in $scope.envList) {
+                if ($scope.envList[key].name && $scope.envList[key].value) {
+                    envText += $scope.envList[key].name + '=' + $scope.envList[key].value + '\n';
+                }
+            }
+        }
+        
+        if (!envText.trim()) {
+            new PNotify({
+                title: 'Nothing to Generate',
+                text: 'No environment variables to generate .env file',
+                type: 'warning'
+            });
+            return;
+        }
+        
+        // Create and download file
+        var blob = new Blob([envText], { type: 'text/plain' });
+        var url = window.URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = '.env';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+        
+        new PNotify({
+            title: '.env File Generated',
+            text: '.env file has been generated and downloaded',
+            type: 'success'
+        });
+    };
+
+    $scope.showComposeHelp = function() {
+        var helpContent = `
+            <div class="compose-help-content">
+                <h4><i class="fas fa-info-circle"></i> How to use Docker Compose with Environment Variables</h4>
+                <div class="help-steps">
+                    <h5>Step 1: Download Files</h5>
+                    <p>Click "Generate docker-compose.yml" and "Generate .env file" to download both files.</p>
+                    
+                    <h5>Step 2: Place Files</h5>
+                    <p>Place both files in the same directory on your server.</p>
+                    
+                    <h5>Step 3: Run Docker Compose</h5>
+                    <p>Run the following commands in your terminal:</p>
+                    <pre><code>docker compose up -d</code></pre>
+                    
+                    <h5>Step 4: Update Environment Variables</h5>
+                    <p>To update environment variables:</p>
+                    <ol>
+                        <li>Edit the .env file</li>
+                        <li>Run: <code>docker compose up -d</code></li>
+                        <li>Only the environment variables will be reloaded (no container rebuild needed!)</li>
+                    </ol>
+                    
+                    <h5>Benefits:</h5>
+                    <ul>
+                        <li>No need to recreate containers</li>
+                        <li>Faster environment variable updates</li>
+                        <li>Version control friendly</li>
+                        <li>Easy to share configurations</li>
+                    </ul>
+                </div>
+            </div>
+        `;
+        
+        // Create modal for help
+        var modal = document.createElement('div');
+        modal.className = 'modal fade';
+        modal.innerHTML = `
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">
+                            <i class="fas fa-question-circle"></i>
+                            Docker Compose Help
+                        </h4>
+                        <button type="button" class="close" data-dismiss="modal">
+                            <span>&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        ${helpContent}
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        $(modal).modal('show');
+        
+        // Remove modal when closed
+        $(modal).on('hidden.bs.modal', function() {
+            document.body.removeChild(modal);
+        });
+    };
+
+    $scope.loadEnvFromFile = function() {
+        var input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.env,text/plain';
+        input.onchange = function(event) {
+            var file = event.target.files[0];
+            if (file) {
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    $scope.advancedEnvText = e.target.result;
+                    $scope.parseAdvancedEnv();
+                    $scope.$apply();
+                    
+                    new PNotify({
+                        title: 'File Loaded',
+                        text: 'Environment variables loaded from file successfully',
+                        type: 'success'
+                    });
+                };
+                reader.readAsText(file);
+            }
+        };
+        input.click();
+    };
+
+    $scope.copyEnvToClipboard = function() {
+        var textToCopy = '';
+        
+        if ($scope.advancedEnvMode) {
+            textToCopy = $scope.advancedEnvText;
+        } else {
+            // Convert simple format to text
+            var envLines = [];
+            for (var key in $scope.envList) {
+                if ($scope.envList[key].name && $scope.envList[key].value) {
+                    envLines.push($scope.envList[key].name + '=' + $scope.envList[key].value);
+                }
+            }
+            textToCopy = envLines.join('\n');
+        }
+        
+        if (textToCopy) {
+            navigator.clipboard.writeText(textToCopy).then(function() {
+                new PNotify({
+                    title: 'Copied to Clipboard',
+                    text: 'Environment variables copied to clipboard',
+                    type: 'success'
+                });
+            }).catch(function(err) {
+                // Fallback for older browsers
+                var textArea = document.createElement('textarea');
+                textArea.value = textToCopy;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                
+                new PNotify({
+                    title: 'Copied to Clipboard',
+                    text: 'Environment variables copied to clipboard',
+                    type: 'success'
+                });
+            });
+        }
+    };
+
+    $scope.clearAdvancedEnv = function() {
+        $scope.advancedEnvText = '';
+        $scope.parsedEnvVars = {};
+        $scope.advancedEnvCount = 0;
     };
 
     var statusFile;
@@ -193,14 +551,29 @@ app.controller('runContainer', function ($scope, $http) {
         var image = $scope.image;
         var numberOfEnv = Object.keys($scope.envList).length;
 
+        // Prepare environment variables based on mode
+        var finalEnvList = {};
+        if ($scope.advancedEnvMode && $scope.parsedEnvVars) {
+            // Use parsed environment variables from advanced mode
+            finalEnvList = $scope.parsedEnvVars;
+        } else {
+            // Convert simple envList to proper format
+            for (var key in $scope.envList) {
+                if ($scope.envList[key].name && $scope.envList[key].value) {
+                    finalEnvList[$scope.envList[key].name] = $scope.envList[key].value;
+                }
+            }
+        }
+
         var data = {
             name: name,
             tag: tag,
             memory: memory,
             dockerOwner: dockerOwner,
             image: image,
-            envList: $scope.envList,
-            volList: $scope.volList
+            envList: finalEnvList,
+            volList: $scope.volList,
+            advancedEnvMode: $scope.advancedEnvMode
 
         };
 
@@ -580,6 +953,12 @@ app.controller('viewContainer', function ($scope, $http, $interval, $timeout) {
     $scope.statusInterval = null;
     $scope.statsInterval = null;
     
+    // Advanced Environment Variable Functions for viewContainer
+    $scope.advancedEnvMode = false;
+    $scope.advancedEnvText = '';
+    $scope.advancedEnvCount = 0;
+    $scope.parsedEnvVars = {};
+    
     // Auto-refresh status every 5 seconds
     $scope.startStatusMonitoring = function() {
         $scope.statusInterval = $interval(function() {
@@ -664,6 +1043,492 @@ app.controller('viewContainer', function ($scope, $http, $interval, $timeout) {
         var countEnv = Object.keys($scope.envList).length;
         $scope.envList[countEnv + 1] = {'name': '', 'value': ''};
     };
+
+    // Advanced Environment Variable Functions for viewContainer
+    $scope.toggleEnvMode = function() {
+        if ($scope.advancedEnvMode) {
+            // Switching to advanced mode - convert existing envList to text format
+            $scope.convertToAdvancedFormat();
+        } else {
+            // Switching to simple mode - convert advanced text to envList
+            $scope.convertToSimpleFormat();
+        }
+    };
+
+    $scope.convertToAdvancedFormat = function() {
+        var envLines = [];
+        for (var key in $scope.envList) {
+            if ($scope.envList[key].name && $scope.envList[key].value) {
+                envLines.push($scope.envList[key].name + '=' + $scope.envList[key].value);
+            }
+        }
+        $scope.advancedEnvText = envLines.join('\n');
+        $scope.parseAdvancedEnv();
+    };
+
+    $scope.convertToSimpleFormat = function() {
+        $scope.parseAdvancedEnv();
+        var newEnvList = {};
+        var index = 0;
+        for (var key in $scope.parsedEnvVars) {
+            newEnvList[index] = {'name': key, 'value': $scope.parsedEnvVars[key]};
+            index++;
+        }
+        $scope.envList = newEnvList;
+    };
+
+    $scope.parseAdvancedEnv = function() {
+        $scope.parsedEnvVars = {};
+        $scope.advancedEnvCount = 0;
+        
+        if (!$scope.advancedEnvText) {
+            return;
+        }
+        
+        var lines = $scope.advancedEnvText.split('\n');
+        for (var i = 0; i < lines.length; i++) {
+            var line = lines[i].trim();
+            
+            // Skip empty lines and comments
+            if (!line || line.startsWith('#')) {
+                continue;
+            }
+            
+            // Parse KEY=VALUE format
+            var equalIndex = line.indexOf('=');
+            if (equalIndex > 0) {
+                var key = line.substring(0, equalIndex).trim();
+                var value = line.substring(equalIndex + 1).trim();
+                
+                // Remove quotes if present
+                if ((value.startsWith('"') && value.endsWith('"')) || 
+                    (value.startsWith("'") && value.endsWith("'"))) {
+                    value = value.slice(1, -1);
+                }
+                
+                if (key && key.match(/^[A-Za-z_][A-Za-z0-9_]*$/)) {
+                    $scope.parsedEnvVars[key] = value;
+                    $scope.advancedEnvCount++;
+                }
+            }
+        }
+    };
+
+    $scope.copyEnvToClipboard = function() {
+        var textToCopy = '';
+        
+        if ($scope.advancedEnvMode) {
+            textToCopy = $scope.advancedEnvText;
+        } else {
+            // Convert simple format to text
+            var envLines = [];
+            for (var key in $scope.envList) {
+                if ($scope.envList[key].name && $scope.envList[key].value) {
+                    envLines.push($scope.envList[key].name + '=' + $scope.envList[key].value);
+                }
+            }
+            textToCopy = envLines.join('\n');
+        }
+        
+        if (textToCopy) {
+            navigator.clipboard.writeText(textToCopy).then(function() {
+                new PNotify({
+                    title: 'Copied to Clipboard',
+                    text: 'Environment variables copied to clipboard',
+                    type: 'success'
+                });
+            }).catch(function(err) {
+                // Fallback for older browsers
+                var textArea = document.createElement('textarea');
+                textArea.value = textToCopy;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                
+                new PNotify({
+                    title: 'Copied to Clipboard',
+                    text: 'Environment variables copied to clipboard',
+                    type: 'success'
+                });
+            });
+        }
+    };
+
+    // Import/Export Functions
+    $scope.importEnvFromContainer = function() {
+        // Show modal to select container to import from
+        $scope.showContainerImportModal = true;
+        $scope.loadContainersForImport();
+    };
+
+    $scope.loadContainersForImport = function() {
+        $scope.importLoading = true;
+        $scope.importContainers = [];
+        
+        $http.get('/dockerManager/loadContainersForImport/', {
+            params: {
+                currentContainer: $scope.cName
+            }
+        }).then(function(response) {
+            $scope.importContainers = response.data.containers || [];
+            $scope.importLoading = false;
+        }).catch(function(error) {
+            new PNotify({
+                title: 'Import Failed',
+                text: 'Failed to load containers for import',
+                type: 'error'
+            });
+            $scope.importLoading = false;
+        });
+    };
+
+    $scope.selectContainerForImport = function(container) {
+        $scope.selectedImportContainer = container;
+        $scope.loadEnvFromContainer(container.name);
+    };
+
+    $scope.loadEnvFromContainer = function(containerName) {
+        $scope.importEnvLoading = true;
+        
+        $http.get('/dockerManager/getContainerEnv/', {
+            params: {
+                containerName: containerName
+            }
+        }).then(function(response) {
+            if (response.data.success) {
+                var envVars = response.data.envVars || {};
+                
+                if ($scope.advancedEnvMode) {
+                    // Convert to .env format
+                    var envText = '';
+                    for (var key in envVars) {
+                        envText += key + '=' + envVars[key] + '\n';
+                    }
+                    $scope.advancedEnvText = envText;
+                    $scope.parseAdvancedEnv();
+                } else {
+                    // Convert to simple mode
+                    $scope.envList = {};
+                    var index = 0;
+                    for (var key in envVars) {
+                        $scope.envList[index] = {'name': key, 'value': envVars[key]};
+                        index++;
+                    }
+                }
+                
+                $scope.showContainerImportModal = false;
+                new PNotify({
+                    title: 'Import Successful',
+                    text: 'Environment variables imported from ' + containerName,
+                    type: 'success'
+                });
+            } else {
+                new PNotify({
+                    title: 'Import Failed',
+                    text: response.data.message || 'Failed to import environment variables',
+                    type: 'error'
+                });
+            }
+            $scope.importEnvLoading = false;
+        }).catch(function(error) {
+            new PNotify({
+                title: 'Import Failed',
+                text: 'Failed to import environment variables',
+                type: 'error'
+            });
+            $scope.importEnvLoading = false;
+        });
+    };
+
+    $scope.exportEnvToFile = function() {
+        var envText = '';
+        
+        if ($scope.advancedEnvMode && $scope.advancedEnvText) {
+            envText = $scope.advancedEnvText;
+        } else {
+            // Convert simple mode to .env format
+            for (var key in $scope.envList) {
+                if ($scope.envList[key].name && $scope.envList[key].value) {
+                    envText += $scope.envList[key].name + '=' + $scope.envList[key].value + '\n';
+                }
+            }
+        }
+        
+        if (!envText.trim()) {
+            new PNotify({
+                title: 'Nothing to Export',
+                text: 'No environment variables to export',
+                type: 'warning'
+            });
+            return;
+        }
+        
+        // Create and download file
+        var blob = new Blob([envText], { type: 'text/plain' });
+        var url = window.URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = $scope.cName + '_environment.env';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+        
+        new PNotify({
+            title: 'Export Successful',
+            text: 'Environment variables exported to file',
+            type: 'success'
+        });
+    };
+
+    // Docker Compose Functions
+    $scope.generateDockerCompose = function() {
+        // Get container information
+        var containerInfo = {
+            name: $scope.cName,
+            image: $scope.image || 'nginx:latest',
+            ports: $scope.ports || {},
+            volumes: $scope.volList || {},
+            environment: {}
+        };
+        
+        // Collect environment variables
+        if ($scope.advancedEnvMode && $scope.parsedEnvVars) {
+            containerInfo.environment = $scope.parsedEnvVars;
+        } else {
+            for (var key in $scope.envList) {
+                if ($scope.envList[key].name && $scope.envList[key].value) {
+                    containerInfo.environment[$scope.envList[key].name] = $scope.envList[key].value;
+                }
+            }
+        }
+        
+        // Generate docker-compose.yml content
+        var composeContent = generateDockerComposeYml(containerInfo);
+        
+        // Create and download file
+        var blob = new Blob([composeContent], { type: 'text/yaml' });
+        var url = window.URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = 'docker-compose.yml';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+        
+        new PNotify({
+            title: 'Docker Compose Generated',
+            text: 'docker-compose.yml file has been generated and downloaded',
+            type: 'success'
+        });
+    };
+
+    $scope.generateEnvFile = function() {
+        var envText = '';
+        
+        if ($scope.advancedEnvMode && $scope.advancedEnvText) {
+            envText = $scope.advancedEnvText;
+        } else {
+            // Convert simple mode to .env format
+            for (var key in $scope.envList) {
+                if ($scope.envList[key].name && $scope.envList[key].value) {
+                    envText += $scope.envList[key].name + '=' + $scope.envList[key].value + '\n';
+                }
+            }
+        }
+        
+        if (!envText.trim()) {
+            new PNotify({
+                title: 'Nothing to Generate',
+                text: 'No environment variables to generate .env file',
+                type: 'warning'
+            });
+            return;
+        }
+        
+        // Create and download file
+        var blob = new Blob([envText], { type: 'text/plain' });
+        var url = window.URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = '.env';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+        
+        new PNotify({
+            title: '.env File Generated',
+            text: '.env file has been generated and downloaded',
+            type: 'success'
+        });
+    };
+
+    $scope.showComposeHelp = function() {
+        var helpContent = `
+            <div class="compose-help-content">
+                <h4><i class="fas fa-info-circle"></i> How to use Docker Compose with Environment Variables</h4>
+                <div class="help-steps">
+                    <h5>Step 1: Download Files</h5>
+                    <p>Click "Generate docker-compose.yml" and "Generate .env file" to download both files.</p>
+                    
+                    <h5>Step 2: Place Files</h5>
+                    <p>Place both files in the same directory on your server.</p>
+                    
+                    <h5>Step 3: Run Docker Compose</h5>
+                    <p>Run the following commands in your terminal:</p>
+                    <pre><code>docker compose up -d</code></pre>
+                    
+                    <h5>Step 4: Update Environment Variables</h5>
+                    <p>To update environment variables:</p>
+                    <ol>
+                        <li>Edit the .env file</li>
+                        <li>Run: <code>docker compose up -d</code></li>
+                        <li>Only the environment variables will be reloaded (no container rebuild needed!)</li>
+                    </ol>
+                    
+                    <h5>Benefits:</h5>
+                    <ul>
+                        <li>No need to recreate containers</li>
+                        <li>Faster environment variable updates</li>
+                        <li>Version control friendly</li>
+                        <li>Easy to share configurations</li>
+                    </ul>
+                </div>
+            </div>
+        `;
+        
+        // Create modal for help
+        var modal = document.createElement('div');
+        modal.className = 'modal fade';
+        modal.innerHTML = `
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">
+                            <i class="fas fa-question-circle"></i>
+                            Docker Compose Help
+                        </h4>
+                        <button type="button" class="close" data-dismiss="modal">
+                            <span>&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        ${helpContent}
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        $(modal).modal('show');
+        
+        // Remove modal when closed
+        $(modal).on('hidden.bs.modal', function() {
+            document.body.removeChild(modal);
+        });
+    };
+
+    // Helper function to generate Docker Compose YAML
+    function generateDockerComposeYml(containerInfo) {
+        var yml = 'version: \'3.8\'\n\n';
+        yml += 'services:\n';
+        yml += '  ' + containerInfo.name + ':\n';
+        yml += '    image: ' + containerInfo.image + '\n';
+        yml += '    container_name: ' + containerInfo.name + '\n';
+        
+        // Add ports
+        var ports = Object.keys(containerInfo.ports);
+        if (ports.length > 0) {
+            yml += '    ports:\n';
+            for (var i = 0; i < ports.length; i++) {
+                var port = ports[i];
+                if (containerInfo.ports[port]) {
+                    yml += '      - "' + containerInfo.ports[port] + ':' + port + '"\n';
+                }
+            }
+        }
+        
+        // Add volumes
+        var volumes = Object.keys(containerInfo.volumes);
+        if (volumes.length > 0) {
+            yml += '    volumes:\n';
+            for (var i = 0; i < volumes.length; i++) {
+                var volume = volumes[i];
+                if (containerInfo.volumes[volume]) {
+                    yml += '      - ' + containerInfo.volumes[volume] + ':' + volume + '\n';
+                }
+            }
+        }
+        
+        // Add environment variables
+        var envVars = Object.keys(containerInfo.environment);
+        if (envVars.length > 0) {
+            yml += '    environment:\n';
+            for (var i = 0; i < envVars.length; i++) {
+                var envVar = envVars[i];
+                yml += '      - ' + envVar + '=' + containerInfo.environment[envVar] + '\n';
+            }
+        }
+        
+        // Add restart policy
+        yml += '    restart: unless-stopped\n';
+        
+        return yml;
+    }
+
+    // Helper function to generate Docker Compose YAML (for runContainer)
+    function generateDockerComposeYml(containerInfo) {
+        var yml = 'version: \'3.8\'\n\n';
+        yml += 'services:\n';
+        yml += '  ' + containerInfo.name + ':\n';
+        yml += '    image: ' + containerInfo.image + '\n';
+        yml += '    container_name: ' + containerInfo.name + '\n';
+        
+        // Add ports
+        var ports = Object.keys(containerInfo.ports);
+        if (ports.length > 0) {
+            yml += '    ports:\n';
+            for (var i = 0; i < ports.length; i++) {
+                var port = ports[i];
+                if (containerInfo.ports[port]) {
+                    yml += '      - "' + containerInfo.ports[port] + ':' + port + '"\n';
+                }
+            }
+        }
+        
+        // Add volumes
+        var volumes = Object.keys(containerInfo.volumes);
+        if (volumes.length > 0) {
+            yml += '    volumes:\n';
+            for (var i = 0; i < volumes.length; i++) {
+                var volume = volumes[i];
+                if (containerInfo.volumes[volume]) {
+                    yml += '      - ' + containerInfo.volumes[volume] + ':' + volume + '\n';
+                }
+            }
+        }
+        
+        // Add environment variables
+        var envVars = Object.keys(containerInfo.environment);
+        if (envVars.length > 0) {
+            yml += '    environment:\n';
+            for (var i = 0; i < envVars.length; i++) {
+                var envVar = envVars[i];
+                yml += '      - ' + envVar + '=' + containerInfo.environment[envVar] + '\n';
+            }
+        }
+        
+        // Add restart policy
+        yml += '    restart: unless-stopped\n';
+        
+        return yml;
+    }
 
     $scope.showTop = function () {
         $scope.topHead = [];
@@ -832,13 +1697,28 @@ app.controller('viewContainer', function ($scope, $http, $interval, $timeout) {
         url = "/docker/saveContainerSettings";
         $scope.savingSettings = true;
 
+        // Prepare environment variables based on mode
+        var finalEnvList = {};
+        if ($scope.advancedEnvMode && $scope.parsedEnvVars) {
+            // Use parsed environment variables from advanced mode
+            finalEnvList = $scope.parsedEnvVars;
+        } else {
+            // Convert simple envList to proper format
+            for (var key in $scope.envList) {
+                if ($scope.envList[key].name && $scope.envList[key].value) {
+                    finalEnvList[$scope.envList[key].name] = $scope.envList[key].value;
+                }
+            }
+        }
+
         var data = {
             name: $scope.cName,
             memory: $scope.memory,
             startOnReboot: $scope.startOnReboot,
             envConfirmation: $scope.envConfirmation,
-            envList: $scope.envList,
-            volList: $scope.volList
+            envList: finalEnvList,
+            volList: $scope.volList,
+            advancedEnvMode: $scope.advancedEnvMode
         };
 
 
