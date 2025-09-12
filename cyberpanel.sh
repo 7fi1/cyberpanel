@@ -88,7 +88,7 @@ log_info "CyberPanel installation started"
 log_info "Log file: $LOG_FILE"
 log_info "Debug log file: $DEBUG_LOG_FILE"
 
-#CyberPanel installer script for CentOS 7, CentOS 8, CloudLinux 7, AlmaLinux 8, RockyLinux 8, Ubuntu 18.04, Ubuntu 20.04, Ubuntu 20.10, Ubuntu 22.04, Ubuntu 24.04, openEuler 20.03 and openEuler 22.03
+#CyberPanel installer script for CentOS 7, CentOS 8, CloudLinux 7, AlmaLinux 8, AlmaLinux 9, AlmaLinux 10, RockyLinux 8, Ubuntu 18.04, Ubuntu 20.04, Ubuntu 20.10, Ubuntu 22.04, Ubuntu 24.04, Ubuntu 24.04.3, openEuler 20.03 and openEuler 22.03
 #For whoever may edit this script, please follow:
 #Please use Pre_Install_xxx() and Post_Install_xxx() if you want to something respectively before or after the panel installation
 #and update below accordingly
@@ -99,7 +99,7 @@ log_info "Debug log file: $DEBUG_LOG_FILE"
 #Set_Default_Variables() --->  set some default variable for later use
 #Check_Root()  ---> check for root
 #Check_Server_IP()  ---> check for server IP and geolocation at country level
-#Check_OS() ---> check system , support on CentOS 7/8, RockyLinux 8, AlmaLinux 8, Ubuntu 18/20/22/24, openEuler 20.03/22.03 and CloudLinux 7, 8 is untested.
+#Check_OS() ---> check system , support on CentOS 7/8, RockyLinux 8, AlmaLinux 8/9/10, Ubuntu 18/20/22/24, openEuler 20.03/22.03 and CloudLinux 7, 8 is untested.
 #Check_Virtualization()  ---> check for virtualizaon , #LXC not supported# , some edit needed on OVZ
 #Check_Panel() --->  check to make sure no other panel is installed
 #Check_Process() ---> check no other process like Apache is running
@@ -297,6 +297,17 @@ gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
 gpgcheck=1
 EOF
     elif [[ "$Server_OS_Version" = "9" ]] && uname -m | grep -q 'x86_64'; then
+        cat <<EOF >/etc/yum.repos.d/MariaDB.repo
+# MariaDB 10.11 CentOS repository list - created 2021-08-06 02:01 UTC
+# http://downloads.mariadb.org/mariadb/repositories/
+[mariadb]
+name = MariaDB
+baseurl = http://yum.mariadb.org/10.11/rhel9-amd64/
+gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
+enabled=1
+gpgcheck=1
+EOF
+    elif [[ "$Server_OS_Version" = "10" ]] && uname -m | grep -q 'x86_64'; then
         cat <<EOF >/etc/yum.repos.d/MariaDB.repo
 # MariaDB 10.11 CentOS repository list - created 2021-08-06 02:01 UTC
 # http://downloads.mariadb.org/mariadb/repositories/
@@ -513,7 +524,7 @@ if [ -z "$XDG_CURRENT_DESKTOP" ]; then
     echo -e "Desktop OS not detected. Proceeding\n"
 else
     echo "$XDG_CURRENT_DESKTOP defined appears to be a desktop OS. Bailing as CyberPanel is incompatible."
-    echo -e "\nCyberPanel is supported on server OS types only. Such as Ubuntu 18.04 x86_64, Ubuntu 20.04 x86_64, Ubuntu 20.10 x86_64, Ubuntu 22.04 x86_64, Ubuntu 24.04 x86_64, CentOS 8.x, AlmaLinux 8.x and CloudLinux 7.x...\n"
+    echo -e "\nCyberPanel is supported on server OS types only. Such as Ubuntu 18.04 x86_64, Ubuntu 20.04 x86_64, Ubuntu 20.10 x86_64, Ubuntu 22.04 x86_64, Ubuntu 24.04 x86_64, Ubuntu 24.04.3 x86_64, CentOS 8.x, AlmaLinux 8.x, AlmaLinux 9.x, AlmaLinux 10.x and CloudLinux 7.x...\n"
     exit
 fi
 
@@ -542,8 +553,8 @@ elif grep -q -E "openEuler 20.03|openEuler 22.03" /etc/os-release ; then
   Server_OS="openEuler"
 else
   echo -e "Unable to detect your system..."
-  echo -e "\nCyberPanel is supported on x86_64 based Ubuntu 18.04, Ubuntu 20.04, Ubuntu 20.10, Ubuntu 22.04, Ubuntu 24.04, CentOS 7, CentOS 8, CentOS 9, RHEL 8, RHEL 9, AlmaLinux 8, AlmaLinux 9, AlmaLinux 10, RockyLinux 8, CloudLinux 7, CloudLinux 8, openEuler 20.03, openEuler 22.03...\n"
-  Debug_Log2 "CyberPanel is supported on x86_64 based Ubuntu 18.04, Ubuntu 20.04, Ubuntu 20.10, Ubuntu 22.04, Ubuntu 24.04, CentOS 7, CentOS 8, CentOS 9, RHEL 8, RHEL 9, AlmaLinux 8, AlmaLinux 9, AlmaLinux 10, RockyLinux 8, CloudLinux 7, CloudLinux 8, openEuler 20.03, openEuler 22.03... [404]"
+  echo -e "\nCyberPanel is supported on x86_64 based Ubuntu 18.04, Ubuntu 20.04, Ubuntu 20.10, Ubuntu 22.04, Ubuntu 24.04, Ubuntu 24.04.3, CentOS 7, CentOS 8, CentOS 9, RHEL 8, RHEL 9, AlmaLinux 8, AlmaLinux 9, AlmaLinux 10, RockyLinux 8, CloudLinux 7, CloudLinux 8, openEuler 20.03, openEuler 22.03...\n"
+  Debug_Log2 "CyberPanel is supported on x86_64 based Ubuntu 18.04, Ubuntu 20.04, Ubuntu 20.10, Ubuntu 22.04, Ubuntu 24.04, Ubuntu 24.04.3, CentOS 7, CentOS 8, CentOS 9, RHEL 8, RHEL 9, AlmaLinux 8, AlmaLinux 9, AlmaLinux 10, RockyLinux 8, CloudLinux 7, CloudLinux 8, openEuler 20.03, openEuler 22.03... [404]"
   exit
 fi
 
@@ -1115,7 +1126,7 @@ if [[ $Server_OS = "CentOS" ]] ; then
   # Setup MariaDB repository
   setup_mariadb_repo
 
-  if [[ "$Server_OS_Version" = "9" ]]; then
+  if [[ "$Server_OS_Version" = "9" ]] || [[ "$Server_OS_Version" = "10" ]]; then
     # Check if architecture is aarch64
     if uname -m | grep -q 'aarch64' ; then
       # Run the following commands if architecture is aarch64
@@ -1286,7 +1297,7 @@ Debug_Log2 "Setting up repositories for CN server...,1"
 Download_Requirement() {
 for i in {1..50} ;
   do
-  if [[ "$Server_OS_Version" = "22" ]] || [[ "$Server_OS_Version" = "24" ]] || [[ "$Server_OS_Version" = "9" ]]; then
+  if [[ "$Server_OS_Version" = "22" ]] || [[ "$Server_OS_Version" = "24" ]] || [[ "$Server_OS_Version" = "9" ]] || [[ "$Server_OS_Version" = "10" ]]; then
    wget -O /usr/local/requirments.txt "${Git_Content_URL}/${Branch_Name}/requirments.txt"
   else
    wget -O /usr/local/requirments.txt "${Git_Content_URL}/${Branch_Name}/requirments-old.txt"
@@ -1320,7 +1331,7 @@ if [[ "$Server_OS" = "CentOS" ]] || [[ "$Server_OS" = "openEuler" ]] ; then
   elif [[ "$Server_OS_Version" = "8" ]] ; then
     dnf install -y libnsl zip wget strace net-tools curl which bc telnet htop libevent-devel gcc libattr-devel xz-devel mariadb-devel curl-devel git platform-python-devel tar socat python3 zip unzip bind-utils gpgme-devel
       Check_Return
-  elif [[ "$Server_OS_Version" = "9" ]] ; then
+  elif [[ "$Server_OS_Version" = "9" ]] || [[ "$Server_OS_Version" = "10" ]] ; then
 
     #!/bin/bash
 
@@ -1706,7 +1717,7 @@ if [[ "$Server_OS" = "CentOS" ]] ; then
   #get this set up beforehand.
   fi
 
-  if [[ "$Server_OS_Version" = "9" ]] ; then
+  if [[ "$Server_OS_Version" = "9" ]] || [[ "$Server_OS_Version" = "10" ]] ; then
     sed -i 's|rpm -Uvh http://rpms.litespeedtech.com/centos/litespeed-repo-1.1-1.el8.noarch.rpm|curl -o /etc/yum.repos.d/litespeed.repo https://rpms.litespeedtech.com/centos/litespeed.repo|g' install.py
     sed -i "s|mirrorlist=http://mirrorlist.ghettoforge.org/el/8/gf/\$basearch/mirrorlist|baseurl=https://cyberpanel.sh/mirror.ghettoforge.net/distributions/gf/el/9/gf/x86_64/|g" /etc/yum.repos.d/gf.repo
     sed -i "s|mirrorlist=http://mirrorlist.ghettoforge.org/el/8/plus/\$basearch/mirrorlist|baseurl=https://cyberpanel.sh/mirror.ghettoforge.net/distributions/gf/el/9/plus/x86_64/|g" /etc/yum.repos.d/gf.repo
@@ -1882,7 +1893,7 @@ Post_Install_Addon_Redis() {
 
   # Install Redis server
   if [[ "$Server_OS" = "CentOS" ]]; then
-    if [[ "$Server_OS_Version" = "8" || "$Server_OS_Version" = "9" ]]; then
+    if [[ "$Server_OS_Version" = "8" || "$Server_OS_Version" = "9" || "$Server_OS_Version" = "10" ]]; then
       install_package "redis"
     else
       yum -y install http://rpms.remirepo.net/enterprise/remi-release-7.rpm
@@ -2150,8 +2161,8 @@ if [[ "$Server_OS" = "Ubuntu" ]] && ([[ "$Server_OS_Version" = "22" ]] || [[ "$S
     pip3 install --upgrade virtualenv
     virtualenv -p /usr/bin/python3 /usr/local/CyberCP
   fi
-elif [[ "$Server_OS" = "CentOS" ]] && [[ "$Server_OS_Version" = "9" ]] ; then
-  echo -e "AlmaLinux/Rocky Linux 9 detected, using python3 -m venv..."
+elif [[ "$Server_OS" = "CentOS" ]] && ([[ "$Server_OS_Version" = "9" ]] || [[ "$Server_OS_Version" = "10" ]]) ; then
+  echo -e "AlmaLinux/Rocky Linux 9/10 detected, using python3 -m venv..."
   if python3 -m venv /usr/local/CyberCP 2>&1; then
     echo -e "Virtual environment created successfully"
   else
@@ -2200,7 +2211,7 @@ if [[ "$Server_OS" = "Ubuntu" ]] && ([[ "$Server_OS_Version" = "22" ]] || [[ "$S
   # Ubuntu 24.04 ships with Python 3.12, but using 3.10 for compatibility with CyberPanel
   cp /usr/bin/python3.10 /usr/local/CyberCP/bin/python3
 else
-  if [[ "$Server_OS_Version" = "9" ]] || [[ "$Server_OS_Version" = "8" ]] || [[ "$Server_OS_Version" = "20" ]] || [[ "$Server_OS_Version" = "24" ]]; then
+  if [[ "$Server_OS_Version" = "9" ]] || [[ "$Server_OS_Version" = "10" ]] || [[ "$Server_OS_Version" = "8" ]] || [[ "$Server_OS_Version" = "20" ]] || [[ "$Server_OS_Version" = "24" ]]; then
     echo "PYTHONHOME=/usr" > /usr/local/lscp/conf/pythonenv.conf
   else
     # Uncomment and use the following lines if necessary for other OS versions

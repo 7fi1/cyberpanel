@@ -18,6 +18,7 @@ Web Hosting Control Panel powered by OpenLiteSpeed, designed to simplify hosting
 - 📀 **One-click Backups and Restores**.
 - 🐳 **Docker Management** with command execution capabilities.
 - 🤖 **AI-Powered Security Scanner** for enhanced protection.
+- 📊 **Monthly Bandwidth Reset** - Automatic bandwidth usage reset (Fixed in latest version).
 
 ---
 
@@ -75,9 +76,10 @@ CyberPanel runs on x86_64 architecture and supports the following operating syst
 
 ### **✅ Currently Supported**
 
+- **Ubuntu 24.04.3** - Supported until April 2029 ⭐ **NEW!**
 - **Ubuntu 22.04** - Supported until April 2027
 - **Ubuntu 20.04** - Supported until April 2025
-- **AlmaLinux 10** - Supported until May 2030
+- **AlmaLinux 10** - Supported until May 2030 ⭐ **NEW!**
 - **AlmaLinux 9** - Supported until May 2032
 - **AlmaLinux 8** - Supported until May 2029
 - **RockyLinux 9** - Supported until May 2032
@@ -107,6 +109,7 @@ Install CyberPanel easily with the following command:
 sh <(curl https://cyberpanel.net/install.sh || wget -O - https://cyberpanel.net/install.sh)
 ```
 
+
 ---
 
 ## 📊 Upgrading CyberPanel
@@ -116,6 +119,22 @@ Upgrade your CyberPanel installation using:
 ```bash
 sh <(curl https://raw.githubusercontent.com/usmannasir/cyberpanel/stable/preUpgrade.sh || wget -O - https://raw.githubusercontent.com/usmannasir/cyberpanel/stable/preUpgrade.sh)
 ```
+
+---
+
+## 🆕 Recent Updates & Fixes
+
+### **Bandwidth Reset Issue Fixed** (January 2025)
+- **Issue**: Monthly bandwidth usage was not resetting, causing cumulative values to grow indefinitely
+- **Solution**: Implemented automatic monthly bandwidth reset for all websites and child domains
+- **Affected OS**: All supported operating systems (Ubuntu, AlmaLinux, RockyLinux, RHEL, CloudLinux, CentOS)
+- **Manual Reset**: Use `/usr/local/CyberCP/scripts/reset_bandwidth.sh` for immediate reset
+- **Documentation**: See [Bandwidth Reset Fix Guide](to-do/cyberpanel-bandwidth-reset-fix.md)
+
+### **New Operating System Support Added** (January 2025)
+- **Ubuntu 24.04.3**: Full compatibility with latest Ubuntu LTS
+- **AlmaLinux 10**: Full compatibility with latest AlmaLinux release
+- **Long-term Support**: Both supported until 2029-2030
 
 ---
 
@@ -146,4 +165,22 @@ sh <(curl https://raw.githubusercontent.com/usmannasir/cyberpanel/stable/preUpgr
 | 🐳 Docker   | [Command Execution](guides/Docker_Command_Execution_Guide.md) | Execute commands in containers |
 | 🤖 Security | [AI Scanner](guides/AIScannerDocs.md)                         | AI-powered security scanning   |
 | 📧 Email    | [Mautic Setup](guides/MAUTIC_INSTALLATION_GUIDE.md)           | Email marketing platform       |
+| 📊 Bandwidth | [Reset Fix Guide](to-do/cyberpanel-bandwidth-reset-fix.md)    | Fix bandwidth reset issues     |
 | 📚 All      | [Complete Index](guides/INDEX.md)                             | Browse all available guides    |
+
+---
+
+## 🔧 Troubleshooting
+
+### **Common Issues & Solutions**
+
+#### **Bandwidth Not Resetting Monthly**
+- **Issue**: Bandwidth usage shows cumulative values instead of monthly usage
+- **Solution**: Run the bandwidth reset script: `/usr/local/CyberCP/scripts/reset_bandwidth.sh`
+- **Prevention**: Ensure monthly cron job is running: `0 0 1 * * /usr/local/CyberCP/bin/python /usr/local/CyberCP/postfixSenderPolicy/client.py monthlyCleanup`
+
+
+#### **General Support**
+- Check logs: `/usr/local/lscp/logs/error.log`
+- Verify cron jobs: `crontab -l`
+- Test manual reset: Use provided scripts in `/usr/local/CyberCP/scripts/`

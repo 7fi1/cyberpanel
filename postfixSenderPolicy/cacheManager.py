@@ -141,11 +141,10 @@ class cacheManager:
     @staticmethod
     def monthlyCleanUP():
         try:
-
+            # Reset email bandwidth limits
             for domain, domainOBJ in cacheManager.domains.items():
                 domaindb = Domains.objects.get(domain=domain)
                 dbDomain = DomainLimits.objects.get(domain=domaindb)
-
 
                 for email, emailOBJ in domainOBJ.emails.items():
                     emailID = EUsers.objects.get(email=email)
@@ -159,6 +158,10 @@ class cacheManager:
 
                 dbDomain.monthlyUsed = 0
                 dbDomain.save()
+
+            # Reset website bandwidth usage
+            from plogical.bandwidthReset import BandwidthReset
+            BandwidthReset.resetWebsiteBandwidth()
 
         except BaseException as msg:
             logging.writeToFile(str(msg) + ' [cacheManager.monthlyCleanUP]')
