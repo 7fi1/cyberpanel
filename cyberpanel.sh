@@ -1185,7 +1185,7 @@ gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
 gpgcheck=1
 EOF
 
-    yum install --nogpg -y https://cyberpanel.sh/mirror.ghettoforge.org/distributions/gf/gf-release-latest.gf.el7.noarch.rpm
+    yum install --nogpg -y https://cyberpanel.sh/mirror.ghettoforge.net/distributions/gf/gf-release-latest.gf.el7.noarch.rpm
       Check_Return "yum repo" "no_exit"
 
     rpm -ivh https://cyberpanel.sh/repo.iotti.biz/CentOS/7/noarch/lux-release-7-1.noarch.rpm
@@ -1268,8 +1268,8 @@ if [[ "$Server_OS" = "CentOS" ]] && [[ "$Server_OS_Version" = "7" ]]; then
 
   sed -i 's|http://repo.iotti.biz|https://cyberpanel.sh/repo.iotti.biz|g' /etc/yum.repos.d/frank.repo
 
-  sed -i "s|mirrorlist=http://mirrorlist.ghettoforge.org/el/7/gf/\$basearch/mirrorlist|baseurl=https://cyberpanel.sh/mirror.ghettoforge.org/distributions/gf/el/7/gf/x86_64/|g" /etc/yum.repos.d/gf.repo
-  sed -i "s|mirrorlist=http://mirrorlist.ghettoforge.org/el/7/plus/\$basearch/mirrorlist|baseurl=https://cyberpanel.sh/mirror.ghettoforge.org/distributions/gf/el/7/plus/x86_64/|g" /etc/yum.repos.d/gf.repo
+  sed -i "s|mirrorlist=http://mirrorlist.ghettoforge.org/el/7/gf/\$basearch/mirrorlist|baseurl=https://cyberpanel.sh/mirror.ghettoforge.net/distributions/gf/el/7/gf/x86_64/|g" /etc/yum.repos.d/gf.repo
+  sed -i "s|mirrorlist=http://mirrorlist.ghettoforge.org/el/7/plus/\$basearch/mirrorlist|baseurl=https://cyberpanel.sh/mirror.ghettoforge.net/distributions/gf/el/7/plus/x86_64/|g" /etc/yum.repos.d/gf.repo
 
   sed -i 's|https://repo.ius.io|https://cyberpanel.sh/repo.ius.io|g' /etc/yum.repos.d/ius.repo
 
@@ -1694,22 +1694,22 @@ fi
 if [[ "$Server_OS" = "CentOS" ]] ; then
   sed -i 's|rpm -ivh http://rpms.litespeedtech.com/centos/litespeed-repo-1.2-1.el7.noarch.rpm|curl -o /etc/yum.repos.d/litespeed.repo https://cyberpanel.sh/litespeed/litespeed_cn.repo|g' install.py
   sed -i 's|rpm -Uvh http://rpms.litespeedtech.com/centos/litespeed-repo-1.1-1.el8.noarch.rpm|curl -o /etc/yum.repos.d/litespeed.repo https://cyberpanel.sh/litespeed/litespeed_cn.repo|g' install.py
-  sed -i 's|https://mirror.ghettoforge.org/distributions|https://cyberpanel.sh/mirror.ghettoforge.org/distributions|g' install.py
+  sed -i 's|https://mirror.ghettoforge.org/distributions|https://cyberpanel.sh/mirror.ghettoforge.net/distributions|g' install.py
 
   if [[ "$Server_OS_Version" = "8" ]] ; then
   sed -i 's|dnf --nogpg install -y https://mirror.ghettoforge.org/distributions/gf/gf-release-latest.gf.el8.noarch.rpm|echo gf8|g' install.py
-  sed -i 's|dnf --nogpg install -y https://cyberpanel.sh/mirror.ghettoforge.org/distributions/gf/gf-release-latest.gf.el8.noarch.rpm|echo gf8|g' install.py
+  sed -i 's|dnf --nogpg install -y https://cyberpanel.sh/mirror.ghettoforge.net/distributions/gf/gf-release-latest.gf.el8.noarch.rpm|echo gf8|g' install.py
 
-  Retry_Command "dnf --nogpg install -y https://cyberpanel.sh/mirror.ghettoforge.org/distributions/gf/gf-release-latest.gf.el8.noarch.rpm"
-  sed -i "s|mirrorlist=http://mirrorlist.ghettoforge.org/el/8/gf/\$basearch/mirrorlist|baseurl=https://cyberpanel.sh/mirror.ghettoforge.org/distributions/gf/el/8/gf/x86_64/|g" /etc/yum.repos.d/gf.repo
-  sed -i "s|mirrorlist=http://mirrorlist.ghettoforge.org/el/8/plus/\$basearch/mirrorlist|baseurl=https://cyberpanel.sh/mirror.ghettoforge.org/distributions/gf/el/8/plus/x86_64/|g" /etc/yum.repos.d/gf.repo
+  Retry_Command "dnf --nogpg install -y https://cyberpanel.sh/mirror.ghettoforge.net/distributions/gf/gf-release-latest.gf.el8.noarch.rpm"
+  sed -i "s|mirrorlist=http://mirrorlist.ghettoforge.org/el/8/gf/\$basearch/mirrorlist|baseurl=https://cyberpanel.sh/mirror.ghettoforge.net/distributions/gf/el/8/gf/x86_64/|g" /etc/yum.repos.d/gf.repo
+  sed -i "s|mirrorlist=http://mirrorlist.ghettoforge.org/el/8/plus/\$basearch/mirrorlist|baseurl=https://cyberpanel.sh/mirror.ghettoforge.net/distributions/gf/el/8/plus/x86_64/|g" /etc/yum.repos.d/gf.repo
   #get this set up beforehand.
   fi
 
   if [[ "$Server_OS_Version" = "9" ]] ; then
     sed -i 's|rpm -Uvh http://rpms.litespeedtech.com/centos/litespeed-repo-1.1-1.el8.noarch.rpm|curl -o /etc/yum.repos.d/litespeed.repo https://rpms.litespeedtech.com/centos/litespeed.repo|g' install.py
-    sed -i "s|mirrorlist=http://mirrorlist.ghettoforge.org/el/8/gf/\$basearch/mirrorlist|baseurl=https://cyberpanel.sh/mirror.ghettoforge.org/distributions/gf/el/9/gf/x86_64/|g" /etc/yum.repos.d/gf.repo
-    sed -i "s|mirrorlist=http://mirrorlist.ghettoforge.org/el/8/plus/\$basearch/mirrorlist|baseurl=https://cyberpanel.sh/mirror.ghettoforge.org/distributions/gf/el/9/plus/x86_64/|g" /etc/yum.repos.d/gf.repo
+    sed -i "s|mirrorlist=http://mirrorlist.ghettoforge.org/el/8/gf/\$basearch/mirrorlist|baseurl=https://cyberpanel.sh/mirror.ghettoforge.net/distributions/gf/el/9/gf/x86_64/|g" /etc/yum.repos.d/gf.repo
+    sed -i "s|mirrorlist=http://mirrorlist.ghettoforge.org/el/8/plus/\$basearch/mirrorlist|baseurl=https://cyberpanel.sh/mirror.ghettoforge.net/distributions/gf/el/9/plus/x86_64/|g" /etc/yum.repos.d/gf.repo
   fi
 fi
 
