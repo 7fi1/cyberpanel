@@ -617,18 +617,18 @@
             <div class="domain-card">
                 <div class="domain-header">
                     <div class="domain-info">
-                        <a href="http://{$ web.domain $}" target="_blank" class="domain-name">
+                        <a href="http://{$ web.domain $}" target="_blank" rel="noopener" class="domain-name">
                             {$ web.domain $}
                         </a>
                         <div class="master-domain">
                             <i class="fas fa-folder"></i>
                             Master Domain: {$ web.masterDomain $} • 
-                            <a target="_blank" href="/filemanager/{$ web.masterDomain $}">
+                            <a target="_blank" rel="noopener" href="/filemanager/{$ web.masterDomain $}">
                                 <i class="fas fa-folder-open"></i> File Manager
                             </a>
                         </div>
                     </div>
-                    <a href="/websites/{$ web.masterDomain $}/{$ web.domain $}" target="_blank" 
+                    <a href="/websites/{$ web.masterDomain $}/{$ web.domain $}" target="_blank" rel="noopener"
                        class="manage-btn">
                         <i class="fas fa-cog"></i>
                         {% trans "Manage" %}

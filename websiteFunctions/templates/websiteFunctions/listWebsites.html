@@ -753,7 +753,7 @@
                                          class="website-screenshot" 
                                          onerror="this.onerror=null; this.src='{% static 'baseTemplate/assets/image-resources/webPanel.png' %}';">
                                     <div class="screenshot-actions">
-                                        <a href="http://{$ web.domain $}" target="_blank" class="btn btn-outline btn-sm">
+                                        <a href="http://{$ web.domain $}" target="_blank" rel="noopener" class="btn btn-outline btn-sm">
                                             Visit Site
                                         </a>
                                         <a ng-click="issueSSL(web.domain)" href="javascript:void(0);" class="btn btn-primary btn-sm">
@@ -817,7 +817,7 @@
                                                         <a href="javascript:void(0);" ng-click="visitSite(wp)" class="btn btn-outline btn-sm wp-action-btn">
                                                             Visit Site
                                                         </a>
-                                                        <a href="{% url 'AutoLogin' %}?id={$ wp.id $}" target="_blank" class="btn btn-primary btn-sm wp-action-btn">
+                                                        <a href="{% url 'AutoLogin' %}?id={$ wp.id $}" target="_blank" rel="noopener" class="btn btn-primary btn-sm wp-action-btn">
                                                             WP Admin
                                                         </a>
                                                     </div>

@@ -14,6 +14,7 @@ import json
 from plogical.acl import ACLManager
 import plogical.CyberCPLogFileWriter as logging
 from django.shortcuts import HttpResponse, render, redirect
+from django.urls import reverse
 from loginSystem.models import Administrator
 import subprocess
 import shlex
@@ -50,7 +51,7 @@ class ContainerManager(multi.Thread):
             elif self.function == 'restartGunicorn':
                 command = 'sudo systemctl restart gunicorn.socket'
                 ProcessUtilities.executioner(command)
-        except BaseException as msg:
+        except Exception as msg:
             logging.CyberCPLogFileWriter.writeToFile( str(msg) + ' [ContainerManager.run]')
 
     @staticmethod
@@ -61,7 +62,7 @@ class ContainerManager(multi.Thread):
                 return 0
             else:
                 return 1
-        except BaseException as msg:
+        except Exception as msg:
             logging.CyberCPLogFileWriter.writeToFile(str(msg))
             return 0
 
@@ -80,7 +81,7 @@ class ContainerManager(multi.Thread):
 
             time.sleep(2)
 
-        except BaseException as msg:
+        except Exception as msg:
             logging.CyberCPLogFileWriter.statusWriter(ServerStatusUtil.lswsInstallStatusPath, str(msg) + ' [404].', 1)
 
     def createContainer(self, request=None, userID=None, data=None):
@@ -124,7 +125,7 @@ class ContainerManager(multi.Thread):
                 portConfig[portDef[0]] = portDef[1]
 
         if image is None or image is '' or tag is None or tag is '':
-            return redirect(loadImages)
+            return redirect(reverse('containerImage'))
 
         Data = {"ownerList": adminNames, "image": image, "name": name, "tag": tag, "portConfig": portConfig,
                 "envList": envList}
@@ -302,11 +303,23 @@ class ContainerManager(multi.Thread):
             inspectImage = dockerAPI.inspect_image(image + ":" + tag)
             portConfig = {}
 
-            # Formatting envList for usage
+            # Formatting envList for usage - handle both simple and advanced modes
             envDict = {}
-            for key, value in envList.items():
-                if (value['name'] != '') or (value['value'] != ''):
-                    envDict[value['name']] = value['value']
+            
+            # Check if advanced mode is being used
+            advanced_mode = data.get('advancedEnvMode', False)
+            
+            if advanced_mode:
+                # Advanced mode: envList is already a dictionary of key-value pairs
+                envDict = envList
+            else:
+                # Simple mode: envList is an array of objects with name/value properties
+                for key, value in envList.items():
+                    if isinstance(value, dict) and (value.get('name', '') != '' or value.get('value', '') != ''):
+                        envDict[value['name']] = value['value']
+                    elif isinstance(value, str) and value != '':
+                        # Handle case where value might be a string (fallback)
+                        envDict[key] = value
 
             if 'ExposedPorts' in inspectImage['Config']:
                 for item in inspectImage['Config']['ExposedPorts']:
@@ -362,7 +375,7 @@ class ContainerManager(multi.Thread):
             return HttpResponse(json_data)
 
 
-        except BaseException as msg:
+        except Exception as msg:
             data_ret = {'createContainerStatus': 0, 'error_message': str(msg)}
             json_data = json.dumps(data_ret)
             return HttpResponse(json_data)
@@ -401,10 +414,76 @@ class ContainerManager(multi.Thread):
             return HttpResponse(json_data)
 
 
-        except BaseException as msg:
+        except Exception as msg:
             data_ret = {'installImageStatus': 0, 'error_message': str(msg)}
             json_data = json.dumps(data_ret)
             return HttpResponse(json_data)
+
+    def pullImage(self, userID=None, data=None):
+        """
+        Pull a Docker image from registry with proper error handling and security checks
+        """
+        try:
+            admin = Administrator.objects.get(pk=userID)
+            if admin.acl.adminStatus != 1:
+                return ACLManager.loadErrorJson('pullImageStatus', 0)
+
+            client = docker.from_env()
+            dockerAPI = docker.APIClient()
+
+            image = data['image']
+            tag = data.get('tag', 'latest')
+
+            # Validate image name to prevent injection
+            if not self._validate_image_name(image):
+                data_ret = {'pullImageStatus': 0, 'error_message': 'Invalid image name format'}
+                json_data = json.dumps(data_ret)
+                return HttpResponse(json_data)
+
+            # Check if image already exists
+            try:
+                inspectImage = dockerAPI.inspect_image(image + ":" + tag)
+                data_ret = {'pullImageStatus': 0, 'error_message': "Image already exists locally"}
+                json_data = json.dumps(data_ret)
+                return HttpResponse(json_data)
+            except docker.errors.ImageNotFound:
+                pass
+
+            # Pull the image
+            try:
+                pulled_image = client.images.pull(image, tag=tag)
+                data_ret = {
+                    'pullImageStatus': 1, 
+                    'error_message': "None",
+                    'image_id': pulled_image.id,
+                    'image_name': image,
+                    'tag': tag
+                }
+                json_data = json.dumps(data_ret)
+                return HttpResponse(json_data)
+            except docker.errors.APIError as err:
+                data_ret = {'pullImageStatus': 0, 'error_message': f'Docker API error: {str(err)}'}
+                json_data = json.dumps(data_ret)
+                return HttpResponse(json_data)
+            except docker.errors.ImageNotFound as err:
+                data_ret = {'pullImageStatus': 0, 'error_message': f'Image not found: {str(err)}'}
+                json_data = json.dumps(data_ret)
+                return HttpResponse(json_data)
+
+        except Exception as msg:
+            data_ret = {'pullImageStatus': 0, 'error_message': str(msg)}
+            json_data = json.dumps(data_ret)
+            return HttpResponse(json_data)
+
+    def _validate_image_name(self, image_name):
+        """Validate Docker image name to prevent injection attacks"""
+        if not image_name or len(image_name) > 255:
+            return False
+        
+        # Allow alphanumeric, hyphens, underscores, dots, and forward slashes
+        import re
+        pattern = r'^[a-zA-Z0-9._/-]+$'
+        return re.match(pattern, image_name) is not None
 
     def submitContainerDeletion(self, userID=None, data=None, called=False):
         try:
@@ -975,11 +1054,23 @@ class ContainerManager(multi.Thread):
             con.startOnReboot = startOnReboot
 
             if 'envConfirmation' in data and data['envConfirmation']:
-                # Formatting envList for usage
+                # Formatting envList for usage - handle both simple and advanced modes
                 envDict = {}
-                for key, value in envList.items():
-                    if (value['name'] != '') or (value['value'] != ''):
-                        envDict[value['name']] = value['value']
+                
+                # Check if advanced mode is being used
+                advanced_mode = data.get('advancedEnvMode', False)
+                
+                if advanced_mode:
+                    # Advanced mode: envList is already a dictionary of key-value pairs
+                    envDict = envList
+                else:
+                    # Simple mode: envList is an array of objects with name/value properties
+                    for key, value in envList.items():
+                        if isinstance(value, dict) and (value.get('name', '') != '' or value.get('value', '') != ''):
+                            envDict[value['name']] = value['value']
+                        elif isinstance(value, str) and value != '':
+                            # Handle case where value might be a string (fallback)
+                            envDict[key] = value
 
                 volumes = {}
                 for index, volume in volList.items():
@@ -1244,7 +1335,7 @@ class ContainerManager(multi.Thread):
             data['JobID'] = ''
             data['Domain'] = dockersite.admin.domain
             data['domain'] = dockersite.admin.domain
-            data['WPemal'] = WPemail
+            data['WPemail'] = WPemail
             data['Owner'] = dockersite.admin.admin.userName
             data['userID'] = userID
             data['MysqlCPU'] = dockersite.CPUsMySQL
@@ -1552,18 +1643,19 @@ class ContainerManager(multi.Thread):
         return {'valid': True, 'reason': 'Command passed validation'}
 
     def _check_rate_limit(self, userID, containerName):
-        """Simple rate limiting: max 10 commands per minute per user-container pair"""
+        """Enhanced rate limiting: max 10 commands per minute per user-container pair"""
         import time
         import os
+        import json
         
         # Create rate limit tracking directory
         rate_limit_dir = '/tmp/cyberpanel_docker_rate_limit'
         if not os.path.exists(rate_limit_dir):
             try:
                 os.makedirs(rate_limit_dir, mode=0o755)
-            except:
+            except Exception as e:
                 # If we can't create rate limit tracking, allow the command but log it
-                logging.CyberCPLogFileWriter.writeToFile('Warning: Could not create rate limit directory')
+                logging.CyberCPLogFileWriter.writeToFile(f'Warning: Could not create rate limit directory: {str(e)}')
                 return True
         
         # Rate limit file per user-container
@@ -1575,22 +1667,33 @@ class ContainerManager(multi.Thread):
             timestamps = []
             if os.path.exists(rate_file):
                 with open(rate_file, 'r') as f:
-                    timestamps = [float(line.strip()) for line in f if line.strip()]
+                    try:
+                        data = json.load(f)
+                        timestamps = data.get('timestamps', [])
+                    except (json.JSONDecodeError, KeyError):
+                        # Fallback to old format
+                        f.seek(0)
+                        timestamps = [float(line.strip()) for line in f if line.strip()]
             
             # Remove timestamps older than 1 minute
             recent_timestamps = [ts for ts in timestamps if current_time - ts < 60]
             
             # Check if limit exceeded
             if len(recent_timestamps) >= 10:
+                logging.CyberCPLogFileWriter.writeToFile(f'Rate limit exceeded for user {userID}, container {containerName}')
                 return False
             
             # Add current timestamp
             recent_timestamps.append(current_time)
             
-            # Write back to file
+            # Write back to file with JSON format
             with open(rate_file, 'w') as f:
-                for ts in recent_timestamps:
-                    f.write(f'{ts}\n')
+                json.dump({
+                    'timestamps': recent_timestamps,
+                    'last_updated': current_time,
+                    'user_id': userID,
+                    'container_name': containerName
+                }, f)
             
             return True
             
