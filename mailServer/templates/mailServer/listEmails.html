@@ -164,11 +164,9 @@
         }
         
         /* Fix for Firefox on Windows */
-        @-moz-document url-prefix() {
-            select.form-control {
-                color: var(--text-dark, #2f3640) !important;
-                text-shadow: none;
-            }
+        select.form-control {
+            color: var(--text-dark, #2f3640) !important;
+            text-shadow: none;
         }
         
         /* Ensure selected option is always visible */
@@ -397,6 +395,30 @@
             flex-wrap: wrap;
         }
         
+        .email-icon {
+            color: var(--accent-color, #5b5fcf);
+            margin-right: 0.5rem;
+        }
+        
+        .email-address {
+            font-size: 0.9375rem;
+            color: var(--text-primary, #1e293b);
+        }
+        
+        .disk-usage-badge {
+            padding: 0.375rem 0.875rem;
+            background: var(--bg-gradient, #f0f1ff);
+            color: var(--accent-color, #5b5fcf);
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+        
+        .email-to-delete {
+            color: var(--danger-color, #ef4444);
+            font-weight: 600;
+        }
+        
         /* Modern Modal Styles */
         .modal-content {
             border-radius: 12px;
@@ -593,7 +615,7 @@
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label class="form-label">{% trans "Select Domain" %}</label>
-                                        <select ng-change="populateCurrentRecords()" ng-model="selectedDomain" class="form-control">
+                                        <select ng-change="populateCurrentRecords()" ng-model="selectedDomain" class="form-control" aria-label="{% trans 'Select Domain' %}">
                                             <option value="">{% trans "Choose a domain..." %}</option>
                                             {% for items in websiteList %}
                                                 <option value="{{ items }}">{{ items }}</option>
@@ -613,7 +635,7 @@
                                     <a href="https://community.cyberpanel.net/t/6-self-signed-ssl-error-on-outlook-thunderbird/207" target="_blank" rel="noopener" style="color: var(--danger-text, #991b1b); text-decoration: underline;">{% trans "Learn more" %}</a>
                                 </div>
                             </div>
-                            <button ng-hide="mailConfigured==1" ng-click='fixMailSSL()' class="btn-primary mb-4">
+                            <button type="button" ng-hide="mailConfigured==1" ng-click='fixMailSSL()' class="btn-primary mb-4">
                                 <i class="fas fa-wrench"></i>
                                 {% trans "Fix SSL Now" %}
                             </button>
@@ -731,11 +753,11 @@
                                         <tbody>
                                             <tr ng-repeat="record in records track by $index">
                                                 <td>
-                                                    <i class="fas fa-user-circle" style="color: var(--accent-color, #5b5fcf); margin-right: 0.5rem;"></i>
-                                                    <strong style="font-size: 0.9375rem; color: var(--text-primary, #1e293b);" ng-bind="record.email"></strong>
+                                                    <i class="fas fa-user-circle email-icon"></i>
+                                                    <strong class="email-address" ng-bind="record.email"></strong>
                                                 </td>
                                                 <td>
-                                                    <span style="padding: 0.375rem 0.875rem; background: var(--bg-gradient, #f0f1ff); color: var(--accent-color, #5b5fcf); border-radius: 4px; font-weight: 600; font-size: 0.875rem;">
+                                                    <span class="disk-usage-badge">
                                                         {{ record.DiskUsage }}
                                                     </span>
                                                 </td>
@@ -767,7 +789,7 @@
                                                                     <div class="modal-header">
                                                                         <button type="button" class="close" data-dismiss="modal">&times;</button>
                                                                         <h4 class="modal-title">Change Password
-                                                                            <img ng-hide="cyberpanelLoading" src="{% static 'images/loading.gif' %}">
+                                                                            <img ng-hide="cyberpanelLoading" src="{% static 'images/loading.gif' %}" alt="Loading...">
                                                                         </h4>
                                                                     </div>
                                                                     <div class="modal-body">
@@ -775,7 +797,7 @@
                                                                             <div ng-hide="installationDetailsForm" class="form-group">
                                                                                 <label class="col-sm-3 control-label">{% trans "Email" %}</label>
                                                                                 <div class="col-sm-6">
-                                                                                    <input name="name" type="text" class="form-control" ng-model="email" readonly>
+                                                                                    <input name="name" type="text" class="form-control" ng-model="email" readonly aria-label="Email address">
                                                                                 </div>
                                                                             </div>
 
@@ -784,7 +806,7 @@
                                                                             <div ng-hide="installationDetailsForm" class="form-group">
                                                                                 <label class="col-sm-3 control-label">{% trans "Password" %}</label>
                                                                                 <div class="col-sm-6">
-                                                                                    <input type="password" class="form-control" ng-model="$parent.password">
+                                                                                    <input type="password" class="form-control" ng-model="$parent.password" aria-label="Password">
                                                                                 </div>
                                                                             </div>
                                                                         </form>
@@ -837,7 +859,7 @@
                                 <p style="margin: 0.5rem 0 0 0;">{% trans "This will permanently delete the email account and all associated data including emails, folders, and settings." %}</p>
                             </div>
                         </div>
-                        <p><strong>{% trans "Email to delete:" %}</strong> <span style="color: var(--danger-color, #ef4444); font-weight: 600;">{$ emailToDelete $}</span></p>
+                        <p><strong>{% trans "Email to delete:" %}</strong> <span class="email-to-delete">{$ emailToDelete $}</span></p>
                         <p>{% trans "Are you sure you want to continue?" %}</p>
                     </div>
                     <div class="modal-footer">

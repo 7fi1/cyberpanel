@@ -139,6 +139,10 @@
         color: var(--warning-dark);
     }
     
+    .status-icon {
+        font-size: 8px;
+    }
+    
     /* Action buttons */
     .action-buttons {
         display: flex;
@@ -344,6 +348,7 @@
         color: var(--text-primary);
         font-weight: 600;
         cursor: pointer;
+        -webkit-user-select: none;
         user-select: none;
         display: block;
         margin-bottom: 4px;
@@ -483,7 +488,7 @@
                             <td>{$ record.ftpAccounts $}</td>
                             <td>
                                 <span class="status-badge" ng-class="{'enabled': record.allowFullDomain, 'disabled': !record.allowFullDomain}">
-                                    <i class="fas fa-circle" style="font-size: 8px;"></i>
+                                    <i class="fas fa-circle status-icon"></i>
                                     <span ng-if="record.allowFullDomain">{% trans "Enabled" %}</span>
                                     <span ng-if="!record.allowFullDomain">{% trans "Disabled" %}</span>
                                 </span>
@@ -526,7 +531,7 @@
                     <form name="editPackageForm">
                         <div class="form-group">
                             <label class="form-label">{% trans "Package Name" %}</label>
-                            <input type="text" class="form-control" ng-model="name" readonly>
+                            <input type="text" class="form-control" ng-model="name" readonly aria-label="{% trans 'Package Name' %}">
                         </div>
                         
                         <div class="form-section">
@@ -537,14 +542,14 @@
                             
                             <div class="form-group">
                                 <label class="form-label">{% trans "Domains" %}</label>
-                                <input type="number" class="form-control" ng-model="allowedDomains" required>
+                                <input type="number" class="form-control" ng-model="allowedDomains" required aria-label="{% trans 'Number of domains allowed' %}">
                                 <div class="help-text">{% trans "Number of domains allowed (0 = Unlimited)" %}</div>
                             </div>
                             
                             <div class="form-group">
                                 <label class="form-label">{% trans "Disk Space" %}</label>
                                 <div class="input-group">
-                                    <input type="number" class="form-control" ng-model="diskSpace" required>
+                                    <input type="number" class="form-control" ng-model="diskSpace" required aria-label="{% trans 'Disk space in MB' %}">
                                     <span class="input-suffix">MB</span>
                                 </div>
                                 <div class="help-text">{% trans "Disk space in MB (0 = Unlimited)" %}</div>
@@ -553,7 +558,7 @@
                             <div class="form-group">
                                 <label class="form-label">{% trans "Bandwidth" %}</label>
                                 <div class="input-group">
-                                    <input type="number" class="form-control" ng-model="bandwidth" required>
+                                    <input type="number" class="form-control" ng-model="bandwidth" required aria-label="{% trans 'Monthly bandwidth in MB' %}">
                                     <span class="input-suffix">MB</span>
                                 </div>
                                 <div class="help-text">{% trans "Monthly bandwidth in MB (0 = Unlimited)" %}</div>
@@ -568,17 +573,17 @@
                             
                             <div class="form-group">
                                 <label class="form-label">{% trans "Email Accounts" %}</label>
-                                <input type="number" class="form-control" ng-model="emails" required>
+                                <input type="number" class="form-control" ng-model="emails" required aria-label="{% trans 'Number of email accounts' %}">
                             </div>
                             
                             <div class="form-group">
                                 <label class="form-label">{% trans "Databases" %}</label>
-                                <input type="number" class="form-control" ng-model="dataBases" required>
+                                <input type="number" class="form-control" ng-model="dataBases" required aria-label="{% trans 'Number of databases' %}">
                             </div>
                             
                             <div class="form-group">
                                 <label class="form-label">{% trans "FTP Accounts" %}</label>
-                                <input type="number" class="form-control" ng-model="ftpAccounts" required>
+                                <input type="number" class="form-control" ng-model="ftpAccounts" required aria-label="{% trans 'Number of FTP accounts' %}">
                             </div>
                         </div>
                         

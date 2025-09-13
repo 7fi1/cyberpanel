@@ -243,6 +243,7 @@
         color: var(--text-primary, #2f3640);
         font-weight: 600;
         cursor: pointer;
+        -webkit-user-select: none;
         user-select: none;
         display: block;
         margin-bottom: 4px;
@@ -393,7 +394,7 @@
             <div class="package-selector-card">
                 <div class="form-group">
                     <label class="form-label">{% trans "Select Package to Modify" %}</label>
-                    <select ng-change="fetchDetails()" ng-model="packageToBeModified" class="form-control">
+                    <select ng-change="fetchDetails()" ng-model="packageToBeModified" class="form-control" aria-label="{% trans 'Select Package to Modify' %}">
                         <option value="">-- {% trans "Select a package" %} --</option>
                         {% for items in packList %}
                             <option>{{ items }}</option>
@@ -417,7 +418,7 @@
                         
                         <div class="form-group">
                             <label class="form-label">{% trans "Domains" %}</label>
-                            <input type="number" class="form-control" ng-model="allowedDomains" required>
+                            <input type="number" class="form-control" ng-model="allowedDomains" required aria-label="{% trans 'Number of domains allowed' %}">
                             <div class="help-text">{% trans "Number of domains allowed (0 = Unlimited)" %}</div>
                         </div>
                         
@@ -425,7 +426,7 @@
                             <div class="form-group">
                                 <label class="form-label">{% trans "Disk Space" %}</label>
                                 <div class="input-group">
-                                    <input type="number" class="form-control" ng-model="diskSpace" required>
+                                    <input type="number" class="form-control" ng-model="diskSpace" required aria-label="{% trans 'Disk space in MB' %}">
                                     <span class="input-suffix">MB</span>
                                 </div>
                                 <div class="help-text">{% trans "Disk space in MB (0 = Unlimited)" %}</div>
@@ -434,7 +435,7 @@
                             <div class="form-group">
                                 <label class="form-label">{% trans "Bandwidth" %}</label>
                                 <div class="input-group">
-                                    <input type="number" class="form-control" ng-model="bandwidth" required>
+                                    <input type="number" class="form-control" ng-model="bandwidth" required aria-label="{% trans 'Monthly bandwidth in MB' %}">
                                     <span class="input-suffix">MB</span>
                                 </div>
                                 <div class="help-text">{% trans "Monthly bandwidth in MB (0 = Unlimited)" %}</div>
@@ -451,20 +452,20 @@
                         <div class="form-row">
                             <div class="form-group">
                                 <label class="form-label">{% trans "FTP Accounts" %}</label>
-                                <input type="number" class="form-control" ng-model="ftpAccounts" required>
+                                <input type="number" class="form-control" ng-model="ftpAccounts" required aria-label="{% trans 'Number of FTP accounts' %}">
                                 <div class="help-text">{% trans "Number of FTP accounts" %}</div>
                             </div>
                             
                             <div class="form-group">
                                 <label class="form-label">{% trans "Databases" %}</label>
-                                <input type="number" class="form-control" ng-model="dataBases" required>
+                                <input type="number" class="form-control" ng-model="dataBases" required aria-label="{% trans 'Number of MySQL databases' %}">
                                 <div class="help-text">{% trans "Number of MySQL databases" %}</div>
                             </div>
                         </div>
                         
                         <div class="form-group">
                             <label class="form-label">{% trans "Email Accounts" %}</label>
-                            <input type="number" class="form-control" ng-model="emails" required>
+                            <input type="number" class="form-control" ng-model="emails" required aria-label="{% trans 'Number of email accounts' %}">
                             <div class="help-text">{% trans "Number of email accounts" %}</div>
                         </div>
                     </div>

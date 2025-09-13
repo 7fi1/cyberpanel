@@ -277,6 +277,40 @@
             display: inline-block;
         }
         
+        .warning-icon {
+            color: var(--warning-color, #ffa000);
+        }
+        
+        .table-id {
+            width: 10%;
+        }
+        
+        .table-source {
+            width: 35%;
+        }
+        
+        .table-destination {
+            width: 40%;
+        }
+        
+        .table-actions {
+            width: 15%;
+            text-align: center;
+        }
+        
+        .email-icon {
+            color: var(--accent-color, #5b5fcf);
+            margin-right: 0.5rem;
+        }
+        
+        .destination-text {
+            margin-left: 0.5rem;
+        }
+        
+        .full-width-btn {
+            width: 100%;
+        }
+        
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
@@ -329,7 +363,7 @@
             <h1 class="page-title">
                 <i class="fas fa-share-square"></i>
                 {% trans "Setup Email Forwarding" %}
-                <a target="_blank" href="https://cyberpanel.net/KnowledgeBase/home/email-forwarding/" class="docs-link">
+                <a target="_blank" rel="noopener" href="https://cyberpanel.net/KnowledgeBase/home/email-forwarding/" class="docs-link">
                     <i class="fas fa-book"></i>
                     {% trans "Forwarding Docs" %}
                 </a>
@@ -348,7 +382,7 @@
             <div class="card-body">
                 {% if not status %}
                     <div class="disabled-notice">
-                        <i class="fas fa-exclamation-triangle fa-3x mb-3" style="color: var(--warning-color, #ffa000);"></i>
+                        <i class="fas fa-exclamation-triangle fa-3x mb-3 warning-icon"></i>
                         <h3>{% trans "Postfix is disabled" %}</h3>
                         <p class="mb-3">{% trans "You need to enable Postfix to setup email forwarding" %}</p>
                         <a href="{% url 'managePostfix' %}" class="btn-primary">
@@ -363,7 +397,7 @@
                                 <div class="col-md-8">
                                     <div class="form-group">
                                         <label class="form-label">{% trans "Select Website" %}</label>
-                                        <select ng-change="showEmailDetails()" ng-model="emailDomain" class="form-control">
+                                        <select ng-change="showEmailDetails()" ng-model="emailDomain" class="form-control" aria-label="{% trans 'Select Website' %}">
                                             <option value="">{% trans "Choose a website..." %}</option>
                                             {% for items in websiteList %}
                                                 <option value="{{ items }}">{{ items }}</option>
@@ -379,7 +413,7 @@
                                 <div class="col-md-8">
                                     <div class="form-group">
                                         <label class="form-label">{% trans "Select Email Account" %}</label>
-                                        <select ng-change="selectForwardingEmail()" ng-model="selectedEmail" class="form-control">
+                                        <select ng-change="selectForwardingEmail()" ng-model="selectedEmail" class="form-control" aria-label="{% trans 'Select Email Account' %}">
                                             <option value="">{% trans "Choose an email account..." %}</option>
                                             <option ng-repeat="email in emails track by $index" value="{$ email.email $}">{$ email.email $}</option>
                                         </select>
@@ -387,7 +421,7 @@
 
                                     <div class="form-group">
                                         <label class="form-label">{% trans "Forwarding Options" %}</label>
-                                        <select ng-change="selectForwardingEmail()" ng-model="forwardingOption" class="form-control">
+                                        <select ng-change="selectForwardingEmail()" ng-model="forwardingOption" class="form-control" aria-label="{% trans 'Forwarding Options' %}">
                                             <option value="Forward to email">{% trans "Forward to email" %}</option>
                                             <option value="Pipe to program">{% trans "Pipe to program" %}</option>
                                         </select>
@@ -402,21 +436,21 @@
                                 <div class="col-md-4">
                                     <div class="form-group mb-3">
                                         <label class="form-label">{% trans "Source Email" %}</label>
-                                        <input placeholder="{% trans 'Source' %}" type="email" class="form-control" ng-model="selectedEmail" readonly>
+                                        <input placeholder="{% trans 'Source' %}" type="email" class="form-control" ng-model="selectedEmail" readonly aria-label="{% trans 'Source Email' %}">
                                     </div>
                                 </div>
 
                                 <div class="col-md-4">
                                     <div class="form-group mb-3">
                                         <label class="form-label">{% trans "Destination" %} <span ng-show="forwardingOption == 'Pipe to program'">{% trans "(Path to program)" %}</span></label>
-                                        <input placeholder="{% trans 'Enter destination email or program path' %}" type="text" class="form-control" ng-model="destinationEmail" required>
+                                        <input placeholder="{% trans 'Enter destination email or program path' %}" type="text" class="form-control" ng-model="destinationEmail" required aria-label="{% trans 'Destination' %}">
                                     </div>
                                 </div>
 
                                 <div class="col-md-4">
                                     <div class="form-group mb-3">
                                         <label class="form-label">&nbsp;</label>
-                                        <button type="button" ng-click="forwardEmail()" class="btn-primary" style="width: 100%;">
+                                        <button type="button" ng-click="forwardEmail()" class="btn-primary full-width-btn">
                                             <i class="fas fa-plus-circle"></i>
                                             {% trans "Add Forwarding" %}
                                         </button>
@@ -427,17 +461,17 @@
                             <table class="forwarding-table">
                                 <thead>
                                 <tr>
-                                    <th style="width: 10%;">{% trans "ID" %}</th>
-                                    <th style="width: 35%;">{% trans "Source" %}</th>
-                                    <th style="width: 40%;">{% trans "Destination" %}</th>
-                                    <th style="width: 15%; text-align: center;">{% trans "Actions" %}</th>
+                                    <th class="table-id">{% trans "ID" %}</th>
+                                    <th class="table-source">{% trans "Source" %}</th>
+                                    <th class="table-destination">{% trans "Destination" %}</th>
+                                    <th class="table-actions">{% trans "Actions" %}</th>
                                 </tr>
                                 </thead>
                                 <tbody>
                                 <tr ng-repeat="record in records track by $index">
                                     <td><strong ng-bind="record.id"></strong></td>
                                     <td>
-                                        <i class="fas fa-envelope" style="color: var(--accent-color, #5b5fcf); margin-right: 0.5rem;"></i>
+                                        <i class="fas fa-envelope email-icon"></i>
                                         <span ng-bind="record.source"></span>
                                     </td>
                                     <td>
@@ -447,9 +481,9 @@
                                         <span class="option-badge" ng-hide="record.destination.indexOf('@') > -1">
                                             <i class="fas fa-terminal"></i> Program
                                         </span>
-                                        <span style="margin-left: 0.5rem;" ng-bind="record.destination"></span>
+                                        <span class="destination-text" ng-bind="record.destination"></span>
                                     </td>
-                                    <td style="text-align: center;">
+                                    <td class="table-actions">
                                         <button type="button" ng-click="deleteForwarding(record.source, record.destination)" class="btn-danger">
                                             <i class="fas fa-trash"></i>
                                             {% trans "Delete" %}

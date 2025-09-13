@@ -411,7 +411,7 @@
             <div class="package-selector-card">
                 <div class="form-group">
                     <label class="form-label">{% trans "Select Package to Delete" %}</label>
-                    <select ng-change="fetchPackageDetails()" ng-model="packageToBeDeleted" class="form-control">
+                    <select ng-change="fetchPackageDetails()" ng-model="packageToBeDeleted" class="form-control" aria-label="{% trans 'Select Package to Delete' %}">
                         <option value="">-- {% trans "Select a package" %} --</option>
                         {% for items in packageList %}
                             <option>{{ items }}</option>
