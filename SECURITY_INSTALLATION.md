@@ -190,3 +190,4 @@ For issues with the secure installation:
 ---
 
 **Security Notice**: This installation method significantly improves security by eliminating hardcoded credentials. Always ensure proper file permissions and secure handling of environment files.
+
