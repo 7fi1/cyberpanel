@@ -4906,7 +4906,7 @@ app.controller('WPsiteHome', function ($scope, $http, $timeout, $compile, $windo
         
         var FinalMarkup = '<tr>';
         FinalMarkup += '<td><a href="/websites/WPHome?ID=' + value.id + '">' + value.name + '</a></td>';
-        FinalMarkup += '<td><a href="' + stagingUrl + '" target="_blank">' + stagingUrl + '</a></td>';
+        FinalMarkup += '<td><a href="' + stagingUrl + '" target="_blank" rel="noopener">' + stagingUrl + '</a></td>';
         FinalMarkup += '<td>' + createdDate + '</td>';
         FinalMarkup += '<td>';
         FinalMarkup += '<button class="btn btn-sm btn-primary" onclick="DeployToProductionInitial(' + value.id + ')" data-toggle="modal" data-target="#DeployToProduction"><i class="fas fa-sync"></i> Sync to Production</button> ';
@@ -8658,7 +8658,7 @@ app.controller('WPsiteHome', function ($scope, $http, $timeout, $compile, $windo
         
         var FinalMarkup = '<tr>';
         FinalMarkup += '<td><a href="/websites/WPHome?ID=' + value.id + '">' + value.name + '</a></td>';
-        FinalMarkup += '<td><a href="' + stagingUrl + '" target="_blank">' + stagingUrl + '</a></td>';
+        FinalMarkup += '<td><a href="' + stagingUrl + '" target="_blank" rel="noopener">' + stagingUrl + '</a></td>';
         FinalMarkup += '<td>' + createdDate + '</td>';
         FinalMarkup += '<td>';
         FinalMarkup += '<button class="btn btn-sm btn-primary" onclick="DeployToProductionInitial(' + value.id + ')" data-toggle="modal" data-target="#DeployToProduction"><i class="fas fa-sync"></i> Sync to Production</button> ';
