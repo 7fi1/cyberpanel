@@ -15,6 +15,11 @@
     <link rel="stylesheet" type="text/css" href="{% static 'baseTemplate/assets/bootstrap/css/bootstrap.min.css' %}?v={{ CP_VERSION }}">
     <link rel="stylesheet" type="text/css" href="{% static 'baseTemplate/bootstrap-toggle.min.css' %}?v={{ CP_VERSION }}">
     
+    <!-- Custom CSS -->
+    <style>
+        {{ cosmetic.MainDashboardCSS | safe }}
+    </style>
+    
     <!-- Core Scripts -->
     <script src="{% static 'baseTemplate/angularjs.1.6.5.js' %}?v={{ CP_VERSION }}"></script>
     <script src="https://code.jquery.com/jquery-2.2.4.min.js"></script>

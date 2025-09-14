@@ -307,6 +307,50 @@
             margin-right: 0.5rem;
         }
         
+        .install-icon {
+            color: #5b5fcf;
+        }
+        
+        .progress-title {
+            color: var(--text-primary, #1e293b);
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+        
+        .terminal-pre {
+            margin: 0;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        
+        .table-domain {
+            width: 20%;
+        }
+        
+        .table-private-key {
+            width: 40%;
+        }
+        
+        .table-public-key {
+            width: 40%;
+        }
+        
+        .domain-badge {
+            padding: 0.5rem 1rem;
+            background: var(--accent-light, #e0e7ff);
+            color: #5b5fcf;
+            border-radius: 6px;
+            font-weight: 600;
+            display: inline-block;
+        }
+        
+        .key-hint {
+            color: var(--text-secondary, #64748b);
+            margin-top: 0.5rem;
+            display: block;
+        }
+        
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
@@ -359,7 +403,7 @@
             <h1 class="page-title">
                 <i class="fas fa-shield-alt"></i>
                 {% trans "DKIM Manager" %}
-                <a target="_blank" href="https://cyberpanel.net/KnowledgeBase/home/dkim-set-up-and-configurations/" class="docs-link">
+                <a target="_blank" rel="noopener" href="https://cyberpanel.net/KnowledgeBase/home/dkim-set-up-and-configurations/" class="docs-link">
                     <i class="fas fa-book"></i>
                     {% trans "DKIM Docs" %}
                 </a>
@@ -378,7 +422,7 @@
                 </div>
                 <div class="card-body">
                     <div class="install-notice">
-                        <i class="fas fa-exclamation-circle fa-3x mb-3" style="color: #5b5fcf;"></i>
+                        <i class="fas fa-exclamation-circle fa-3x mb-3 install-icon"></i>
                         <h3>{% trans "OpenDKIM is not installed" %}</h3>
                         <p class="mb-3">{% trans "OpenDKIM is required to manage DKIM keys for your domains" %}</p>
                         <a href="" ng-click="installOpenDKIM()" class="install-link">
@@ -407,12 +451,12 @@
 
                     <!-- Installation Log -->
                     <div ng-hide="openDKIMInstallBox">
-                        <h3 style="color: var(--text-primary, #1e293b); font-size: 1.125rem; font-weight: 600; margin-bottom: 1rem;">
+                        <h3 class="progress-title">
                             <i class="fas fa-terminal"></i>
                             {% trans "Installation Progress" %}
                         </h3>
                         <div class="terminal-box">
-                            <pre ng-bind="requestData" style="margin: 0; white-space: pre-wrap; word-wrap: break-word;"></pre>
+                            <pre ng-bind="requestData" class="terminal-pre"></pre>
                         </div>
                     </div>
                 </div>
@@ -438,7 +482,7 @@
                                 <div class="col-md-8">
                                     <div class="form-group">
                                         <label class="form-label">{% trans "Select Website" %}</label>
-                                        <select ng-change="fetchKeys()" ng-model="domainName" class="form-control">
+                                        <select ng-change="fetchKeys()" ng-model="domainName" class="form-control" aria-label="{% trans 'Select Website' %}">
                                             <option value="">{% trans "Choose a website..." %}</option>
                                             {% for items in websiteList %}
                                                 <option value="{{ items }}">{{ items }}</option>
@@ -465,29 +509,29 @@
                             <table class="keys-table">
                                 <thead>
                                 <tr>
-                                    <th style="width: 20%;">{% trans "Domain" %}</th>
-                                    <th style="width: 40%;">{% trans "Private Key" %}</th>
-                                    <th style="width: 40%;">{% trans "Public Key" %}</th>
+                                    <th class="table-domain">{% trans "Domain" %}</th>
+                                    <th class="table-private-key">{% trans "Private Key" %}</th>
+                                    <th class="table-public-key">{% trans "Public Key" %}</th>
                                 </tr>
                                 </thead>
                                 <tbody>
                                 <tr>
                                     <td>
-                                        <span style="padding: 0.5rem 1rem; background: var(--accent-light, #e0e7ff); color: #5b5fcf; border-radius: 6px; font-weight: 600; display: inline-block;">
+                                        <span class="domain-badge">
                                             <i class="fas fa-globe"></i>
                                             <span ng-bind="domainName"></span>
                                         </span>
                                     </td>
                                     <td>
-                                        <textarea ng-bind="privateKey" rows="10" class="key-textarea" readonly></textarea>
-                                        <small style="color: var(--text-secondary, #64748b); margin-top: 0.5rem; display: block;">
+                                        <textarea ng-bind="privateKey" rows="10" class="key-textarea" readonly aria-label="{% trans 'Private Key' %}"></textarea>
+                                        <small class="key-hint">
                                             <i class="fas fa-lock"></i>
                                             {% trans "Keep this private key secure" %}
                                         </small>
                                     </td>
                                     <td>
-                                        <textarea ng-bind="publicKey" rows="10" class="key-textarea" readonly></textarea>
-                                        <small style="color: var(--text-secondary, #64748b); margin-top: 0.5rem; display: block;">
+                                        <textarea ng-bind="publicKey" rows="10" class="key-textarea" readonly aria-label="{% trans 'Public Key' %}"></textarea>
+                                        <small class="key-hint">
                                             <i class="fas fa-info-circle"></i>
                                             {% trans "Add this as a TXT record in your DNS" %}
                                         </small>

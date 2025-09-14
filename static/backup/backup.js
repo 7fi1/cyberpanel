@@ -1729,6 +1729,8 @@ app.controller('scheduleBackup', function ($scope, $http, $window) {
                 $scope.allSites = response.data.allSites;
                 $scope.lastRun = response.data.lastRun;
                 $scope.currentStatus = response.data.currentStatus;
+                $scope.backupFrequency = response.data.currently;
+                $scope.backupRetention = response.data.retention;
 
             } else {
                 new PNotify({

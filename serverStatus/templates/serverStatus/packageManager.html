@@ -182,12 +182,21 @@
         width: 60px;
         height: 60px;
         background: rgba(255, 255, 255, 0.2);
+        -webkit-backdrop-filter: blur(10px);
         backdrop-filter: blur(10px);
         border-radius: 12px;
         display: flex;
         align-items: center;
         justify-content: center;
         box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    
+    .package-icon i {
+        font-size: 1.75rem;
+    }
+    
+    .loading-spinner-inline {
+        margin-left: 1rem;
     }
     
     .page-subtitle {
@@ -207,6 +216,7 @@
     
     .stat-badge {
         background: rgba(255, 255, 255, 0.2);
+        -webkit-backdrop-filter: blur(10px);
         backdrop-filter: blur(10px);
         padding: 0.5rem 1.5rem;
         border-radius: 20px;
@@ -560,6 +570,7 @@
         align-items: center;
         justify-content: center;
         z-index: 1000;
+        -webkit-backdrop-filter: blur(4px);
         backdrop-filter: blur(4px);
     }
     
@@ -760,7 +771,7 @@
         <div class="header-content">
             <h1 class="page-title">
                 <div class="package-icon">
-                    <i class="fas fa-cube" style="font-size: 1.75rem;"></i>
+                    <i class="fas fa-cube"></i>
                 </div>
                 {% trans "System Package Manager" %}
             </h1>
@@ -786,15 +797,15 @@
     <div class="tabs-container">
         <!-- Tab Navigation -->
         <div class="modern-tabs">
-            <button class="tab-item active" ng-click="fetchPackages('upgrade')" data-tab="updates">
+            <button type="button" class="tab-item active" ng-click="fetchPackages('upgrade')" data-tab="updates" aria-label="{% trans 'View available updates' %}">
                 <i class="fas fa-sync-alt tab-icon"></i>
                 {% trans "Available Updates" %}
             </button>
-            <button class="tab-item" ng-click="fetchPackages()" data-tab="all">
+            <button type="button" class="tab-item" ng-click="fetchPackages()" data-tab="all" aria-label="{% trans 'View all packages' %}">
                 <i class="fas fa-list tab-icon"></i>
                 {% trans "All Packages" %}
             </button>
-            <button class="tab-item" ng-click="fetchPackages('CyberPanel')" data-tab="cyberpanel">
+            <button type="button" class="tab-item" ng-click="fetchPackages('CyberPanel')" data-tab="cyberpanel" aria-label="{% trans 'View CyberPanel packages' %}">
                 <i class="fas fa-shield-alt tab-icon"></i>
                 {% trans "CyberPanel Packages" %}
             </button>
@@ -807,20 +818,20 @@
                 <div class="search-box">
                     <i class="fas fa-search search-icon"></i>
                     <input type="text" class="search-input" placeholder="{% trans 'Search packages...' %}" 
-                           ng-model="packSearch">
+                           ng-model="packSearch" aria-label="{% trans 'Search packages' %}">
                 </div>
                 
                 <div class="control-group">
                     <select ng-model="recordsToShow" class="select-control" 
-                            ng-change="fetchPackages(currentTab)">
+                            ng-change="fetchPackages(currentTab)" aria-label="{% trans 'Records per page' %}">
                         <option value="10">10 {% trans "per page" %}</option>
                         <option value="50">50 {% trans "per page" %}</option>
                         <option value="100">100 {% trans "per page" %}</option>
                         <option value="500">500 {% trans "per page" %}</option>
                     </select>
                     
-                    <button class="btn btn-success" ng-click="updatePackage('all')" 
-                            ng-show="currentTab === 'upgrade'">
+                    <button type="button" class="btn btn-success" ng-click="updatePackage('all')" 
+                            ng-show="currentTab === 'upgrade'" aria-label="{% trans 'Update all packages' %}">
                         <i class="fas fa-download"></i>
                         {% trans "Update All" %}
                     </button>
@@ -865,24 +876,24 @@
                                 </span>
                             </td>
                             <td>
-                                <a class="lock-toggle" 
-                                   ng-class="{'locked': package.lock == 1, 'unlocked': package.lock == 0}"
-                                   ng-click="lockStatus(package.package, package.lock == 1 ? 1 : 0)"
-                                   title="{$ package.lock == 1 ? 'Package is locked' : 'Package is unlocked' $}">
+                                <button type="button" class="lock-toggle" 
+                                        ng-class="{'locked': package.lock == 1, 'unlocked': package.lock == 0}"
+                                        ng-click="lockStatus(package.package, package.lock == 1 ? 1 : 0)"
+                                        aria-label="{$ package.lock == 1 ? 'Unlock package' : 'Lock package' $}">
                                     <i class="fas" 
                                        ng-class="{'fa-lock': package.lock == 1, 'fa-lock-open': package.lock == 0}"></i>
-                                </a>
+                                </button>
                             </td>
                             <td>
                                 <div class="action-buttons">
-                                    <button class="btn btn-info btn-sm" 
-                                            ng-click="showPackageDetails(package.package)">
+                                    <button type="button" class="btn btn-info btn-sm" 
+                                            ng-click="showPackageDetails(package.package)" aria-label="{% trans 'View package details' %}">
                                         <i class="fas fa-info-circle"></i>
                                         {% trans "Details" %}
                                     </button>
-                                    <button class="btn btn-primary btn-sm" 
+                                    <button type="button" class="btn btn-primary btn-sm" 
                                             ng-click="showUpdateModal(package.package)"
-                                            ng-show="currentTab === 'upgrade' || currentTab === 'cyberpanel'">
+                                            ng-show="currentTab === 'upgrade' || currentTab === 'cyberpanel'" aria-label="{% trans 'Update package' %}">
                                         <i class="fas fa-download"></i>
                                         {% trans "Update" %}
                                     </button>
@@ -912,7 +923,7 @@
                 <div class="pagination-controls">
                     <span>{% trans "Page:" %}</span>
                     <select ng-model="currentPage" class="page-select" 
-                            ng-change="fetchPackages(currentTab)">
+                            ng-change="fetchPackages(currentTab)" aria-label="{% trans 'Select page' %}">
                         <option ng-repeat="page in pagination" value="{$ $index + 1 $}">
                             {$ $index + 1 $}
                         </option>
@@ -931,7 +942,7 @@
                     <i class="fas fa-info-circle"></i>
                     {% trans "Package Details:" %} {$ selectedPackage $}
                 </h3>
-                <button class="modal-close" ng-click="closeDetails()">
+                <button type="button" class="modal-close" ng-click="closeDetails()" aria-label="{% trans 'Close details modal' %}">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
@@ -948,9 +959,9 @@
                 <h3 class="modal-title">
                     <i class="fas fa-download"></i>
                     {% trans "Updating Package:" %} {$ updatingPackage $}
-                    <span ng-hide="cyberpanelLoading" class="loading-spinner" style="margin-left: 1rem;"></span>
+                    <span ng-hide="cyberpanelLoading" class="loading-spinner loading-spinner-inline"></span>
                 </h3>
-                <button class="modal-close" ng-click="closeUpdate()" ng-disabled="!updateComplete">
+                <button type="button" class="modal-close" ng-click="closeUpdate()" ng-disabled="!updateComplete" aria-label="{% trans 'Close update modal' %}">
                     <i class="fas fa-times"></i>
                 </button>
             </div>

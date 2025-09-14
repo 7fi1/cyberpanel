@@ -323,7 +323,7 @@
                                 <div class="col-md-8">
                                     <div class="form-group">
                                         <label class="form-label">{% trans "Select Website" %}</label>
-                                        <select ng-change="showEmailDetails()" ng-model="emailDomain" class="form-control">
+                                        <select ng-change="showEmailDetails()" ng-model="emailDomain" class="form-control" aria-label="{% trans 'Select Website' %}">
                                             <option value="">{% trans "Choose a website..." %}</option>
                                             {% for items in websiteList %}
                                                 <option value="{{ items }}">{{ items }}</option>
@@ -339,7 +339,7 @@
                                 <div class="col-md-8">
                                     <div class="form-group">
                                         <label class="form-label">{% trans "Select Email Account" %}</label>
-                                        <select ng-model="selectedEmail" class="form-control">
+                                        <select ng-model="selectedEmail" class="form-control" aria-label="{% trans 'Select Email Account' %}">
                                             <option value="">{% trans "Choose an email account..." %}</option>
                                             <option ng-repeat="email in emails track by $index" value="{$ email.email $}">{$ email.email $}</option>
                                         </select>
