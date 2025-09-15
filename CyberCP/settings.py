@@ -33,8 +33,13 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'xr%j*p!*$0d%(-(e%@-*hyoz4$f%y77coq0u)6pwmj
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
 
-# Allow configuration via environment variable, fallback to wildcard for backward compatibility
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '*').split(',')
+# Allow configuration via environment variable, with dynamic host detection
+allowed_hosts_env = os.getenv('ALLOWED_HOSTS', '')
+if allowed_hosts_env:
+    ALLOWED_HOSTS = allowed_hosts_env.split(',')
+else:
+    # Default to localhost and auto-detect server IP from request
+    ALLOWED_HOSTS = ['localhost', '127.0.0.1', '*']
 
 # Application definition
 
