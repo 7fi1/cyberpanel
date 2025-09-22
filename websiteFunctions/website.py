@@ -221,15 +221,18 @@ class WebsiteManager:
                         staging_wpsite = wstagingDelete.wpsite
                         staging_website = staging_wpsite.owner
 
-                        # Delete the WPStaging record first
+                        # Delete the staging Websites record and all associated data BEFORE deleting DB records
+                        from plogical.vhost import vhost
+                        vhost.deleteVirtualHostConfigurations(staging_website.domain)
+
+                        # Delete the WPStaging record
                         wstagingDelete.delete()
 
                         # Delete the staging WPSites record
                         staging_wpsite.delete()
 
-                        # Delete the staging Websites record and all associated data
-                        from plogical.vhost import vhost
-                        vhost.deleteVirtualHostConfigurations(staging_website.domain, staging_website.adminEmail, staging_website.package.packageName)
+                        # Delete the staging Websites record
+                        staging_website.delete()
 
                 except BaseException as msg:
                     da = str(msg)
