@@ -153,7 +153,24 @@ class WebsiteManager:
                 WPDelete = WPSites.objects.get(pk=DeleteID)
 
                 if ACLManager.checkOwnership(WPDelete.owner.domain, admin, currentACL) == 1:
-                    WPDelete.delete()
+                    # Check if this is a staging site (referenced by WPStaging as wpsite)
+                    staging_records = WPStaging.objects.filter(wpsite=WPDelete)
+
+                    if staging_records.exists():
+                        # This is a staging site - perform complete cleanup
+                        staging_website = WPDelete.owner
+
+                        # Delete virtual host configurations before deleting records
+                        from plogical.vhost import vhost
+                        vhost.deleteVirtualHostConfigurations(staging_website.domain)
+
+                        # Delete all staging records
+                        staging_records.delete()  # Delete WPStaging records
+                        WPDelete.delete()         # Delete WPSites record
+                        staging_website.delete()  # Delete Websites record
+                    else:
+                        # Regular WP site deletion
+                        WPDelete.delete()
         except BaseException as msg:
             pass
 
@@ -223,7 +240,7 @@ class WebsiteManager:
 
                         # Delete the staging Websites record and all associated data BEFORE deleting DB records
                         from plogical.vhost import vhost
-                        vhost.deleteVirtualHostConfigurations(staging_website.owner.domain)
+                        vhost.deleteVirtualHostConfigurations(staging_website.domain)
 
                         # Delete the WPStaging record
                         wstagingDelete.delete()
