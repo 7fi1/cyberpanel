@@ -223,7 +223,7 @@ class WebsiteManager:
 
                         # Delete the staging Websites record and all associated data BEFORE deleting DB records
                         from plogical.vhost import vhost
-                        vhost.deleteVirtualHostConfigurations(staging_website.domain)
+                        vhost.deleteVirtualHostConfigurations(staging_website.owner.domain)
 
                         # Delete the WPStaging record
                         wstagingDelete.delete()
@@ -235,7 +235,7 @@ class WebsiteManager:
                         staging_website.delete()
 
                 except BaseException as msg:
-                    da = str(msg)
+                    logging.CyberCPLogFileWriter.writeToFile(f"Error cleaning up WP/Staging sites: {str(msg)}")
 
                 proc = httpProc(request, 'websiteFunctions/WPsiteHome.html',
                                 Data, 'createDatabase')
