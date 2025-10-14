@@ -2119,8 +2119,53 @@ class BackupManager:
 
         websitesName = ACLManager.findAllSites(currentACL, userID)
 
-        proc = httpProc(request, 'backup/OneClickBackupSchedule.html', {'destination': NormalBackupDests.objects.get(name=ocb.sftpUser).name, 'websites': websitesName},
-                        'scheduleBackups')
+        # Fetch storage stats and backup info from platform API
+        storage_info = {
+            'total_storage': 'N/A',
+            'used_storage': 'N/A',
+            'available_storage': 'N/A',
+            'usage_percentage': 0,
+            'last_backup_run': 'Never',
+            'last_backup_status': 'N/A',
+            'total_backups': 0,
+            'failed_backups': 0,
+            'error_logs': []
+        }
+
+        try:
+            import requests
+            url = 'https://platform.cyberpersons.com/Billing/GetBackupStats'
+            payload = {
+                'sub': ocb.subscription,
+                'sftpUser': ocb.sftpUser,
+                'serverIP': ACLManager.fetchIP()
+            }
+            headers = {'Content-Type': 'application/json'}
+
+            response = requests.post(url, headers=headers, data=json.dumps(payload), timeout=30)
+
+            if response.status_code == 200:
+                api_data = response.json()
+                if api_data.get('status') == 1:
+                    storage_info = api_data.get('data', storage_info)
+                    logging.CyberCPLogFileWriter.writeToFile(f'Successfully fetched backup stats for {ocb.sftpUser} [ManageOCBackups]')
+                else:
+                    logging.CyberCPLogFileWriter.writeToFile(f'Platform API returned error: {api_data.get("error_message")} [ManageOCBackups]')
+            else:
+                logging.CyberCPLogFileWriter.writeToFile(f'Platform API returned HTTP {response.status_code} [ManageOCBackups]')
+        except Exception as e:
+            logging.CyberCPLogFileWriter.writeToFile(f'Failed to fetch backup stats: {str(e)} [ManageOCBackups]')
+
+        context = {
+            'destination': NormalBackupDests.objects.get(name=ocb.sftpUser).name,
+            'websites': websitesName,
+            'storage_info': storage_info,
+            'ocb_subscription': ocb.subscription,
+            'ocb_plan_name': ocb.planName,
+            'ocb_sftp_user': ocb.sftpUser
+        }
+
+        proc = httpProc(request, 'backup/OneClickBackupSchedule.html', context, 'scheduleBackups')
         return proc.render()
 
     def RestoreOCBackups(self, request=None, userID=None, data=None):
