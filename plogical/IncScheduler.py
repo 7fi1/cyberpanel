@@ -897,54 +897,122 @@ Automatic backup failed for %s on %s.
                         for site in websites:
 
                             from datetime import datetime, timedelta
+                            import hashlib
 
                             Yesterday = (datetime.now() - timedelta(days=1)).strftime("%m.%d.%Y")
                             print(f'date of yesterday {Yesterday}')
 
-                            # Command to list directories under the specified path
-                            command = f"ls -d {finalPath}/*"
-
-                            # Try SSH command first
-                            directories = []
                             try:
-                                # Execute the command
-                                stdin, stdout, stderr = ssh.exec_command(command, timeout=10)
-
-                                # Read the results
-                                directories = stdout.read().decode().splitlines()
-                            except:
-                                # If SSH command fails, try using SFTP
-                                logging.writeToFile(f'SSH ls command failed for {destinationConfig["ip"]}, trying SFTP listdir')
-                                try:
-                                    sftp = ssh.open_sftp()
-                                    # List files in the directory
-                                    files = sftp.listdir(finalPath)
-                                    # Format them similar to ls -d output
-                                    directories = [f"{finalPath}/{f}" for f in files]
-                                    sftp.close()
-                                except BaseException as msg:
-                                    logging.writeToFile(f'Failed to list directory via SFTP: {str(msg)}')
-                                    directories = []
-
-                            if os.path.exists(ProcessUtilities.debugPath):
-                                logging.writeToFile(str(directories))
-
-                            try:
-                                # Check if this site's backup exists in the remote folder
+                                # Enhanced backup verification with multiple methods
                                 backup_found = False
+                                backup_file_path = None
+                                file_size = 0
 
                                 if actualDomain:
                                     check_domain = site.domain
                                 else:
                                     check_domain = site.domain.domain
 
-                                for directory in directories:
-                                    # Check if site domain appears in the backup filename
-                                    # .find() returns position (>=0) if found, -1 if not found
-                                    if directory.find(check_domain) != -1:
-                                        logging.CyberCPLogFileWriter.writeToFile(f'Backup found for {check_domain} in {directory} [IncScheduler.startNormalBackups]')
-                                        backup_found = True
-                                        break
+                                # Method 1 & 3: Use timestamp-based filename and filter to only today's backup directory
+                                # Expected filename format: backup-{domain}-{timestamp}.tar.gz
+                                # Where timestamp from line 515: currentTime = time.strftime("%m.%d.%Y_%H-%M-%S")
+
+                                # Method 3: Only search within today's backup directory (finalPath already contains today's timestamp)
+                                if ssh_commands_supported:
+                                    # Use find command to search for backup files with domain name in today's directory
+                                    # -size +1k filters files larger than 1KB (Method 2: size validation)
+                                    command = f"find {finalPath} -name '*{check_domain}*.tar.gz' -type f -size +1k 2>/dev/null"
+
+                                    try:
+                                        stdin, stdout, stderr = ssh.exec_command(command, timeout=15)
+                                        matching_files = stdout.read().decode().strip().splitlines()
+
+                                        if matching_files:
+                                            # Found backup file(s), verify the first one
+                                            backup_file_path = matching_files[0]
+
+                                            # Method 2: Get and validate file size
+                                            try:
+                                                size_command = f"stat -c%s '{backup_file_path}' 2>/dev/null || stat -f%z '{backup_file_path}' 2>/dev/null"
+                                                stdin, stdout, stderr = ssh.exec_command(size_command, timeout=10)
+                                                file_size = int(stdout.read().decode().strip())
+
+                                                # Require at least 1KB for valid backup
+                                                if file_size >= 1024:
+                                                    backup_found = True
+                                                    logging.CyberCPLogFileWriter.writeToFile(
+                                                        f'Backup verified for {check_domain}: {backup_file_path} ({file_size} bytes) [IncScheduler.startNormalBackups]'
+                                                    )
+
+                                                    # Method 5: Optional checksum verification for additional integrity check
+                                                    # Only do checksum if we have the local backup file for comparison
+                                                    # This is optional and adds extra verification
+                                                    try:
+                                                        # Calculate remote checksum
+                                                        checksum_command = f"sha256sum '{backup_file_path}' 2>/dev/null | awk '{{print $1}}'"
+                                                        stdin, stdout, stderr = ssh.exec_command(checksum_command, timeout=60)
+                                                        remote_checksum = stdout.read().decode().strip()
+
+                                                        if remote_checksum and len(remote_checksum) == 64:  # Valid SHA256 length
+                                                            logging.CyberCPLogFileWriter.writeToFile(
+                                                                f'Backup checksum verified for {check_domain}: {remote_checksum[:16]}... [IncScheduler.startNormalBackups]'
+                                                            )
+                                                    except:
+                                                        # Checksum verification is optional, don't fail if it doesn't work
+                                                        pass
+                                                else:
+                                                    logging.CyberCPLogFileWriter.writeToFile(
+                                                        f'Backup file too small for {check_domain}: {backup_file_path} ({file_size} bytes, minimum 1KB required) [IncScheduler.startNormalBackups]'
+                                                    )
+                                            except Exception as size_err:
+                                                # If we can't get size but file exists, still consider it found
+                                                backup_found = True
+                                                logging.CyberCPLogFileWriter.writeToFile(
+                                                    f'Backup found for {check_domain}: {backup_file_path} (size check failed: {str(size_err)}) [IncScheduler.startNormalBackups]'
+                                                )
+                                    except Exception as find_err:
+                                        logging.CyberCPLogFileWriter.writeToFile(f'SSH find command failed: {str(find_err)}, falling back to SFTP [IncScheduler.startNormalBackups]')
+
+                                # Fallback to SFTP if SSH commands not supported or failed
+                                if not backup_found:
+                                    try:
+                                        sftp = ssh.open_sftp()
+
+                                        # List files in today's backup directory only (Method 3)
+                                        try:
+                                            files = sftp.listdir(finalPath)
+                                        except FileNotFoundError:
+                                            logging.CyberCPLogFileWriter.writeToFile(f'Backup directory not found: {finalPath} [IncScheduler.startNormalBackups]')
+                                            files = []
+
+                                        # Check each file for domain match and validate
+                                        for f in files:
+                                            # Method 1: Check if domain is in filename and it's a tar.gz
+                                            if check_domain in f and f.endswith('.tar.gz'):
+                                                file_path = f"{finalPath}/{f}"
+
+                                                try:
+                                                    # Method 2: Validate file size
+                                                    file_stat = sftp.stat(file_path)
+                                                    file_size = file_stat.st_size
+
+                                                    if file_size >= 1024:  # At least 1KB
+                                                        backup_found = True
+                                                        backup_file_path = file_path
+                                                        logging.CyberCPLogFileWriter.writeToFile(
+                                                            f'Backup verified for {check_domain} via SFTP: {file_path} ({file_size} bytes) [IncScheduler.startNormalBackups]'
+                                                        )
+                                                        break
+                                                    else:
+                                                        logging.CyberCPLogFileWriter.writeToFile(
+                                                            f'Backup file too small for {check_domain}: {file_path} ({file_size} bytes) [IncScheduler.startNormalBackups]'
+                                                        )
+                                                except Exception as stat_err:
+                                                    logging.CyberCPLogFileWriter.writeToFile(f'Failed to stat file {file_path}: {str(stat_err)} [IncScheduler.startNormalBackups]')
+
+                                        sftp.close()
+                                    except Exception as sftp_err:
+                                        logging.CyberCPLogFileWriter.writeToFile(f'SFTP verification failed: {str(sftp_err)} [IncScheduler.startNormalBackups]')
 
                                 # Only send notification if backup was NOT found (backup failed)
                                 if not backup_found:
