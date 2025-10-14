@@ -930,45 +930,63 @@ Automatic backup failed for %s on %s.
                                 logging.writeToFile(str(directories))
 
                             try:
+                                # Check if this site's backup exists in the remote folder
+                                backup_found = False
 
-                                startCheck = 0
+                                if actualDomain:
+                                    check_domain = site.domain
+                                else:
+                                    check_domain = site.domain.domain
+
                                 for directory in directories:
-                                    if directory.find(site.domain):
-                                        print(f'site in backup, no need to notify {site.domain}')
-                                        startCheck = 1
+                                    # Check if site domain appears in the backup filename
+                                    # .find() returns position (>=0) if found, -1 if not found
+                                    if directory.find(check_domain) != -1:
+                                        logging.CyberCPLogFileWriter.writeToFile(f'Backup found for {check_domain} in {directory} [IncScheduler.startNormalBackups]')
+                                        backup_found = True
                                         break
 
-                                if startCheck:
-                                    'send notification that backup failed'
+                                # Only send notification if backup was NOT found (backup failed)
+                                if not backup_found:
+                                    logging.CyberCPLogFileWriter.writeToFile(f'Backup NOT found for {check_domain}, sending failure notification [IncScheduler.startNormalBackups]')
+
                                     import requests
 
                                     # Define the URL of the endpoint
-                                    url = 'http://platform.cyberpersons.com/Billing/BackupFailedNotify'  # Replace with your actual endpoint URL
+                                    url = 'https://platform.cyberpersons.com/Billing/BackupFailedNotify'
 
                                     # Define the payload to send in the POST request
                                     payload = {
                                         'sub': ocb.subscription,
-                                        'subject': f'Failed to backup {site.domain} on {ACLManager.fetchIP()}.',
-                                        'message':f'Hi, \n\n Failed to create backup for {site.domain} on on {ACLManager.fetchIP()}. \n\n Please contact our support team at: http://platform.cyberpersons.com\n\nThank you.',
-                                        # Replace with the actual SSH public key
+                                        'subject': f'Backup Failed for {check_domain} on {ACLManager.fetchIP()}',
+                                        'message': f'Hi,\n\nFailed to create backup for {check_domain} on {ACLManager.fetchIP()}.\n\nBackup was scheduled but the backup file was not found on the remote server after the backup job completed.\n\nPlease check your server logs for more details or contact support at: https://platform.cyberpersons.com\n\nThank you.',
                                         'sftpUser': ocb.sftpUser,
-                                        'serverIP': ACLManager.fetchIP(),  # Replace with the actual server IP
+                                        'serverIP': ACLManager.fetchIP(),
+                                        'status': 'failed'  # Critical: tells platform to send email
                                     }
 
                                     # Convert the payload to JSON format
                                     headers = {'Content-Type': 'application/json'}
-                                    dataRet = json.dumps(payload)
 
-                                    # Make the POST request
-                                    response = requests.post(url, headers=headers, data=dataRet)
+                                    try:
+                                        # Make the POST request with timeout
+                                        response = requests.post(url, headers=headers, data=json.dumps(payload), timeout=30)
 
-                                    # # Handle the response
-                                    # # Handle the response
-                                    # if response.status_code == 200:
-                                    #     response_data = response.json()
-                                    #     if response_data.get('status') == 1:
-                            except:
-                                pass
+                                        if response.status_code == 200:
+                                            response_data = response.json()
+                                            if response_data.get('status') == 1:
+                                                logging.CyberCPLogFileWriter.writeToFile(f'Failure notification sent successfully for {check_domain} [IncScheduler.startNormalBackups]')
+                                            else:
+                                                logging.CyberCPLogFileWriter.writeToFile(f'Failure notification API returned error for {check_domain}: {response_data.get("error_message")} [IncScheduler.startNormalBackups]')
+                                        else:
+                                            logging.CyberCPLogFileWriter.writeToFile(f'Failure notification API returned HTTP {response.status_code} for {check_domain} [IncScheduler.startNormalBackups]')
+                                    except requests.exceptions.RequestException as e:
+                                        logging.CyberCPLogFileWriter.writeToFile(f'Failed to send backup failure notification for {check_domain}: {str(e)} [IncScheduler.startNormalBackups]')
+                                else:
+                                    logging.CyberCPLogFileWriter.writeToFile(f'Backup verified successful for {check_domain}, no notification needed [IncScheduler.startNormalBackups]')
+
+                            except Exception as msg:
+                                logging.CyberCPLogFileWriter.writeToFile(f'Error checking backup status for site: {str(msg)} [IncScheduler.startNormalBackups]')
 
                     except:
                         pass
