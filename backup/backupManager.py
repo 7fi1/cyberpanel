@@ -2432,122 +2432,159 @@ class BackupManager:
             return HttpResponse(json_data)
 
     def DeployAccount(self, request=None, userID=None, data=None):
-        user = Administrator.objects.get(pk=userID)
+        """Deploy a One-Click Backup account by creating SFTP credentials on remote server"""
+        try:
+            user = Administrator.objects.get(pk=userID)
+            userID = request.session['userID']
+            currentACL = ACLManager.loadedACL(userID)
 
-        userID = request.session['userID']
-        currentACL = ACLManager.loadedACL(userID)
-        import json
+            # Parse request data
+            try:
+                data = json.loads(request.body)
+                backup_id = data['id']
+            except (json.JSONDecodeError, KeyError) as e:
+                logging.CyberCPLogFileWriter.writeToFile(f"Invalid request data in DeployAccount: {str(e)}")
+                return HttpResponse(json.dumps({
+                    'status': 0,
+                    'error_message': 'Invalid request format. Missing required field: id'
+                }))
 
-        data = json.loads(request.body)
-        id = data['id']
+            # Get backup plan
+            from IncBackups.models import OneClickBackups
+            try:
+                ocb = OneClickBackups.objects.get(pk=backup_id, owner=user)
+            except OneClickBackups.DoesNotExist:
+                logging.CyberCPLogFileWriter.writeToFile(f"OneClickBackup {backup_id} not found for user {userID} [DeployAccount]")
+                return HttpResponse(json.dumps({
+                    'status': 0,
+                    'error_message': 'Backup plan not found or you do not have permission to access it.'
+                }))
 
-        from IncBackups.models import OneClickBackups
-        ocb = OneClickBackups.objects.get(pk=id, owner=user)
+            # Check if already deployed
+            if ocb.state == 1:
+                logging.CyberCPLogFileWriter.writeToFile(f"Backup plan {backup_id} already deployed [DeployAccount]")
+                return HttpResponse(json.dumps({
+                    'status': 1,
+                    'error_message': 'This backup account is already deployed.'
+                }))
 
-        data = {}
+            # Read SSH public key
+            try:
+                ssh_pub_key = ProcessUtilities.outputExecutioner('cat /root/.ssh/cyberpanel.pub').strip()
+                if not ssh_pub_key or ssh_pub_key.startswith('cat:'):
+                    raise Exception("Failed to read SSH public key")
+            except Exception as e:
+                logging.CyberCPLogFileWriter.writeToFile(f"Failed to read SSH public key: {str(e)} [DeployAccount]")
+                return HttpResponse(json.dumps({
+                    'status': 0,
+                    'error_message': 'SSH public key not found. Please ensure One-Click Backup is properly configured.'
+                }))
 
-        ####
+            # Prepare API request
+            url = 'https://platform.cyberpersons.com/Billing/CreateSFTPAccount'
+            payload = {
+                'sub': ocb.subscription,
+                'key': ssh_pub_key,
+                'sftpUser': ocb.sftpUser,
+                'serverIP': ACLManager.fetchIP(),
+                'planName': ocb.planName
+            }
+            headers = {'Content-Type': 'application/json'}
 
-        import requests
-        import json
+            # Make API request
+            try:
+                response = requests.post(url, headers=headers, data=json.dumps(payload), timeout=30)
+            except requests.exceptions.RequestException as e:
+                logging.CyberCPLogFileWriter.writeToFile(f"API request failed: {str(e)} [DeployAccount]")
+                return HttpResponse(json.dumps({
+                    'status': 0,
+                    'error_message': f'Failed to connect to backup platform: {str(e)}'
+                }))
 
-        # Define the URL of the endpoint
-        url = 'http://platform.cyberpersons.com/Billing/CreateSFTPAccount'  # Replace with your actual endpoint URL
+            # Handle non-200 responses
+            if response.status_code != 200:
+                logging.CyberCPLogFileWriter.writeToFile(f"API returned status {response.status_code}: {response.text} [DeployAccount]")
+                return HttpResponse(json.dumps({
+                    'status': 0,
+                    'error_message': f'Backup platform returned error (HTTP {response.status_code}). Please try again later.'
+                }))
 
-        # Define the payload to send in the POST request
-        payload = {
-            'sub': ocb.subscription,
-            'key': ProcessUtilities.outputExecutioner(f'cat /root/.ssh/cyberpanel.pub'),
-            # Replace with the actual SSH public key
-            'sftpUser': ocb.sftpUser,
-            'serverIP': ACLManager.fetchIP(),  # Replace with the actual server IP
-            'planName': ocb.planName
-        }
+            # Parse API response
+            try:
+                response_data = response.json()
+            except json.JSONDecodeError:
+                logging.CyberCPLogFileWriter.writeToFile(f"Invalid JSON response from API: {response.text} [DeployAccount]")
+                return HttpResponse(json.dumps({
+                    'status': 0,
+                    'error_message': 'Received invalid response from backup platform.'
+                }))
 
-        # Convert the payload to JSON format
-        headers = {'Content-Type': 'application/json'}
-        dataRet = json.dumps(payload)
+            # Check if deployment was successful or already deployed
+            api_status = response_data.get('status')
+            api_error = response_data.get('error_message', '')
 
-        # Make the POST request
-        response = requests.post(url, headers=headers, data=dataRet)
+            if api_status == 1 or api_error == "Already deployed.":
+                # Both cases are success - account exists and is ready
+                deployment_status = "created" if api_status == 1 else "already deployed"
+                logging.CyberCPLogFileWriter.writeToFile(f"SFTP account {deployment_status} for {ocb.sftpUser} [DeployAccount]")
 
-        # Handle the response
-        # Handle the response
-        if response.status_code == 200:
-            response_data = response.json()
-            if response_data.get('status') == 1:
-
+                # Update backup plan state
                 ocb.state = 1
                 ocb.save()
 
-                print("SFTP account created successfully.")
+                # Create local backup destination
+                finalDic = {
+                    'IPAddress': response_data.get('ipAddress'),
+                    'password': 'NOT-NEEDED',
+                    'backupSSHPort': '22',
+                    'userName': ocb.sftpUser,
+                    'type': 'SFTP',
+                    'path': 'cpbackups',
+                    'name': ocb.sftpUser
+                }
 
-                finalDic = {}
-
-                finalDic['IPAddress'] = response_data.get('ipAddress')
-                finalDic['password'] = 'NOT-NEEDED'
-                finalDic['backupSSHPort'] = '22'
-                finalDic['userName'] = ocb.sftpUser
-                finalDic['type'] = 'SFTP'
-                finalDic['path'] = 'cpbackups'
-                finalDic['name'] = ocb.sftpUser
-
-                wm = BackupManager()
-                response_inner = wm.submitDestinationCreation(userID, finalDic)
-
-                response_data_inner = json.loads(response_inner.content.decode('utf-8'))
-
-                # Extract the value of 'status'
-                if response_data_inner.get('status') == 0:
-                    data_ret = {'status': 1, 'error_message': response_data_inner.get('error_message')}
-                    json_data = json.dumps(data_ret)
-                    return HttpResponse(json_data)
-                else:
-                    data_ret = {'status': 1,}
-                    json_data = json.dumps(data_ret)
-                    return HttpResponse(json_data)
-
-            else:
-
-                if response_data.get('error_message') == "Already deployed.":
-                    ocb.state = 1
-                    ocb.save()
-
-                    print("SFTP account created successfully.")
-
-                    finalDic = {}
-
-                    finalDic['IPAddress'] = response_data.get('ipAddress')
-                    finalDic['password'] = 'NOT-NEEDED'
-                    finalDic['backupSSHPort'] = '22'
-                    finalDic['userName'] = ocb.sftpUser
-                    finalDic['type'] = 'SFTP'
-                    finalDic['path'] = 'cpbackups'
-                    finalDic['name'] = ocb.sftpUser
-
+                try:
                     wm = BackupManager()
                     response_inner = wm.submitDestinationCreation(userID, finalDic)
-
                     response_data_inner = json.loads(response_inner.content.decode('utf-8'))
 
-                    # Extract the value of 'status'
                     if response_data_inner.get('status') == 0:
-                        data_ret = {'status': 1, 'error_message': response_data_inner.get('error_message')}
-                        json_data = json.dumps(data_ret)
-                        return HttpResponse(json_data)
-                    else:
-                        data_ret = {'status': 1, }
-                        json_data = json.dumps(data_ret)
-                        return HttpResponse(json_data)
+                        # Destination creation failed, but account is deployed
+                        logging.CyberCPLogFileWriter.writeToFile(
+                            f"Destination creation failed: {response_data_inner.get('error_message')} [DeployAccount]"
+                        )
+                        return HttpResponse(json.dumps({
+                            'status': 0,
+                            'error_message': f"Account deployed but failed to create local destination: {response_data_inner.get('error_message')}"
+                        }))
 
-                data_ret = {'status': 0, 'error_message': response_data.get('error_message')}
-                json_data = json.dumps(data_ret)
-                return HttpResponse(json_data)
-        else:
-            data['message'] = f"[1991] Failed to create sftp account {response.text}"
-            data_ret = {'status': 0, 'error_message': response.text}
-            json_data = json.dumps(data_ret)
-            return HttpResponse(json_data)
+                    # Full success
+                    return HttpResponse(json.dumps({
+                        'status': 1,
+                        'message': f'Backup account {deployment_status} successfully.'
+                    }))
+
+                except Exception as e:
+                    logging.CyberCPLogFileWriter.writeToFile(f"Failed to create destination: {str(e)} [DeployAccount]")
+                    return HttpResponse(json.dumps({
+                        'status': 0,
+                        'error_message': f'Account deployed but failed to create local destination: {str(e)}'
+                    }))
+
+            else:
+                # API returned an error
+                logging.CyberCPLogFileWriter.writeToFile(f"API returned error: {api_error} [DeployAccount]")
+                return HttpResponse(json.dumps({
+                    'status': 0,
+                    'error_message': api_error or 'Unknown error occurred during deployment.'
+                }))
+
+        except Exception as e:
+            logging.CyberCPLogFileWriter.writeToFile(f"Unexpected error in DeployAccount: {str(e)}")
+            return HttpResponse(json.dumps({
+                'status': 0,
+                'error_message': f'An unexpected error occurred: {str(e)}'
+            }))
 
     def ReconfigureSubscription(self, request=None, userID=None, data=None):
         try:
