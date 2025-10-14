@@ -2243,6 +2243,7 @@ class BackupManager:
         return proc.render()
 
     def fetchOCSites(self, request=None, userID=None, data=None):
+        ssh = None
         try:
             userID = request.session['userID']
             currentACL = ACLManager.loadedACL(userID)
@@ -2253,47 +2254,143 @@ class BackupManager:
 
             admin = Administrator.objects.get(pk=userID)
             from IncBackups.models import OneClickBackups
-            ocb = OneClickBackups.objects.get(pk = id, owner=admin)
 
-            # Load the private key
+            try:
+                ocb = OneClickBackups.objects.get(pk=id, owner=admin)
+            except OneClickBackups.DoesNotExist:
+                logging.CyberCPLogFileWriter.writeToFile(f"OneClickBackup with id {id} not found for user {userID} [fetchOCSites]")
+                data_ret = {'status': 0, 'error_message': 'Backup plan not found or you do not have permission to access it.'}
+                return HttpResponse(json.dumps(data_ret))
 
-            nbd = NormalBackupDests.objects.get(name=ocb.sftpUser)
-            ip = json.loads(nbd.config)['ip']
+            # Load backup destination configuration
+            try:
+                nbd = NormalBackupDests.objects.get(name=ocb.sftpUser)
+                ip = json.loads(nbd.config)['ip']
+            except NormalBackupDests.DoesNotExist:
+                logging.CyberCPLogFileWriter.writeToFile(f"Backup destination {ocb.sftpUser} not found [fetchOCSites]")
+                data_ret = {'status': 0, 'error_message': 'Backup destination not configured. Please deploy your backup account first.'}
+                return HttpResponse(json.dumps(data_ret))
+            except (KeyError, json.JSONDecodeError) as e:
+                logging.CyberCPLogFileWriter.writeToFile(f"Invalid backup destination config for {ocb.sftpUser}: {str(e)} [fetchOCSites]")
+                data_ret = {'status': 0, 'error_message': 'Backup destination configuration is invalid. Please reconfigure your backup account.'}
+                return HttpResponse(json.dumps(data_ret))
 
-            # Connect to the remote server using the private key
+            # Read and validate SSH private key
+            private_key_path = '/root/.ssh/cyberpanel'
+
+            # Check if SSH key exists
+            check_exists = ProcessUtilities.outputExecutioner(f'test -f {private_key_path} && echo "EXISTS" || echo "NOT_EXISTS"').strip()
+
+            if check_exists == "NOT_EXISTS":
+                logging.CyberCPLogFileWriter.writeToFile(f"SSH key not found at {private_key_path} [fetchOCSites]")
+                data_ret = {'status': 0, 'error_message': f'SSH key not found at {private_key_path}. Please ensure One-click Backup is properly configured.'}
+                return HttpResponse(json.dumps(data_ret))
+
+            # Read the key content
+            key_content = ProcessUtilities.outputExecutioner(f'sudo cat {private_key_path}').rstrip('\n')
+
+            if not key_content or key_content.startswith('cat:'):
+                logging.CyberCPLogFileWriter.writeToFile(f"Failed to read SSH key at {private_key_path} [fetchOCSites]")
+                data_ret = {'status': 0, 'error_message': f'Could not read SSH key at {private_key_path}. Please check permissions.'}
+                return HttpResponse(json.dumps(data_ret))
+
+            # Load the private key with support for multiple key types
+            key_file = StringIO(key_content)
+            key = None
+
+            try:
+                key = paramiko.RSAKey.from_private_key(key_file)
+            except:
+                try:
+                    key_file.seek(0)
+                    key = paramiko.Ed25519Key.from_private_key(key_file)
+                except:
+                    try:
+                        key_file.seek(0)
+                        key = paramiko.ECDSAKey.from_private_key(key_file)
+                    except:
+                        try:
+                            key_file.seek(0)
+                            key = paramiko.DSSKey.from_private_key(key_file)
+                        except Exception as e:
+                            logging.CyberCPLogFileWriter.writeToFile(f"Failed to load SSH key: {str(e)} [fetchOCSites]")
+                            data_ret = {'status': 0, 'error_message': 'Failed to load SSH key. The key format may be unsupported or corrupted.'}
+                            return HttpResponse(json.dumps(data_ret))
+
+            # Connect to the remote server
             ssh = paramiko.SSHClient()
             ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-            # Read the private key content
-            private_key_path = '/root/.ssh/cyberpanel'
-            key_content = ProcessUtilities.outputExecutioner(f'cat {private_key_path}').rstrip('\n')
 
-            # Load the private key from the content
-            key_file = StringIO(key_content)
-            key = paramiko.RSAKey.from_private_key(key_file)
-            # Connect to the server using the private key
-            ssh.connect(ip, username=ocb.sftpUser, pkey=key)
-            # Command to list directories under the specified path
-            command = f"ls -d cpbackups/{folder}/*"
+            try:
+                ssh.connect(ip, username=ocb.sftpUser, pkey=key, timeout=30)
+            except paramiko.AuthenticationException as e:
+                logging.CyberCPLogFileWriter.writeToFile(f"SSH Authentication failed for {ocb.sftpUser}@{ip}: {str(e)} [fetchOCSites]")
+                data_ret = {'status': 0, 'error_message': 'SSH Authentication failed. Your backup account credentials may have changed. Please try redeploying your backup account.'}
+                return HttpResponse(json.dumps(data_ret))
+            except paramiko.SSHException as e:
+                logging.CyberCPLogFileWriter.writeToFile(f"SSH Connection failed to {ip}: {str(e)} [fetchOCSites]")
+                data_ret = {'status': 0, 'error_message': f'Failed to connect to backup server: {str(e)}. Please check your network connection and try again.'}
+                return HttpResponse(json.dumps(data_ret))
+            except Exception as e:
+                logging.CyberCPLogFileWriter.writeToFile(f"Unexpected SSH error connecting to {ip}: {str(e)} [fetchOCSites]")
+                data_ret = {'status': 0, 'error_message': f'Connection to backup server failed: {str(e)}'}
+                return HttpResponse(json.dumps(data_ret))
 
-            # Execute the command
-            stdin, stdout, stderr = ssh.exec_command(command)
+            # Execute command to list backup files
+            command = f"ls -d cpbackups/{folder}/* 2>/dev/null || echo 'NO_FILES_FOUND'"
 
-            # Read the results
-            directories = stdout.read().decode().splitlines()
+            try:
+                stdin, stdout, stderr = ssh.exec_command(command)
+                output = stdout.read().decode().strip()
+                error_output = stderr.read().decode().strip()
 
-            finalDirs = []
+                if output == 'NO_FILES_FOUND' or not output:
+                    # No backups found in this folder
+                    data_ret = {'status': 1, 'finalDirs': []}
+                    return HttpResponse(json.dumps(data_ret))
 
-            # Print directories
-            for directory in directories:
-                finalDirs.append(directory.split('/')[2])
+                directories = output.splitlines()
+                finalDirs = []
 
-            data_ret = {'status': 1, 'finalDirs': finalDirs}
-            json_data = json.dumps(data_ret)
-            return HttpResponse(json_data)
-        except BaseException as msg:
-            data_ret = {'status': 0, 'error_message': str(msg)}
-            json_data = json.dumps(data_ret)
-            return HttpResponse(json_data)
+                # Extract backup names from paths
+                for directory in directories:
+                    if directory and '/' in directory:
+                        try:
+                            # Extract the backup filename from path: cpbackups/{folder}/{backup_name}
+                            parts = directory.split('/')
+                            if len(parts) >= 3:
+                                finalDirs.append(parts[2])
+                        except (IndexError, ValueError) as e:
+                            logging.CyberCPLogFileWriter.writeToFile(f"Failed to parse directory path '{directory}': {str(e)} [fetchOCSites]")
+                            continue
+
+                data_ret = {'status': 1, 'finalDirs': finalDirs}
+                return HttpResponse(json.dumps(data_ret))
+
+            except Exception as e:
+                logging.CyberCPLogFileWriter.writeToFile(f"Failed to execute command on remote server: {str(e)} [fetchOCSites]")
+                data_ret = {'status': 0, 'error_message': f'Failed to list backups: {str(e)}'}
+                return HttpResponse(json.dumps(data_ret))
+
+        except json.JSONDecodeError as e:
+            logging.CyberCPLogFileWriter.writeToFile(f"Invalid JSON in request: {str(e)} [fetchOCSites]")
+            data_ret = {'status': 0, 'error_message': 'Invalid request format.'}
+            return HttpResponse(json.dumps(data_ret))
+        except KeyError as e:
+            logging.CyberCPLogFileWriter.writeToFile(f"Missing required field in request: {str(e)} [fetchOCSites]")
+            data_ret = {'status': 0, 'error_message': f'Missing required field: {str(e)}'}
+            return HttpResponse(json.dumps(data_ret))
+        except Exception as msg:
+            logging.CyberCPLogFileWriter.writeToFile(f"Unexpected error in fetchOCSites: {str(msg)}")
+            data_ret = {'status': 0, 'error_message': f'An unexpected error occurred: {str(msg)}'}
+            return HttpResponse(json.dumps(data_ret))
+        finally:
+            # Always close SSH connection
+            if ssh:
+                try:
+                    ssh.close()
+                except:
+                    pass
 
     def StartOCRestore(self, request=None, userID=None, data=None):
         try:
