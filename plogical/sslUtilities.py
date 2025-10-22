@@ -820,10 +820,9 @@ context /.well-known/acme-challenge {
                         logging.CyberCPLogFileWriter.writeToFile(
                             f"www.{virtualHostName} has no DNS records, excluding from acme.sh SSL request")
 
+                    # Step 1: Issue the certificate (staging) - this stores config in /root/.acme.sh/
                     command = acmePath + " --issue" + domain_list \
-                              + ' --cert-file ' + existingCertPath + '/cert.pem' + ' --key-file ' + existingCertPath + '/privkey.pem' \
-                              + ' --fullchain-file ' + existingCertPath + '/fullchain.pem' + ' -w /usr/local/lsws/Example/html -k ec-256 --force --staging' \
-                              + ' --webroot-path /usr/local/lsws/Example/html'
+                              + ' -w /usr/local/lsws/Example/html -k ec-256 --force --staging'
 
                     try:
                         result = subprocess.run(command, capture_output=True, universal_newlines=True, shell=True)
@@ -833,10 +832,9 @@ context /.well-known/acme-challenge {
                                                 universal_newlines=True, shell=True)
 
                     if result.returncode == 0:
+                        # Step 2: Issue the certificate (production) - this stores config in /root/.acme.sh/
                         command = acmePath + " --issue" + domain_list \
-                                  + ' --cert-file ' + existingCertPath + '/cert.pem' + ' --key-file ' + existingCertPath + '/privkey.pem' \
-                                  + ' --fullchain-file ' + existingCertPath + '/fullchain.pem' + ' -w /usr/local/lsws/Example/html -k ec-256 --force --server letsencrypt' \
-                                  + ' --webroot-path /usr/local/lsws/Example/html'
+                                  + ' -w /usr/local/lsws/Example/html -k ec-256 --force --server letsencrypt'
 
                         try:
                             result = subprocess.run(command, capture_output=True, universal_newlines=True, shell=True)
@@ -846,11 +844,25 @@ context /.well-known/acme-challenge {
                                                     universal_newlines=True, shell=True)
 
                         if result.returncode == 0:
-                            logging.CyberCPLogFileWriter.writeToFile(
-                                "Successfully obtained SSL for: " + virtualHostName + " and: www." + virtualHostName, 0)
-                            logging.CyberCPLogFileWriter.SendEmail(sender_email, adminEmail, result.stdout,
-                                                                   'SSL Notification for %s.' % (virtualHostName))
-                            return 1
+                            # Step 3: Install the certificate to the desired location
+                            install_command = acmePath + " --install-cert -d " + virtualHostName \
+                                            + ' --cert-file ' + existingCertPath + '/cert.pem' \
+                                            + ' --key-file ' + existingCertPath + '/privkey.pem' \
+                                            + ' --fullchain-file ' + existingCertPath + '/fullchain.pem'
+
+                            try:
+                                install_result = subprocess.run(install_command, capture_output=True, universal_newlines=True, shell=True)
+                            except TypeError:
+                                # Fallback for Python < 3.7
+                                install_result = subprocess.run(install_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                                                universal_newlines=True, shell=True)
+
+                            if install_result.returncode == 0:
+                                logging.CyberCPLogFileWriter.writeToFile(
+                                    "Successfully obtained SSL for: " + virtualHostName + " and: www." + virtualHostName, 0)
+                                logging.CyberCPLogFileWriter.SendEmail(sender_email, adminEmail, result.stdout,
+                                                                       'SSL Notification for %s.' % (virtualHostName))
+                                return 1
                     return 0
                 except Exception as e:
                     logging.CyberCPLogFileWriter.writeToFile(str(e))
@@ -876,9 +888,9 @@ context /.well-known/acme-challenge {
                     if sslUtilities.checkDNSRecords(f'www.{aliasDomain}'):
                         domain_list += " -d www." + aliasDomain
 
+                    # Step 1: Issue the certificate - this stores config in /root/.acme.sh/
                     command = acmePath + " --issue" + domain_list \
-                              + ' --cert-file ' + existingCertPath + '/cert.pem' + ' --key-file ' + existingCertPath + '/privkey.pem' \
-                              + ' --fullchain-file ' + existingCertPath + '/fullchain.pem' + ' -w /usr/local/lsws/Example/html -k ec-256 --force --server letsencrypt'
+                              + ' -w /usr/local/lsws/Example/html -k ec-256 --force --server letsencrypt'
 
                     try:
                         result = subprocess.run(command, capture_output=True, universal_newlines=True, shell=True)
@@ -888,7 +900,21 @@ context /.well-known/acme-challenge {
                                                 universal_newlines=True, shell=True)
 
                     if result.returncode == 0:
-                        return 1
+                        # Step 2: Install the certificate to the desired location
+                        install_command = acmePath + " --install-cert -d " + virtualHostName \
+                                        + ' --cert-file ' + existingCertPath + '/cert.pem' \
+                                        + ' --key-file ' + existingCertPath + '/privkey.pem' \
+                                        + ' --fullchain-file ' + existingCertPath + '/fullchain.pem'
+
+                        try:
+                            install_result = subprocess.run(install_command, capture_output=True, universal_newlines=True, shell=True)
+                        except TypeError:
+                            # Fallback for Python < 3.7
+                            install_result = subprocess.run(install_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                                            universal_newlines=True, shell=True)
+
+                        if install_result.returncode == 0:
+                            return 1
                     return 0
                 except Exception as e:
                     logging.CyberCPLogFileWriter.writeToFile(str(e))
