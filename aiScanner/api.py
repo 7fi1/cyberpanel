@@ -472,10 +472,10 @@ def get_file_content(request):
 def scan_callback(request):
     """
     Receive scan completion callbacks from AI Scanner platform
-    
+
     POST /api/ai-scanner/callback
     Content-Type: application/json
-    
+
     Expected payload:
     {
         "scan_id": "uuid",
@@ -489,7 +489,7 @@ def scan_callback(request):
         "findings": [
             {
                 "file_path": "wp-content/plugins/file.php",
-                "severity": "CRITICAL|HIGH|MEDIUM|LOW", 
+                "severity": "CRITICAL|HIGH|MEDIUM|LOW",
                 "title": "Issue title",
                 "description": "Detailed description",
                 "ai_confidence": 95
@@ -517,15 +517,15 @@ def scan_callback(request):
             from .models import ScanHistory
             from django.utils import timezone
             import datetime
-            
+
             # Find the scan record
             scan_record = ScanHistory.objects.get(scan_id=scan_id)
-            
+
             # Update scan record
             scan_record.status = status
             scan_record.issues_found = summary.get('total_findings', 0)
             scan_record.files_scanned = summary.get('files_scanned', 0)
-            
+
             # Parse and store cost
             cost_str = summary.get('cost', '$0.00')
             try:
@@ -534,10 +534,10 @@ def scan_callback(request):
                 scan_record.cost_usd = cost_value
             except (ValueError, AttributeError):
                 scan_record.cost_usd = 0.0
-            
+
             # Store findings and AI analysis
             scan_record.set_findings(findings)
-            
+
             # Build summary dict
             summary_dict = {
                 'threat_level': summary.get('threat_level', 'UNKNOWN'),
@@ -546,7 +546,7 @@ def scan_callback(request):
                 'ai_analysis': ai_analysis
             }
             scan_record.set_summary(summary_dict)
-            
+
             # Set completion time
             if completed_at:
                 try:
@@ -557,9 +557,9 @@ def scan_callback(request):
                     scan_record.completed_at = timezone.now()
             else:
                 scan_record.completed_at = timezone.now()
-            
+
             scan_record.save()
-            
+
             # Also update the ScanStatusUpdate record with final statistics
             try:
                 from .status_models import ScanStatusUpdate
@@ -586,7 +586,7 @@ def scan_callback(request):
                 logging.writeToFile(f"[API] Updated ScanStatusUpdate for completed scan {scan_id}")
             except Exception as e:
                 logging.writeToFile(f"[API] Error updating ScanStatusUpdate: {str(e)}")
-            
+
             # Update user balance if scan cost money
             if scan_record.cost_usd > 0:
                 try:
@@ -623,7 +623,7 @@ def scan_callback(request):
                 'message': 'Scan record not found',
                 'scan_id': scan_id
             }, status=404)
-            
+
         except Exception as e:
             logging.writeToFile(f"[API] Failed to update scan record: {str(e)}")
             return JsonResponse({
@@ -652,3 +652,897 @@ def scan_callback(request):
             'status': 'error',
             'message': 'Internal server error'
         }, status=500)
+
+
+# =============================================================================
+# File Operation Helper Functions
+# =============================================================================
+
+def log_file_operation(scan_id, operation, file_path, success, error_message=None, backup_path=None, request=None):
+    """
+    Log file operations to the audit log
+    """
+    try:
+        from .models import ScannerFileOperation
+
+        ip_address = None
+        user_agent = None
+
+        if request:
+            ip_address = request.META.get('REMOTE_ADDR', '')[:45]
+            user_agent = request.META.get('HTTP_USER_AGENT', '')[:255]
+
+        ScannerFileOperation.objects.create(
+            scan_id=scan_id,
+            operation=operation,
+            file_path=file_path,
+            backup_path=backup_path,
+            success=success,
+            error_message=error_message,
+            ip_address=ip_address,
+            user_agent=user_agent
+        )
+
+        logging.writeToFile(f'[API] Logged {operation} operation for {file_path}: {"success" if success else "failed"}')
+    except Exception as e:
+        logging.writeToFile(f'[API] Failed to log operation: {str(e)}')
+
+
+def check_rate_limit(scan_id, endpoint, max_requests):
+    """
+    Check if rate limit is exceeded for a scan/endpoint combination
+    Returns (is_allowed, current_count)
+    """
+    try:
+        from .models import ScannerAPIRateLimit
+
+        rate_limit, created = ScannerAPIRateLimit.objects.get_or_create(
+            scan_id=scan_id,
+            endpoint=endpoint,
+            defaults={'request_count': 0}
+        )
+
+        if rate_limit.request_count >= max_requests:
+            logging.writeToFile(f'[API] Rate limit exceeded for scan {scan_id} on endpoint {endpoint}: {rate_limit.request_count}/{max_requests}')
+            return False, rate_limit.request_count
+
+        rate_limit.request_count += 1
+        rate_limit.save()
+
+        return True, rate_limit.request_count
+    except Exception as e:
+        logging.writeToFile(f'[API] Rate limit check error: {str(e)}')
+        # On error, allow the request
+        return True, 0
+
+
+def get_website_user(domain):
+    """
+    Get the system user for a website domain
+    """
+    try:
+        website = Websites.objects.get(domain=domain)
+        return website.externalApp
+    except Websites.DoesNotExist:
+        raise SecurityError(f"Website not found: {domain}")
+
+
+# =============================================================================
+# File Operation API Endpoints
+# =============================================================================
+
+@csrf_exempt
+@require_http_methods(['POST'])
+def scanner_backup_file(request):
+    """
+    POST /api/scanner/backup-file
+
+    Create a backup copy of a file before modification
+
+    Headers:
+        Authorization: Bearer {file_access_token}
+        X-Scan-ID: {scan_job_id}
+
+    Request Body:
+        {
+            "file_path": "wp-content/plugins/example/plugin.php",
+            "scan_id": "550e8400-e29b-41d4-a716-446655440000"
+        }
+
+    Response:
+        {
+            "success": true,
+            "backup_path": "/home/username/public_html/.ai-scanner-backups/2025-10-25/plugin.php.1730000000.bak",
+            "original_path": "wp-content/plugins/example/plugin.php",
+            "backup_size": 15420,
+            "timestamp": "2025-10-25T20:30:00Z"
+        }
+    """
+    try:
+        # Parse request
+        data = json.loads(request.body)
+        file_path = data.get('file_path', '').strip('/')
+        scan_id = data.get('scan_id', '')
+
+        # Validate authorization
+        auth_header = request.META.get('HTTP_AUTHORIZATION', '')
+        if not auth_header.startswith('Bearer '):
+            return JsonResponse({'success': False, 'error': 'Missing or invalid Authorization header'}, status=401)
+
+        access_token = auth_header.replace('Bearer ', '')
+        header_scan_id = request.META.get('HTTP_X_SCAN_ID', '')
+
+        if not scan_id or not header_scan_id or scan_id != header_scan_id:
+            return JsonResponse({'success': False, 'error': 'Scan ID mismatch'}, status=400)
+
+        # Validate access token
+        file_token, error = validate_access_token(access_token, scan_id)
+        if error:
+            log_file_operation(scan_id, 'backup', file_path, False, error, request=request)
+            return JsonResponse({'success': False, 'error': error}, status=401)
+
+        # Rate limiting
+        is_allowed, count = check_rate_limit(scan_id, 'backup-file', 100)
+        if not is_allowed:
+            return JsonResponse({'success': False, 'error': 'Rate limit exceeded (max 100 backups per scan)'}, status=429)
+
+        # Security check and get full path
+        try:
+            full_path = secure_path_check(file_token.wp_path, file_path)
+        except SecurityError as e:
+            log_file_operation(scan_id, 'backup', file_path, False, str(e), request=request)
+            return JsonResponse({'success': False, 'error': 'Path not allowed'}, status=403)
+
+        # Get website user
+        try:
+            user = get_website_user(file_token.domain)
+        except SecurityError as e:
+            log_file_operation(scan_id, 'backup', file_path, False, str(e), request=request)
+            return JsonResponse({'success': False, 'error': str(e)}, status=404)
+
+        # Check file exists
+        from plogical.processUtilities import ProcessUtilities
+
+        check_cmd = f'test -f "{full_path}" && echo "exists"'
+        result = ProcessUtilities.outputExecutioner(check_cmd, user=user, retRequired=True)
+
+        if not result[1] or 'exists' not in result[1]:
+            log_file_operation(scan_id, 'backup', file_path, False, 'File not found', request=request)
+            return JsonResponse({'success': False, 'error': 'File not found', 'error_code': 'FILE_NOT_FOUND'}, status=404)
+
+        # Create backup directory
+        import datetime
+        backup_dir_name = f'{file_token.wp_path}/.ai-scanner-backups/{datetime.datetime.now().strftime("%Y-%m-%d")}'
+        mkdir_cmd = f'mkdir -p "{backup_dir_name}"'
+        ProcessUtilities.executioner(mkdir_cmd, user=user)
+
+        # Create backup filename with timestamp
+        timestamp = int(time.time())
+        basename = os.path.basename(full_path)
+        backup_filename = f'{basename}.{timestamp}.bak'
+        backup_path = os.path.join(backup_dir_name, backup_filename)
+
+        # Copy file to backup
+        cp_cmd = f'cp "{full_path}" "{backup_path}"'
+        cp_result = ProcessUtilities.executioner(cp_cmd, user=user)
+
+        if cp_result != 0:
+            log_file_operation(scan_id, 'backup', file_path, False, 'Failed to create backup', request=request)
+            return JsonResponse({'success': False, 'error': 'Failed to create backup', 'error_code': 'BACKUP_FAILED'}, status=500)
+
+        # Get file size
+        stat_cmd = f'stat -c %s "{backup_path}"'
+        stat_result = ProcessUtilities.outputExecutioner(stat_cmd, user=user, retRequired=True)
+
+        backup_size = 0
+        if stat_result[1]:
+            try:
+                backup_size = int(stat_result[1].strip())
+            except ValueError:
+                pass
+
+        # Log success
+        log_file_operation(scan_id, 'backup', file_path, True, backup_path=backup_path, request=request)
+
+        logging.writeToFile(f'[API] Backup created for {file_path}: {backup_path}')
+
+        return JsonResponse({
+            'success': True,
+            'backup_path': backup_path,
+            'original_path': file_path,
+            'backup_size': backup_size,
+            'timestamp': datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ')
+        })
+
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': 'Invalid JSON'}, status=400)
+    except Exception as e:
+        logging.writeToFile(f'[API] Backup file error: {str(e)}')
+        log_file_operation(scan_id if 'scan_id' in locals() else 'unknown', 'backup',
+                          file_path if 'file_path' in locals() else 'unknown', False, str(e), request=request)
+        return JsonResponse({'success': False, 'error': 'Internal server error'}, status=500)@csrf_exempt
+@require_http_methods(['GET'])
+def scanner_get_file(request):
+    """
+    GET /api/scanner/get-file?file_path=wp-content/plugins/plugin.php
+
+    Read the contents of a file for analysis or verification
+
+    Headers:
+        Authorization: Bearer {file_access_token}
+        X-Scan-ID: {scan_job_id}
+
+    Response:
+        {
+            "success": true,
+            "file_path": "wp-content/plugins/example/plugin.php",
+            "content": "<?php\n/*\nPlugin Name: Example Plugin\n*/\n...",
+            "size": 15420,
+            "encoding": "utf-8",
+            "mime_type": "text/x-php",
+            "last_modified": "2025-10-25T20:30:00Z",
+            "hash": {
+                "md5": "5d41402abc4b2a76b9719d911017c592",
+                "sha256": "2c26b46b68ffc68ff99b453c1d30413413422d706483bfa0f98a5e886266e7ae"
+            }
+        }
+    """
+    try:
+        # Validate authorization
+        auth_header = request.META.get('HTTP_AUTHORIZATION', '')
+        if not auth_header.startswith('Bearer '):
+            return JsonResponse({'success': False, 'error': 'Missing or invalid Authorization header'}, status=401)
+
+        access_token = auth_header.replace('Bearer ', '')
+        scan_id = request.META.get('HTTP_X_SCAN_ID', '')
+
+        if not scan_id:
+            return JsonResponse({'success': False, 'error': 'X-Scan-ID header required'}, status=400)
+
+        # Get file path
+        file_path = request.GET.get('file_path', '').strip('/')
+        if not file_path:
+            return JsonResponse({'success': False, 'error': 'File path required'}, status=400)
+
+        # Validate access token
+        file_token, error = validate_access_token(access_token, scan_id)
+        if error:
+            log_file_operation(scan_id, 'read', file_path, False, error, request=request)
+            return JsonResponse({'success': False, 'error': error}, status=401)
+
+        # Rate limiting
+        is_allowed, count = check_rate_limit(scan_id, 'get-file', 500)
+        if not is_allowed:
+            return JsonResponse({'success': False, 'error': 'Rate limit exceeded (max 500 file reads per scan)'}, status=429)
+
+        # Security check and get full path
+        try:
+            full_path = secure_path_check(file_token.wp_path, file_path)
+        except SecurityError as e:
+            log_file_operation(scan_id, 'read', file_path, False, str(e), request=request)
+            return JsonResponse({'success': False, 'error': 'Path not allowed'}, status=403)
+
+        # Only allow specific file types for security
+        allowed_extensions = {
+            '.php', '.js', '.html', '.htm', '.css', '.txt', '.md',
+            '.json', '.xml', '.sql', '.log', '.conf', '.ini', '.yml', '.yaml'
+        }
+
+        file_ext = os.path.splitext(full_path)[1].lower()
+        if file_ext not in allowed_extensions:
+            log_file_operation(scan_id, 'read', file_path, False, f'File type not allowed: {file_ext}', request=request)
+            return JsonResponse({'success': False, 'error': f'File type not allowed: {file_ext}'}, status=403)
+
+        # Get website user
+        try:
+            user = get_website_user(file_token.domain)
+        except SecurityError as e:
+            log_file_operation(scan_id, 'read', file_path, False, str(e), request=request)
+            return JsonResponse({'success': False, 'error': str(e)}, status=404)
+
+        # Check file size
+        from plogical.processUtilities import ProcessUtilities
+        import hashlib
+
+        stat_cmd = f'stat -c "%s %Y" "{full_path}"'
+        stat_result = ProcessUtilities.outputExecutioner(stat_cmd, user=user, retRequired=True)
+
+        if not stat_result[1]:
+            log_file_operation(scan_id, 'read', file_path, False, 'File not found', request=request)
+            return JsonResponse({'success': False, 'error': 'File not found', 'error_code': 'FILE_NOT_FOUND'}, status=404)
+
+        try:
+            parts = stat_result[1].strip().split()
+            file_size = int(parts[0])
+            last_modified_timestamp = int(parts[1])
+
+            if file_size > 10 * 1024 * 1024:  # 10MB limit
+                log_file_operation(scan_id, 'read', file_path, False, 'File too large (max 10MB)', request=request)
+                return JsonResponse({'success': False, 'error': 'File too large (max 10MB)'}, status=400)
+        except (ValueError, IndexError):
+            log_file_operation(scan_id, 'read', file_path, False, 'Could not get file size', request=request)
+            return JsonResponse({'success': False, 'error': 'Could not get file size'}, status=500)
+
+        # Read file content
+        cat_cmd = f'cat "{full_path}"'
+        result = ProcessUtilities.outputExecutioner(cat_cmd, user=user, retRequired=True)
+
+        if len(result) < 2:
+            log_file_operation(scan_id, 'read', file_path, False, 'Unable to read file', request=request)
+            return JsonResponse({'success': False, 'error': 'Unable to read file'}, status=400)
+
+        content = result[1] if result[1] is not None else ''
+
+        # Calculate hashes
+        try:
+            content_bytes = content.encode('utf-8')
+            md5_hash = hashlib.md5(content_bytes).hexdigest()
+            sha256_hash = hashlib.sha256(content_bytes).hexdigest()
+        except UnicodeEncodeError:
+            try:
+                content_bytes = content.encode('latin-1')
+                md5_hash = hashlib.md5(content_bytes).hexdigest()
+                sha256_hash = hashlib.sha256(content_bytes).hexdigest()
+            except:
+                md5_hash = ''
+                sha256_hash = ''
+
+        # Detect MIME type
+        mime_type, _ = mimetypes.guess_type(full_path)
+        if not mime_type:
+            if file_ext == '.php':
+                mime_type = 'text/x-php'
+            elif file_ext == '.js':
+                mime_type = 'application/javascript'
+            else:
+                mime_type = 'text/plain'
+
+        # Format last modified time
+        import datetime
+        last_modified = datetime.datetime.fromtimestamp(last_modified_timestamp).strftime('%Y-%m-%dT%H:%M:%SZ')
+
+        # Log success
+        log_file_operation(scan_id, 'read', file_path, True, request=request)
+
+        logging.writeToFile(f'[API] File content retrieved: {file_path} ({file_size} bytes)')
+
+        return JsonResponse({
+            'success': True,
+            'file_path': file_path,
+            'content': content,
+            'size': file_size,
+            'encoding': 'utf-8',
+            'mime_type': mime_type,
+            'last_modified': last_modified,
+            'hash': {
+                'md5': md5_hash,
+                'sha256': sha256_hash
+            }
+        })
+
+    except Exception as e:
+        logging.writeToFile(f'[API] Get file error: {str(e)}')
+        log_file_operation(scan_id if 'scan_id' in locals() else 'unknown', 'read',
+                          file_path if 'file_path' in locals() else 'unknown', False, str(e), request=request)
+        return JsonResponse({'success': False, 'error': 'Internal server error'}, status=500)
+
+
+@csrf_exempt
+@require_http_methods(['POST'])
+def scanner_replace_file(request):
+    """
+    POST /api/scanner/replace-file
+
+    Overwrite a file with new content (after backup)
+
+    Headers:
+        Authorization: Bearer {file_access_token}
+        X-Scan-ID: {scan_job_id}
+
+    Request Body:
+        {
+            "file_path": "wp-content/plugins/example/plugin.php",
+            "content": "<?php\n/*\nPlugin Name: Example Plugin (Clean Version)\n*/\n...",
+            "backup_before_replace": true,
+            "verify_hash": "2c26b46b68ffc68ff99b453c1d30413413422d706483bfa0f98a5e886266e7ae"
+        }
+
+    Response:
+        {
+            "success": true,
+            "file_path": "wp-content/plugins/example/plugin.php",
+            "backup_path": "/home/username/public_html/.ai-scanner-backups/2025-10-25/plugin.php.1730000000.bak",
+            "bytes_written": 14850,
+            "new_hash": {
+                "md5": "abc123...",
+                "sha256": "def456..."
+            },
+            "timestamp": "2025-10-25T20:35:00Z"
+        }
+    """
+    try:
+        # Parse request
+        data = json.loads(request.body)
+        file_path = data.get('file_path', '').strip('/')
+        content = data.get('content', '')
+        backup_before_replace = data.get('backup_before_replace', True)
+        verify_hash = data.get('verify_hash', '')
+
+        # Validate authorization
+        auth_header = request.META.get('HTTP_AUTHORIZATION', '')
+        if not auth_header.startswith('Bearer '):
+            return JsonResponse({'success': False, 'error': 'Missing or invalid Authorization header'}, status=401)
+
+        access_token = auth_header.replace('Bearer ', '')
+        scan_id = request.META.get('HTTP_X_SCAN_ID', '')
+
+        if not scan_id:
+            return JsonResponse({'success': False, 'error': 'X-Scan-ID header required'}, status=400)
+
+        # Validate access token
+        file_token, error = validate_access_token(access_token, scan_id)
+        if error:
+            log_file_operation(scan_id, 'replace', file_path, False, error, request=request)
+            return JsonResponse({'success': False, 'error': error}, status=401)
+
+        # Rate limiting
+        is_allowed, count = check_rate_limit(scan_id, 'replace-file', 100)
+        if not is_allowed:
+            return JsonResponse({'success': False, 'error': 'Rate limit exceeded (max 100 replacements per scan)'}, status=429)
+
+        # Security check and get full path
+        try:
+            full_path = secure_path_check(file_token.wp_path, file_path)
+        except SecurityError as e:
+            log_file_operation(scan_id, 'replace', file_path, False, str(e), request=request)
+            return JsonResponse({'success': False, 'error': 'Path not allowed'}, status=403)
+
+        # Get website user
+        try:
+            user = get_website_user(file_token.domain)
+        except SecurityError as e:
+            log_file_operation(scan_id, 'replace', file_path, False, str(e), request=request)
+            return JsonResponse({'success': False, 'error': str(e)}, status=404)
+
+        # Verify hash if provided
+        from plogical.processUtilities import ProcessUtilities
+        import hashlib
+        import datetime
+
+        if verify_hash:
+            cat_cmd = f'cat "{full_path}"'
+            result = ProcessUtilities.outputExecutioner(cat_cmd, user=user, retRequired=True)
+
+            if result[1]:
+                current_hash = hashlib.sha256(result[1].encode('utf-8')).hexdigest()
+                if current_hash != verify_hash:
+                    log_file_operation(scan_id, 'replace', file_path, False, 'Hash verification failed - file was modified', request=request)
+                    return JsonResponse({
+                        'success': False,
+                        'error': 'Hash verification failed - file was modified during scan',
+                        'error_code': 'HASH_MISMATCH',
+                        'expected_hash': verify_hash,
+                        'actual_hash': current_hash
+                    }, status=400)
+
+        backup_path = None
+
+        # Create backup if requested
+        if backup_before_replace:
+            backup_dir_name = f'{file_token.wp_path}/.ai-scanner-backups/{datetime.datetime.now().strftime("%Y-%m-%d")}'
+            mkdir_cmd = f'mkdir -p "{backup_dir_name}"'
+            ProcessUtilities.executioner(mkdir_cmd, user=user)
+
+            timestamp = int(time.time())
+            basename = os.path.basename(full_path)
+            backup_filename = f'{basename}.{timestamp}.bak'
+            backup_path = os.path.join(backup_dir_name, backup_filename)
+
+            cp_cmd = f'cp "{full_path}" "{backup_path}"'
+            cp_result = ProcessUtilities.executioner(cp_cmd, user=user)
+
+            if cp_result != 0:
+                log_file_operation(scan_id, 'replace', file_path, False, 'Failed to create backup', backup_path=backup_path, request=request)
+                return JsonResponse({'success': False, 'error': 'Failed to create backup', 'error_code': 'BACKUP_FAILED'}, status=500)
+
+        # Write new content to temp file first (atomic write)
+        temp_path = f'{full_path}.tmp.{int(time.time())}'
+
+        # Write content using a here-document to avoid shell escaping issues
+        write_cmd = f'cat > "{temp_path}" << \'EOF_MARKER\'\n{content}\nEOF_MARKER'
+        write_result = ProcessUtilities.executioner(write_cmd, user=user)
+
+        if write_result != 0:
+            log_file_operation(scan_id, 'replace', file_path, False, 'Failed to write temp file', backup_path=backup_path, request=request)
+            return JsonResponse({'success': False, 'error': 'Failed to write file', 'error_code': 'WRITE_FAILED'}, status=500)
+
+        # Get original file permissions
+        stat_cmd = f'stat -c %a "{full_path}"'
+        stat_result = ProcessUtilities.outputExecutioner(stat_cmd, user=user, retRequired=True)
+        permissions = '644'  # Default
+        if stat_result[1]:
+            permissions = stat_result[1].strip()
+
+        # Set permissions on temp file
+        chmod_cmd = f'chmod {permissions} "{temp_path}"'
+        ProcessUtilities.executioner(chmod_cmd, user=user)
+
+        # Atomic rename
+        mv_cmd = f'mv "{temp_path}" "{full_path}"'
+        mv_result = ProcessUtilities.executioner(mv_cmd, user=user)
+
+        if mv_result != 0:
+            # Cleanup temp file
+            ProcessUtilities.executioner(f'rm -f "{temp_path}"', user=user)
+            log_file_operation(scan_id, 'replace', file_path, False, 'Failed to replace file', backup_path=backup_path, request=request)
+            return JsonResponse({'success': False, 'error': 'Failed to replace file', 'error_code': 'REPLACE_FAILED'}, status=500)
+
+        # Calculate new hash
+        cat_cmd = f'cat "{full_path}"'
+        result = ProcessUtilities.outputExecutioner(cat_cmd, user=user, retRequired=True)
+
+        new_md5 = ''
+        new_sha256 = ''
+        if result[1]:
+            try:
+                content_bytes = result[1].encode('utf-8')
+                new_md5 = hashlib.md5(content_bytes).hexdigest()
+                new_sha256 = hashlib.sha256(content_bytes).hexdigest()
+            except:
+                pass
+
+        bytes_written = len(content.encode('utf-8'))
+
+        # Log success
+        log_file_operation(scan_id, 'replace', file_path, True, backup_path=backup_path, request=request)
+
+        logging.writeToFile(f'[API] File replaced: {file_path} ({bytes_written} bytes)')
+
+        return JsonResponse({
+            'success': True,
+            'file_path': file_path,
+            'backup_path': backup_path,
+            'bytes_written': bytes_written,
+            'new_hash': {
+                'md5': new_md5,
+                'sha256': new_sha256
+            },
+            'timestamp': datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ')
+        })
+
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': 'Invalid JSON'}, status=400)
+    except Exception as e:
+        logging.writeToFile(f'[API] Replace file error: {str(e)}')
+        log_file_operation(scan_id if 'scan_id' in locals() else 'unknown', 'replace',
+                          file_path if 'file_path' in locals() else 'unknown', False, str(e), request=request)
+        return JsonResponse({'success': False, 'error': 'Internal server error'}, status=500)
+
+
+@csrf_exempt
+@require_http_methods(['POST'])
+def scanner_rename_file(request):
+    """
+    POST /api/scanner/rename-file
+
+    Rename a file (used for quarantining malicious files)
+
+    Headers:
+        Authorization: Bearer {file_access_token}
+        X-Scan-ID: {scan_job_id}
+
+    Request Body:
+        {
+            "old_path": "wp-content/uploads/malicious.php",
+            "new_path": "wp-content/uploads/malicious.php.quarantined.1730000000",
+            "backup_before_rename": true
+        }
+
+    Response:
+        {
+            "success": true,
+            "old_path": "wp-content/uploads/malicious.php",
+            "new_path": "wp-content/uploads/malicious.php.quarantined.1730000000",
+            "backup_path": "/home/username/public_html/.ai-scanner-backups/2025-10-25/malicious.php.1730000000.bak",
+            "timestamp": "2025-10-25T20:40:00Z"
+        }
+    """
+    try:
+        # Parse request
+        data = json.loads(request.body)
+        old_path = data.get('old_path', '').strip('/')
+        new_path = data.get('new_path', '').strip('/')
+        backup_before_rename = data.get('backup_before_rename', True)
+
+        # Validate authorization
+        auth_header = request.META.get('HTTP_AUTHORIZATION', '')
+        if not auth_header.startswith('Bearer '):
+            return JsonResponse({'success': False, 'error': 'Missing or invalid Authorization header'}, status=401)
+
+        access_token = auth_header.replace('Bearer ', '')
+        scan_id = request.META.get('HTTP_X_SCAN_ID', '')
+
+        if not scan_id:
+            return JsonResponse({'success': False, 'error': 'X-Scan-ID header required'}, status=400)
+
+        # Validate access token
+        file_token, error = validate_access_token(access_token, scan_id)
+        if error:
+            log_file_operation(scan_id, 'rename', old_path, False, error, request=request)
+            return JsonResponse({'success': False, 'error': error}, status=401)
+
+        # Rate limiting
+        is_allowed, count = check_rate_limit(scan_id, 'rename-file', 50)
+        if not is_allowed:
+            return JsonResponse({'success': False, 'error': 'Rate limit exceeded (max 50 renames per scan)'}, status=429)
+
+        # Security check for both paths
+        try:
+            full_old_path = secure_path_check(file_token.wp_path, old_path)
+            full_new_path = secure_path_check(file_token.wp_path, new_path)
+        except SecurityError as e:
+            log_file_operation(scan_id, 'rename', old_path, False, str(e), request=request)
+            return JsonResponse({'success': False, 'error': 'Path not allowed'}, status=403)
+
+        # Get website user
+        try:
+            user = get_website_user(file_token.domain)
+        except SecurityError as e:
+            log_file_operation(scan_id, 'rename', old_path, False, str(e), request=request)
+            return JsonResponse({'success': False, 'error': str(e)}, status=404)
+
+        # Check source file exists
+        from plogical.processUtilities import ProcessUtilities
+        import datetime
+
+        check_cmd = f'test -f "{full_old_path}" && echo "exists"'
+        result = ProcessUtilities.outputExecutioner(check_cmd, user=user, retRequired=True)
+
+        if not result[1] or 'exists' not in result[1]:
+            log_file_operation(scan_id, 'rename', old_path, False, 'Source file not found', request=request)
+            return JsonResponse({'success': False, 'error': 'Source file not found', 'error_code': 'FILE_NOT_FOUND'}, status=404)
+
+        # Check destination doesn't exist
+        check_cmd = f'test -f "{full_new_path}" && echo "exists"'
+        result = ProcessUtilities.outputExecutioner(check_cmd, user=user, retRequired=True)
+
+        if result[1] and 'exists' in result[1]:
+            log_file_operation(scan_id, 'rename', old_path, False, 'Destination file already exists', request=request)
+            return JsonResponse({'success': False, 'error': 'Destination file already exists', 'error_code': 'FILE_EXISTS'}, status=409)
+
+        backup_path = None
+
+        # Create backup if requested
+        if backup_before_rename:
+            backup_dir_name = f'{file_token.wp_path}/.ai-scanner-backups/{datetime.datetime.now().strftime("%Y-%m-%d")}'
+            mkdir_cmd = f'mkdir -p "{backup_dir_name}"'
+            ProcessUtilities.executioner(mkdir_cmd, user=user)
+
+            timestamp = int(time.time())
+            basename = os.path.basename(full_old_path)
+            backup_filename = f'{basename}.{timestamp}.bak'
+            backup_path = os.path.join(backup_dir_name, backup_filename)
+
+            cp_cmd = f'cp "{full_old_path}" "{backup_path}"'
+            ProcessUtilities.executioner(cp_cmd, user=user)
+
+        # Perform rename
+        mv_cmd = f'mv "{full_old_path}" "{full_new_path}"'
+        mv_result = ProcessUtilities.executioner(mv_cmd, user=user)
+
+        if mv_result != 0:
+            log_file_operation(scan_id, 'rename', old_path, False, 'Failed to rename file', backup_path=backup_path, request=request)
+            return JsonResponse({'success': False, 'error': 'Failed to rename file', 'error_code': 'RENAME_FAILED'}, status=500)
+
+        # Verify rename
+        check_cmd = f'test -f "{full_new_path}" && echo "exists"'
+        result = ProcessUtilities.outputExecutioner(check_cmd, user=user, retRequired=True)
+
+        if not result[1] or 'exists' not in result[1]:
+            log_file_operation(scan_id, 'rename', old_path, False, 'Rename verification failed', backup_path=backup_path, request=request)
+            return JsonResponse({'success': False, 'error': 'Rename verification failed'}, status=500)
+
+        # Log success
+        log_file_operation(scan_id, 'rename', old_path, True, backup_path=backup_path, request=request)
+
+        logging.writeToFile(f'[API] File renamed: {old_path} -> {new_path}')
+
+        return JsonResponse({
+            'success': True,
+            'old_path': old_path,
+            'new_path': new_path,
+            'backup_path': backup_path,
+            'timestamp': datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ')
+        })
+
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': 'Invalid JSON'}, status=400)
+    except Exception as e:
+        logging.writeToFile(f'[API] Rename file error: {str(e)}')
+        log_file_operation(scan_id if 'scan_id' in locals() else 'unknown', 'rename',
+                          old_path if 'old_path' in locals() else 'unknown', False, str(e), request=request)
+        return JsonResponse({'success': False, 'error': 'Internal server error'}, status=500)
+
+
+@csrf_exempt
+@require_http_methods(['POST'])
+def scanner_delete_file(request):
+    """
+    POST /api/scanner/delete-file
+
+    Permanently delete a malicious file (after backup)
+
+    Headers:
+        Authorization: Bearer {file_access_token}
+        X-Scan-ID: {scan_job_id}
+
+    Request Body:
+        {
+            "file_path": "wp-content/uploads/shell.php",
+            "backup_before_delete": true,
+            "confirm_deletion": true
+        }
+
+    Response:
+        {
+            "success": true,
+            "file_path": "wp-content/uploads/shell.php",
+            "backup_path": "/home/username/public_html/.ai-scanner-backups/2025-10-25/shell.php.1730000000.bak",
+            "deleted_at": "2025-10-25T20:45:00Z",
+            "file_info": {
+                "size": 2048,
+                "last_modified": "2025-10-20T14:30:00Z",
+                "hash": "abc123..."
+            }
+        }
+    """
+    try:
+        # Parse request
+        data = json.loads(request.body)
+        file_path = data.get('file_path', '').strip('/')
+        backup_before_delete = data.get('backup_before_delete', True)
+        confirm_deletion = data.get('confirm_deletion', False)
+
+        # Require explicit confirmation
+        if not confirm_deletion:
+            return JsonResponse({
+                'success': False,
+                'error': 'Deletion not confirmed',
+                'error_code': 'CONFIRMATION_REQUIRED',
+                'message': 'Set confirm_deletion: true to proceed'
+            }, status=400)
+
+        # Validate authorization
+        auth_header = request.META.get('HTTP_AUTHORIZATION', '')
+        if not auth_header.startswith('Bearer '):
+            return JsonResponse({'success': False, 'error': 'Missing or invalid Authorization header'}, status=401)
+
+        access_token = auth_header.replace('Bearer ', '')
+        scan_id = request.META.get('HTTP_X_SCAN_ID', '')
+
+        if not scan_id:
+            return JsonResponse({'success': False, 'error': 'X-Scan-ID header required'}, status=400)
+
+        # Validate access token
+        file_token, error = validate_access_token(access_token, scan_id)
+        if error:
+            log_file_operation(scan_id, 'delete', file_path, False, error, request=request)
+            return JsonResponse({'success': False, 'error': error}, status=401)
+
+        # Rate limiting
+        is_allowed, count = check_rate_limit(scan_id, 'delete-file', 50)
+        if not is_allowed:
+            return JsonResponse({'success': False, 'error': 'Rate limit exceeded (max 50 deletions per scan)'}, status=429)
+
+        # Security check and get full path
+        try:
+            full_path = secure_path_check(file_token.wp_path, file_path)
+        except SecurityError as e:
+            log_file_operation(scan_id, 'delete', file_path, False, str(e), request=request)
+            return JsonResponse({'success': False, 'error': 'Path not allowed'}, status=403)
+
+        # Check for protected files
+        protected_files = ['wp-config.php', '.htaccess', 'index.php']
+        if os.path.basename(full_path) in protected_files:
+            log_file_operation(scan_id, 'delete', file_path, False, 'Cannot delete protected system file', request=request)
+            return JsonResponse({'success': False, 'error': 'Cannot delete protected system file', 'error_code': 'PROTECTED_FILE'}, status=403)
+
+        # Get website user
+        try:
+            user = get_website_user(file_token.domain)
+        except SecurityError as e:
+            log_file_operation(scan_id, 'delete', file_path, False, str(e), request=request)
+            return JsonResponse({'success': False, 'error': str(e)}, status=404)
+
+        # Get file info before deletion
+        from plogical.processUtilities import ProcessUtilities
+        import hashlib
+        import datetime
+
+        stat_cmd = f'stat -c "%s %Y" "{full_path}"'
+        stat_result = ProcessUtilities.outputExecutioner(stat_cmd, user=user, retRequired=True)
+
+        if not stat_result[1]:
+            log_file_operation(scan_id, 'delete', file_path, False, 'File not found', request=request)
+            return JsonResponse({'success': False, 'error': 'File not found', 'error_code': 'FILE_NOT_FOUND'}, status=404)
+
+        file_size = 0
+        last_modified = ''
+        try:
+            parts = stat_result[1].strip().split()
+            file_size = int(parts[0])
+            last_modified_timestamp = int(parts[1])
+            last_modified = datetime.datetime.fromtimestamp(last_modified_timestamp).strftime('%Y-%m-%dT%H:%M:%SZ')
+        except (ValueError, IndexError):
+            pass
+
+        # Get file hash
+        cat_cmd = f'cat "{full_path}"'
+        result = ProcessUtilities.outputExecutioner(cat_cmd, user=user, retRequired=True)
+
+        file_hash = ''
+        if result[1]:
+            try:
+                file_hash = hashlib.sha256(result[1].encode('utf-8')).hexdigest()
+            except:
+                pass
+
+        backup_path = None
+
+        # ALWAYS create backup before deletion
+        backup_dir_name = f'{file_token.wp_path}/.ai-scanner-backups/{datetime.datetime.now().strftime("%Y-%m-%d")}'
+        mkdir_cmd = f'mkdir -p "{backup_dir_name}"'
+        ProcessUtilities.executioner(mkdir_cmd, user=user)
+
+        timestamp = int(time.time())
+        basename = os.path.basename(full_path)
+        backup_filename = f'{basename}.{timestamp}.bak'
+        backup_path = os.path.join(backup_dir_name, backup_filename)
+
+        cp_cmd = f'cp "{full_path}" "{backup_path}"'
+        cp_result = ProcessUtilities.executioner(cp_cmd, user=user)
+
+        if cp_result != 0:
+            log_file_operation(scan_id, 'delete', file_path, False, 'Backup creation failed - deletion blocked', backup_path=backup_path, request=request)
+            return JsonResponse({'success': False, 'error': 'Backup creation failed - deletion blocked', 'error_code': 'BACKUP_FAILED'}, status=500)
+
+        # Delete file
+        rm_cmd = f'rm -f "{full_path}"'
+        rm_result = ProcessUtilities.executioner(rm_cmd, user=user)
+
+        if rm_result != 0:
+            log_file_operation(scan_id, 'delete', file_path, False, 'Failed to delete file', backup_path=backup_path, request=request)
+            return JsonResponse({'success': False, 'error': 'Failed to delete file', 'error_code': 'DELETE_FAILED'}, status=500)
+
+        # Verify deletion
+        check_cmd = f'test -f "{full_path}" && echo "exists"'
+        result = ProcessUtilities.outputExecutioner(check_cmd, user=user, retRequired=True)
+
+        if result[1] and 'exists' in result[1]:
+            log_file_operation(scan_id, 'delete', file_path, False, 'Deletion verification failed', backup_path=backup_path, request=request)
+            return JsonResponse({'success': False, 'error': 'Deletion verification failed'}, status=500)
+
+        # Log success
+        log_file_operation(scan_id, 'delete', file_path, True, backup_path=backup_path, request=request)
+
+        logging.writeToFile(f'[API] File deleted: {file_path} (backup: {backup_path})')
+
+        return JsonResponse({
+            'success': True,
+            'file_path': file_path,
+            'backup_path': backup_path,
+            'deleted_at': datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ'),
+            'file_info': {
+                'size': file_size,
+                'last_modified': last_modified,
+                'hash': file_hash
+            }
+        })
+
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': 'Invalid JSON'}, status=400)
+    except Exception as e:
+        logging.writeToFile(f'[API] Delete file error: {str(e)}')
+        log_file_operation(scan_id if 'scan_id' in locals() else 'unknown', 'delete',
+                          file_path if 'file_path' in locals() else 'unknown', False, str(e), request=request)
+        return JsonResponse({'success': False, 'error': 'Internal server error'}, status=500)
