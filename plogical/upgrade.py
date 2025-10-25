@@ -1249,8 +1249,45 @@ $cfg['Servers'][$i]['LogoutURL'] = 'phpmyadminsignin.php?logout';
                         `completed_at` datetime(6) DEFAULT NULL,
                         KEY `ai_scanner_scheduled_executions_scheduled_scan_id_idx` (`scheduled_scan_id`),
                         KEY `ai_scanner_scheduled_executions_execution_time_idx` (`execution_time` DESC),
-                        CONSTRAINT `ai_scanner_scheduled_executions_scheduled_scan_id_fk` FOREIGN KEY (`scheduled_scan_id`) 
+                        CONSTRAINT `ai_scanner_scheduled_executions_scheduled_scan_id_fk` FOREIGN KEY (`scheduled_scan_id`)
                         REFERENCES `ai_scanner_scheduled_scans` (`id`) ON DELETE CASCADE
+                    )
+                ''')
+            except:
+                pass
+
+            # AI Scanner File Operation Audit Tables
+            try:
+                cursor.execute('''
+                    CREATE TABLE `scanner_file_operations` (
+                        `id` integer AUTO_INCREMENT NOT NULL PRIMARY KEY,
+                        `scan_id` varchar(255) NOT NULL,
+                        `operation` varchar(20) NOT NULL,
+                        `file_path` varchar(500) NOT NULL,
+                        `backup_path` varchar(500) DEFAULT NULL,
+                        `success` bool NOT NULL DEFAULT 0,
+                        `error_message` longtext DEFAULT NULL,
+                        `ip_address` varchar(45) DEFAULT NULL,
+                        `user_agent` varchar(255) DEFAULT NULL,
+                        `created_at` datetime(6) NOT NULL,
+                        KEY `scanner_file_operations_scan_id_idx` (`scan_id`),
+                        KEY `scanner_file_operations_created_at_idx` (`created_at`),
+                        KEY `scanner_file_operations_scan_created_idx` (`scan_id`, `created_at`)
+                    )
+                ''')
+            except:
+                pass
+
+            try:
+                cursor.execute('''
+                    CREATE TABLE `scanner_api_rate_limits` (
+                        `id` integer AUTO_INCREMENT NOT NULL PRIMARY KEY,
+                        `scan_id` varchar(255) NOT NULL,
+                        `endpoint` varchar(100) NOT NULL,
+                        `request_count` integer NOT NULL DEFAULT 0,
+                        `last_request_at` datetime(6) NOT NULL,
+                        UNIQUE KEY `scanner_api_rate_limits_scan_endpoint_unique` (`scan_id`, `endpoint`),
+                        KEY `scanner_api_rate_limits_scan_endpoint_idx` (`scan_id`, `endpoint`)
                     )
                 ''')
             except:
