@@ -1297,23 +1297,22 @@ def scanner_replace_file(request):
         chmod_cmd = f'chmod {permissions} "{user_temp_path}"'
         ProcessUtilities.executioner(chmod_cmd, user=user)
 
-        # Replace file using cp instead of mv (more reliable)
-        # cp preserves the temp file in case of issues
-        cp_cmd = f'cp "{user_temp_path}" "{full_path}"'
-        cp_result = ProcessUtilities.executioner(cp_cmd, user=user)
+        # Replace file using cat redirection (more reliable than cp for overwriting)
+        # This ensures the file contents are actually replaced
+        replace_cmd = f'cat "{user_temp_path}" > "{full_path}"'
+        replace_result = ProcessUtilities.executioner(replace_cmd, user=user)
+
+        # Clean up temp file
+        ProcessUtilities.executioner(f'rm -f "{user_temp_path}"', user=user)
 
         # executioner returns 1 for success, 0 for failure
-        if cp_result != 1:
-            error_msg = 'Failed to replace file with cp command'
-            logging.writeToFile(f'[API] {error_msg}, cp_result={cp_result}')
-            # Cleanup temp file
-            ProcessUtilities.executioner(f'rm -f "{user_temp_path}"', user=user)
+        if replace_result != 1:
+            error_msg = 'Failed to replace file contents'
+            logging.writeToFile(f'[API] {error_msg}, replace_result={replace_result}')
             log_file_operation(scan_id, 'replace', file_path, False, error_msg, backup_path=backup_path, request=request)
             return JsonResponse({'success': False, 'error': 'Failed to replace file', 'error_code': 'REPLACE_FAILED'}, status=500)
 
-        # Clean up temp file after successful copy
-        ProcessUtilities.executioner(f'rm -f "{user_temp_path}"', user=user)
-        logging.writeToFile(f'[API] Replaced {full_path} with new content')
+        logging.writeToFile(f'[API] Successfully replaced {full_path} with new content')
 
         # Calculate new hash
         cat_cmd = f'cat "{full_path}"'
