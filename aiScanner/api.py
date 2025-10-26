@@ -1300,7 +1300,7 @@ def scanner_replace_file(request):
         # Replace file using cat redirection (more reliable than cp for overwriting)
         # This ensures the file contents are actually replaced
         replace_cmd = f'cat "{user_temp_path}" > "{full_path}"'
-        replace_result = ProcessUtilities.executioner(replace_cmd, user=user)
+        replace_result = ProcessUtilities.executioner(replace_cmd, user=user, shell=True)
 
         # Clean up temp file
         ProcessUtilities.executioner(f'rm -f "{user_temp_path}"', user=user)
