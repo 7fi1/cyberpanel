@@ -1297,16 +1297,23 @@ def scanner_replace_file(request):
         chmod_cmd = f'chmod {permissions} "{user_temp_path}"'
         ProcessUtilities.executioner(chmod_cmd, user=user)
 
-        # Atomic rename
-        mv_cmd = f'mv "{user_temp_path}" "{full_path}"'
-        mv_result = ProcessUtilities.executioner(mv_cmd, user=user)
+        # Replace file using cp instead of mv (more reliable)
+        # cp preserves the temp file in case of issues
+        cp_cmd = f'cp "{user_temp_path}" "{full_path}"'
+        cp_result = ProcessUtilities.executioner(cp_cmd, user=user)
 
         # executioner returns 1 for success, 0 for failure
-        if mv_result != 1:
+        if cp_result != 1:
+            error_msg = 'Failed to replace file with cp command'
+            logging.writeToFile(f'[API] {error_msg}, cp_result={cp_result}')
             # Cleanup temp file
             ProcessUtilities.executioner(f'rm -f "{user_temp_path}"', user=user)
-            log_file_operation(scan_id, 'replace', file_path, False, 'Failed to replace file', backup_path=backup_path, request=request)
+            log_file_operation(scan_id, 'replace', file_path, False, error_msg, backup_path=backup_path, request=request)
             return JsonResponse({'success': False, 'error': 'Failed to replace file', 'error_code': 'REPLACE_FAILED'}, status=500)
+
+        # Clean up temp file after successful copy
+        ProcessUtilities.executioner(f'rm -f "{user_temp_path}"', user=user)
+        logging.writeToFile(f'[API] Replaced {full_path} with new content')
 
         # Calculate new hash
         cat_cmd = f'cat "{full_path}"'
