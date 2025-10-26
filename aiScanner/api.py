@@ -1235,7 +1235,8 @@ def scanner_replace_file(request):
 
         # Create backup if requested
         if backup_before_replace:
-            backup_dir_name = f'{file_token.wp_path}/.ai-scanner-backups/{datetime.datetime.now().strftime("%Y-%m-%d")}'
+            wp_path_clean = file_token.wp_path.rstrip('/')
+            backup_dir_name = f'{wp_path_clean}/.ai-scanner-backups/{datetime.datetime.now().strftime("%Y-%m-%d")}'
             mkdir_cmd = f'mkdir -p "{backup_dir_name}"'
             ProcessUtilities.executioner(mkdir_cmd, user=user)
 
@@ -1247,7 +1248,8 @@ def scanner_replace_file(request):
             cp_cmd = f'cp "{full_path}" "{backup_path}"'
             cp_result = ProcessUtilities.executioner(cp_cmd, user=user)
 
-            if cp_result != 0:
+            # executioner returns 1 for success, 0 for failure
+            if cp_result != 1:
                 log_file_operation(scan_id, 'replace', file_path, False, 'Failed to create backup', backup_path=backup_path, request=request)
                 return JsonResponse({'success': False, 'error': 'Failed to create backup', 'error_code': 'BACKUP_FAILED'}, status=500)
 
@@ -1258,7 +1260,8 @@ def scanner_replace_file(request):
         write_cmd = f'cat > "{temp_path}" << \'EOF_MARKER\'\n{content}\nEOF_MARKER'
         write_result = ProcessUtilities.executioner(write_cmd, user=user)
 
-        if write_result != 0:
+        # executioner returns 1 for success, 0 for failure
+        if write_result != 1:
             log_file_operation(scan_id, 'replace', file_path, False, 'Failed to write temp file', backup_path=backup_path, request=request)
             return JsonResponse({'success': False, 'error': 'Failed to write file', 'error_code': 'WRITE_FAILED'}, status=500)
 
@@ -1277,7 +1280,8 @@ def scanner_replace_file(request):
         mv_cmd = f'mv "{temp_path}" "{full_path}"'
         mv_result = ProcessUtilities.executioner(mv_cmd, user=user)
 
-        if mv_result != 0:
+        # executioner returns 1 for success, 0 for failure
+        if mv_result != 1:
             # Cleanup temp file
             ProcessUtilities.executioner(f'rm -f "{temp_path}"', user=user)
             log_file_operation(scan_id, 'replace', file_path, False, 'Failed to replace file', backup_path=backup_path, request=request)
@@ -1436,7 +1440,8 @@ def scanner_rename_file(request):
         mv_cmd = f'mv "{full_old_path}" "{full_new_path}"'
         mv_result = ProcessUtilities.executioner(mv_cmd, user=user)
 
-        if mv_result != 0:
+        # executioner returns 1 for success, 0 for failure
+        if mv_result != 1:
             log_file_operation(scan_id, 'rename', old_path, False, 'Failed to rename file', backup_path=backup_path, request=request)
             return JsonResponse({'success': False, 'error': 'Failed to rename file', 'error_code': 'RENAME_FAILED'}, status=500)
 
@@ -1608,7 +1613,8 @@ def scanner_delete_file(request):
         cp_cmd = f'cp "{full_path}" "{backup_path}"'
         cp_result = ProcessUtilities.executioner(cp_cmd, user=user)
 
-        if cp_result != 0:
+        # executioner returns 1 for success, 0 for failure
+        if cp_result != 1:
             log_file_operation(scan_id, 'delete', file_path, False, 'Backup creation failed - deletion blocked', backup_path=backup_path, request=request)
             return JsonResponse({'success': False, 'error': 'Backup creation failed - deletion blocked', 'error_code': 'BACKUP_FAILED'}, status=500)
 
@@ -1616,7 +1622,8 @@ def scanner_delete_file(request):
         rm_cmd = f'rm -f "{full_path}"'
         rm_result = ProcessUtilities.executioner(rm_cmd, user=user)
 
-        if rm_result != 0:
+        # executioner returns 1 for success, 0 for failure
+        if rm_result != 1:
             log_file_operation(scan_id, 'delete', file_path, False, 'Failed to delete file', backup_path=backup_path, request=request)
             return JsonResponse({'success': False, 'error': 'Failed to delete file', 'error_code': 'DELETE_FAILED'}, status=500)
 
