@@ -1254,15 +1254,37 @@ def scanner_replace_file(request):
                 return JsonResponse({'success': False, 'error': 'Failed to create backup', 'error_code': 'BACKUP_FAILED'}, status=500)
 
         # Write new content to temp file first (atomic write)
-        temp_path = f'{full_path}.tmp.{int(time.time())}'
+        # Write to /home/cyberpanel first (where CyberPanel has write access)
+        cyberpanel_temp = f'/home/cyberpanel/scanner_temp_{scan_id}_{int(time.time())}.tmp'
+        user_temp_path = f'{full_path}.tmp.{int(time.time())}'
 
-        # Write content using a here-document to avoid shell escaping issues
-        write_cmd = f'cat > "{temp_path}" << \'EOF_MARKER\'\n{content}\nEOF_MARKER'
-        write_result = ProcessUtilities.executioner(write_cmd, user=user)
+        try:
+            # Write content directly to CyberPanel temp directory
+            with open(cyberpanel_temp, 'w', encoding='utf-8') as f:
+                f.write(content)
+            logging.writeToFile(f'[API] Wrote {len(content)} bytes to {cyberpanel_temp}')
+        except Exception as e:
+            error_msg = f'Failed to write temp file: {str(e)}'
+            logging.writeToFile(f'[API] {error_msg}')
+            log_file_operation(scan_id, 'replace', file_path, False, error_msg, backup_path=backup_path, request=request)
+            return JsonResponse({'success': False, 'error': 'Failed to write file', 'error_code': 'WRITE_FAILED'}, status=500)
+
+        # Copy temp file to user directory with correct ownership
+        cp_cmd = f'cp "{cyberpanel_temp}" "{user_temp_path}"'
+        cp_result = ProcessUtilities.executioner(cp_cmd, user=user)
+
+        # Clean up CyberPanel temp file
+        try:
+            import os
+            os.remove(cyberpanel_temp)
+        except:
+            pass
 
         # executioner returns 1 for success, 0 for failure
-        if write_result != 1:
-            log_file_operation(scan_id, 'replace', file_path, False, 'Failed to write temp file', backup_path=backup_path, request=request)
+        if cp_result != 1:
+            error_msg = 'Failed to copy temp file to user directory'
+            logging.writeToFile(f'[API] {error_msg}')
+            log_file_operation(scan_id, 'replace', file_path, False, error_msg, backup_path=backup_path, request=request)
             return JsonResponse({'success': False, 'error': 'Failed to write file', 'error_code': 'WRITE_FAILED'}, status=500)
 
         # Get original file permissions
@@ -1273,17 +1295,17 @@ def scanner_replace_file(request):
             permissions = stat_result[1].strip()
 
         # Set permissions on temp file
-        chmod_cmd = f'chmod {permissions} "{temp_path}"'
+        chmod_cmd = f'chmod {permissions} "{user_temp_path}"'
         ProcessUtilities.executioner(chmod_cmd, user=user)
 
         # Atomic rename
-        mv_cmd = f'mv "{temp_path}" "{full_path}"'
+        mv_cmd = f'mv "{user_temp_path}" "{full_path}"'
         mv_result = ProcessUtilities.executioner(mv_cmd, user=user)
 
         # executioner returns 1 for success, 0 for failure
         if mv_result != 1:
             # Cleanup temp file
-            ProcessUtilities.executioner(f'rm -f "{temp_path}"', user=user)
+            ProcessUtilities.executioner(f'rm -f "{user_temp_path}"', user=user)
             log_file_operation(scan_id, 'replace', file_path, False, 'Failed to replace file', backup_path=backup_path, request=request)
             return JsonResponse({'success': False, 'error': 'Failed to replace file', 'error_code': 'REPLACE_FAILED'}, status=500)
 
