@@ -85,12 +85,23 @@ def validate_access_token(token, scan_id):
                     admin=scanner_settings.admin
                 )
 
-                # Get wp_path from website
+                # Get wp_path from WPSites (WordPress installations)
                 try:
-                    website = Websites.objects.get(domain=scan.domain)
-                    wp_path = website.path
+                    from websiteFunctions.models import WPSites
 
-                    logging.writeToFile(f'[API] API key validated successfully for scan {scan_id}, domain {scan.domain}')
+                    # Try to find WordPress site by domain
+                    # FinalURL contains the full URL, so we use icontains to match domain
+                    wp_site = WPSites.objects.filter(
+                        FinalURL__icontains=scan.domain
+                    ).first()
+
+                    if not wp_site:
+                        logging.writeToFile(f'[API] WordPress site not found for domain: {scan.domain}')
+                        return None, "WordPress site not found"
+
+                    wp_path = wp_site.path
+
+                    logging.writeToFile(f'[API] API key validated successfully for scan {scan_id}, domain {scan.domain}, path {wp_path}')
 
                     return AuthWrapper(
                         domain=scan.domain,
@@ -99,9 +110,9 @@ def validate_access_token(token, scan_id):
                         source_obj=scanner_settings
                     ), None
 
-                except Websites.DoesNotExist:
-                    logging.writeToFile(f'[API] Website not found for domain: {scan.domain}')
-                    return None, "Website not found"
+                except Exception as e:
+                    logging.writeToFile(f'[API] Error getting WordPress path for domain {scan.domain}: {str(e)}')
+                    return None, "WordPress site not found"
 
             except ScanHistory.DoesNotExist:
                 logging.writeToFile(f'[API] Scan {scan_id} not found or does not belong to API key owner')
