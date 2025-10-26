@@ -1297,10 +1297,17 @@ def scanner_replace_file(request):
         chmod_cmd = f'chmod {permissions} "{user_temp_path}"'
         ProcessUtilities.executioner(chmod_cmd, user=user)
 
+        # Verify temp file has content before replacing
+        check_cmd = f'wc -c "{user_temp_path}"'
+        check_result = ProcessUtilities.outputExecutioner(check_cmd, user=user, retRequired=True)
+        logging.writeToFile(f'[API] Temp file size check: {check_result}')
+
         # Replace file using cat redirection (more reliable than cp for overwriting)
         # This ensures the file contents are actually replaced
         replace_cmd = f'cat "{user_temp_path}" > "{full_path}"'
+        logging.writeToFile(f'[API] Executing replace command: {replace_cmd}')
         replace_result = ProcessUtilities.executioner(replace_cmd, user=user, shell=True)
+        logging.writeToFile(f'[API] Replace command result: {replace_result}')
 
         # Clean up temp file
         ProcessUtilities.executioner(f'rm -f "{user_temp_path}"', user=user)
