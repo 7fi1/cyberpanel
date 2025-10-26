@@ -1254,34 +1254,16 @@ def scanner_replace_file(request):
                 return JsonResponse({'success': False, 'error': 'Failed to create backup', 'error_code': 'BACKUP_FAILED'}, status=500)
 
         # Write new content to temp file first (atomic write)
-        # Write to /home/cyberpanel first (where CyberPanel has write access)
-        cyberpanel_temp = f'/home/cyberpanel/scanner_temp_{scan_id}_{int(time.time())}.tmp'
-        user_temp_path = f'{full_path}.tmp.{int(time.time())}'
+        # Write to /tmp (accessible by all users, no permission issues)
+        tmp_file = f'/tmp/scanner_temp_{scan_id}_{int(time.time())}.tmp'
 
         try:
-            # Write content directly to CyberPanel temp directory
-            with open(cyberpanel_temp, 'w', encoding='utf-8') as f:
+            # Write content directly to /tmp directory
+            with open(tmp_file, 'w', encoding='utf-8') as f:
                 f.write(content)
-            logging.writeToFile(f'[API] Wrote {len(content)} bytes to {cyberpanel_temp}')
+            logging.writeToFile(f'[API] Wrote {len(content)} bytes to {tmp_file}')
         except Exception as e:
             error_msg = f'Failed to write temp file: {str(e)}'
-            logging.writeToFile(f'[API] {error_msg}')
-            log_file_operation(scan_id, 'replace', file_path, False, error_msg, backup_path=backup_path, request=request)
-            return JsonResponse({'success': False, 'error': 'Failed to write file', 'error_code': 'WRITE_FAILED'}, status=500)
-
-        # Copy temp file to user directory with correct ownership
-        cp_cmd = f'cp "{cyberpanel_temp}" "{user_temp_path}"'
-        cp_result = ProcessUtilities.executioner(cp_cmd, user=user)
-
-        # Clean up CyberPanel temp file
-        try:
-            os.remove(cyberpanel_temp)
-        except:
-            pass
-
-        # executioner returns 1 for success, 0 for failure
-        if cp_result != 1:
-            error_msg = 'Failed to copy temp file to user directory'
             logging.writeToFile(f'[API] {error_msg}')
             log_file_operation(scan_id, 'replace', file_path, False, error_msg, backup_path=backup_path, request=request)
             return JsonResponse({'success': False, 'error': 'Failed to write file', 'error_code': 'WRITE_FAILED'}, status=500)
@@ -1294,23 +1276,26 @@ def scanner_replace_file(request):
             permissions = stat_result[1].strip()
 
         # Set permissions on temp file
-        chmod_cmd = f'chmod {permissions} "{user_temp_path}"'
-        ProcessUtilities.executioner(chmod_cmd, user=user)
+        chmod_cmd = f'chmod {permissions} "{tmp_file}"'
+        ProcessUtilities.executioner(chmod_cmd)
 
         # Verify temp file has content before replacing
-        check_cmd = f'wc -c "{user_temp_path}"'
-        check_result = ProcessUtilities.outputExecutioner(check_cmd, user=user, retRequired=True)
+        check_cmd = f'wc -c "{tmp_file}"'
+        check_result = ProcessUtilities.outputExecutioner(check_cmd, retRequired=True)
         logging.writeToFile(f'[API] Temp file size check: {check_result}')
 
         # Replace file using cat redirection (more reliable than cp for overwriting)
         # This ensures the file contents are actually replaced
-        replace_cmd = f'cat "{user_temp_path}" > "{full_path}"'
+        replace_cmd = f'cat "{tmp_file}" > "{full_path}"'
         logging.writeToFile(f'[API] Executing replace command: {replace_cmd}')
         replace_result = ProcessUtilities.executioner(replace_cmd, user=user, shell=True)
         logging.writeToFile(f'[API] Replace command result: {replace_result}')
 
         # Clean up temp file
-        ProcessUtilities.executioner(f'rm -f "{user_temp_path}"', user=user)
+        try:
+            os.remove(tmp_file)
+        except:
+            pass
 
         # executioner returns 1 for success, 0 for failure
         if replace_result != 1:
