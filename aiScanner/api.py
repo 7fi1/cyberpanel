@@ -82,6 +82,9 @@ def validate_access_token(token, scan_id):
         try:
             from .models import AIScannerSettings, ScanHistory
 
+            # Debug: log the token being checked
+            logging.writeToFile(f'[API] Checking API key: {token[:20]}... for scan {scan_id}')
+
             # Find API key in settings
             scanner_settings = AIScannerSettings.objects.get(
                 api_key=token
