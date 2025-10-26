@@ -900,15 +900,18 @@ def scanner_backup_file(request):
 
         # Create backup directory
         import datetime
-        backup_dir_name = f'{file_token.wp_path}/.ai-scanner-backups/{datetime.datetime.now().strftime("%Y-%m-%d")}'
+        # Remove trailing slash from wp_path to avoid double slashes
+        wp_path_clean = file_token.wp_path.rstrip('/')
+        backup_dir_name = f'{wp_path_clean}/.ai-scanner-backups/{datetime.datetime.now().strftime("%Y-%m-%d")}'
 
         logging.writeToFile(f'[API] Creating backup directory: {backup_dir_name}')
         mkdir_cmd = f'mkdir -p "{backup_dir_name}"'
         mkdir_result = ProcessUtilities.executioner(mkdir_cmd, user=user)
 
-        if mkdir_result != 0:
+        # executioner returns 1 for success, 0 for failure
+        if mkdir_result != 1:
             error_msg = f'Failed to create backup directory: {backup_dir_name}'
-            logging.writeToFile(f'[API] {error_msg}')
+            logging.writeToFile(f'[API] {error_msg}, mkdir_result={mkdir_result}')
             log_file_operation(scan_id, 'backup', file_path, False, error_msg, request=request)
             return JsonResponse({'success': False, 'error': error_msg, 'error_code': 'BACKUP_DIR_FAILED'}, status=500)
 
@@ -924,8 +927,9 @@ def scanner_backup_file(request):
         cp_cmd = f'cp "{full_path}" "{backup_path}"'
         cp_result = ProcessUtilities.outputExecutioner(cp_cmd, user=user, retRequired=True)
 
-        # Check both return code and output for errors
-        if cp_result[0] != 0 or (cp_result[1] and 'error' in cp_result[1].lower()):
+        # outputExecutioner returns (1, output) for success, (0, output) for failure
+        # Also check output for error messages as additional safety
+        if cp_result[0] != 1 or (cp_result[1] and 'error' in cp_result[1].lower()):
             error_output = cp_result[1] if len(cp_result) > 1 else 'Unknown error'
             error_msg = f'Failed to create backup: {error_output}'
             logging.writeToFile(f'[API] Backup failed: cp returned {cp_result[0]}, output: {error_output}')
