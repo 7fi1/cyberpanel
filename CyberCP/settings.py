@@ -33,7 +33,7 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'xr%j*p!*$0d%(-(e%@-*hyoz4$f%y77coq0u)6pwmj
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
 
-# Allow configuration via environment variable, fallback to wildcard for backward compatibility
+# Allow configuration via environment variable, with wildcard fallback for universal compatibility
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '*').split(',')
 
 # Application definition
