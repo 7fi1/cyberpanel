@@ -2,9 +2,15 @@
 # Test script to verify API key validation fix
 
 # Configuration - adjust these values
-SERVER="http://localhost:8001"
-API_KEY="cp_GrHf3ysP0SKhrEiazmqt3kRJA5KwOFQW8VJKcDQ8B5Bg"  # Your actual API key
-SCAN_ID="550e8400-e29b-41d4-a716-446655440000"  # A valid scan ID from your system
+# For remote testing, replace with your CyberPanel server URL
+SERVER="${CYBERPANEL_SERVER:-http://localhost:8001}"
+API_KEY="${CYBERPANEL_API_KEY:-cp_GrHf3ysP0SKhrEiazmqt3kRJA5KwOFQW8VJKcDQ8B5Bg}"  # Your actual API key
+SCAN_ID="${CYBERPANEL_SCAN_ID:-550e8400-e29b-41d4-a716-446655440000}"  # A valid scan ID from your system
+
+echo "Using server: $SERVER"
+echo "Using API key: ${API_KEY:0:20}..."
+echo "Using scan ID: $SCAN_ID"
+echo ""
 
 echo "=========================================="
 echo "Testing CyberPanel API Key Validation Fix"
