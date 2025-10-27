@@ -29,6 +29,27 @@ class AuthWrapper:
         self.source_obj = source_obj  # Original FileAccessToken or AIScannerSettings object
 
 
+def extract_auth_token(request):
+    """
+    Extract authentication token from either Bearer or X-API-Key header
+
+    Returns: (token, auth_type) where auth_type is 'bearer' or 'api_key'
+    """
+    # Check for X-API-Key header first (preferred for permanent auth)
+    api_key_header = request.META.get('HTTP_X_API_KEY', '')
+    if api_key_header:
+        logging.writeToFile(f'[API] Using X-API-Key authentication')
+        return api_key_header, 'api_key'
+
+    # Check for Bearer token (backward compatibility)
+    auth_header = request.META.get('HTTP_AUTHORIZATION', '')
+    if auth_header.startswith('Bearer '):
+        logging.writeToFile(f'[API] Using Bearer token authentication')
+        return auth_header.replace('Bearer ', ''), 'bearer'
+
+    return None, None
+
+
 def validate_access_token(token, scan_id):
     """
     Validate authentication token - accepts BOTH file access tokens and API keys
@@ -309,14 +330,13 @@ def list_files(request):
     }
     """
     try:
-        # Validate authorization
-        auth_header = request.META.get('HTTP_AUTHORIZATION', '')
-        if not auth_header.startswith('Bearer '):
-            return JsonResponse({'error': 'Missing or invalid Authorization header'}, status=401)
-        
-        access_token = auth_header.replace('Bearer ', '')
+        # Validate authorization (supports both Bearer token and X-API-Key)
+        access_token, auth_type = extract_auth_token(request)
+        if not access_token:
+            return JsonResponse({'error': 'Missing or invalid Authorization header. Use Bearer token or X-API-Key header'}, status=401)
+
         scan_id = request.META.get('HTTP_X_SCAN_ID', '')
-        
+
         if not scan_id:
             return JsonResponse({'error': 'X-Scan-ID header required'}, status=400)
 
@@ -436,14 +456,13 @@ def get_file_content(request):
     }
     """
     try:
-        # Validate authorization
-        auth_header = request.META.get('HTTP_AUTHORIZATION', '')
-        if not auth_header.startswith('Bearer '):
-            return JsonResponse({'error': 'Missing or invalid Authorization header'}, status=401)
-        
-        access_token = auth_header.replace('Bearer ', '')
+        # Validate authorization (supports both Bearer token and X-API-Key)
+        access_token, auth_type = extract_auth_token(request)
+        if not access_token:
+            return JsonResponse({'error': 'Missing or invalid Authorization header. Use Bearer token or X-API-Key header'}, status=401)
+
         scan_id = request.META.get('HTTP_X_SCAN_ID', '')
-        
+
         if not scan_id:
             return JsonResponse({'error': 'X-Scan-ID header required'}, status=400)
 
@@ -855,12 +874,11 @@ def scanner_backup_file(request):
         file_path = data.get('file_path', '').strip('/')
         scan_id = data.get('scan_id', '')
 
-        # Validate authorization
-        auth_header = request.META.get('HTTP_AUTHORIZATION', '')
-        if not auth_header.startswith('Bearer '):
-            return JsonResponse({'success': False, 'error': 'Missing or invalid Authorization header'}, status=401)
+        # Validate authorization (supports both Bearer token and X-API-Key)
+        access_token, auth_type = extract_auth_token(request)
+        if not access_token:
+            return JsonResponse({'success': False, 'error': 'Missing or invalid Authorization header. Use Bearer token or X-API-Key header'}, status=401)
 
-        access_token = auth_header.replace('Bearer ', '')
         header_scan_id = request.META.get('HTTP_X_SCAN_ID', '')
 
         if not scan_id or not header_scan_id or scan_id != header_scan_id:
@@ -997,12 +1015,11 @@ def scanner_get_file(request):
         }
     """
     try:
-        # Validate authorization
-        auth_header = request.META.get('HTTP_AUTHORIZATION', '')
-        if not auth_header.startswith('Bearer '):
-            return JsonResponse({'success': False, 'error': 'Missing or invalid Authorization header'}, status=401)
+        # Validate authorization (supports both Bearer token and X-API-Key)
+        access_token, auth_type = extract_auth_token(request)
+        if not access_token:
+            return JsonResponse({'success': False, 'error': 'Missing or invalid Authorization header. Use Bearer token or X-API-Key header'}, status=401)
 
-        access_token = auth_header.replace('Bearer ', '')
         scan_id = request.META.get('HTTP_X_SCAN_ID', '')
 
         if not scan_id:
@@ -1177,12 +1194,11 @@ def scanner_replace_file(request):
         backup_before_replace = data.get('backup_before_replace', True)
         verify_hash = data.get('verify_hash', '')
 
-        # Validate authorization
-        auth_header = request.META.get('HTTP_AUTHORIZATION', '')
-        if not auth_header.startswith('Bearer '):
-            return JsonResponse({'success': False, 'error': 'Missing or invalid Authorization header'}, status=401)
+        # Validate authorization (supports both Bearer token and X-API-Key)
+        access_token, auth_type = extract_auth_token(request)
+        if not access_token:
+            return JsonResponse({'success': False, 'error': 'Missing or invalid Authorization header. Use Bearer token or X-API-Key header'}, status=401)
 
-        access_token = auth_header.replace('Bearer ', '')
         scan_id = request.META.get('HTTP_X_SCAN_ID', '')
 
         if not scan_id:
@@ -1386,12 +1402,11 @@ def scanner_rename_file(request):
         new_path = data.get('new_path', '').strip('/')
         backup_before_rename = data.get('backup_before_rename', True)
 
-        # Validate authorization
-        auth_header = request.META.get('HTTP_AUTHORIZATION', '')
-        if not auth_header.startswith('Bearer '):
-            return JsonResponse({'success': False, 'error': 'Missing or invalid Authorization header'}, status=401)
+        # Validate authorization (supports both Bearer token and X-API-Key)
+        access_token, auth_type = extract_auth_token(request)
+        if not access_token:
+            return JsonResponse({'success': False, 'error': 'Missing or invalid Authorization header. Use Bearer token or X-API-Key header'}, status=401)
 
-        access_token = auth_header.replace('Bearer ', '')
         scan_id = request.META.get('HTTP_X_SCAN_ID', '')
 
         if not scan_id:
@@ -1560,12 +1575,11 @@ def scanner_delete_file(request):
                 'message': 'Set confirm_deletion: true to proceed'
             }, status=400)
 
-        # Validate authorization
-        auth_header = request.META.get('HTTP_AUTHORIZATION', '')
-        if not auth_header.startswith('Bearer '):
-            return JsonResponse({'success': False, 'error': 'Missing or invalid Authorization header'}, status=401)
+        # Validate authorization (supports both Bearer token and X-API-Key)
+        access_token, auth_type = extract_auth_token(request)
+        if not access_token:
+            return JsonResponse({'success': False, 'error': 'Missing or invalid Authorization header. Use Bearer token or X-API-Key header'}, status=401)
 
-        access_token = auth_header.replace('Bearer ', '')
         scan_id = request.META.get('HTTP_X_SCAN_ID', '')
 
         if not scan_id:
