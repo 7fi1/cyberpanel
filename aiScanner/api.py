@@ -99,25 +99,30 @@ def validate_access_token(token, scan_id):
             logging.writeToFile(f'[API] File token not found for scan {scan_id}, trying API key fallback...')
             # Fall through to try API key
 
-        # OPTION 2: Try API Key (for post-scan file operations)
+        # OPTION 2: Try CyberPanel's own API Key (for post-scan file operations from platform)
+        # The platform sends back the same API key that CyberPanel used to submit the scan
         try:
             from .models import AIScannerSettings, ScanHistory
 
             # Debug: log the token being checked
             logging.writeToFile(f'[API] Checking API key: {token[:20]}... for scan {scan_id}')
 
-            # Find API key in settings
-            scanner_settings = AIScannerSettings.objects.get(
+            # First, check if this is a valid CyberPanel API key (any admin's key)
+            scanner_settings = AIScannerSettings.objects.filter(
                 api_key=token
-            )
+            ).first()
+
+            if not scanner_settings:
+                logging.writeToFile(f'[API] API key not found in settings')
+                return None, "Invalid token"
 
             logging.writeToFile(f'[API] Found API key for admin: {scanner_settings.admin.userName}')
 
-            # Get the scan to verify it belongs to this admin and get domain/path
+            # Get the scan - don't require it to belong to the same admin
+            # (platform may be using any valid CyberPanel API key for file operations)
             try:
                 scan = ScanHistory.objects.get(
-                    scan_id=scan_id,
-                    admin=scanner_settings.admin
+                    scan_id=scan_id
                 )
 
                 # Get wp_path from WPSites (WordPress installations)
@@ -152,12 +157,55 @@ def validate_access_token(token, scan_id):
                     return None, "WordPress site not found"
 
             except ScanHistory.DoesNotExist:
-                logging.writeToFile(f'[API] Scan {scan_id} not found or does not belong to API key owner')
-                return None, "Scan not found or access denied"
+                logging.writeToFile(f'[API] Scan {scan_id} not found')
+                return None, "Scan not found"
 
-        except AIScannerSettings.DoesNotExist:
-            logging.writeToFile(f'[API] API key not found in settings')
-            return None, "Invalid token"
+        except Exception as e:
+            logging.writeToFile(f'[API] API key validation error: {str(e)}')
+            pass  # Fall through to OPTION 3
+
+        # OPTION 3: Simple validation for platform callbacks
+        # If we have a valid CyberPanel API key and a valid scan, allow access
+        # This handles cases where the platform is using the API key to fix files
+        try:
+            from .models import AIScannerSettings, ScanHistory
+
+            # Check if ANY admin has this API key (less restrictive for platform callbacks)
+            has_valid_key = AIScannerSettings.objects.filter(api_key=token).exists()
+
+            if has_valid_key:
+                # Check if the scan exists (any admin's scan)
+                try:
+                    scan = ScanHistory.objects.get(scan_id=scan_id)
+
+                    # Get WordPress site info
+                    from websiteFunctions.models import WPSites
+                    wp_site = WPSites.objects.filter(
+                        FinalURL__icontains=scan.domain
+                    ).first()
+
+                    if wp_site:
+                        logging.writeToFile(f'[API] Platform callback validated: API key exists, scan {scan_id} found')
+                        return AuthWrapper(
+                            domain=scan.domain,
+                            wp_path=wp_site.path,
+                            auth_type='api_key',
+                            external_app=wp_site.owner.externalApp,
+                            source_obj=None
+                        ), None
+                    else:
+                        logging.writeToFile(f'[API] WordPress site not found for scan {scan_id}')
+                        return None, "WordPress site not found"
+
+                except ScanHistory.DoesNotExist:
+                    logging.writeToFile(f'[API] Scan {scan_id} not found in OPTION 3')
+                    return None, "Scan not found"
+            else:
+                logging.writeToFile(f'[API] No valid API key found matching: {token[:20]}...')
+
+        except Exception as e:
+            logging.writeToFile(f'[API] OPTION 3 validation error: {str(e)}')
+            pass  # Fall through to final error
 
     except Exception as e:
         logging.writeToFile(f'[API] Token validation error: {str(e)}')
