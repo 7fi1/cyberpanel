@@ -214,9 +214,184 @@ class InstallCyberPanel:
         # Fallback to known latest version
         return "6.3.4"
 
+    def detectArchitecture(self):
+        """Detect system architecture - custom binaries only for x86_64"""
+        try:
+            import platform
+            arch = platform.machine()
+            return arch == "x86_64"
+        except Exception as msg:
+            logging.InstallLog.writeToFile(str(msg) + " [detectArchitecture]")
+            return False
+
+    def downloadCustomBinary(self, url, destination):
+        """Download custom binary file"""
+        try:
+            InstallCyberPanel.stdOut(f"Downloading {os.path.basename(destination)}...", 1)
+
+            # Use wget for better progress display
+            command = f'wget -q --show-progress {url} -O {destination}'
+            result = install_utils.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
+
+            if result == 0 and os.path.exists(destination):
+                file_size = os.path.getsize(destination)
+                InstallCyberPanel.stdOut(f"Downloaded successfully ({file_size / (1024*1024):.2f} MB)", 1)
+                return True
+            else:
+                InstallCyberPanel.stdOut("ERROR: Download failed", 1)
+                return False
+
+        except Exception as msg:
+            logging.InstallLog.writeToFile(str(msg) + " [downloadCustomBinary]")
+            InstallCyberPanel.stdOut(f"ERROR: {msg}", 1)
+            return False
+
+    def installCustomOLSBinaries(self):
+        """Install custom OpenLiteSpeed binaries with PHP config support"""
+        try:
+            InstallCyberPanel.stdOut("Installing Custom OpenLiteSpeed Binaries", 1)
+            InstallCyberPanel.stdOut("=" * 50, 1)
+
+            # URLs for custom binaries
+            OLS_BINARY_URL = "https://cyberpanel.net/downloads/openlitespeed-phpconfig-x86_64"
+            MODULE_URL = "https://cyberpanel.net/downloads/cyberpanel_ols_x86_64.so"
+            OLS_BINARY_PATH = "/usr/local/lsws/bin/openlitespeed"
+            MODULE_PATH = "/usr/local/lsws/modules/cyberpanel_ols.so"
+
+            # Check architecture
+            if not self.detectArchitecture():
+                InstallCyberPanel.stdOut("WARNING: Custom binaries only available for x86_64", 1)
+                InstallCyberPanel.stdOut("Skipping custom binary installation", 1)
+                InstallCyberPanel.stdOut("Standard OLS will be used", 1)
+                return True  # Not a failure, just skip
+
+            # Create backup
+            from datetime import datetime
+            timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+            backup_dir = f"/usr/local/lsws/backup-{timestamp}"
+
+            try:
+                os.makedirs(backup_dir, exist_ok=True)
+                if os.path.exists(OLS_BINARY_PATH):
+                    shutil.copy2(OLS_BINARY_PATH, f"{backup_dir}/openlitespeed.backup")
+                    InstallCyberPanel.stdOut(f"Backup created at: {backup_dir}", 1)
+            except Exception as e:
+                InstallCyberPanel.stdOut(f"WARNING: Could not create backup: {e}", 1)
+
+            # Download binaries to temp location
+            tmp_binary = "/tmp/openlitespeed-custom"
+            tmp_module = "/tmp/cyberpanel_ols.so"
+
+            InstallCyberPanel.stdOut("Downloading custom binaries...", 1)
+
+            # Download OpenLiteSpeed binary
+            if not self.downloadCustomBinary(OLS_BINARY_URL, tmp_binary):
+                InstallCyberPanel.stdOut("ERROR: Failed to download OLS binary", 1)
+                InstallCyberPanel.stdOut("Continuing with standard OLS", 1)
+                return True  # Not fatal, continue with standard OLS
+
+            # Download module
+            if not self.downloadCustomBinary(MODULE_URL, tmp_module):
+                InstallCyberPanel.stdOut("ERROR: Failed to download module", 1)
+                InstallCyberPanel.stdOut("Continuing with standard OLS", 1)
+                return True  # Not fatal, continue with standard OLS
+
+            # Install OpenLiteSpeed binary
+            InstallCyberPanel.stdOut("Installing custom binaries...", 1)
+
+            try:
+                shutil.move(tmp_binary, OLS_BINARY_PATH)
+                os.chmod(OLS_BINARY_PATH, 0o755)
+                InstallCyberPanel.stdOut("Installed OpenLiteSpeed binary", 1)
+            except Exception as e:
+                InstallCyberPanel.stdOut(f"ERROR: Failed to install binary: {e}", 1)
+                logging.InstallLog.writeToFile(str(e) + " [installCustomOLSBinaries - binary install]")
+                return False
+
+            # Install module
+            try:
+                os.makedirs(os.path.dirname(MODULE_PATH), exist_ok=True)
+                shutil.move(tmp_module, MODULE_PATH)
+                os.chmod(MODULE_PATH, 0o644)
+                InstallCyberPanel.stdOut("Installed CyberPanel module", 1)
+            except Exception as e:
+                InstallCyberPanel.stdOut(f"ERROR: Failed to install module: {e}", 1)
+                logging.InstallLog.writeToFile(str(e) + " [installCustomOLSBinaries - module install]")
+                return False
+
+            # Verify installation
+            if os.path.exists(OLS_BINARY_PATH) and os.path.exists(MODULE_PATH):
+                InstallCyberPanel.stdOut("=" * 50, 1)
+                InstallCyberPanel.stdOut("Custom Binaries Installed Successfully", 1)
+                InstallCyberPanel.stdOut("Features enabled:", 1)
+                InstallCyberPanel.stdOut("  - Apache-style .htaccess support", 1)
+                InstallCyberPanel.stdOut("  - php_value/php_flag directives", 1)
+                InstallCyberPanel.stdOut("  - Enhanced header control", 1)
+                InstallCyberPanel.stdOut(f"Backup: {backup_dir}", 1)
+                InstallCyberPanel.stdOut("=" * 50, 1)
+                return True
+            else:
+                InstallCyberPanel.stdOut("ERROR: Installation verification failed", 1)
+                return False
+
+        except Exception as msg:
+            logging.InstallLog.writeToFile(str(msg) + " [installCustomOLSBinaries]")
+            InstallCyberPanel.stdOut(f"ERROR: {msg}", 1)
+            InstallCyberPanel.stdOut("Continuing with standard OLS", 1)
+            return True  # Non-fatal error, continue
+
+    def configureCustomModule(self):
+        """Configure CyberPanel module in OpenLiteSpeed config"""
+        try:
+            InstallCyberPanel.stdOut("Configuring CyberPanel module...", 1)
+
+            CONFIG_FILE = "/usr/local/lsws/conf/httpd_config.conf"
+
+            if not os.path.exists(CONFIG_FILE):
+                InstallCyberPanel.stdOut("WARNING: Config file not found", 1)
+                InstallCyberPanel.stdOut("Module will be auto-loaded", 1)
+                return True
+
+            # Check if module is already configured
+            with open(CONFIG_FILE, 'r') as f:
+                content = f.read()
+                if 'cyberpanel_ols' in content:
+                    InstallCyberPanel.stdOut("Module already configured", 1)
+                    return True
+
+            # Add module configuration
+            module_config = """
+module cyberpanel_ols {
+  ls_enabled          1
+}
+"""
+            # Backup config
+            shutil.copy2(CONFIG_FILE, f"{CONFIG_FILE}.backup")
+
+            # Append module config
+            with open(CONFIG_FILE, 'a') as f:
+                f.write(module_config)
+
+            InstallCyberPanel.stdOut("Module configured successfully", 1)
+            return True
+
+        except Exception as msg:
+            logging.InstallLog.writeToFile(str(msg) + " [configureCustomModule]")
+            InstallCyberPanel.stdOut(f"WARNING: Module configuration failed: {msg}", 1)
+            InstallCyberPanel.stdOut("Module may still work via auto-load", 1)
+            return True  # Non-fatal
+
     def installLiteSpeed(self):
         if self.ent == 0:
+            # Install standard OpenLiteSpeed package
             self.install_package('openlitespeed')
+
+            # Install custom binaries with PHP config support
+            # This replaces the standard binary with enhanced version
+            self.installCustomOLSBinaries()
+
+            # Configure the custom module
+            self.configureCustomModule()
 
         else:
             try:
