@@ -231,14 +231,20 @@ class InstallCyberPanel:
 
             # Use wget for better progress display
             command = f'wget -q --show-progress {url} -O {destination}'
-            result = install_utils.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
+            install_utils.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
 
-            if result == 0 and os.path.exists(destination):
+            # Check if file was downloaded successfully by verifying it exists and has reasonable size
+            if os.path.exists(destination):
                 file_size = os.path.getsize(destination)
-                InstallCyberPanel.stdOut(f"Downloaded successfully ({file_size / (1024*1024):.2f} MB)", 1)
-                return True
+                # Verify file size is reasonable (at least 1MB for a real binary)
+                if file_size > 1048576:  # 1MB
+                    InstallCyberPanel.stdOut(f"Downloaded successfully ({file_size / (1024*1024):.2f} MB)", 1)
+                    return True
+                else:
+                    InstallCyberPanel.stdOut(f"ERROR: Downloaded file too small ({file_size} bytes)", 1)
+                    return False
             else:
-                InstallCyberPanel.stdOut("ERROR: Download failed", 1)
+                InstallCyberPanel.stdOut("ERROR: Download failed - file not found", 1)
                 return False
 
         except Exception as msg:
