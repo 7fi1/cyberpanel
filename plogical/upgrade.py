@@ -620,6 +620,181 @@ class Upgrade:
             pass
 
     @staticmethod
+    def detectArchitecture():
+        """Detect system architecture - custom binaries only for x86_64"""
+        try:
+            import platform
+            arch = platform.machine()
+            return arch == "x86_64"
+        except Exception as msg:
+            Upgrade.stdOut(str(msg) + " [detectArchitecture]", 0)
+            return False
+
+    @staticmethod
+    def downloadCustomBinary(url, destination):
+        """Download custom binary file"""
+        try:
+            Upgrade.stdOut(f"Downloading {os.path.basename(destination)}...", 0)
+
+            # Use wget for better progress display
+            command = f'wget -q --show-progress {url} -O {destination}'
+            res = subprocess.call(shlex.split(command))
+
+            # Check if file was downloaded successfully by verifying it exists and has reasonable size
+            if os.path.exists(destination):
+                file_size = os.path.getsize(destination)
+                # Verify file size is reasonable (at least 10KB to avoid error pages/empty files)
+                if file_size > 10240:  # 10KB
+                    if file_size > 1048576:  # 1MB
+                        Upgrade.stdOut(f"Downloaded successfully ({file_size / (1024*1024):.2f} MB)", 0)
+                    else:
+                        Upgrade.stdOut(f"Downloaded successfully ({file_size / 1024:.2f} KB)", 0)
+                    return True
+                else:
+                    Upgrade.stdOut(f"ERROR: Downloaded file too small ({file_size} bytes)", 0)
+                    return False
+            else:
+                Upgrade.stdOut("ERROR: Download failed - file not found", 0)
+                return False
+
+        except Exception as msg:
+            Upgrade.stdOut(f"ERROR: {msg} [downloadCustomBinary]", 0)
+            return False
+
+    @staticmethod
+    def installCustomOLSBinaries():
+        """Install custom OpenLiteSpeed binaries with PHP config support"""
+        try:
+            Upgrade.stdOut("Installing Custom OpenLiteSpeed Binaries", 0)
+            Upgrade.stdOut("=" * 50, 0)
+
+            # URLs for custom binaries
+            OLS_BINARY_URL = "https://cyberpanel.net/openlitespeed-phpconfig-x86_64"
+            MODULE_URL = "https://cyberpanel.net/cyberpanel_ols_x86_64.so"
+            OLS_BINARY_PATH = "/usr/local/lsws/bin/openlitespeed"
+            MODULE_PATH = "/usr/local/lsws/modules/cyberpanel_ols.so"
+
+            # Check architecture
+            if not Upgrade.detectArchitecture():
+                Upgrade.stdOut("WARNING: Custom binaries only available for x86_64", 0)
+                Upgrade.stdOut("Skipping custom binary installation", 0)
+                Upgrade.stdOut("Standard OLS will be used", 0)
+                return True  # Not a failure, just skip
+
+            # Create backup
+            from datetime import datetime
+            timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+            backup_dir = f"/usr/local/lsws/backup-{timestamp}"
+
+            try:
+                os.makedirs(backup_dir, exist_ok=True)
+                if os.path.exists(OLS_BINARY_PATH):
+                    shutil.copy2(OLS_BINARY_PATH, f"{backup_dir}/openlitespeed.backup")
+                    Upgrade.stdOut(f"Backup created at: {backup_dir}", 0)
+            except Exception as e:
+                Upgrade.stdOut(f"WARNING: Could not create backup: {e}", 0)
+
+            # Download binaries to temp location
+            tmp_binary = "/tmp/openlitespeed-custom"
+            tmp_module = "/tmp/cyberpanel_ols.so"
+
+            Upgrade.stdOut("Downloading custom binaries...", 0)
+
+            # Download OpenLiteSpeed binary
+            if not Upgrade.downloadCustomBinary(OLS_BINARY_URL, tmp_binary):
+                Upgrade.stdOut("ERROR: Failed to download OLS binary", 0)
+                Upgrade.stdOut("Continuing with standard OLS", 0)
+                return True  # Not fatal, continue with standard OLS
+
+            # Download module
+            if not Upgrade.downloadCustomBinary(MODULE_URL, tmp_module):
+                Upgrade.stdOut("ERROR: Failed to download module", 0)
+                Upgrade.stdOut("Continuing with standard OLS", 0)
+                return True  # Not fatal, continue with standard OLS
+
+            # Install OpenLiteSpeed binary
+            Upgrade.stdOut("Installing custom binaries...", 0)
+
+            try:
+                shutil.move(tmp_binary, OLS_BINARY_PATH)
+                os.chmod(OLS_BINARY_PATH, 0o755)
+                Upgrade.stdOut("Installed OpenLiteSpeed binary", 0)
+            except Exception as e:
+                Upgrade.stdOut(f"ERROR: Failed to install binary: {e}", 0)
+                return False
+
+            # Install module
+            try:
+                os.makedirs(os.path.dirname(MODULE_PATH), exist_ok=True)
+                shutil.move(tmp_module, MODULE_PATH)
+                os.chmod(MODULE_PATH, 0o644)
+                Upgrade.stdOut("Installed CyberPanel module", 0)
+            except Exception as e:
+                Upgrade.stdOut(f"ERROR: Failed to install module: {e}", 0)
+                return False
+
+            # Verify installation
+            if os.path.exists(OLS_BINARY_PATH) and os.path.exists(MODULE_PATH):
+                Upgrade.stdOut("=" * 50, 0)
+                Upgrade.stdOut("Custom Binaries Installed Successfully", 0)
+                Upgrade.stdOut("Features enabled:", 0)
+                Upgrade.stdOut("  - Apache-style .htaccess support", 0)
+                Upgrade.stdOut("  - php_value/php_flag directives", 0)
+                Upgrade.stdOut("  - Enhanced header control", 0)
+                Upgrade.stdOut(f"Backup: {backup_dir}", 0)
+                Upgrade.stdOut("=" * 50, 0)
+                return True
+            else:
+                Upgrade.stdOut("ERROR: Installation verification failed", 0)
+                return False
+
+        except Exception as msg:
+            Upgrade.stdOut(f"ERROR: {msg} [installCustomOLSBinaries]", 0)
+            Upgrade.stdOut("Continuing with standard OLS", 0)
+            return True  # Non-fatal error, continue
+
+    @staticmethod
+    def configureCustomModule():
+        """Configure CyberPanel module in OpenLiteSpeed config"""
+        try:
+            Upgrade.stdOut("Configuring CyberPanel module...", 0)
+
+            CONFIG_FILE = "/usr/local/lsws/conf/httpd_config.conf"
+
+            if not os.path.exists(CONFIG_FILE):
+                Upgrade.stdOut("WARNING: Config file not found", 0)
+                Upgrade.stdOut("Module will be auto-loaded", 0)
+                return True
+
+            # Check if module is already configured
+            with open(CONFIG_FILE, 'r') as f:
+                content = f.read()
+                if 'cyberpanel_ols' in content:
+                    Upgrade.stdOut("Module already configured", 0)
+                    return True
+
+            # Add module configuration
+            module_config = """
+module cyberpanel_ols {
+  ls_enabled          1
+}
+"""
+            # Backup config
+            shutil.copy2(CONFIG_FILE, f"{CONFIG_FILE}.backup")
+
+            # Append module config
+            with open(CONFIG_FILE, 'a') as f:
+                f.write(module_config)
+
+            Upgrade.stdOut("Module configured successfully", 0)
+            return True
+
+        except Exception as msg:
+            Upgrade.stdOut(f"WARNING: Module configuration failed: {msg}", 0)
+            Upgrade.stdOut("Module may still work via auto-load", 0)
+            return True  # Non-fatal
+
+    @staticmethod
     def download_install_phpmyadmin():
         try:
             cwd = os.getcwd()
@@ -4098,7 +4273,7 @@ pm.max_spare_servers = 3
         ## Add LSPHP7.4 TO LSWS Ent configs
 
         if not os.path.exists('/usr/local/lsws/bin/openlitespeed'):
-
+            # This is Enterprise LSWS
             if os.path.exists('httpd_config.xml'):
                 os.remove('httpd_config.xml')
 
@@ -4106,6 +4281,22 @@ pm.max_spare_servers = 3
             Upgrade.executioner(command, command, 0)
             # os.remove('/usr/local/lsws/conf/httpd_config.xml')
             # shutil.copy('httpd_config.xml', '/usr/local/lsws/conf/httpd_config.xml')
+        else:
+            # This is OpenLiteSpeed - install/upgrade custom binaries
+            Upgrade.stdOut("Detected OpenLiteSpeed installation", 0)
+            Upgrade.stdOut("Installing/upgrading custom binaries with .htaccess PHP config support...", 0)
+
+            # Install custom binaries
+            if Upgrade.installCustomOLSBinaries():
+                # Configure the custom module
+                Upgrade.configureCustomModule()
+
+                # Restart OpenLiteSpeed to apply changes
+                Upgrade.stdOut("Restarting OpenLiteSpeed...", 0)
+                command = '/usr/local/lsws/bin/lswsctrl restart'
+                Upgrade.executioner(command, 'Restart OpenLiteSpeed', 0)
+            else:
+                Upgrade.stdOut("Custom binary installation failed, continuing with upgrade...", 0)
 
         Upgrade.updateRepoURL()
 
