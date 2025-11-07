@@ -631,6 +631,45 @@ class Upgrade:
             return False
 
     @staticmethod
+    def detectBinarySuffix():
+        """Detect which binary suffix to use based on OS distribution
+        Returns 'ubuntu' for Ubuntu/Debian systems with libcrypt.so.1
+        Returns 'rhel' for RHEL/AlmaLinux/Rocky systems with libcrypt.so.2
+        """
+        try:
+            # Check if we're on RHEL/CentOS/AlmaLinux 8+ (uses libcrypt.so.2)
+            if os.path.exists('/etc/os-release'):
+                with open('/etc/os-release', 'r') as f:
+                    os_release = f.read().lower()
+
+                # AlmaLinux 9+, Rocky 9+, RHEL 9+, CentOS Stream 9+
+                if any(x in os_release for x in ['almalinux', 'rocky', 'rhel']) and 'version="9' in os_release:
+                    return 'rhel'
+                elif 'centos stream 9' in os_release:
+                    return 'rhel'
+
+            # Check CentOS/RHEL path
+            if os.path.exists(Upgrade.CentOSPath):
+                data = open(Upgrade.CentOSPath, 'r').read()
+                # CentOS/AlmaLinux/Rocky 8+ → rhel suffix
+                if 'release 8' in data or 'release 9' in data:
+                    return 'rhel'
+                # CentOS 7 → ubuntu suffix (uses libcrypt.so.1)
+                else:
+                    return 'ubuntu'
+
+            # OpenEuler → rhel suffix
+            if os.path.exists(Upgrade.openEulerPath):
+                return 'rhel'
+
+            # Ubuntu/Debian → ubuntu suffix (default for unknown)
+            return 'ubuntu'
+
+        except Exception as msg:
+            Upgrade.stdOut(f"Error detecting OS: {msg}, defaulting to Ubuntu binaries", 0)
+            return 'ubuntu'
+
+    @staticmethod
     def downloadCustomBinary(url, destination):
         """Download custom binary file"""
         try:
@@ -668,18 +707,23 @@ class Upgrade:
             Upgrade.stdOut("Installing Custom OpenLiteSpeed Binaries", 0)
             Upgrade.stdOut("=" * 50, 0)
 
-            # URLs for custom binaries
-            OLS_BINARY_URL = "https://cyberpanel.net/openlitespeed-phpconfig-x86_64"
-            MODULE_URL = "https://cyberpanel.net/cyberpanel_ols_x86_64.so"
-            OLS_BINARY_PATH = "/usr/local/lsws/bin/openlitespeed"
-            MODULE_PATH = "/usr/local/lsws/modules/cyberpanel_ols.so"
-
             # Check architecture
             if not Upgrade.detectArchitecture():
                 Upgrade.stdOut("WARNING: Custom binaries only available for x86_64", 0)
                 Upgrade.stdOut("Skipping custom binary installation", 0)
                 Upgrade.stdOut("Standard OLS will be used", 0)
                 return True  # Not a failure, just skip
+
+            # Detect OS and select appropriate binary suffix
+            binary_suffix = Upgrade.detectBinarySuffix()
+            Upgrade.stdOut(f"Detected OS type: using '{binary_suffix}' binaries", 0)
+
+            # URLs for custom binaries with OS-specific suffix
+            BASE_URL = "https://cyberpanel.net"
+            OLS_BINARY_URL = f"{BASE_URL}/openlitespeed-phpconfig-x86_64-{binary_suffix}"
+            MODULE_URL = f"{BASE_URL}/cyberpanel_ols_x86_64_{binary_suffix}.so"
+            OLS_BINARY_PATH = "/usr/local/lsws/bin/openlitespeed"
+            MODULE_PATH = "/usr/local/lsws/modules/cyberpanel_ols.so"
 
             # Create backup
             from datetime import datetime

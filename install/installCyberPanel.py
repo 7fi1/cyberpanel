@@ -224,6 +224,35 @@ class InstallCyberPanel:
             logging.InstallLog.writeToFile(str(msg) + " [detectArchitecture]")
             return False
 
+    def detectBinarySuffix(self):
+        """Detect which binary suffix to use based on OS distribution
+        Returns 'ubuntu' for Ubuntu/Debian systems with libcrypt.so.1
+        Returns 'rhel' for RHEL/AlmaLinux/Rocky systems with libcrypt.so.2
+        """
+        try:
+            # Ubuntu/Debian → ubuntu suffix
+            if self.distro == ubuntu:
+                return 'ubuntu'
+
+            # CentOS 8+/AlmaLinux/Rocky/OpenEuler → rhel suffix
+            # These systems use libcrypt.so.2 and GLIBC 2.34+
+            elif self.distro == cent8 or self.distro == openeuler:
+                return 'rhel'
+
+            # CentOS 7 → ubuntu suffix (uses libcrypt.so.1)
+            elif self.distro == centos:
+                return 'ubuntu'
+
+            # Default to ubuntu for unknown distros
+            else:
+                InstallCyberPanel.stdOut("Unknown OS distribution, defaulting to Ubuntu binaries", 1)
+                return 'ubuntu'
+
+        except Exception as msg:
+            logging.InstallLog.writeToFile(str(msg) + " [detectBinarySuffix]")
+            InstallCyberPanel.stdOut("Error detecting OS, defaulting to Ubuntu binaries", 1)
+            return 'ubuntu'
+
     def downloadCustomBinary(self, url, destination):
         """Download custom binary file"""
         try:
@@ -261,18 +290,23 @@ class InstallCyberPanel:
             InstallCyberPanel.stdOut("Installing Custom OpenLiteSpeed Binaries", 1)
             InstallCyberPanel.stdOut("=" * 50, 1)
 
-            # URLs for custom binaries
-            OLS_BINARY_URL = "https://cyberpanel.net/openlitespeed-phpconfig-x86_64"
-            MODULE_URL = "https://cyberpanel.net/cyberpanel_ols_x86_64.so"
-            OLS_BINARY_PATH = "/usr/local/lsws/bin/openlitespeed"
-            MODULE_PATH = "/usr/local/lsws/modules/cyberpanel_ols.so"
-
             # Check architecture
             if not self.detectArchitecture():
                 InstallCyberPanel.stdOut("WARNING: Custom binaries only available for x86_64", 1)
                 InstallCyberPanel.stdOut("Skipping custom binary installation", 1)
                 InstallCyberPanel.stdOut("Standard OLS will be used", 1)
                 return True  # Not a failure, just skip
+
+            # Detect OS and select appropriate binary suffix
+            binary_suffix = self.detectBinarySuffix()
+            InstallCyberPanel.stdOut(f"Detected OS type: using '{binary_suffix}' binaries", 1)
+
+            # URLs for custom binaries with OS-specific suffix
+            BASE_URL = "https://cyberpanel.net"
+            OLS_BINARY_URL = f"{BASE_URL}/openlitespeed-phpconfig-x86_64-{binary_suffix}"
+            MODULE_URL = f"{BASE_URL}/cyberpanel_ols_x86_64_{binary_suffix}.so"
+            OLS_BINARY_PATH = "/usr/local/lsws/bin/openlitespeed"
+            MODULE_PATH = "/usr/local/lsws/modules/cyberpanel_ols.so"
 
             # Create backup
             from datetime import datetime
