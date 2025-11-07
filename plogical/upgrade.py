@@ -701,6 +701,76 @@ class Upgrade:
             return False
 
     @staticmethod
+    def verifyCustomBinary(binary_path):
+        """Verify custom binary has correct dependencies and can run"""
+        try:
+            Upgrade.stdOut("Verifying custom binary compatibility...", 0)
+
+            # Check library dependencies
+            command = f'ldd {binary_path}'
+            result = subprocess.run(command, shell=True, capture_output=True, text=True)
+
+            if result.returncode != 0:
+                Upgrade.stdOut("ERROR: Failed to check binary dependencies", 0)
+                return False
+
+            # Check for missing libraries
+            if 'not found' in result.stdout:
+                Upgrade.stdOut("ERROR: Binary has missing library dependencies:", 0)
+                for line in result.stdout.split('\n'):
+                    if 'not found' in line:
+                        Upgrade.stdOut(f"  {line.strip()}", 0)
+                return False
+
+            # Try to run the binary with -v to check if it can execute
+            command = f'{binary_path} -v'
+            result = subprocess.run(command, shell=True, capture_output=True, text=True, timeout=5)
+
+            if result.returncode != 0:
+                Upgrade.stdOut("ERROR: Binary failed to execute", 0)
+                if result.stderr:
+                    Upgrade.stdOut(f"  Error: {result.stderr.strip()}", 0)
+                return False
+
+            Upgrade.stdOut("Binary verification successful", 0)
+            return True
+
+        except subprocess.TimeoutExpired:
+            Upgrade.stdOut("ERROR: Binary verification timed out", 0)
+            return False
+        except Exception as msg:
+            Upgrade.stdOut(f"ERROR: Verification failed: {msg}", 0)
+            return False
+
+    @staticmethod
+    def rollbackCustomBinary(backup_dir, binary_path, module_path):
+        """Rollback to original binary if custom binary fails"""
+        try:
+            Upgrade.stdOut("Rolling back to original binary...", 0)
+
+            backup_binary = f"{backup_dir}/openlitespeed.backup"
+
+            # Restore original binary if backup exists
+            if os.path.exists(backup_binary):
+                shutil.copy2(backup_binary, binary_path)
+                os.chmod(binary_path, 0o755)
+                Upgrade.stdOut("Original binary restored successfully", 0)
+            else:
+                Upgrade.stdOut("WARNING: No backup found, cannot restore", 0)
+
+            # Remove failed custom module
+            if os.path.exists(module_path):
+                os.remove(module_path)
+                Upgrade.stdOut("Custom module removed", 0)
+
+            Upgrade.stdOut("Rollback completed", 0)
+            return True
+
+        except Exception as msg:
+            Upgrade.stdOut(f"ERROR: Rollback failed: {msg}", 0)
+            return False
+
+    @staticmethod
     def installCustomOLSBinaries():
         """Install custom OpenLiteSpeed binaries with PHP config support"""
         try:
@@ -777,20 +847,35 @@ class Upgrade:
                 Upgrade.stdOut(f"ERROR: Failed to install module: {e}", 0)
                 return False
 
-            # Verify installation
-            if os.path.exists(OLS_BINARY_PATH) and os.path.exists(MODULE_PATH):
-                Upgrade.stdOut("=" * 50, 0)
-                Upgrade.stdOut("Custom Binaries Installed Successfully", 0)
-                Upgrade.stdOut("Features enabled:", 0)
-                Upgrade.stdOut("  - Apache-style .htaccess support", 0)
-                Upgrade.stdOut("  - php_value/php_flag directives", 0)
-                Upgrade.stdOut("  - Enhanced header control", 0)
-                Upgrade.stdOut(f"Backup: {backup_dir}", 0)
-                Upgrade.stdOut("=" * 50, 0)
-                return True
-            else:
-                Upgrade.stdOut("ERROR: Installation verification failed", 0)
+            # Verify installation files exist
+            if not (os.path.exists(OLS_BINARY_PATH) and os.path.exists(MODULE_PATH)):
+                Upgrade.stdOut("ERROR: Installation verification failed - files not found", 0)
                 return False
+
+            # Verify binary compatibility
+            if not Upgrade.verifyCustomBinary(OLS_BINARY_PATH):
+                Upgrade.stdOut("ERROR: Custom binary verification failed", 0)
+                Upgrade.stdOut("This usually means wrong binary type for your OS", 0)
+
+                # Rollback to original binary
+                if os.path.exists(backup_dir):
+                    Upgrade.rollbackCustomBinary(backup_dir, OLS_BINARY_PATH, MODULE_PATH)
+                    Upgrade.stdOut("Continuing with standard OLS", 0)
+                else:
+                    Upgrade.stdOut("WARNING: Cannot rollback, no backup found", 0)
+
+                return True  # Non-fatal, continue with standard OLS
+
+            # Success!
+            Upgrade.stdOut("=" * 50, 0)
+            Upgrade.stdOut("Custom Binaries Installed Successfully", 0)
+            Upgrade.stdOut("Features enabled:", 0)
+            Upgrade.stdOut("  - Apache-style .htaccess support", 0)
+            Upgrade.stdOut("  - php_value/php_flag directives", 0)
+            Upgrade.stdOut("  - Enhanced header control", 0)
+            Upgrade.stdOut(f"Backup: {backup_dir}", 0)
+            Upgrade.stdOut("=" * 50, 0)
+            return True
 
         except Exception as msg:
             Upgrade.stdOut(f"ERROR: {msg} [installCustomOLSBinaries]", 0)

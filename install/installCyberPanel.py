@@ -284,6 +284,76 @@ class InstallCyberPanel:
             InstallCyberPanel.stdOut(f"ERROR: {msg}", 1)
             return False
 
+    def verifyCustomBinary(self, binary_path):
+        """Verify custom binary has correct dependencies and can run"""
+        try:
+            InstallCyberPanel.stdOut("Verifying custom binary compatibility...", 1)
+
+            # Check library dependencies
+            command = f'ldd {binary_path}'
+            result = subprocess.run(command, shell=True, capture_output=True, text=True)
+
+            if result.returncode != 0:
+                InstallCyberPanel.stdOut("ERROR: Failed to check binary dependencies", 1)
+                return False
+
+            # Check for missing libraries
+            if 'not found' in result.stdout:
+                InstallCyberPanel.stdOut("ERROR: Binary has missing library dependencies:", 1)
+                for line in result.stdout.split('\n'):
+                    if 'not found' in line:
+                        InstallCyberPanel.stdOut(f"  {line.strip()}", 1)
+                return False
+
+            # Try to run the binary with -v to check if it can execute
+            command = f'{binary_path} -v'
+            result = subprocess.run(command, shell=True, capture_output=True, text=True, timeout=5)
+
+            if result.returncode != 0:
+                InstallCyberPanel.stdOut("ERROR: Binary failed to execute", 1)
+                if result.stderr:
+                    InstallCyberPanel.stdOut(f"  Error: {result.stderr.strip()}", 1)
+                return False
+
+            InstallCyberPanel.stdOut("Binary verification successful", 1)
+            return True
+
+        except subprocess.TimeoutExpired:
+            InstallCyberPanel.stdOut("ERROR: Binary verification timed out", 1)
+            return False
+        except Exception as msg:
+            logging.InstallLog.writeToFile(str(msg) + " [verifyCustomBinary]")
+            InstallCyberPanel.stdOut(f"ERROR: Verification failed: {msg}", 1)
+            return False
+
+    def rollbackCustomBinary(self, backup_dir, binary_path, module_path):
+        """Rollback to original binary if custom binary fails"""
+        try:
+            InstallCyberPanel.stdOut("Rolling back to original binary...", 1)
+
+            backup_binary = f"{backup_dir}/openlitespeed.backup"
+
+            # Restore original binary if backup exists
+            if os.path.exists(backup_binary):
+                shutil.copy2(backup_binary, binary_path)
+                os.chmod(binary_path, 0o755)
+                InstallCyberPanel.stdOut("Original binary restored successfully", 1)
+            else:
+                InstallCyberPanel.stdOut("WARNING: No backup found, cannot restore", 1)
+
+            # Remove failed custom module
+            if os.path.exists(module_path):
+                os.remove(module_path)
+                InstallCyberPanel.stdOut("Custom module removed", 1)
+
+            InstallCyberPanel.stdOut("Rollback completed", 1)
+            return True
+
+        except Exception as msg:
+            logging.InstallLog.writeToFile(str(msg) + " [rollbackCustomBinary]")
+            InstallCyberPanel.stdOut(f"ERROR: Rollback failed: {msg}", 1)
+            return False
+
     def installCustomOLSBinaries(self):
         """Install custom OpenLiteSpeed binaries with PHP config support"""
         try:
@@ -362,20 +432,35 @@ class InstallCyberPanel:
                 logging.InstallLog.writeToFile(str(e) + " [installCustomOLSBinaries - module install]")
                 return False
 
-            # Verify installation
-            if os.path.exists(OLS_BINARY_PATH) and os.path.exists(MODULE_PATH):
-                InstallCyberPanel.stdOut("=" * 50, 1)
-                InstallCyberPanel.stdOut("Custom Binaries Installed Successfully", 1)
-                InstallCyberPanel.stdOut("Features enabled:", 1)
-                InstallCyberPanel.stdOut("  - Apache-style .htaccess support", 1)
-                InstallCyberPanel.stdOut("  - php_value/php_flag directives", 1)
-                InstallCyberPanel.stdOut("  - Enhanced header control", 1)
-                InstallCyberPanel.stdOut(f"Backup: {backup_dir}", 1)
-                InstallCyberPanel.stdOut("=" * 50, 1)
-                return True
-            else:
-                InstallCyberPanel.stdOut("ERROR: Installation verification failed", 1)
+            # Verify installation files exist
+            if not (os.path.exists(OLS_BINARY_PATH) and os.path.exists(MODULE_PATH)):
+                InstallCyberPanel.stdOut("ERROR: Installation verification failed - files not found", 1)
                 return False
+
+            # Verify binary compatibility
+            if not self.verifyCustomBinary(OLS_BINARY_PATH):
+                InstallCyberPanel.stdOut("ERROR: Custom binary verification failed", 1)
+                InstallCyberPanel.stdOut("This usually means wrong binary type for your OS", 1)
+
+                # Rollback to original binary
+                if os.path.exists(backup_dir):
+                    self.rollbackCustomBinary(backup_dir, OLS_BINARY_PATH, MODULE_PATH)
+                    InstallCyberPanel.stdOut("Continuing with standard OLS", 1)
+                else:
+                    InstallCyberPanel.stdOut("WARNING: Cannot rollback, no backup found", 1)
+
+                return True  # Non-fatal, continue with standard OLS
+
+            # Success!
+            InstallCyberPanel.stdOut("=" * 50, 1)
+            InstallCyberPanel.stdOut("Custom Binaries Installed Successfully", 1)
+            InstallCyberPanel.stdOut("Features enabled:", 1)
+            InstallCyberPanel.stdOut("  - Apache-style .htaccess support", 1)
+            InstallCyberPanel.stdOut("  - php_value/php_flag directives", 1)
+            InstallCyberPanel.stdOut("  - Enhanced header control", 1)
+            InstallCyberPanel.stdOut(f"Backup: {backup_dir}", 1)
+            InstallCyberPanel.stdOut("=" * 50, 1)
+            return True
 
         except Exception as msg:
             logging.InstallLog.writeToFile(str(msg) + " [installCustomOLSBinaries]")
