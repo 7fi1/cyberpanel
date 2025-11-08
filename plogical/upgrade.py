@@ -883,6 +883,141 @@ class Upgrade:
             return True  # Non-fatal error, continue
 
     @staticmethod
+    def isCustomOLSBinaryInstalled():
+        """Detect if custom OpenLiteSpeed binary is installed"""
+        try:
+            OLS_BINARY_PATH = "/usr/local/lsws/bin/openlitespeed"
+
+            if not os.path.exists(OLS_BINARY_PATH):
+                return False
+
+            # Check for PHPConfig function signature in binary
+            command = f'strings {OLS_BINARY_PATH}'
+            result = subprocess.run(command, shell=True, capture_output=True, text=True, timeout=10)
+
+            if result.returncode == 0:
+                # Look for custom binary markers
+                return 'set_php_config_value' in result.stdout or 'PHPConfig LSIAPI' in result.stdout
+
+            return False
+
+        except Exception as msg:
+            Upgrade.stdOut(f"WARNING: Could not detect OLS binary type: {msg}", 0)
+            return False
+
+    @staticmethod
+    def installCompatibleModSecurity():
+        """Install ModSecurity compatible with custom OpenLiteSpeed binary"""
+        try:
+            Upgrade.stdOut("Installing ModSecurity compatible with custom OpenLiteSpeed binary...", 0)
+
+            MODSEC_PATH = "/usr/local/lsws/modules/mod_security.so"
+
+            # Detect OS and select appropriate ModSecurity binary
+            binary_suffix = Upgrade.detectBinarySuffix()
+
+            if binary_suffix == 'rhel':
+                MODSEC_URL = "https://cyberpanel.net/mod_security-compatible-rhel.so"
+                EXPECTED_SHA256 = "db580afc431fda40d46bdae2249ac74690d9175ff6d8b1843f2837d86f8d602f"
+                EXPECTED_MD5 = "1efa1e442fe8eedf4705584ac194fc95"
+            else:  # ubuntu
+                MODSEC_URL = "https://cyberpanel.net/mod_security-compatible-ubuntu.so"
+                EXPECTED_SHA256 = "115971fcd44b74bc7c7b097b9cec33ddcfb0fb07bb9b562ec9f4f0691c388a6b"
+                EXPECTED_MD5 = "c3987c41182355c1290530b6553658db"
+
+            # Download to temp location
+            tmp_modsec = "/tmp/mod_security_custom.so"
+
+            Upgrade.stdOut(f"Downloading compatible ModSecurity for {binary_suffix}...", 0)
+            command = f'wget -q --show-progress {MODSEC_URL} -O {tmp_modsec}'
+            result = subprocess.call(shlex.split(command))
+
+            if result != 0 or not os.path.exists(tmp_modsec):
+                Upgrade.stdOut("ERROR: Failed to download ModSecurity", 0)
+                return False
+
+            # Verify checksum
+            Upgrade.stdOut("Verifying checksum...", 0)
+            result = subprocess.run(f'sha256sum {tmp_modsec}', shell=True, capture_output=True, text=True)
+            actual_sha256 = result.stdout.split()[0]
+
+            if actual_sha256 != EXPECTED_SHA256:
+                Upgrade.stdOut(f"ERROR: Checksum verification failed", 0)
+                Upgrade.stdOut(f"  Expected: {EXPECTED_SHA256}", 0)
+                Upgrade.stdOut(f"  Got: {actual_sha256}", 0)
+                os.remove(tmp_modsec)
+                return False
+
+            Upgrade.stdOut("Checksum verified successfully", 0)
+
+            # Backup existing ModSecurity if present
+            if os.path.exists(MODSEC_PATH):
+                backup_path = f"{MODSEC_PATH}.backup.{int(time.time())}"
+                shutil.copy2(MODSEC_PATH, backup_path)
+                Upgrade.stdOut(f"Backed up existing ModSecurity to: {backup_path}", 0)
+
+            # Stop OpenLiteSpeed
+            Upgrade.stdOut("Stopping OpenLiteSpeed...", 0)
+            subprocess.run(['/usr/local/lsws/bin/lswsctrl', 'stop'], timeout=30)
+            time.sleep(2)
+
+            # Install compatible ModSecurity
+            os.makedirs(os.path.dirname(MODSEC_PATH), exist_ok=True)
+            shutil.copy2(tmp_modsec, MODSEC_PATH)
+            os.chmod(MODSEC_PATH, 0o755)
+            os.remove(tmp_modsec)
+
+            Upgrade.stdOut("Compatible ModSecurity installed successfully", 0)
+
+            # Start OpenLiteSpeed
+            Upgrade.stdOut("Starting OpenLiteSpeed...", 0)
+            subprocess.run(['/usr/local/lsws/bin/lswsctrl', 'start'], timeout=30)
+
+            Upgrade.stdOut("✓ ModSecurity updated to compatible version", 0)
+            return True
+
+        except subprocess.TimeoutExpired:
+            Upgrade.stdOut("ERROR: Timeout during OpenLiteSpeed restart", 0)
+            return False
+        except Exception as msg:
+            Upgrade.stdOut(f"ERROR: ModSecurity installation failed: {msg}", 0)
+            return False
+
+    @staticmethod
+    def handleModSecurityCompatibility():
+        """Check and update ModSecurity if custom OLS binary is installed"""
+        try:
+            MODSEC_PATH = "/usr/local/lsws/modules/mod_security.so"
+
+            # Check if ModSecurity is installed
+            if not os.path.exists(MODSEC_PATH):
+                Upgrade.stdOut("ModSecurity not installed, skipping compatibility check", 0)
+                return True
+
+            # Check if custom OLS binary is installed
+            if not Upgrade.isCustomOLSBinaryInstalled():
+                Upgrade.stdOut("Stock OLS binary detected, ModSecurity compatibility check not needed", 0)
+                return True
+
+            Upgrade.stdOut("=" * 50, 0)
+            Upgrade.stdOut("Detected ModSecurity with custom OpenLiteSpeed binary", 0)
+            Upgrade.stdOut("Updating to ABI-compatible ModSecurity version...", 0)
+            Upgrade.stdOut("=" * 50, 0)
+
+            # Install compatible version
+            if Upgrade.installCompatibleModSecurity():
+                Upgrade.stdOut("ModSecurity compatibility update completed", 0)
+                return True
+            else:
+                Upgrade.stdOut("WARNING: ModSecurity compatibility update failed", 0)
+                Upgrade.stdOut("Server may experience crashes. Please contact support.", 0)
+                return False
+
+        except Exception as msg:
+            Upgrade.stdOut(f"ERROR in ModSecurity compatibility check: {msg}", 0)
+            return False
+
+    @staticmethod
     def configureCustomModule():
         """Configure CyberPanel module in OpenLiteSpeed config"""
         try:
@@ -4419,6 +4554,9 @@ pm.max_spare_servers = 3
             if Upgrade.installCustomOLSBinaries():
                 # Configure the custom module
                 Upgrade.configureCustomModule()
+
+                # Check and update ModSecurity compatibility if needed
+                Upgrade.handleModSecurityCompatibility()
 
                 # Restart OpenLiteSpeed to apply changes
                 Upgrade.stdOut("Restarting OpenLiteSpeed...", 0)
