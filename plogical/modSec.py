@@ -44,25 +44,35 @@ class modSec:
 
     @staticmethod
     def detectBinarySuffix():
-        """Detect which binary suffix to use based on OS distribution"""
+        """Detect which binary suffix to use based on OS distribution
+        Returns 'ubuntu' for Ubuntu/Debian systems
+        Returns 'rhel8' for RHEL/AlmaLinux/Rocky 8.x systems
+        Returns 'rhel9' for RHEL/AlmaLinux/Rocky 9.x systems
+        """
         try:
-            # Check if we're on RHEL/CentOS/AlmaLinux 8+ (uses libcrypt.so.2)
+            # Check if we're on RHEL/CentOS/AlmaLinux (check version)
             if os.path.exists('/etc/os-release'):
                 with open('/etc/os-release', 'r') as f:
                     os_release = f.read().lower()
 
-                # AlmaLinux 9+, Rocky 9+, RHEL 9+, CentOS Stream 9+
-                if any(x in os_release for x in ['almalinux', 'rocky', 'rhel']) and 'version="9' in os_release:
-                    return 'rhel'
-                elif 'centos stream 9' in os_release:
-                    return 'rhel'
+                # Check for RHEL-based distributions
+                if any(x in os_release for x in ['almalinux', 'rocky', 'rhel', 'centos stream']):
+                    # Extract version number
+                    for line in os_release.split('\n'):
+                        if 'version_id' in line:
+                            version = line.split('=')[1].strip('"').split('.')[0]
+                            if version == '9':
+                                return 'rhel9'
+                            elif version == '8':
+                                return 'rhel8'
 
-            # Check CentOS/RHEL path
+            # Check CentOS/RHEL path (legacy method)
             if os.path.exists('/etc/redhat-release'):
                 data = open('/etc/redhat-release', 'r').read()
-                # CentOS/AlmaLinux/Rocky 8+ → rhel suffix
-                if 'release 8' in data or 'release 9' in data:
-                    return 'rhel'
+                if 'release 9' in data:
+                    return 'rhel9'
+                elif 'release 8' in data:
+                    return 'rhel8'
 
             # Default to ubuntu
             return 'ubuntu'
@@ -84,12 +94,16 @@ class modSec:
 
             # Detect OS and select appropriate ModSecurity binary
             binary_suffix = modSec.detectBinarySuffix()
+            BASE_URL = "https://cyberpanel.net/binaries"
 
-            if binary_suffix == 'rhel':
-                MODSEC_URL = "https://cyberpanel.net/mod_security-compatible-rhel.so"
+            if binary_suffix == 'rhel8':
+                MODSEC_URL = f"{BASE_URL}/rhel8/mod_security-compatible-rhel8.so"
+                EXPECTED_SHA256 = "8c769dfb42711851ec539e9b6ea649616c14b0e85a53eb18755d200ce29bc442"
+            elif binary_suffix == 'rhel9':
+                MODSEC_URL = f"{BASE_URL}/rhel9/mod_security-compatible-rhel.so"
                 EXPECTED_SHA256 = "db580afc431fda40d46bdae2249ac74690d9175ff6d8b1843f2837d86f8d602f"
             else:  # ubuntu
-                MODSEC_URL = "https://cyberpanel.net/mod_security-compatible-ubuntu.so"
+                MODSEC_URL = f"{BASE_URL}/ubuntu/mod_security-compatible-ubuntu.so"
                 EXPECTED_SHA256 = "115971fcd44b74bc7c7b097b9cec33ddcfb0fb07bb9b562ec9f4f0691c388a6b"
 
             # Download to temp location

@@ -226,18 +226,33 @@ class InstallCyberPanel:
 
     def detectBinarySuffix(self):
         """Detect which binary suffix to use based on OS distribution
-        Returns 'ubuntu' for Ubuntu/Debian systems with libcrypt.so.1
-        Returns 'rhel' for RHEL/AlmaLinux/Rocky systems with libcrypt.so.2
+        Returns 'ubuntu' for Ubuntu/Debian systems
+        Returns 'rhel8' for RHEL/AlmaLinux/Rocky 8.x systems
+        Returns 'rhel9' for RHEL/AlmaLinux/Rocky 9.x systems
         """
         try:
             # Ubuntu/Debian → ubuntu suffix
             if self.distro == ubuntu:
                 return 'ubuntu'
 
-            # CentOS 8+/AlmaLinux/Rocky/OpenEuler → rhel suffix
-            # These systems use libcrypt.so.2 and GLIBC 2.34+
+            # CentOS 8+/AlmaLinux/Rocky/OpenEuler → detect version
             elif self.distro == cent8 or self.distro == openeuler:
-                return 'rhel'
+                # Read /etc/os-release to get the version
+                if os.path.exists('/etc/os-release'):
+                    with open('/etc/os-release', 'r') as f:
+                        os_release = f.read().lower()
+
+                    # Extract version number
+                    for line in os_release.split('\n'):
+                        if 'version_id' in line:
+                            version = line.split('=')[1].strip('"').split('.')[0]
+                            if version == '9':
+                                return 'rhel9'
+                            elif version == '8':
+                                return 'rhel8'
+
+                # Default to rhel9 if version detection fails
+                return 'rhel9'
 
             # CentOS 7 → ubuntu suffix (uses libcrypt.so.1)
             elif self.distro == centos:
@@ -371,10 +386,20 @@ class InstallCyberPanel:
             binary_suffix = self.detectBinarySuffix()
             InstallCyberPanel.stdOut(f"Detected OS type: using '{binary_suffix}' binaries", 1)
 
-            # URLs for custom binaries with OS-specific suffix
-            BASE_URL = "https://cyberpanel.net"
-            OLS_BINARY_URL = f"{BASE_URL}/openlitespeed-phpconfig-x86_64-{binary_suffix}"
-            MODULE_URL = f"{BASE_URL}/cyberpanel_ols_x86_64_{binary_suffix}.so"
+            # URLs for custom binaries with OS-specific paths
+            BASE_URL = "https://cyberpanel.net/binaries"
+
+            # Set URLs based on OS type
+            if binary_suffix == 'rhel8':
+                OLS_BINARY_URL = f"{BASE_URL}/rhel8/openlitespeed-phpconfig-x86_64-rhel8"
+                MODULE_URL = f"{BASE_URL}/rhel8/cyberpanel_ols_x86_64_rhel8.so"
+            elif binary_suffix == 'rhel9':
+                OLS_BINARY_URL = f"{BASE_URL}/rhel9/openlitespeed-phpconfig-x86_64"
+                MODULE_URL = f"{BASE_URL}/rhel9/cyberpanel_ols_x86_64.so"
+            else:  # ubuntu
+                OLS_BINARY_URL = f"{BASE_URL}/ubuntu/openlitespeed-phpconfig-x86_64-ubuntu"
+                MODULE_URL = f"{BASE_URL}/ubuntu/cyberpanel_ols_x86_64_ubuntu.so"
+
             OLS_BINARY_PATH = "/usr/local/lsws/bin/openlitespeed"
             MODULE_PATH = "/usr/local/lsws/modules/cyberpanel_ols.so"
 
