@@ -620,6 +620,471 @@ class Upgrade:
             pass
 
     @staticmethod
+    def detectArchitecture():
+        """Detect system architecture - custom binaries only for x86_64"""
+        try:
+            import platform
+            arch = platform.machine()
+            return arch == "x86_64"
+        except Exception as msg:
+            Upgrade.stdOut(str(msg) + " [detectArchitecture]", 0)
+            return False
+
+    @staticmethod
+    def detectBinarySuffix():
+        """Detect which binary suffix to use based on OS distribution
+        Returns 'ubuntu' for Ubuntu/Debian systems
+        Returns 'rhel8' for RHEL/AlmaLinux/Rocky 8.x systems
+        Returns 'rhel9' for RHEL/AlmaLinux/Rocky 9.x systems
+        """
+        try:
+            # Check if we're on RHEL/CentOS/AlmaLinux or Ubuntu/Debian
+            if os.path.exists('/etc/os-release'):
+                with open('/etc/os-release', 'r') as f:
+                    os_release = f.read().lower()
+
+                # Check for Ubuntu/Debian FIRST
+                if 'ubuntu' in os_release or 'debian' in os_release:
+                    return 'ubuntu'
+
+                # Check for RHEL-based distributions
+                if any(x in os_release for x in ['almalinux', 'rocky', 'rhel', 'centos stream']):
+                    # Extract version number
+                    for line in os_release.split('\n'):
+                        if 'version_id' in line:
+                            version = line.split('=')[1].strip('"').split('.')[0]
+                            if version == '9':
+                                return 'rhel9'
+                            elif version == '8':
+                                return 'rhel8'
+
+            # Check CentOS/RHEL path (legacy method)
+            if os.path.exists(Upgrade.CentOSPath):
+                data = open(Upgrade.CentOSPath, 'r').read()
+                if 'release 9' in data:
+                    return 'rhel9'
+                elif 'release 8' in data:
+                    return 'rhel8'
+                # CentOS 7 → ubuntu suffix (uses libcrypt.so.1)
+                else:
+                    return 'ubuntu'
+
+            # OpenEuler → rhel9 suffix (assuming latest version)
+            if os.path.exists(Upgrade.openEulerPath):
+                return 'rhel9'
+
+            # Ubuntu/Debian → ubuntu suffix (default for unknown)
+            return 'ubuntu'
+
+        except Exception as msg:
+            Upgrade.stdOut(f"Error detecting OS: {msg}, defaulting to Ubuntu binaries", 0)
+            return 'ubuntu'
+
+    @staticmethod
+    def downloadCustomBinary(url, destination):
+        """Download custom binary file"""
+        try:
+            Upgrade.stdOut(f"Downloading {os.path.basename(destination)}...", 0)
+
+            # Use wget for better progress display
+            command = f'wget -q --show-progress {url} -O {destination}'
+            res = subprocess.call(shlex.split(command))
+
+            # Check if file was downloaded successfully by verifying it exists and has reasonable size
+            if os.path.exists(destination):
+                file_size = os.path.getsize(destination)
+                # Verify file size is reasonable (at least 10KB to avoid error pages/empty files)
+                if file_size > 10240:  # 10KB
+                    if file_size > 1048576:  # 1MB
+                        Upgrade.stdOut(f"Downloaded successfully ({file_size / (1024*1024):.2f} MB)", 0)
+                    else:
+                        Upgrade.stdOut(f"Downloaded successfully ({file_size / 1024:.2f} KB)", 0)
+                    return True
+                else:
+                    Upgrade.stdOut(f"ERROR: Downloaded file too small ({file_size} bytes)", 0)
+                    return False
+            else:
+                Upgrade.stdOut("ERROR: Download failed - file not found", 0)
+                return False
+
+        except Exception as msg:
+            Upgrade.stdOut(f"ERROR: {msg} [downloadCustomBinary]", 0)
+            return False
+
+    @staticmethod
+    def verifyCustomBinary(binary_path):
+        """Verify custom binary has correct dependencies and can run"""
+        try:
+            Upgrade.stdOut("Verifying custom binary compatibility...", 0)
+
+            # Check library dependencies
+            command = f'ldd {binary_path}'
+            result = subprocess.run(command, shell=True, capture_output=True, text=True)
+
+            if result.returncode != 0:
+                Upgrade.stdOut("ERROR: Failed to check binary dependencies", 0)
+                return False
+
+            # Check for missing libraries
+            if 'not found' in result.stdout:
+                Upgrade.stdOut("ERROR: Binary has missing library dependencies:", 0)
+                for line in result.stdout.split('\n'):
+                    if 'not found' in line:
+                        Upgrade.stdOut(f"  {line.strip()}", 0)
+                return False
+
+            # Try to run the binary with -v to check if it can execute
+            command = f'{binary_path} -v'
+            result = subprocess.run(command, shell=True, capture_output=True, text=True, timeout=5)
+
+            if result.returncode != 0:
+                Upgrade.stdOut("ERROR: Binary failed to execute", 0)
+                if result.stderr:
+                    Upgrade.stdOut(f"  Error: {result.stderr.strip()}", 0)
+                return False
+
+            Upgrade.stdOut("Binary verification successful", 0)
+            return True
+
+        except subprocess.TimeoutExpired:
+            Upgrade.stdOut("ERROR: Binary verification timed out", 0)
+            return False
+        except Exception as msg:
+            Upgrade.stdOut(f"ERROR: Verification failed: {msg}", 0)
+            return False
+
+    @staticmethod
+    def rollbackCustomBinary(backup_dir, binary_path, module_path):
+        """Rollback to original binary if custom binary fails"""
+        try:
+            Upgrade.stdOut("Rolling back to original binary...", 0)
+
+            backup_binary = f"{backup_dir}/openlitespeed.backup"
+
+            # Restore original binary if backup exists
+            if os.path.exists(backup_binary):
+                shutil.copy2(backup_binary, binary_path)
+                os.chmod(binary_path, 0o755)
+                Upgrade.stdOut("Original binary restored successfully", 0)
+            else:
+                Upgrade.stdOut("WARNING: No backup found, cannot restore", 0)
+
+            # Remove failed custom module
+            if os.path.exists(module_path):
+                os.remove(module_path)
+                Upgrade.stdOut("Custom module removed", 0)
+
+            Upgrade.stdOut("Rollback completed", 0)
+            return True
+
+        except Exception as msg:
+            Upgrade.stdOut(f"ERROR: Rollback failed: {msg}", 0)
+            return False
+
+    @staticmethod
+    def installCustomOLSBinaries():
+        """Install custom OpenLiteSpeed binaries with PHP config support"""
+        try:
+            Upgrade.stdOut("Installing Custom OpenLiteSpeed Binaries", 0)
+            Upgrade.stdOut("=" * 50, 0)
+
+            # Check architecture
+            if not Upgrade.detectArchitecture():
+                Upgrade.stdOut("WARNING: Custom binaries only available for x86_64", 0)
+                Upgrade.stdOut("Skipping custom binary installation", 0)
+                Upgrade.stdOut("Standard OLS will be used", 0)
+                return True  # Not a failure, just skip
+
+            # Detect OS and select appropriate binary suffix
+            binary_suffix = Upgrade.detectBinarySuffix()
+            Upgrade.stdOut(f"Detected OS type: using '{binary_suffix}' binaries", 0)
+
+            # URLs for custom binaries with OS-specific paths
+            BASE_URL = "https://cyberpanel.net/binaries"
+
+            # Set URLs based on OS type
+            if binary_suffix == 'rhel8':
+                OLS_BINARY_URL = f"{BASE_URL}/rhel8/openlitespeed-phpconfig-x86_64-rhel8"
+                MODULE_URL = f"{BASE_URL}/rhel8/cyberpanel_ols_x86_64_rhel8.so"
+            elif binary_suffix == 'rhel9':
+                OLS_BINARY_URL = f"{BASE_URL}/rhel9/openlitespeed-phpconfig-x86_64-rhel"
+                MODULE_URL = f"{BASE_URL}/rhel9/cyberpanel_ols_x86_64_rhel.so"
+            else:  # ubuntu
+                OLS_BINARY_URL = f"{BASE_URL}/ubuntu/openlitespeed-phpconfig-x86_64-ubuntu"
+                MODULE_URL = f"{BASE_URL}/ubuntu/cyberpanel_ols_x86_64_ubuntu.so"
+
+            OLS_BINARY_PATH = "/usr/local/lsws/bin/openlitespeed"
+            MODULE_PATH = "/usr/local/lsws/modules/cyberpanel_ols.so"
+
+            # Create backup
+            from datetime import datetime
+            timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+            backup_dir = f"/usr/local/lsws/backup-{timestamp}"
+
+            try:
+                os.makedirs(backup_dir, exist_ok=True)
+                if os.path.exists(OLS_BINARY_PATH):
+                    shutil.copy2(OLS_BINARY_PATH, f"{backup_dir}/openlitespeed.backup")
+                    Upgrade.stdOut(f"Backup created at: {backup_dir}", 0)
+            except Exception as e:
+                Upgrade.stdOut(f"WARNING: Could not create backup: {e}", 0)
+
+            # Download binaries to temp location
+            tmp_binary = "/tmp/openlitespeed-custom"
+            tmp_module = "/tmp/cyberpanel_ols.so"
+
+            Upgrade.stdOut("Downloading custom binaries...", 0)
+
+            # Download OpenLiteSpeed binary
+            if not Upgrade.downloadCustomBinary(OLS_BINARY_URL, tmp_binary):
+                Upgrade.stdOut("ERROR: Failed to download OLS binary", 0)
+                Upgrade.stdOut("Continuing with standard OLS", 0)
+                return True  # Not fatal, continue with standard OLS
+
+            # Download module
+            if not Upgrade.downloadCustomBinary(MODULE_URL, tmp_module):
+                Upgrade.stdOut("ERROR: Failed to download module", 0)
+                Upgrade.stdOut("Continuing with standard OLS", 0)
+                return True  # Not fatal, continue with standard OLS
+
+            # Install OpenLiteSpeed binary
+            Upgrade.stdOut("Installing custom binaries...", 0)
+
+            try:
+                shutil.move(tmp_binary, OLS_BINARY_PATH)
+                os.chmod(OLS_BINARY_PATH, 0o755)
+                Upgrade.stdOut("Installed OpenLiteSpeed binary", 0)
+            except Exception as e:
+                Upgrade.stdOut(f"ERROR: Failed to install binary: {e}", 0)
+                return False
+
+            # Install module
+            try:
+                os.makedirs(os.path.dirname(MODULE_PATH), exist_ok=True)
+                shutil.move(tmp_module, MODULE_PATH)
+                os.chmod(MODULE_PATH, 0o644)
+                Upgrade.stdOut("Installed CyberPanel module", 0)
+            except Exception as e:
+                Upgrade.stdOut(f"ERROR: Failed to install module: {e}", 0)
+                return False
+
+            # Verify installation files exist
+            if not (os.path.exists(OLS_BINARY_PATH) and os.path.exists(MODULE_PATH)):
+                Upgrade.stdOut("ERROR: Installation verification failed - files not found", 0)
+                return False
+
+            # Verify binary compatibility
+            if not Upgrade.verifyCustomBinary(OLS_BINARY_PATH):
+                Upgrade.stdOut("ERROR: Custom binary verification failed", 0)
+                Upgrade.stdOut("This usually means wrong binary type for your OS", 0)
+
+                # Rollback to original binary
+                if os.path.exists(backup_dir):
+                    Upgrade.rollbackCustomBinary(backup_dir, OLS_BINARY_PATH, MODULE_PATH)
+                    Upgrade.stdOut("Continuing with standard OLS", 0)
+                else:
+                    Upgrade.stdOut("WARNING: Cannot rollback, no backup found", 0)
+
+                return True  # Non-fatal, continue with standard OLS
+
+            # Success!
+            Upgrade.stdOut("=" * 50, 0)
+            Upgrade.stdOut("Custom Binaries Installed Successfully", 0)
+            Upgrade.stdOut("Features enabled:", 0)
+            Upgrade.stdOut("  - Apache-style .htaccess support", 0)
+            Upgrade.stdOut("  - php_value/php_flag directives", 0)
+            Upgrade.stdOut("  - Enhanced header control", 0)
+            Upgrade.stdOut(f"Backup: {backup_dir}", 0)
+            Upgrade.stdOut("=" * 50, 0)
+            return True
+
+        except Exception as msg:
+            Upgrade.stdOut(f"ERROR: {msg} [installCustomOLSBinaries]", 0)
+            Upgrade.stdOut("Continuing with standard OLS", 0)
+            return True  # Non-fatal error, continue
+
+    @staticmethod
+    def isCustomOLSBinaryInstalled():
+        """Detect if custom OpenLiteSpeed binary is installed"""
+        try:
+            OLS_BINARY_PATH = "/usr/local/lsws/bin/openlitespeed"
+
+            if not os.path.exists(OLS_BINARY_PATH):
+                return False
+
+            # Check for PHPConfig function signature in binary
+            command = f'strings {OLS_BINARY_PATH}'
+            result = subprocess.run(command, shell=True, capture_output=True, text=True, timeout=10)
+
+            if result.returncode == 0:
+                # Look for custom binary markers
+                return 'set_php_config_value' in result.stdout or 'PHPConfig LSIAPI' in result.stdout
+
+            return False
+
+        except Exception as msg:
+            Upgrade.stdOut(f"WARNING: Could not detect OLS binary type: {msg}", 0)
+            return False
+
+    @staticmethod
+    def installCompatibleModSecurity():
+        """Install ModSecurity compatible with custom OpenLiteSpeed binary"""
+        try:
+            Upgrade.stdOut("Installing ModSecurity compatible with custom OpenLiteSpeed binary...", 0)
+
+            MODSEC_PATH = "/usr/local/lsws/modules/mod_security.so"
+
+            # Detect OS and select appropriate ModSecurity binary
+            binary_suffix = Upgrade.detectBinarySuffix()
+            BASE_URL = "https://cyberpanel.net/binaries"
+
+            if binary_suffix == 'rhel8':
+                MODSEC_URL = f"{BASE_URL}/rhel8/mod_security-compatible-rhel8.so"
+                EXPECTED_SHA256 = "8c769dfb42711851ec539e9b6ea649616c14b0e85a53eb18755d200ce29bc442"
+                EXPECTED_MD5 = "b7b9eb20de42b7f8c9c8f4c7a019d6ff"
+            elif binary_suffix == 'rhel9':
+                MODSEC_URL = f"{BASE_URL}/rhel9/mod_security-compatible-rhel.so"
+                EXPECTED_SHA256 = "db580afc431fda40d46bdae2249ac74690d9175ff6d8b1843f2837d86f8d602f"
+                EXPECTED_MD5 = "1efa1e442fe8eedf4705584ac194fc95"
+            else:  # ubuntu
+                MODSEC_URL = f"{BASE_URL}/ubuntu/mod_security-compatible-ubuntu.so"
+                EXPECTED_SHA256 = "115971fcd44b74bc7c7b097b9cec33ddcfb0fb07bb9b562ec9f4f0691c388a6b"
+                EXPECTED_MD5 = "c3987c41182355c1290530b6553658db"
+
+            # Download to temp location
+            tmp_modsec = "/tmp/mod_security_custom.so"
+
+            Upgrade.stdOut(f"Downloading compatible ModSecurity for {binary_suffix}...", 0)
+            command = f'wget -q --show-progress {MODSEC_URL} -O {tmp_modsec}'
+            result = subprocess.call(shlex.split(command))
+
+            if result != 0 or not os.path.exists(tmp_modsec):
+                Upgrade.stdOut("ERROR: Failed to download ModSecurity", 0)
+                return False
+
+            # Verify checksum
+            Upgrade.stdOut("Verifying checksum...", 0)
+            result = subprocess.run(f'sha256sum {tmp_modsec}', shell=True, capture_output=True, text=True)
+            actual_sha256 = result.stdout.split()[0]
+
+            if actual_sha256 != EXPECTED_SHA256:
+                Upgrade.stdOut(f"ERROR: Checksum verification failed", 0)
+                Upgrade.stdOut(f"  Expected: {EXPECTED_SHA256}", 0)
+                Upgrade.stdOut(f"  Got: {actual_sha256}", 0)
+                os.remove(tmp_modsec)
+                return False
+
+            Upgrade.stdOut("Checksum verified successfully", 0)
+
+            # Backup existing ModSecurity if present
+            if os.path.exists(MODSEC_PATH):
+                backup_path = f"{MODSEC_PATH}.backup.{int(time.time())}"
+                shutil.copy2(MODSEC_PATH, backup_path)
+                Upgrade.stdOut(f"Backed up existing ModSecurity to: {backup_path}", 0)
+
+            # Stop OpenLiteSpeed
+            Upgrade.stdOut("Stopping OpenLiteSpeed...", 0)
+            subprocess.run(['/usr/local/lsws/bin/lswsctrl', 'stop'], timeout=30)
+            time.sleep(2)
+
+            # Install compatible ModSecurity
+            os.makedirs(os.path.dirname(MODSEC_PATH), exist_ok=True)
+            shutil.copy2(tmp_modsec, MODSEC_PATH)
+            os.chmod(MODSEC_PATH, 0o755)
+            os.remove(tmp_modsec)
+
+            Upgrade.stdOut("Compatible ModSecurity installed successfully", 0)
+
+            # Start OpenLiteSpeed
+            Upgrade.stdOut("Starting OpenLiteSpeed...", 0)
+            subprocess.run(['/usr/local/lsws/bin/lswsctrl', 'start'], timeout=30)
+
+            Upgrade.stdOut("✓ ModSecurity updated to compatible version", 0)
+            return True
+
+        except subprocess.TimeoutExpired:
+            Upgrade.stdOut("ERROR: Timeout during OpenLiteSpeed restart", 0)
+            return False
+        except Exception as msg:
+            Upgrade.stdOut(f"ERROR: ModSecurity installation failed: {msg}", 0)
+            return False
+
+    @staticmethod
+    def handleModSecurityCompatibility():
+        """Check and update ModSecurity if custom OLS binary is installed"""
+        try:
+            MODSEC_PATH = "/usr/local/lsws/modules/mod_security.so"
+
+            # Check if ModSecurity is installed
+            if not os.path.exists(MODSEC_PATH):
+                Upgrade.stdOut("ModSecurity not installed, skipping compatibility check", 0)
+                return True
+
+            # Check if custom OLS binary is installed
+            if not Upgrade.isCustomOLSBinaryInstalled():
+                Upgrade.stdOut("Stock OLS binary detected, ModSecurity compatibility check not needed", 0)
+                return True
+
+            Upgrade.stdOut("=" * 50, 0)
+            Upgrade.stdOut("Detected ModSecurity with custom OpenLiteSpeed binary", 0)
+            Upgrade.stdOut("Updating to ABI-compatible ModSecurity version...", 0)
+            Upgrade.stdOut("=" * 50, 0)
+
+            # Install compatible version
+            if Upgrade.installCompatibleModSecurity():
+                Upgrade.stdOut("ModSecurity compatibility update completed", 0)
+                return True
+            else:
+                Upgrade.stdOut("WARNING: ModSecurity compatibility update failed", 0)
+                Upgrade.stdOut("Server may experience crashes. Please contact support.", 0)
+                return False
+
+        except Exception as msg:
+            Upgrade.stdOut(f"ERROR in ModSecurity compatibility check: {msg}", 0)
+            return False
+
+    @staticmethod
+    def configureCustomModule():
+        """Configure CyberPanel module in OpenLiteSpeed config"""
+        try:
+            Upgrade.stdOut("Configuring CyberPanel module...", 0)
+
+            CONFIG_FILE = "/usr/local/lsws/conf/httpd_config.conf"
+
+            if not os.path.exists(CONFIG_FILE):
+                Upgrade.stdOut("WARNING: Config file not found", 0)
+                Upgrade.stdOut("Module will be auto-loaded", 0)
+                return True
+
+            # Check if module is already configured
+            with open(CONFIG_FILE, 'r') as f:
+                content = f.read()
+                if 'cyberpanel_ols' in content:
+                    Upgrade.stdOut("Module already configured", 0)
+                    return True
+
+            # Add module configuration
+            module_config = """
+module cyberpanel_ols {
+  ls_enabled          1
+}
+"""
+            # Backup config
+            shutil.copy2(CONFIG_FILE, f"{CONFIG_FILE}.backup")
+
+            # Append module config
+            with open(CONFIG_FILE, 'a') as f:
+                f.write(module_config)
+
+            Upgrade.stdOut("Module configured successfully", 0)
+            return True
+
+        except Exception as msg:
+            Upgrade.stdOut(f"WARNING: Module configuration failed: {msg}", 0)
+            Upgrade.stdOut("Module may still work via auto-load", 0)
+            return True  # Non-fatal
+
+    @staticmethod
     def download_install_phpmyadmin():
         try:
             cwd = os.getcwd()
@@ -4287,7 +4752,7 @@ pm.max_spare_servers = 3
         ## Add LSPHP7.4 TO LSWS Ent configs
 
         if not os.path.exists('/usr/local/lsws/bin/openlitespeed'):
-
+            # This is Enterprise LSWS
             if os.path.exists('httpd_config.xml'):
                 os.remove('httpd_config.xml')
 
@@ -4295,6 +4760,25 @@ pm.max_spare_servers = 3
             Upgrade.executioner(command, command, 0)
             # os.remove('/usr/local/lsws/conf/httpd_config.xml')
             # shutil.copy('httpd_config.xml', '/usr/local/lsws/conf/httpd_config.xml')
+        else:
+            # This is OpenLiteSpeed - install/upgrade custom binaries
+            Upgrade.stdOut("Detected OpenLiteSpeed installation", 0)
+            Upgrade.stdOut("Installing/upgrading custom binaries with .htaccess PHP config support...", 0)
+
+            # Install custom binaries
+            if Upgrade.installCustomOLSBinaries():
+                # Configure the custom module
+                Upgrade.configureCustomModule()
+
+                # Check and update ModSecurity compatibility if needed
+                Upgrade.handleModSecurityCompatibility()
+
+                # Restart OpenLiteSpeed to apply changes
+                Upgrade.stdOut("Restarting OpenLiteSpeed...", 0)
+                command = '/usr/local/lsws/bin/lswsctrl restart'
+                Upgrade.executioner(command, 'Restart OpenLiteSpeed', 0)
+            else:
+                Upgrade.stdOut("Custom binary installation failed, continuing with upgrade...", 0)
 
         Upgrade.updateRepoURL()
 

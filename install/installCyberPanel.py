@@ -270,9 +270,345 @@ class InstallCyberPanel:
         # Fallback to known latest version
         return "6.3.4"
 
+    def detectArchitecture(self):
+        """Detect system architecture - custom binaries only for x86_64"""
+        try:
+            import platform
+            arch = platform.machine()
+            return arch == "x86_64"
+        except Exception as msg:
+            logging.InstallLog.writeToFile(str(msg) + " [detectArchitecture]")
+            return False
+
+    def detectBinarySuffix(self):
+        """Detect which binary suffix to use based on OS distribution
+        Returns 'ubuntu' for Ubuntu/Debian systems
+        Returns 'rhel8' for RHEL/AlmaLinux/Rocky 8.x systems
+        Returns 'rhel9' for RHEL/AlmaLinux/Rocky 9.x systems
+        """
+        try:
+            # Check /etc/os-release first for more accurate detection
+            if os.path.exists('/etc/os-release'):
+                with open('/etc/os-release', 'r') as f:
+                    os_release = f.read().lower()
+
+                # Check for Ubuntu/Debian FIRST
+                if 'ubuntu' in os_release or 'debian' in os_release:
+                    return 'ubuntu'
+
+                # Check for RHEL-based distributions and extract version
+                if any(x in os_release for x in ['almalinux', 'rocky', 'rhel', 'centos stream']):
+                    # Extract version number
+                    for line in os_release.split('\n'):
+                        if 'version_id' in line:
+                            version = line.split('=')[1].strip('"').split('.')[0]
+                            if version == '9':
+                                return 'rhel9'
+                            elif version == '8':
+                                return 'rhel8'
+                    # Default to rhel9 if version extraction fails
+                    return 'rhel9'
+
+            # Fallback: Use distro variable
+            # Ubuntu/Debian → ubuntu suffix
+            if self.distro == ubuntu:
+                return 'ubuntu'
+
+            # CentOS 8+/AlmaLinux/Rocky/OpenEuler → rhel9 by default
+            elif self.distro == cent8 or self.distro == openeuler:
+                return 'rhel9'
+
+            # CentOS 7 → ubuntu suffix (uses libcrypt.so.1)
+            elif self.distro == centos:
+                return 'ubuntu'
+
+            # Default to ubuntu for unknown distros
+            else:
+                InstallCyberPanel.stdOut("Unknown OS distribution, defaulting to Ubuntu binaries", 1)
+                return 'ubuntu'
+
+        except Exception as msg:
+            logging.InstallLog.writeToFile(str(msg) + " [detectBinarySuffix]")
+            InstallCyberPanel.stdOut("Error detecting OS, defaulting to Ubuntu binaries", 1)
+            return 'ubuntu'
+
+    def downloadCustomBinary(self, url, destination):
+        """Download custom binary file"""
+        try:
+            InstallCyberPanel.stdOut(f"Downloading {os.path.basename(destination)}...", 1)
+
+            # Use wget for better progress display
+            command = f'wget -q --show-progress {url} -O {destination}'
+            install_utils.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
+
+            # Check if file was downloaded successfully by verifying it exists and has reasonable size
+            if os.path.exists(destination):
+                file_size = os.path.getsize(destination)
+                # Verify file size is reasonable (at least 10KB to avoid error pages/empty files)
+                if file_size > 10240:  # 10KB
+                    if file_size > 1048576:  # 1MB
+                        InstallCyberPanel.stdOut(f"Downloaded successfully ({file_size / (1024*1024):.2f} MB)", 1)
+                    else:
+                        InstallCyberPanel.stdOut(f"Downloaded successfully ({file_size / 1024:.2f} KB)", 1)
+                    return True
+                else:
+                    InstallCyberPanel.stdOut(f"ERROR: Downloaded file too small ({file_size} bytes)", 1)
+                    return False
+            else:
+                InstallCyberPanel.stdOut("ERROR: Download failed - file not found", 1)
+                return False
+
+        except Exception as msg:
+            logging.InstallLog.writeToFile(str(msg) + " [downloadCustomBinary]")
+            InstallCyberPanel.stdOut(f"ERROR: {msg}", 1)
+            return False
+
+    def verifyCustomBinary(self, binary_path):
+        """Verify custom binary has correct dependencies and can run"""
+        try:
+            InstallCyberPanel.stdOut("Verifying custom binary compatibility...", 1)
+
+            # Check library dependencies
+            command = f'ldd {binary_path}'
+            result = subprocess.run(command, shell=True, capture_output=True, text=True)
+
+            if result.returncode != 0:
+                InstallCyberPanel.stdOut("ERROR: Failed to check binary dependencies", 1)
+                return False
+
+            # Check for missing libraries
+            if 'not found' in result.stdout:
+                InstallCyberPanel.stdOut("ERROR: Binary has missing library dependencies:", 1)
+                for line in result.stdout.split('\n'):
+                    if 'not found' in line:
+                        InstallCyberPanel.stdOut(f"  {line.strip()}", 1)
+                return False
+
+            # Try to run the binary with -v to check if it can execute
+            command = f'{binary_path} -v'
+            result = subprocess.run(command, shell=True, capture_output=True, text=True, timeout=5)
+
+            if result.returncode != 0:
+                InstallCyberPanel.stdOut("ERROR: Binary failed to execute", 1)
+                if result.stderr:
+                    InstallCyberPanel.stdOut(f"  Error: {result.stderr.strip()}", 1)
+                return False
+
+            InstallCyberPanel.stdOut("Binary verification successful", 1)
+            return True
+
+        except subprocess.TimeoutExpired:
+            InstallCyberPanel.stdOut("ERROR: Binary verification timed out", 1)
+            return False
+        except Exception as msg:
+            logging.InstallLog.writeToFile(str(msg) + " [verifyCustomBinary]")
+            InstallCyberPanel.stdOut(f"ERROR: Verification failed: {msg}", 1)
+            return False
+
+    def rollbackCustomBinary(self, backup_dir, binary_path, module_path):
+        """Rollback to original binary if custom binary fails"""
+        try:
+            InstallCyberPanel.stdOut("Rolling back to original binary...", 1)
+
+            backup_binary = f"{backup_dir}/openlitespeed.backup"
+
+            # Restore original binary if backup exists
+            if os.path.exists(backup_binary):
+                shutil.copy2(backup_binary, binary_path)
+                os.chmod(binary_path, 0o755)
+                InstallCyberPanel.stdOut("Original binary restored successfully", 1)
+            else:
+                InstallCyberPanel.stdOut("WARNING: No backup found, cannot restore", 1)
+
+            # Remove failed custom module
+            if os.path.exists(module_path):
+                os.remove(module_path)
+                InstallCyberPanel.stdOut("Custom module removed", 1)
+
+            InstallCyberPanel.stdOut("Rollback completed", 1)
+            return True
+
+        except Exception as msg:
+            logging.InstallLog.writeToFile(str(msg) + " [rollbackCustomBinary]")
+            InstallCyberPanel.stdOut(f"ERROR: Rollback failed: {msg}", 1)
+            return False
+
+    def installCustomOLSBinaries(self):
+        """Install custom OpenLiteSpeed binaries with PHP config support"""
+        try:
+            InstallCyberPanel.stdOut("Installing Custom OpenLiteSpeed Binaries", 1)
+            InstallCyberPanel.stdOut("=" * 50, 1)
+
+            # Check architecture
+            if not self.detectArchitecture():
+                InstallCyberPanel.stdOut("WARNING: Custom binaries only available for x86_64", 1)
+                InstallCyberPanel.stdOut("Skipping custom binary installation", 1)
+                InstallCyberPanel.stdOut("Standard OLS will be used", 1)
+                return True  # Not a failure, just skip
+
+            # Detect OS and select appropriate binary suffix
+            binary_suffix = self.detectBinarySuffix()
+            InstallCyberPanel.stdOut(f"Detected OS type: using '{binary_suffix}' binaries", 1)
+
+            # URLs for custom binaries with OS-specific paths
+            BASE_URL = "https://cyberpanel.net/binaries"
+
+            # Set URLs based on OS type
+            if binary_suffix == 'rhel8':
+                OLS_BINARY_URL = f"{BASE_URL}/rhel8/openlitespeed-phpconfig-x86_64-rhel8"
+                MODULE_URL = f"{BASE_URL}/rhel8/cyberpanel_ols_x86_64_rhel8.so"
+            elif binary_suffix == 'rhel9':
+                OLS_BINARY_URL = f"{BASE_URL}/rhel9/openlitespeed-phpconfig-x86_64-rhel"
+                MODULE_URL = f"{BASE_URL}/rhel9/cyberpanel_ols_x86_64_rhel.so"
+            else:  # ubuntu
+                OLS_BINARY_URL = f"{BASE_URL}/ubuntu/openlitespeed-phpconfig-x86_64-ubuntu"
+                MODULE_URL = f"{BASE_URL}/ubuntu/cyberpanel_ols_x86_64_ubuntu.so"
+
+            OLS_BINARY_PATH = "/usr/local/lsws/bin/openlitespeed"
+            MODULE_PATH = "/usr/local/lsws/modules/cyberpanel_ols.so"
+
+            # Create backup
+            from datetime import datetime
+            timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+            backup_dir = f"/usr/local/lsws/backup-{timestamp}"
+
+            try:
+                os.makedirs(backup_dir, exist_ok=True)
+                if os.path.exists(OLS_BINARY_PATH):
+                    shutil.copy2(OLS_BINARY_PATH, f"{backup_dir}/openlitespeed.backup")
+                    InstallCyberPanel.stdOut(f"Backup created at: {backup_dir}", 1)
+            except Exception as e:
+                InstallCyberPanel.stdOut(f"WARNING: Could not create backup: {e}", 1)
+
+            # Download binaries to temp location
+            tmp_binary = "/tmp/openlitespeed-custom"
+            tmp_module = "/tmp/cyberpanel_ols.so"
+
+            InstallCyberPanel.stdOut("Downloading custom binaries...", 1)
+
+            # Download OpenLiteSpeed binary
+            if not self.downloadCustomBinary(OLS_BINARY_URL, tmp_binary):
+                InstallCyberPanel.stdOut("ERROR: Failed to download OLS binary", 1)
+                InstallCyberPanel.stdOut("Continuing with standard OLS", 1)
+                return True  # Not fatal, continue with standard OLS
+
+            # Download module
+            if not self.downloadCustomBinary(MODULE_URL, tmp_module):
+                InstallCyberPanel.stdOut("ERROR: Failed to download module", 1)
+                InstallCyberPanel.stdOut("Continuing with standard OLS", 1)
+                return True  # Not fatal, continue with standard OLS
+
+            # Install OpenLiteSpeed binary
+            InstallCyberPanel.stdOut("Installing custom binaries...", 1)
+
+            try:
+                shutil.move(tmp_binary, OLS_BINARY_PATH)
+                os.chmod(OLS_BINARY_PATH, 0o755)
+                InstallCyberPanel.stdOut("Installed OpenLiteSpeed binary", 1)
+            except Exception as e:
+                InstallCyberPanel.stdOut(f"ERROR: Failed to install binary: {e}", 1)
+                logging.InstallLog.writeToFile(str(e) + " [installCustomOLSBinaries - binary install]")
+                return False
+
+            # Install module
+            try:
+                os.makedirs(os.path.dirname(MODULE_PATH), exist_ok=True)
+                shutil.move(tmp_module, MODULE_PATH)
+                os.chmod(MODULE_PATH, 0o644)
+                InstallCyberPanel.stdOut("Installed CyberPanel module", 1)
+            except Exception as e:
+                InstallCyberPanel.stdOut(f"ERROR: Failed to install module: {e}", 1)
+                logging.InstallLog.writeToFile(str(e) + " [installCustomOLSBinaries - module install]")
+                return False
+
+            # Verify installation files exist
+            if not (os.path.exists(OLS_BINARY_PATH) and os.path.exists(MODULE_PATH)):
+                InstallCyberPanel.stdOut("ERROR: Installation verification failed - files not found", 1)
+                return False
+
+            # Verify binary compatibility
+            if not self.verifyCustomBinary(OLS_BINARY_PATH):
+                InstallCyberPanel.stdOut("ERROR: Custom binary verification failed", 1)
+                InstallCyberPanel.stdOut("This usually means wrong binary type for your OS", 1)
+
+                # Rollback to original binary
+                if os.path.exists(backup_dir):
+                    self.rollbackCustomBinary(backup_dir, OLS_BINARY_PATH, MODULE_PATH)
+                    InstallCyberPanel.stdOut("Continuing with standard OLS", 1)
+                else:
+                    InstallCyberPanel.stdOut("WARNING: Cannot rollback, no backup found", 1)
+
+                return True  # Non-fatal, continue with standard OLS
+
+            # Success!
+            InstallCyberPanel.stdOut("=" * 50, 1)
+            InstallCyberPanel.stdOut("Custom Binaries Installed Successfully", 1)
+            InstallCyberPanel.stdOut("Features enabled:", 1)
+            InstallCyberPanel.stdOut("  - Apache-style .htaccess support", 1)
+            InstallCyberPanel.stdOut("  - php_value/php_flag directives", 1)
+            InstallCyberPanel.stdOut("  - Enhanced header control", 1)
+            InstallCyberPanel.stdOut(f"Backup: {backup_dir}", 1)
+            InstallCyberPanel.stdOut("=" * 50, 1)
+            return True
+
+        except Exception as msg:
+            logging.InstallLog.writeToFile(str(msg) + " [installCustomOLSBinaries]")
+            InstallCyberPanel.stdOut(f"ERROR: {msg}", 1)
+            InstallCyberPanel.stdOut("Continuing with standard OLS", 1)
+            return True  # Non-fatal error, continue
+
+    def configureCustomModule(self):
+        """Configure CyberPanel module in OpenLiteSpeed config"""
+        try:
+            InstallCyberPanel.stdOut("Configuring CyberPanel module...", 1)
+
+            CONFIG_FILE = "/usr/local/lsws/conf/httpd_config.conf"
+
+            if not os.path.exists(CONFIG_FILE):
+                InstallCyberPanel.stdOut("WARNING: Config file not found", 1)
+                InstallCyberPanel.stdOut("Module will be auto-loaded", 1)
+                return True
+
+            # Check if module is already configured
+            with open(CONFIG_FILE, 'r') as f:
+                content = f.read()
+                if 'cyberpanel_ols' in content:
+                    InstallCyberPanel.stdOut("Module already configured", 1)
+                    return True
+
+            # Add module configuration
+            module_config = """
+module cyberpanel_ols {
+  ls_enabled          1
+}
+"""
+            # Backup config
+            shutil.copy2(CONFIG_FILE, f"{CONFIG_FILE}.backup")
+
+            # Append module config
+            with open(CONFIG_FILE, 'a') as f:
+                f.write(module_config)
+
+            InstallCyberPanel.stdOut("Module configured successfully", 1)
+            return True
+
+        except Exception as msg:
+            logging.InstallLog.writeToFile(str(msg) + " [configureCustomModule]")
+            InstallCyberPanel.stdOut(f"WARNING: Module configuration failed: {msg}", 1)
+            InstallCyberPanel.stdOut("Module may still work via auto-load", 1)
+            return True  # Non-fatal
+
     def installLiteSpeed(self):
         if self.ent == 0:
+            # Install standard OpenLiteSpeed package
             self.install_package('openlitespeed')
+
+            # Install custom binaries with PHP config support
+            # This replaces the standard binary with enhanced version
+            self.installCustomOLSBinaries()
+
+            # Configure the custom module
+            self.configureCustomModule()
 
         else:
             try:

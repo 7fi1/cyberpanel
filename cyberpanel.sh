@@ -1986,9 +1986,30 @@ Current_Dir="$(pwd)"
 rm -f /usr/local/lsws/cyberpanel-tmp
 mkdir /usr/local/lsws/cyberpanel-tmp
 cd /usr/local/lsws/cyberpanel-tmp || exit
+
+# Try to download timezonedb, but continue if it fails
 wget -O timezonedb.tgz https://cyberpanel.sh/pecl.php.net/get/timezonedb
+if [ ! -f timezonedb.tgz ] || [ ! -s timezonedb.tgz ]; then
+    log_info "WARNING: Failed to download timezonedb, skipping installation"
+    cd "$Current_Dir" || exit
+    rm -rf /usr/local/lsws/cyberpanel-tmp
+    return 0
+fi
+
 tar xzvf timezonedb.tgz
-cd timezonedb-*  || exit
+if [ ! -d timezonedb-* ]; then
+    log_info "WARNING: Failed to extract timezonedb, skipping installation"
+    cd "$Current_Dir" || exit
+    rm -rf /usr/local/lsws/cyberpanel-tmp
+    return 0
+fi
+
+cd timezonedb-* || {
+    log_info "WARNING: Cannot enter timezonedb directory, skipping installation"
+    cd "$Current_Dir" || exit
+    rm -rf /usr/local/lsws/cyberpanel-tmp
+    return 0
+}
 
 # Install required packages for building PHP extensions
 if [[ "$Server_OS" = "Ubuntu" ]] ; then

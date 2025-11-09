@@ -1471,8 +1471,8 @@ app.controller('modSecRulesPack', function ($scope, $http, $timeout, $window) {
 
     var owaspInstalled = false;
     var comodoInstalled = false;
-    var counterOWASP = 0;
-    var counterComodo = 0;
+    var owaspInitialized = false;
+    var comodoInitialized = false;
 
 
     $('#owaspInstalled').change(function () {
@@ -1480,15 +1480,13 @@ app.controller('modSecRulesPack', function ($scope, $http, $timeout, $window) {
         owaspInstalled = $(this).prop('checked');
         $scope.ruleFiles = true;
 
-        if (counterOWASP !== 0) {
+        if (owaspInitialized) {
             if (owaspInstalled === true) {
                 installModSecRulesPack('installOWASP');
             } else {
                 installModSecRulesPack('disableOWASP')
             }
         }
-
-        counterOWASP = counterOWASP + 1;
     });
 
     $('#comodoInstalled').change(function () {
@@ -1496,7 +1494,7 @@ app.controller('modSecRulesPack', function ($scope, $http, $timeout, $window) {
         $scope.ruleFiles = true;
         comodoInstalled = $(this).prop('checked');
 
-        if (counterComodo !== 0) {
+        if (comodoInitialized) {
 
             if (comodoInstalled === true) {
                 installModSecRulesPack('installComodo');
@@ -1504,8 +1502,6 @@ app.controller('modSecRulesPack', function ($scope, $http, $timeout, $window) {
                 installModSecRulesPack('disableComodo')
             }
         }
-
-        counterComodo = counterComodo + 1;
 
     });
 
@@ -1545,6 +1541,9 @@ app.controller('modSecRulesPack', function ($scope, $http, $timeout, $window) {
                         $('#owaspInstalled').prop('checked', false);
                         $scope.owaspDisable = true;
                     }
+                    // Mark as initialized after setting initial state
+                    owaspInitialized = true;
+
                     if (response.data.comodoInstalled === 1) {
                         $('#comodoInstalled').prop('checked', true);
                         $scope.comodoDisable = false;
@@ -1552,6 +1551,8 @@ app.controller('modSecRulesPack', function ($scope, $http, $timeout, $window) {
                         $('#comodoInstalled').prop('checked', false);
                         $scope.comodoDisable = true;
                     }
+                    // Mark as initialized after setting initial state
+                    comodoInitialized = true;
                 } else {
 
                     if (response.data.owaspInstalled === 1) {
