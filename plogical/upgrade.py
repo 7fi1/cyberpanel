@@ -638,10 +638,14 @@ class Upgrade:
         Returns 'rhel9' for RHEL/AlmaLinux/Rocky 9.x systems
         """
         try:
-            # Check if we're on RHEL/CentOS/AlmaLinux (check version)
+            # Check if we're on RHEL/CentOS/AlmaLinux or Ubuntu/Debian
             if os.path.exists('/etc/os-release'):
                 with open('/etc/os-release', 'r') as f:
                     os_release = f.read().lower()
+
+                # Check for Ubuntu/Debian FIRST
+                if 'ubuntu' in os_release or 'debian' in os_release:
+                    return 'ubuntu'
 
                 # Check for RHEL-based distributions
                 if any(x in os_release for x in ['almalinux', 'rocky', 'rhel', 'centos stream']):

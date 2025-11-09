@@ -231,17 +231,17 @@ class InstallCyberPanel:
         Returns 'rhel9' for RHEL/AlmaLinux/Rocky 9.x systems
         """
         try:
-            # Ubuntu/Debian → ubuntu suffix
-            if self.distro == ubuntu:
-                return 'ubuntu'
+            # Check /etc/os-release first for more accurate detection
+            if os.path.exists('/etc/os-release'):
+                with open('/etc/os-release', 'r') as f:
+                    os_release = f.read().lower()
 
-            # CentOS 8+/AlmaLinux/Rocky/OpenEuler → detect version
-            elif self.distro == cent8 or self.distro == openeuler:
-                # Read /etc/os-release to get the version
-                if os.path.exists('/etc/os-release'):
-                    with open('/etc/os-release', 'r') as f:
-                        os_release = f.read().lower()
+                # Check for Ubuntu/Debian FIRST
+                if 'ubuntu' in os_release or 'debian' in os_release:
+                    return 'ubuntu'
 
+                # Check for RHEL-based distributions and extract version
+                if any(x in os_release for x in ['almalinux', 'rocky', 'rhel', 'centos stream']):
                     # Extract version number
                     for line in os_release.split('\n'):
                         if 'version_id' in line:
@@ -250,8 +250,16 @@ class InstallCyberPanel:
                                 return 'rhel9'
                             elif version == '8':
                                 return 'rhel8'
+                    # Default to rhel9 if version extraction fails
+                    return 'rhel9'
 
-                # Default to rhel9 if version detection fails
+            # Fallback: Use distro variable
+            # Ubuntu/Debian → ubuntu suffix
+            if self.distro == ubuntu:
+                return 'ubuntu'
+
+            # CentOS 8+/AlmaLinux/Rocky/OpenEuler → rhel9 by default
+            elif self.distro == cent8 or self.distro == openeuler:
                 return 'rhel9'
 
             # CentOS 7 → ubuntu suffix (uses libcrypt.so.1)
