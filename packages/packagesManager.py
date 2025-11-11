@@ -13,10 +13,30 @@ from loginSystem.models import Administrator
 import json
 from .models import Package
 from plogical.acl import ACLManager
+from plogical import ProcessUtilities
 
 class PackagesManager:
     def __init__(self, request = None):
         self.request  = request
+
+    @staticmethod
+    def checkAddonAccess():
+        """
+        Check if server has addon access for resource limits feature
+        Returns True if addons are available, False otherwise
+        """
+        url = "https://platform.cyberpersons.com/CyberpanelAdOns/Adonpermission"
+        addon_data = {
+            "name": "all",
+            "IP": ACLManager.GetServerIP()
+        }
+        import requests
+        try:
+            response = requests.post(url, data=json.dumps(addon_data), timeout=5)
+            Status = response.json().get('status', 0)
+        except Exception:
+            Status = 0
+        return (Status == 1) or (ProcessUtilities.decideServer() == ProcessUtilities.ent)
 
     def packagesHome(self):
         proc = httpProc(self.request, 'packages/index.html',
@@ -26,8 +46,9 @@ class PackagesManager:
     def createPacakge(self):
         userID = self.request.session['userID']
         admin = Administrator.objects.get(pk=userID)
+        has_addons = self.checkAddonAccess()
         proc = httpProc(self.request, 'packages/createPackage.html',
-                        {"adminNamePackage": admin.userName}, 'createPackage')
+                        {"adminNamePackage": admin.userName, "has_addons": has_addons}, 'createPackage')
         return proc.render()
 
     def deletePacakge(self):
@@ -112,6 +133,24 @@ class PackagesManager:
                 json_data = json.dumps(data_ret)
                 return HttpResponse(json_data)
 
+            # Check addon access for resource limits feature
+            has_addons = self.checkAddonAccess()
+            if not has_addons and enforceDiskLimits == 1:
+                data_ret = {'saveStatus': 0, 'error_message': "Resource limits feature requires CyberPanel addons. Please visit https://platform.cyberpersons.com to enable addons."}
+                json_data = json.dumps(data_ret)
+                return HttpResponse(json_data)
+
+            # Reset resource limits to defaults if addons not available
+            if not has_addons:
+                enforceDiskLimits = 0
+                memoryLimitMB = 1024
+                cpuCores = 1
+                ioLimitMBPS = 10
+                inodeLimit = 400000
+                maxConnections = 10
+                procSoftLimit = 400
+                procHardLimit = 500
+
             # Validate resource limits
             if memoryLimitMB < 256 or cpuCores < 1 or ioLimitMBPS < 1 or inodeLimit < 10000 or maxConnections < 1 or procSoftLimit < 1 or procHardLimit < 1:
                 data_ret = {'saveStatus': 0, 'error_message': "Resource limits must be positive and within valid ranges."}
@@ -175,8 +214,9 @@ class PackagesManager:
         userID = self.request.session['userID']
         currentACL = ACLManager.loadedACL(userID)
         packageList = ACLManager.loadPackages(userID, currentACL)
+        has_addons = self.checkAddonAccess()
         proc = httpProc(self.request, 'packages/modifyPackage.html',
-                        {"packList": packageList}, 'modifyPackage')
+                        {"packList": packageList, "has_addons": has_addons}, 'modifyPackage')
         return proc.render()
 
     def submitModify(self):
@@ -262,41 +302,60 @@ class PackagesManager:
                 except:
                     modifyPack.enforceDiskLimits = 0
 
-                # Update resource limits
-                try:
-                    modifyPack.memoryLimitMB = int(data['memoryLimitMB'])
-                except:
-                    pass  # Keep existing value
+                # Check addon access for resource limits feature
+                has_addons = self.checkAddonAccess()
+                if not has_addons and modifyPack.enforceDiskLimits == 1:
+                    data_ret = {'saveStatus': 0, 'error_message': "Resource limits feature requires CyberPanel addons. Please visit https://platform.cyberpersons.com to enable addons."}
+                    json_data = json.dumps(data_ret)
+                    return HttpResponse(json_data)
 
-                try:
-                    modifyPack.cpuCores = int(data['cpuCores'])
-                except:
-                    pass  # Keep existing value
+                # Reset resource limits to defaults if addons not available
+                if not has_addons:
+                    modifyPack.enforceDiskLimits = 0
+                    modifyPack.memoryLimitMB = 1024
+                    modifyPack.cpuCores = 1
+                    modifyPack.ioLimitMBPS = 10
+                    modifyPack.inodeLimit = 400000
+                    modifyPack.maxConnections = 10
+                    modifyPack.procSoftLimit = 400
+                    modifyPack.procHardLimit = 500
 
-                try:
-                    modifyPack.ioLimitMBPS = int(data['ioLimitMBPS'])
-                except:
-                    pass  # Keep existing value
+                # Update resource limits (only if addons available)
+                if has_addons:
+                    try:
+                        modifyPack.memoryLimitMB = int(data['memoryLimitMB'])
+                    except:
+                        pass  # Keep existing value
 
-                try:
-                    modifyPack.inodeLimit = int(data['inodeLimit'])
-                except:
-                    pass  # Keep existing value
+                    try:
+                        modifyPack.cpuCores = int(data['cpuCores'])
+                    except:
+                        pass  # Keep existing value
 
-                try:
-                    modifyPack.maxConnections = int(data['maxConnections'])
-                except:
-                    pass  # Keep existing value
+                    try:
+                        modifyPack.ioLimitMBPS = int(data['ioLimitMBPS'])
+                    except:
+                        pass  # Keep existing value
 
-                try:
-                    modifyPack.procSoftLimit = int(data['procSoftLimit'])
-                except:
-                    pass  # Keep existing value
+                    try:
+                        modifyPack.inodeLimit = int(data['inodeLimit'])
+                    except:
+                        pass  # Keep existing value
 
-                try:
-                    modifyPack.procHardLimit = int(data['procHardLimit'])
-                except:
-                    pass  # Keep existing value
+                    try:
+                        modifyPack.maxConnections = int(data['maxConnections'])
+                    except:
+                        pass  # Keep existing value
+
+                    try:
+                        modifyPack.procSoftLimit = int(data['procSoftLimit'])
+                    except:
+                        pass  # Keep existing value
+
+                    try:
+                        modifyPack.procHardLimit = int(data['procHardLimit'])
+                    except:
+                        pass  # Keep existing value
 
                 modifyPack.save()
 
