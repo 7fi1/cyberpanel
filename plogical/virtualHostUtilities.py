@@ -661,8 +661,20 @@ local_name %s {
                 if retValues[0] == 0:
                     raise BaseException(retValues[1])
 
+            # Get package to retrieve resource limits
+            selectedPackage = Package.objects.get(packageName=packageName)
+
+            # Extract resource limits from package
+            memSoftLimit = selectedPackage.memoryLimitMB
+            memHardLimit = selectedPackage.memoryLimitMB
+            maxConnections = selectedPackage.maxConnections
+            procSoftLimit = selectedPackage.procSoftLimit
+            procHardLimit = selectedPackage.procHardLimit
+
             retValues = vhost.createDirectoryForVirtualHost(virtualHostName, administratorEmail,
-                                                            virtualHostUser, phpVersion, openBasedir)
+                                                            virtualHostUser, phpVersion, openBasedir,
+                                                            memSoftLimit, memHardLimit, maxConnections,
+                                                            procSoftLimit, procHardLimit)
             if retValues[0] == 0:
                 raise BaseException(retValues[1])
 
@@ -672,8 +684,6 @@ local_name %s {
                 retValues = vhost.createConfigInMainVirtualHostFile(virtualHostName)
                 if retValues[0] == 0:
                     raise BaseException(retValues[1])
-
-            selectedPackage = Package.objects.get(packageName=packageName)
 
             if LimitsCheck:
                 website = Websites(admin=admin, package=selectedPackage, domain=virtualHostName,
@@ -765,6 +775,23 @@ local_name %s {
                 command = f'setquota -u {virtualHostUser} {spaceString} 0 0 /'
                 ProcessUtilities.executioner(command)
 
+            # Apply OpenLiteSpeed cgroups v2 resource limits and inode quotas
+            if selectedPackage.enforceDiskLimits:
+                try:
+                    from plogical.resourceLimits import resource_manager
+
+                    # Set per-user resource limits using OLS native cgroups API
+                    success = resource_manager.set_user_limits(virtualHostUser, selectedPackage)
+                    if not success:
+                        logging.CyberCPLogFileWriter.writeToFile(f"Warning: Failed to set resource limits for user {virtualHostUser}")
+
+                    # Set inode limit using filesystem quotas
+                    success = resource_manager.set_inode_limit(virtualHostName, virtualHostUser, selectedPackage.inodeLimit)
+                    if not success:
+                        logging.CyberCPLogFileWriter.writeToFile(f"Warning: Failed to set inode limit for {virtualHostName}")
+
+                except Exception as e:
+                    logging.CyberCPLogFileWriter.writeToFile(f"Error applying resource limits for {virtualHostName}: {str(e)}")
 
             logging.CyberCPLogFileWriter.statusWriter(tempStatusPath, 'Website successfully created. [200]')
 
@@ -1574,8 +1601,18 @@ local_name %s {
 
             logging.CyberCPLogFileWriter.statusWriter(tempStatusPath, 'Creating configurations..,50')
 
+            # Get resource limits from master website's package (child domains share parent's limits)
+            masterPackage = master.package
+            memSoftLimit = masterPackage.memoryLimitMB
+            memHardLimit = masterPackage.memoryLimitMB
+            maxConnections = masterPackage.maxConnections
+            procSoftLimit = masterPackage.procSoftLimit
+            procHardLimit = masterPackage.procHardLimit
+
             retValues = vhost.createDirectoryForDomain(masterDomain, virtualHostName, phpVersion, path,
-                                                       master.adminEmail, master.externalApp, openBasedir)
+                                                       master.adminEmail, master.externalApp, openBasedir,
+                                                       memSoftLimit, memHardLimit, maxConnections,
+                                                       procSoftLimit, procHardLimit)
             if retValues[0] == 0:
                 raise BaseException(retValues[1])
 

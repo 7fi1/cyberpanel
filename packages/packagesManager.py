@@ -71,9 +71,50 @@ class PackagesManager:
             except:
                 enforceDiskLimits = 0
 
+            # Resource Limits - with backward compatibility
+            try:
+                memoryLimitMB = int(data['memoryLimitMB'])
+            except:
+                memoryLimitMB = 1024
+
+            try:
+                cpuCores = int(data['cpuCores'])
+            except:
+                cpuCores = 1
+
+            try:
+                ioLimitMBPS = int(data['ioLimitMBPS'])
+            except:
+                ioLimitMBPS = 10
+
+            try:
+                inodeLimit = int(data['inodeLimit'])
+            except:
+                inodeLimit = 400000
+
+            try:
+                maxConnections = int(data['maxConnections'])
+            except:
+                maxConnections = 10
+
+            try:
+                procSoftLimit = int(data['procSoftLimit'])
+            except:
+                procSoftLimit = 400
+
+            try:
+                procHardLimit = int(data['procHardLimit'])
+            except:
+                procHardLimit = 500
 
             if packageSpace < 0 or packageBandwidth < 0 or packageDatabases < 0 or ftpAccounts < 0 or emails < 0 or allowedDomains < 0:
                 data_ret = {'saveStatus': 0, 'error_message': "All values should be positive or 0."}
+                json_data = json.dumps(data_ret)
+                return HttpResponse(json_data)
+
+            # Validate resource limits
+            if memoryLimitMB < 256 or cpuCores < 1 or ioLimitMBPS < 1 or inodeLimit < 10000 or maxConnections < 1 or procSoftLimit < 1 or procHardLimit < 1:
+                data_ret = {'saveStatus': 0, 'error_message': "Resource limits must be positive and within valid ranges."}
                 json_data = json.dumps(data_ret)
                 return HttpResponse(json_data)
 
@@ -84,7 +125,10 @@ class PackagesManager:
 
             package = Package(admin=admin, packageName=packageName, diskSpace=packageSpace,
                               bandwidth=packageBandwidth, ftpAccounts=ftpAccounts, dataBases=packageDatabases,
-                              emailAccounts=emails, allowedDomains=allowedDomains, allowFullDomain=allowFullDomain, enforceDiskLimits=enforceDiskLimits)
+                              emailAccounts=emails, allowedDomains=allowedDomains, allowFullDomain=allowFullDomain,
+                              enforceDiskLimits=enforceDiskLimits, memoryLimitMB=memoryLimitMB, cpuCores=cpuCores,
+                              ioLimitMBPS=ioLimitMBPS, inodeLimit=inodeLimit, maxConnections=maxConnections,
+                              procSoftLimit=procSoftLimit, procHardLimit=procHardLimit)
 
             package.save()
 
@@ -162,7 +206,12 @@ class PackagesManager:
 
             data_ret = {'emails': emails, 'modifyStatus': 1, 'error_message': "None",
                         "diskSpace": diskSpace, "bandwidth": bandwidth, "ftpAccounts": ftpAccounts,
-                        "dataBases": dataBases, "allowedDomains": modifyPack.allowedDomains, 'allowFullDomain': modifyPack.allowFullDomain, 'enforceDiskLimits': modifyPack.enforceDiskLimits}
+                        "dataBases": dataBases, "allowedDomains": modifyPack.allowedDomains,
+                        'allowFullDomain': modifyPack.allowFullDomain, 'enforceDiskLimits': modifyPack.enforceDiskLimits,
+                        'memoryLimitMB': modifyPack.memoryLimitMB, 'cpuCores': modifyPack.cpuCores,
+                        'ioLimitMBPS': modifyPack.ioLimitMBPS, 'inodeLimit': modifyPack.inodeLimit,
+                        'maxConnections': modifyPack.maxConnections, 'procSoftLimit': modifyPack.procSoftLimit,
+                        'procHardLimit': modifyPack.procHardLimit}
             json_data = json.dumps(data_ret)
             return HttpResponse(json_data)
 
@@ -212,6 +261,42 @@ class PackagesManager:
                     modifyPack.enforceDiskLimits = int(data['enforceDiskLimits'])
                 except:
                     modifyPack.enforceDiskLimits = 0
+
+                # Update resource limits
+                try:
+                    modifyPack.memoryLimitMB = int(data['memoryLimitMB'])
+                except:
+                    pass  # Keep existing value
+
+                try:
+                    modifyPack.cpuCores = int(data['cpuCores'])
+                except:
+                    pass  # Keep existing value
+
+                try:
+                    modifyPack.ioLimitMBPS = int(data['ioLimitMBPS'])
+                except:
+                    pass  # Keep existing value
+
+                try:
+                    modifyPack.inodeLimit = int(data['inodeLimit'])
+                except:
+                    pass  # Keep existing value
+
+                try:
+                    modifyPack.maxConnections = int(data['maxConnections'])
+                except:
+                    pass  # Keep existing value
+
+                try:
+                    modifyPack.procSoftLimit = int(data['procSoftLimit'])
+                except:
+                    pass  # Keep existing value
+
+                try:
+                    modifyPack.procHardLimit = int(data['procHardLimit'])
+                except:
+                    pass  # Keep existing value
 
                 modifyPack.save()
 
