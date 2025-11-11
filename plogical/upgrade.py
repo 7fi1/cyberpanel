@@ -2489,6 +2489,49 @@ CREATE TABLE `websiteFunctions_backupsv2` (`id` integer AUTO_INCREMENT NOT NULL 
             except:
                 pass
 
+            ## Resource Limits columns for cgroups v2 integration
+            query = "ALTER TABLE packages_package ADD COLUMN memoryLimitMB INT DEFAULT 1024;"
+            try:
+                cursor.execute(query)
+            except:
+                pass
+
+            query = "ALTER TABLE packages_package ADD COLUMN cpuCores INT DEFAULT 1;"
+            try:
+                cursor.execute(query)
+            except:
+                pass
+
+            query = "ALTER TABLE packages_package ADD COLUMN ioLimitMBPS INT DEFAULT 10;"
+            try:
+                cursor.execute(query)
+            except:
+                pass
+
+            query = "ALTER TABLE packages_package ADD COLUMN inodeLimit INT DEFAULT 400000;"
+            try:
+                cursor.execute(query)
+            except:
+                pass
+
+            query = "ALTER TABLE packages_package ADD COLUMN maxConnections INT DEFAULT 10;"
+            try:
+                cursor.execute(query)
+            except:
+                pass
+
+            query = "ALTER TABLE packages_package ADD COLUMN procSoftLimit INT DEFAULT 400;"
+            try:
+                cursor.execute(query)
+            except:
+                pass
+
+            query = "ALTER TABLE packages_package ADD COLUMN procHardLimit INT DEFAULT 500;"
+            try:
+                cursor.execute(query)
+            except:
+                pass
+
             try:
                 connection.close()
             except:
