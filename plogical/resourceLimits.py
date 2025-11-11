@@ -141,14 +141,36 @@ class ResourceLimitsManager:
                 logging.writeToFile("For RHEL 8 family, see instructions above to enable cgroups v2")
                 return False
 
-            # Check if lscgctl exists
+            # Check if lscgctl exists and is properly configured
+            needs_setup = False
+
             if not os.path.exists(self.LSCGCTL_PATH):
                 logging.writeToFile("lscgctl not found, attempting to run lssetup...")
+                needs_setup = True
+            else:
+                # lscgctl exists, but check if LiteSpeed Containers is actually configured
+                # by testing a simple command
+                try:
+                    test_result = subprocess.run(
+                        [self.LSCGCTL_PATH, 'version'],
+                        capture_output=True,
+                        text=True,
+                        timeout=10
+                    )
 
-                # Try to run lssetup
+                    # Check for the error message that indicates setup is needed
+                    if "You must configure LiteSpeed for LiteSpeed Containers" in test_result.stderr:
+                        logging.writeToFile("LiteSpeed Containers not configured, attempting to run lssetup...")
+                        needs_setup = True
+                except Exception as e:
+                    logging.writeToFile(f"Error testing lscgctl: {str(e)}, attempting to run lssetup...")
+                    needs_setup = True
+
+            # Run lssetup if needed
+            if needs_setup:
                 if os.path.exists(self.LSSETUP_PATH):
                     result = subprocess.run(
-                        [self.LSSETUP_PATH],
+                        [self.LSSETUP_PATH, '-c', '2', '-n', '0', '-s', '/usr/local/lsws'],
                         capture_output=True,
                         text=True,
                         timeout=30
