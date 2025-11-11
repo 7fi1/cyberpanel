@@ -13,7 +13,7 @@ from loginSystem.models import Administrator
 import json
 from .models import Package
 from plogical.acl import ACLManager
-from plogical import ProcessUtilities
+from plogical.processUtilities import ProcessUtilities
 
 class PackagesManager:
     def __init__(self, request = None):
