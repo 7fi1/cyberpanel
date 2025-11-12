@@ -343,21 +343,25 @@ class ResourceLimitsManager:
             # Tasks: use procHardLimit as max tasks
             max_tasks = package.procHardLimit
 
+            # I/O: convert MB/s to bytes/s (lscgctl expects bytes/sec)
+            io_limit_bytes = package.ioLimitMBPS * 1024 * 1024
+
             # Build lscgctl command
-            # Format: lscgctl set username --cpu 100 --mem 1024M --tasks 500
+            # Format: lscgctl set username --cpu 100 --mem 1024M --io 10485760 --tasks 500
             cmd = [
                 self.LSCGCTL_PATH,
                 'set',
                 username,
                 '--cpu', str(cpu_percent),
                 '--mem', memory_limit,
+                '--io', str(io_limit_bytes),
                 '--tasks', str(max_tasks)
             ]
 
-            # Note: I/O limits may require additional configuration
-            # Check if lscgctl supports --io parameter
+            # Note: I/O limits are configured but may not be enforced at kernel level
+            # without systemd io controller delegation to user slices
 
-            logging.writeToFile(f"Setting limits for user {username}: CPU={cpu_percent}%, MEM={memory_limit}, TASKS={max_tasks}")
+            logging.writeToFile(f"Setting limits for user {username}: CPU={cpu_percent}%, MEM={memory_limit}, I/O={package.ioLimitMBPS}MB/s, TASKS={max_tasks}")
 
             result = subprocess.run(
                 cmd,
