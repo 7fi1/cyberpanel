@@ -7,6 +7,7 @@ Handles resource limits using OpenLiteSpeed native cgroups v2 integration
 import os
 import subprocess
 import logging as log
+import time
 from pathlib import Path
 
 # Django imports
@@ -169,6 +170,7 @@ class ResourceLimitsManager:
             # Run lssetup if needed
             if needs_setup:
                 if os.path.exists(self.LSSETUP_PATH):
+                    logging.writeToFile("Running lssetup to configure LiteSpeed Containers...")
                     result = subprocess.run(
                         [self.LSSETUP_PATH, '-c', '2', '-n', '0', '-s', '/usr/local/lsws'],
                         capture_output=True,
@@ -177,7 +179,48 @@ class ResourceLimitsManager:
                     )
 
                     if result.returncode == 0:
-                        logging.writeToFile("lssetup completed successfully")
+                        logging.writeToFile(f"lssetup completed: {result.stdout}")
+
+                        # Verify lssetup actually configured things by testing lscgctl
+                        time.sleep(2)  # Give it a moment to initialize
+                        verify_result = subprocess.run(
+                            [self.LSCGCTL_PATH, 'version'],
+                            capture_output=True,
+                            text=True,
+                            timeout=10
+                        )
+
+                        if "You must configure LiteSpeed" in verify_result.stderr:
+                            logging.writeToFile("lssetup completed but lscgctl still not configured")
+                            logging.writeToFile(f"lscgctl error: {verify_result.stderr}")
+                            logging.writeToFile("Trying lssetup with different parameters...")
+
+                            # Try again with more slices
+                            result2 = subprocess.run(
+                                [self.LSSETUP_PATH, '-c', '10', '-n', '0', '-s', '/usr/local/lsws'],
+                                capture_output=True,
+                                text=True,
+                                timeout=30
+                            )
+                            logging.writeToFile(f"Second lssetup attempt: {result2.stdout if result2.returncode == 0 else result2.stderr}")
+
+                            # Give it another moment and verify again
+                            time.sleep(2)
+                            verify_result2 = subprocess.run(
+                                [self.LSCGCTL_PATH, 'version'],
+                                capture_output=True,
+                                text=True,
+                                timeout=10
+                            )
+
+                            if "You must configure LiteSpeed" in verify_result2.stderr:
+                                logging.writeToFile("lscgctl still not working after second attempt")
+                                logging.writeToFile("Please manually run: /usr/local/lsws/lsns/bin/lssetup -c 10 -n 0 -s /usr/local/lsws")
+                                return False
+                            else:
+                                logging.writeToFile("lssetup successful on second attempt")
+                        else:
+                            logging.writeToFile("lssetup verification successful")
                     else:
                         logging.writeToFile(f"lssetup failed: {result.stderr}")
                         return False
