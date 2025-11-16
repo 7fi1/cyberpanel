@@ -224,8 +224,42 @@ class InstallCyberPanel:
             logging.InstallLog.writeToFile(str(msg) + " [detectArchitecture]")
             return False
 
-    def downloadCustomBinary(self, url, destination):
-        """Download custom binary file"""
+    def detectPlatform(self):
+        """Detect OS platform for binary selection (rhel8, rhel9, ubuntu)"""
+        try:
+            # Check for Ubuntu
+            if os.path.exists('/etc/lsb-release'):
+                with open('/etc/lsb-release', 'r') as f:
+                    content = f.read()
+                    if 'Ubuntu' in content or 'ubuntu' in content:
+                        return 'ubuntu'
+
+            # Check for RHEL-based distributions
+            if os.path.exists('/etc/os-release'):
+                with open('/etc/os-release', 'r') as f:
+                    content = f.read().lower()
+
+                    # Check for version 8.x (RHEL, AlmaLinux, Rocky, CloudLinux, CentOS 8)
+                    if 'version="8.' in content or 'version_id="8.' in content:
+                        if any(distro in content for distro in ['red hat', 'almalinux', 'rocky', 'cloudlinux', 'centos']):
+                            return 'rhel8'
+
+                    # Check for version 9.x
+                    if 'version="9.' in content or 'version_id="9.' in content:
+                        if any(distro in content for distro in ['red hat', 'almalinux', 'rocky', 'cloudlinux', 'centos']):
+                            return 'rhel9'
+
+            # Default to rhel9 if can't detect (safer default for newer systems)
+            InstallCyberPanel.stdOut("WARNING: Could not detect platform, defaulting to rhel9", 1)
+            return 'rhel9'
+
+        except Exception as msg:
+            logging.InstallLog.writeToFile(str(msg) + " [detectPlatform]")
+            InstallCyberPanel.stdOut(f"ERROR detecting platform: {msg}, defaulting to rhel9", 1)
+            return 'rhel9'
+
+    def downloadCustomBinary(self, url, destination, expected_sha256=None):
+        """Download custom binary file with optional checksum verification"""
         try:
             InstallCyberPanel.stdOut(f"Downloading {os.path.basename(destination)}...", 1)
 
@@ -242,7 +276,27 @@ class InstallCyberPanel:
                         InstallCyberPanel.stdOut(f"Downloaded successfully ({file_size / (1024*1024):.2f} MB)", 1)
                     else:
                         InstallCyberPanel.stdOut(f"Downloaded successfully ({file_size / 1024:.2f} KB)", 1)
-                    return True
+
+                    # Verify checksum if provided
+                    if expected_sha256:
+                        InstallCyberPanel.stdOut("Verifying checksum...", 1)
+                        import hashlib
+                        sha256_hash = hashlib.sha256()
+                        with open(destination, "rb") as f:
+                            for byte_block in iter(lambda: f.read(4096), b""):
+                                sha256_hash.update(byte_block)
+                        actual_sha256 = sha256_hash.hexdigest()
+
+                        if actual_sha256 == expected_sha256:
+                            InstallCyberPanel.stdOut("Checksum verified successfully", 1)
+                            return True
+                        else:
+                            InstallCyberPanel.stdOut(f"ERROR: Checksum mismatch!", 1)
+                            InstallCyberPanel.stdOut(f"Expected: {expected_sha256}", 1)
+                            InstallCyberPanel.stdOut(f"Got:      {actual_sha256}", 1)
+                            return False
+                    else:
+                        return True
                 else:
                     InstallCyberPanel.stdOut(f"ERROR: Downloaded file too small ({file_size} bytes)", 1)
                     return False
@@ -261,18 +315,51 @@ class InstallCyberPanel:
             InstallCyberPanel.stdOut("Installing Custom OpenLiteSpeed Binaries", 1)
             InstallCyberPanel.stdOut("=" * 50, 1)
 
-            # URLs for custom binaries
-            OLS_BINARY_URL = "https://cyberpanel.net/openlitespeed-phpconfig-x86_64"
-            MODULE_URL = "https://cyberpanel.net/cyberpanel_ols_x86_64.so"
-            OLS_BINARY_PATH = "/usr/local/lsws/bin/openlitespeed"
-            MODULE_PATH = "/usr/local/lsws/modules/cyberpanel_ols.so"
-
             # Check architecture
             if not self.detectArchitecture():
                 InstallCyberPanel.stdOut("WARNING: Custom binaries only available for x86_64", 1)
                 InstallCyberPanel.stdOut("Skipping custom binary installation", 1)
                 InstallCyberPanel.stdOut("Standard OLS will be used", 1)
                 return True  # Not a failure, just skip
+
+            # Detect platform
+            platform = self.detectPlatform()
+            InstallCyberPanel.stdOut(f"Detected platform: {platform}", 1)
+
+            # Platform-specific URLs and checksums (OpenLiteSpeed v1.8.4.1 - v2.0.4)
+            BINARY_CONFIGS = {
+                'rhel8': {
+                    'url': 'https://cyberpanel.net/binaries/rhel8/openlitespeed-phpconfig-x86_64-rhel8',
+                    'sha256': 'a6e07671ee1c9bcc7f2d12de9e95139315cf288709fb23bf431eb417299ad4e9',
+                    'module_url': 'https://cyberpanel.net/binaries/rhel8/cyberpanel_ols_x86_64_rhel8.so',
+                    'module_sha256': '1cc71f54d8ae5937d0bd2b2dd27678b47f09f4f7afed2583bbd3493ddd05877f'
+                },
+                'rhel9': {
+                    'url': 'https://cyberpanel.net/binaries/rhel9/openlitespeed-phpconfig-x86_64-rhel9',
+                    'sha256': 'a6e07671ee1c9bcc7f2d12de9e95139315cf288709fb23bf431eb417299ad4e9',
+                    'module_url': 'https://cyberpanel.net/binaries/rhel9/cyberpanel_ols_x86_64_rhel9.so',
+                    'module_sha256': 'b5841fa6863bbd9dbac4017acfa946bd643268d6ca0cf16a0cd2f717cfb30330'
+                },
+                'ubuntu': {
+                    'url': 'https://cyberpanel.net/binaries/ubuntu/openlitespeed-phpconfig-x86_64-ubuntu',
+                    'sha256': 'c6a6b4dddd63a4e4ac9b1b51f6db5bd79230f3219e39397de173518ced198d36',
+                    'module_url': 'https://cyberpanel.net/binaries/ubuntu/cyberpanel_ols_x86_64_ubuntu.so',
+                    'module_sha256': 'd070952fcfe27fac2f2c95db9ae31252071bade2cdcff19cf3b3f7812fa9413a'
+                }
+            }
+
+            config = BINARY_CONFIGS.get(platform)
+            if not config:
+                InstallCyberPanel.stdOut(f"ERROR: No binaries available for platform {platform}", 1)
+                InstallCyberPanel.stdOut("Skipping custom binary installation", 1)
+                return True  # Not fatal
+
+            OLS_BINARY_URL = config['url']
+            OLS_BINARY_SHA256 = config['sha256']
+            MODULE_URL = config['module_url']
+            MODULE_SHA256 = config['module_sha256']
+            OLS_BINARY_PATH = "/usr/local/lsws/bin/openlitespeed"
+            MODULE_PATH = "/usr/local/lsws/modules/cyberpanel_ols.so"
 
             # Create backup
             from datetime import datetime
@@ -293,15 +380,15 @@ class InstallCyberPanel:
 
             InstallCyberPanel.stdOut("Downloading custom binaries...", 1)
 
-            # Download OpenLiteSpeed binary
-            if not self.downloadCustomBinary(OLS_BINARY_URL, tmp_binary):
-                InstallCyberPanel.stdOut("ERROR: Failed to download OLS binary", 1)
+            # Download OpenLiteSpeed binary with checksum verification
+            if not self.downloadCustomBinary(OLS_BINARY_URL, tmp_binary, OLS_BINARY_SHA256):
+                InstallCyberPanel.stdOut("ERROR: Failed to download or verify OLS binary", 1)
                 InstallCyberPanel.stdOut("Continuing with standard OLS", 1)
                 return True  # Not fatal, continue with standard OLS
 
-            # Download module
-            if not self.downloadCustomBinary(MODULE_URL, tmp_module):
-                InstallCyberPanel.stdOut("ERROR: Failed to download module", 1)
+            # Download module with checksum verification
+            if not self.downloadCustomBinary(MODULE_URL, tmp_module, MODULE_SHA256):
+                InstallCyberPanel.stdOut("ERROR: Failed to download or verify module", 1)
                 InstallCyberPanel.stdOut("Continuing with standard OLS", 1)
                 return True  # Not fatal, continue with standard OLS
 
