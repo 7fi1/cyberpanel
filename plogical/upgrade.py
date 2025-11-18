@@ -733,25 +733,25 @@ class Upgrade:
             platform = Upgrade.detectPlatform()
             Upgrade.stdOut(f"Detected platform: {platform}", 0)
 
-            # Platform-specific URLs and checksums (OpenLiteSpeed v1.8.4.1 - v2.0.4)
+            # Platform-specific URLs and checksums (OpenLiteSpeed v1.8.4.1 - v2.0.5 Static Build)
             BINARY_CONFIGS = {
                 'rhel8': {
-                    'url': 'https://cyberpanel.net/binaries/rhel8/openlitespeed-phpconfig-x86_64-rhel8',
-                    'sha256': 'a6e07671ee1c9bcc7f2d12de9e95139315cf288709fb23bf431eb417299ad4e9',
-                    'module_url': 'https://cyberpanel.net/binaries/rhel8/cyberpanel_ols_x86_64_rhel8.so',
-                    'module_sha256': '1cc71f54d8ae5937d0bd2b2dd27678b47f09f4f7afed2583bbd3493ddd05877f'
+                    'url': 'https://cyberpanel.net/openlitespeed-phpconfig-x86_64-rhel8-static',
+                    'sha256': '6ce688a237615102cc1603ee1999b3cede0ff3482d31e1f65705e92396d34b3a',
+                    'module_url': None,  # RHEL 8 doesn't have module (use RHEL 9 if needed)
+                    'module_sha256': None
                 },
                 'rhel9': {
-                    'url': 'https://cyberpanel.net/binaries/rhel9/openlitespeed-phpconfig-x86_64-rhel9',
-                    'sha256': 'a6e07671ee1c9bcc7f2d12de9e95139315cf288709fb23bf431eb417299ad4e9',
-                    'module_url': 'https://cyberpanel.net/binaries/rhel9/cyberpanel_ols_x86_64_rhel9.so',
-                    'module_sha256': 'b5841fa6863bbd9dbac4017acfa946bd643268d6ca0cf16a0cd2f717cfb30330'
+                    'url': 'https://cyberpanel.net/openlitespeed-phpconfig-x86_64-rhel9-static',
+                    'sha256': '90468fb38767505185013024678d9144ae13100d2355097657f58719d98fbbc4',
+                    'module_url': 'https://cyberpanel.net/cyberpanel_ols_x86_64_rhel.so',
+                    'module_sha256': '127227db81bcbebf80b225fc747b69cfcd4ad2f01cea486aa02d5c9ba6c18109'
                 },
                 'ubuntu': {
-                    'url': 'https://cyberpanel.net/binaries/ubuntu/openlitespeed-phpconfig-x86_64-ubuntu',
-                    'sha256': 'c6a6b4dddd63a4e4ac9b1b51f6db5bd79230f3219e39397de173518ced198d36',
-                    'module_url': 'https://cyberpanel.net/binaries/ubuntu/cyberpanel_ols_x86_64_ubuntu.so',
-                    'module_sha256': 'd070952fcfe27fac2f2c95db9ae31252071bade2cdcff19cf3b3f7812fa9413a'
+                    'url': 'https://cyberpanel.net/openlitespeed-phpconfig-x86_64-ubuntu-static',
+                    'sha256': '89aaf66474e78cb3c1666784e0e7a417550bd317e6ab148201bdc318d36710cb',
+                    'module_url': 'https://cyberpanel.net/cyberpanel_ols_x86_64_ubuntu.so',
+                    'module_sha256': 'e7734f1e6226c2a0a8e00c1f6534ea9f577df9081b046736a774b1c52c28e7e5'
                 }
             }
 
@@ -793,11 +793,16 @@ class Upgrade:
                 Upgrade.stdOut("Continuing with standard OLS", 0)
                 return True  # Not fatal, continue with standard OLS
 
-            # Download module with checksum verification
-            if not Upgrade.downloadCustomBinary(MODULE_URL, tmp_module, MODULE_SHA256):
-                Upgrade.stdOut("ERROR: Failed to download or verify module", 0)
-                Upgrade.stdOut("Continuing with standard OLS", 0)
-                return True  # Not fatal, continue with standard OLS
+            # Download module with checksum verification (if available)
+            module_downloaded = False
+            if MODULE_URL and MODULE_SHA256:
+                if not Upgrade.downloadCustomBinary(MODULE_URL, tmp_module, MODULE_SHA256):
+                    Upgrade.stdOut("ERROR: Failed to download or verify module", 0)
+                    Upgrade.stdOut("Continuing with standard OLS", 0)
+                    return True  # Not fatal, continue with standard OLS
+                module_downloaded = True
+            else:
+                Upgrade.stdOut("Note: No CyberPanel module for this platform", 0)
 
             # Install OpenLiteSpeed binary
             Upgrade.stdOut("Installing custom binaries...", 0)
@@ -810,30 +815,34 @@ class Upgrade:
                 Upgrade.stdOut(f"ERROR: Failed to install binary: {e}", 0)
                 return False
 
-            # Install module
-            try:
-                os.makedirs(os.path.dirname(MODULE_PATH), exist_ok=True)
-                shutil.move(tmp_module, MODULE_PATH)
-                os.chmod(MODULE_PATH, 0o644)
-                Upgrade.stdOut("Installed CyberPanel module", 0)
-            except Exception as e:
-                Upgrade.stdOut(f"ERROR: Failed to install module: {e}", 0)
-                return False
+            # Install module (if downloaded)
+            if module_downloaded:
+                try:
+                    os.makedirs(os.path.dirname(MODULE_PATH), exist_ok=True)
+                    shutil.move(tmp_module, MODULE_PATH)
+                    os.chmod(MODULE_PATH, 0o644)
+                    Upgrade.stdOut("Installed CyberPanel module", 0)
+                except Exception as e:
+                    Upgrade.stdOut(f"ERROR: Failed to install module: {e}", 0)
+                    return False
 
             # Verify installation
-            if os.path.exists(OLS_BINARY_PATH) and os.path.exists(MODULE_PATH):
-                Upgrade.stdOut("=" * 50, 0)
-                Upgrade.stdOut("Custom Binaries Installed Successfully", 0)
-                Upgrade.stdOut("Features enabled:", 0)
-                Upgrade.stdOut("  - Apache-style .htaccess support", 0)
-                Upgrade.stdOut("  - php_value/php_flag directives", 0)
-                Upgrade.stdOut("  - Enhanced header control", 0)
-                Upgrade.stdOut(f"Backup: {backup_dir}", 0)
-                Upgrade.stdOut("=" * 50, 0)
-                return True
-            else:
-                Upgrade.stdOut("ERROR: Installation verification failed", 0)
-                return False
+            if os.path.exists(OLS_BINARY_PATH):
+                if not module_downloaded or os.path.exists(MODULE_PATH):
+                    Upgrade.stdOut("=" * 50, 0)
+                    Upgrade.stdOut("Custom Binaries Installed Successfully", 0)
+                    Upgrade.stdOut("Features enabled:", 0)
+                    Upgrade.stdOut("  - Static-linked cross-platform binary", 0)
+                    if module_downloaded:
+                        Upgrade.stdOut("  - Apache-style .htaccess support", 0)
+                        Upgrade.stdOut("  - php_value/php_flag directives", 0)
+                        Upgrade.stdOut("  - Enhanced header control", 0)
+                    Upgrade.stdOut(f"Backup: {backup_dir}", 0)
+                    Upgrade.stdOut("=" * 50, 0)
+                    return True
+
+            Upgrade.stdOut("ERROR: Installation verification failed", 0)
+            return False
 
         except Exception as msg:
             Upgrade.stdOut(f"ERROR: {msg} [installCustomOLSBinaries]", 0)
