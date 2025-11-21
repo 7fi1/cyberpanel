@@ -582,6 +582,12 @@ InternalHosts	refile:/etc/opendkim/TrustedHosts
 
                 postfixFilePath = "/etc/postfix/main.cf"
 
+                # Check if postfix main.cf exists before configuring
+                if not os.path.exists(postfixFilePath):
+                    logging.CyberCPLogFileWriter.writeToFile(f"configureOpenDKIM: {postfixFilePath} not found, skipping postfix DKIM configuration")
+                    print("1,Postfix not installed")
+                    return
+
                 configData = """
 smtpd_milters = inet:127.0.0.1:8891
 non_smtpd_milters = $smtpd_milters
