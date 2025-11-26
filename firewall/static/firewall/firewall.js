@@ -1278,9 +1278,12 @@ app.controller('modSecRulesPack', function ($scope, $http, $timeout, $window) {
 
 
     getOWASPAndComodoStatus(true);
-    function getOWASPAndComodoStatus(updateToggle) {
+    function getOWASPAndComodoStatus(updateToggle, showLoader) {
 
-        $scope.modsecLoading = false;
+        // Only show loader if explicitly requested (during installations)
+        if (showLoader === true) {
+            $scope.modsecLoading = false;
+        }
 
 
         url = "/firewall/getOWASPAndComodoStatus";
@@ -1324,12 +1327,6 @@ app.controller('modSecRulesPack', function ($scope, $http, $timeout, $window) {
                         $scope.comodoDisable = true;
                     }
 
-                    // Reset flags after toggle update
-                    $timeout(function() {
-                        updatingOWASPStatus = false;
-                        updatingComodoStatus = false;
-                    }, 100);
-
                 } else {
 
                     if (response.data.owaspInstalled === 1) {
@@ -1346,10 +1343,19 @@ app.controller('modSecRulesPack', function ($scope, $http, $timeout, $window) {
 
             }
 
+            // Always reset flags after status check completes
+            $timeout(function() {
+                updatingOWASPStatus = false;
+                updatingComodoStatus = false;
+            }, 100);
+
         }
 
         function cantLoadInitialDatas(response) {
             $scope.modsecLoading = true;
+            // Reset flags even on error
+            updatingOWASPStatus = false;
+            updatingComodoStatus = false;
         }
 
     }
