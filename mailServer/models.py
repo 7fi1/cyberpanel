@@ -56,12 +56,13 @@ class Pipeprograms(models.Model):
 
 class CatchAllEmail(models.Model):
     """Stores catch-all email configuration per domain"""
-    domain = models.OneToOneField(Domains, on_delete=models.CASCADE, primary_key=True)
+    domain = models.OneToOneField(Domains, on_delete=models.CASCADE, primary_key=True, db_column='domain_id')
     destination = models.CharField(max_length=255)
     enabled = models.BooleanField(default=True)
 
     class Meta:
         db_table = 'e_catchall'
+        managed = False
 
 
 class EmailServerSettings(models.Model):
@@ -71,6 +72,7 @@ class EmailServerSettings(models.Model):
 
     class Meta:
         db_table = 'e_server_settings'
+        managed = False
 
     @classmethod
     def get_settings(cls):
@@ -80,11 +82,12 @@ class EmailServerSettings(models.Model):
 
 class PlusAddressingOverride(models.Model):
     """Per-domain plus-addressing override"""
-    domain = models.OneToOneField(Domains, on_delete=models.CASCADE, primary_key=True)
+    domain = models.OneToOneField(Domains, on_delete=models.CASCADE, primary_key=True, db_column='domain_id')
     enabled = models.BooleanField(default=True)
 
     class Meta:
         db_table = 'e_plus_override'
+        managed = False
 
 
 class PatternForwarding(models.Model):
@@ -94,7 +97,7 @@ class PatternForwarding(models.Model):
         ('regex', 'Regular Expression'),
     ]
 
-    domain = models.ForeignKey(Domains, on_delete=models.CASCADE)
+    domain = models.ForeignKey(Domains, on_delete=models.CASCADE, db_column='domain_id')
     pattern = models.CharField(max_length=255)
     destination = models.CharField(max_length=255)
     pattern_type = models.CharField(max_length=20, choices=PATTERN_TYPES, default='wildcard')
@@ -103,4 +106,5 @@ class PatternForwarding(models.Model):
 
     class Meta:
         db_table = 'e_pattern_forwarding'
+        managed = False
         ordering = ['priority']
