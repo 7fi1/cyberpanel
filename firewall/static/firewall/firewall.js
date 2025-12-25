@@ -1226,9 +1226,17 @@ app.controller('modSecRulesPack', function ($scope, $http, $timeout, $window) {
     var comodoInstalled = false;
     var counterOWASP = 0;
     var counterComodo = 0;
+    var updatingOWASPStatus = false;
+    var updatingComodoStatus = false;
 
 
     $('#owaspInstalled').change(function () {
+
+        // Prevent triggering installation when status check updates the toggle
+        if (updatingOWASPStatus) {
+            counterOWASP = counterOWASP + 1;  // Still increment counter
+            return;
+        }
 
         owaspInstalled = $(this).prop('checked');
         $scope.ruleFiles = true;
@@ -1245,6 +1253,12 @@ app.controller('modSecRulesPack', function ($scope, $http, $timeout, $window) {
     });
 
     $('#comodoInstalled').change(function () {
+
+        // Prevent triggering installation when status check updates the toggle
+        if (updatingComodoStatus) {
+            counterComodo = counterComodo + 1;  // Still increment counter
+            return;
+        }
 
         $scope.ruleFiles = true;
         comodoInstalled = $(this).prop('checked');
@@ -1264,9 +1278,12 @@ app.controller('modSecRulesPack', function ($scope, $http, $timeout, $window) {
 
 
     getOWASPAndComodoStatus(true);
-    function getOWASPAndComodoStatus(updateToggle) {
+    function getOWASPAndComodoStatus(updateToggle, showLoader) {
 
-        $scope.modsecLoading = false;
+        // Only show loader if explicitly requested (during installations)
+        if (showLoader === true) {
+            $scope.modsecLoading = false;
+        }
 
 
         url = "/firewall/getOWASPAndComodoStatus";
@@ -1291,6 +1308,10 @@ app.controller('modSecRulesPack', function ($scope, $http, $timeout, $window) {
 
                 if (updateToggle === true) {
 
+                    // Set flags to prevent change event from triggering installation
+                    updatingOWASPStatus = true;
+                    updatingComodoStatus = true;
+
                     if (response.data.owaspInstalled === 1) {
                         $('#owaspInstalled').prop('checked', true);
                         $scope.owaspDisable = false;
@@ -1305,6 +1326,7 @@ app.controller('modSecRulesPack', function ($scope, $http, $timeout, $window) {
                         $('#comodoInstalled').prop('checked', false);
                         $scope.comodoDisable = true;
                     }
+
                 } else {
 
                     if (response.data.owaspInstalled === 1) {
@@ -1321,10 +1343,19 @@ app.controller('modSecRulesPack', function ($scope, $http, $timeout, $window) {
 
             }
 
+            // Always reset flags after status check completes
+            $timeout(function() {
+                updatingOWASPStatus = false;
+                updatingComodoStatus = false;
+            }, 100);
+
         }
 
         function cantLoadInitialDatas(response) {
             $scope.modsecLoading = true;
+            // Reset flags even on error
+            updatingOWASPStatus = false;
+            updatingComodoStatus = false;
         }
 
     }
@@ -1366,8 +1397,10 @@ app.controller('modSecRulesPack', function ($scope, $http, $timeout, $window) {
                 $scope.installationFailed = true;
                 $scope.installationSuccess = false;
 
-                // Update toggle state immediately to reflect installation result
-                getOWASPAndComodoStatus(true);
+                // Update toggle state after a short delay to reflect installation result
+                $timeout(function() {
+                    getOWASPAndComodoStatus(true);
+                }, 500);
 
             } else {
                 $scope.modsecLoading = true;
@@ -1382,7 +1415,9 @@ app.controller('modSecRulesPack', function ($scope, $http, $timeout, $window) {
                 $scope.errorMessage = response.data.error_message;
 
                 // Update toggle to reflect failed installation (will show OFF)
-                getOWASPAndComodoStatus(true);
+                $timeout(function() {
+                    getOWASPAndComodoStatus(true);
+                }, 500);
             }
 
         }
