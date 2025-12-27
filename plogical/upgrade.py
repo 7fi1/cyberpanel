@@ -739,24 +739,24 @@ class Upgrade:
                 'rhel8': {
                     'url': 'https://cyberpanel.net/openlitespeed-phpconfig-x86_64-rhel8-static',
                     'sha256': '6ce688a237615102cc1603ee1999b3cede0ff3482d31e1f65705e92396d34b3a',
-                    'module_url': 'https://cyberpanel.net/cyberpanel_ols_x86_64_rhel8.so',
-                    'module_sha256': 'c57f6f14a9ba787b9051dee98c1375a4f34ec4e25b492e97a8825aee04dda02a',
+                    'module_url': 'https://cyberpanel.net/binaries/rhel8/cyberpanel_ols_x86_64_rhel8.so',
+                    'module_sha256': '90b5d9eea399503ff2a9948163e6253f049f54cbd80256a3183157b9d5f7d94b',
                     'modsec_url': 'https://cyberpanel.net/mod_security-compatible-rhel8.so',
                     'modsec_sha256': 'bbbf003bdc7979b98f09b640dffe2cbbe5f855427f41319e4c121403c05837b2'
                 },
                 'rhel9': {
                     'url': 'https://cyberpanel.net/openlitespeed-phpconfig-x86_64-rhel9-static',
                     'sha256': '709093d99d5d3e789134c131893614968e17eefd9ade2200f811d9b076b2f02e',
-                    'module_url': 'https://cyberpanel.net/cyberpanel_ols_x86_64_rhel.so',
-                    'module_sha256': 'ae79d4fcf56131c01c3d81dc704ad265ac881b61d0a90cec62e4ac22c0e69929',
+                    'module_url': 'https://cyberpanel.net/binaries/rhel9/cyberpanel_ols_almalinux9.6_x86_64.so',
+                    'module_sha256': 'a6466bc89d4a33bb0df5a8dce2887b7d0323867f525ccda1db371efcc7c64422',
                     'modsec_url': 'https://cyberpanel.net/mod_security-compatible-rhel.so',
                     'modsec_sha256': '19deb2ffbaf1334cf4ce4d46d53f747a75b29e835bf5a01f91ebcc0c78e98629'
                 },
                 'ubuntu': {
                     'url': 'https://cyberpanel.net/openlitespeed-phpconfig-x86_64-ubuntu-static',
                     'sha256': '89aaf66474e78cb3c1666784e0e7a417550bd317e6ab148201bdc318d36710cb',
-                    'module_url': 'https://cyberpanel.net/cyberpanel_ols_x86_64_ubuntu.so',
-                    'module_sha256': '57129f12b98c5b1693d10eddad3ad57917773540ca68c5491dee23588ef313ac',
+                    'module_url': 'https://cyberpanel.net/binaries/ubuntu/cyberpanel_ols_x86_64_ubuntu.so',
+                    'module_sha256': '31f710c915e7996c8c99c09fbd20268df1ea7b8c983c2f44d9632b1e024a0a60',
                     'modsec_url': 'https://cyberpanel.net/mod_security-compatible-ubuntu.so',
                     'modsec_sha256': 'ed02c813136720bd4b9de5925f6e41bdc8392e494d7740d035479aaca6d1e0cd'
                 }
