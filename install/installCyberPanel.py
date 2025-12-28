@@ -327,25 +327,25 @@ class InstallCyberPanel:
             InstallCyberPanel.stdOut(f"Detected platform: {platform}", 1)
 
             # Platform-specific URLs and checksums (OpenLiteSpeed v1.8.4.1 - v2.0.5 Static Build)
-            # Module Build Date: December 27, 2025 - Phase 2 Brute Force Protection
+            # Module Build Date: December 28, 2025 - v2.2.0 Brute Force with Progressive Throttle
             BINARY_CONFIGS = {
                 'rhel8': {
                     'url': 'https://cyberpanel.net/openlitespeed-phpconfig-x86_64-rhel8-static',
                     'sha256': '6ce688a237615102cc1603ee1999b3cede0ff3482d31e1f65705e92396d34b3a',
-                    'module_url': 'https://cyberpanel.net/binaries/rhel8/cyberpanel_ols_x86_64_rhel8.so',
-                    'module_sha256': '90b5d9eea399503ff2a9948163e6253f049f54cbd80256a3183157b9d5f7d94b'
+                    'module_url': 'https://cyberpanel.net/binaries/rhel8/cyberpanel_ols.so',
+                    'module_sha256': '7c33d89c7fbcd3ed7b0422fee3f49b5e041713c2c2b7316a5774f6defa147572'
                 },
                 'rhel9': {
                     'url': 'https://cyberpanel.net/openlitespeed-phpconfig-x86_64-rhel9-static',
                     'sha256': '90468fb38767505185013024678d9144ae13100d2355097657f58719d98fbbc4',
-                    'module_url': 'https://cyberpanel.net/binaries/rhel9/cyberpanel_ols_almalinux9.6_x86_64.so',
-                    'module_sha256': 'a6466bc89d4a33bb0df5a8dce2887b7d0323867f525ccda1db371efcc7c64422'
+                    'module_url': 'https://cyberpanel.net/binaries/rhel9/cyberpanel_ols.so',
+                    'module_sha256': 'ae65337e2d13babc0c675bb4264d469daffa2efb7627c9bf39ac59e42e3ebede'
                 },
                 'ubuntu': {
                     'url': 'https://cyberpanel.net/openlitespeed-phpconfig-x86_64-ubuntu-static',
                     'sha256': '89aaf66474e78cb3c1666784e0e7a417550bd317e6ab148201bdc318d36710cb',
-                    'module_url': 'https://cyberpanel.net/binaries/ubuntu/cyberpanel_ols_x86_64_ubuntu.so',
-                    'module_sha256': '31f710c915e7996c8c99c09fbd20268df1ea7b8c983c2f44d9632b1e024a0a60'
+                    'module_url': 'https://cyberpanel.net/binaries/ubuntu/cyberpanel_ols.so',
+                    'module_sha256': '62978ede1f174dd2885e5227a3d9cc463d0c27acd77cfc23743d7309ee0c54ea'
                 }
             }
 
