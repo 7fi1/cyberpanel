@@ -331,19 +331,19 @@ class InstallCyberPanel:
             BINARY_CONFIGS = {
                 'rhel8': {
                     'url': 'https://cyberpanel.net/openlitespeed-2.4.4-x86_64-rhel8',
-                    'sha256': '6d00ed4981f30f9fdc1bd67aa4a9c521ce04974a758cd7f3b17e3dec519608c2',
+                    'sha256': 'b87c8769518e544ad733a5434da3af68c3f480696afb36973e9cf7fae4247633',
                     'module_url': 'https://cyberpanel.net/cyberpanel_ols-2.4.4-x86_64-rhel8.so',
                     'module_sha256': '27f7fbbb74e83c217708960d4b18e2732b0798beecba8ed6eac01509165cb432'
                 },
                 'rhel9': {
                     'url': 'https://cyberpanel.net/openlitespeed-2.4.4-x86_64-rhel9',
-                    'sha256': 'e7bdb156f64f98a87866202972a468d8bb1aec3d9e3485a4e66c4c46b77168ae',
+                    'sha256': '8d9e52256a646802338c295122227cb4e824122fb078421e4cf8af7f6040086f',
                     'module_url': 'https://cyberpanel.net/cyberpanel_ols-2.4.4-x86_64-rhel9.so',
                     'module_sha256': '50cb00fa2b8269ec9b0bf300f1b26d3b76d3791c1b022343e1290a0d25e7fda8'
                 },
                 'ubuntu': {
                     'url': 'https://cyberpanel.net/openlitespeed-2.4.4-x86_64-ubuntu',
-                    'sha256': 'abb9d04b1c6bb13f1aa5e7393aa3b1c8506838d1f61f3bb43a3b0ccefead3b43',
+                    'sha256': 'a460387f18db2f7d43f434aa915fb0c50edbb6e4a0c85f92b6e5bb7c7a723f58',
                     'module_url': 'https://cyberpanel.net/cyberpanel_ols-2.4.4-x86_64-ubuntu.so',
                     'module_sha256': 'bd47069d13bb098201f3e72d4d56876193c898ebfa0ac2eb26796abebc991a88'
                 }
