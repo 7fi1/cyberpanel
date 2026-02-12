@@ -746,7 +746,7 @@ class Upgrade:
                 },
                 'rhel9': {
                     'url': 'https://cyberpanel.net/openlitespeed-2.4.4-x86_64-rhel9',
-                    'sha256': '8d9e52256a646802338c295122227cb4e824122fb078421e4cf8af7f6040086f',
+                    'sha256': 'c2769d56bef75ca2adf2989107d0a3db2130bd789aa985a42c6b17a846e006c9',
                     'module_url': 'https://cyberpanel.net/cyberpanel_ols-2.4.4-x86_64-rhel9.so',
                     'module_sha256': '50cb00fa2b8269ec9b0bf300f1b26d3b76d3791c1b022343e1290a0d25e7fda8',
                     'modsec_url': 'https://cyberpanel.net/mod_security-2.4.4-x86_64-rhel9.so',
