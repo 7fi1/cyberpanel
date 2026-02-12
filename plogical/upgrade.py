@@ -738,7 +738,7 @@ class Upgrade:
             BINARY_CONFIGS = {
                 'rhel8': {
                     'url': 'https://cyberpanel.net/openlitespeed-2.4.4-x86_64-rhel8',
-                    'sha256': 'b87c8769518e544ad733a5434da3af68c3f480696afb36973e9cf7fae4247633',
+                    'sha256': '17f3d242c12778f9b5da4d2f7198cfd4fcb2eca7eabcef742a150f1c9eeadf27',
                     'module_url': 'https://cyberpanel.net/cyberpanel_ols-2.4.4-x86_64-rhel8.so',
                     'module_sha256': '27f7fbbb74e83c217708960d4b18e2732b0798beecba8ed6eac01509165cb432',
                     'modsec_url': 'https://cyberpanel.net/mod_security-2.4.4-x86_64-rhel8.so',
@@ -754,7 +754,7 @@ class Upgrade:
                 },
                 'ubuntu': {
                     'url': 'https://cyberpanel.net/openlitespeed-2.4.4-x86_64-ubuntu',
-                    'sha256': 'a460387f18db2f7d43f434aa915fb0c50edbb6e4a0c85f92b6e5bb7c7a723f58',
+                    'sha256': '85c889dc57d9f075e3f63b5eb21f59051fe322c12d423d515940026542e3afae',
                     'module_url': 'https://cyberpanel.net/cyberpanel_ols-2.4.4-x86_64-ubuntu.so',
                     'module_sha256': 'bd47069d13bb098201f3e72d4d56876193c898ebfa0ac2eb26796abebc991a88',
                     'modsec_url': 'https://cyberpanel.net/mod_security-2.4.4-x86_64-ubuntu.so',
