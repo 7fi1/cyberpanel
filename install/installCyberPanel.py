@@ -501,15 +501,17 @@ module cyberpanel_ols {
 
             # Enable Auto-SSL in httpd_config.conf
             try:
+                import re
                 conf_path = '/usr/local/lsws/conf/httpd_config.conf'
                 if os.path.exists(conf_path):
                     with open(conf_path, 'r') as f:
                         content = f.read()
                     if 'autoSSL' not in content:
-                        content = content.replace(
-                            'adminEmails               root@localhost',
-                            'adminEmails               root@localhost\nautoSSL                   1\nacmeEmail                 admin@cyberpanel.net',
-                            1
+                        content = re.sub(
+                            r'(adminEmails\s+\S+)',
+                            r'\1\nautoSSL                   1\nacmeEmail                 admin@cyberpanel.net',
+                            content,
+                            count=1
                         )
                         with open(conf_path, 'w') as f:
                             f.write(content)
