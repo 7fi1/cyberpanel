@@ -1573,6 +1573,21 @@
                     <span>Email Forwarding</span>
                 </a>
                 {% endif %}
+                {% if admin or emailForwarding %}
+                <a href="{% url 'catchAllEmail' %}" class="menu-item">
+                    <span>Catch-All Email</span>
+                </a>
+                {% endif %}
+                {% if admin or emailForwarding %}
+                <a href="{% url 'patternForwarding' %}" class="menu-item">
+                    <span>Pattern Forwarding</span>
+                </a>
+                {% endif %}
+                {% if admin %}
+                <a href="{% url 'plusAddressingSettings' %}" class="menu-item">
+                    <span>Plus-Addressing</span>
+                </a>
+                {% endif %}
                 {% if admin or changeEmailPassword %}
                 <a href="{% url 'changeEmailAccountPassword' %}" class="menu-item">
                     <span>Change Password</span>

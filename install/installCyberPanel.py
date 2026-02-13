@@ -44,62 +44,6 @@ FetchCloudLinuxAlmaVersionVersion = install_utils.FetchCloudLinuxAlmaVersionVers
 class InstallCyberPanel:
     mysql_Root_password = ""
     mysqlPassword = ""
-    
-    def is_almalinux9(self):
-        """Check if running on AlmaLinux 9"""
-        if os.path.exists('/etc/almalinux-release'):
-            try:
-                with open('/etc/almalinux-release', 'r') as f:
-                    content = f.read()
-                    return 'release 9' in content
-            except:
-                return False
-        return False
-    
-    def fix_almalinux9_mariadb(self):
-        """Fix AlmaLinux 9 MariaDB installation issues"""
-        if not self.is_almalinux9():
-            return
-        
-        self.stdOut("Applying AlmaLinux 9 MariaDB fixes...", 1)
-        
-        try:
-            # Disable problematic MariaDB MaxScale repository
-            self.stdOut("Disabling problematic MariaDB MaxScale repository...", 1)
-            command = "dnf config-manager --disable mariadb-maxscale 2>/dev/null || true"
-            install_utils.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
-            
-            # Remove problematic repository files
-            self.stdOut("Removing problematic repository files...", 1)
-            problematic_repos = [
-                '/etc/yum.repos.d/mariadb-maxscale.repo',
-                '/etc/yum.repos.d/mariadb-maxscale.repo.rpmnew'
-            ]
-            for repo_file in problematic_repos:
-                if os.path.exists(repo_file):
-                    os.remove(repo_file)
-                    self.stdOut(f"Removed {repo_file}", 1)
-            
-            # Clean DNF cache
-            self.stdOut("Cleaning DNF cache...", 1)
-            command = "dnf clean all"
-            install_utils.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
-            
-            # Install MariaDB from official repository
-            self.stdOut("Setting up official MariaDB repository...", 1)
-            command = "curl -sS https://downloads.mariadb.com/MariaDB/mariadb_repo_setup | bash -s -- --mariadb-server-version='10.11'"
-            install_utils.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
-            
-            # Install MariaDB packages
-            self.stdOut("Installing MariaDB packages...", 1)
-            mariadb_packages = "MariaDB-server MariaDB-client MariaDB-backup MariaDB-devel"
-            command = f"dnf install -y {mariadb_packages}"
-            install_utils.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
-            
-            self.stdOut("AlmaLinux 9 MariaDB fixes completed", 1)
-            
-        except Exception as e:
-            self.stdOut(f"Error applying AlmaLinux 9 MariaDB fixes: {str(e)}", 0)
     CloudLinux8 = 0
 
     def install_package(self, package_name, options=""):
@@ -280,60 +224,42 @@ class InstallCyberPanel:
             logging.InstallLog.writeToFile(str(msg) + " [detectArchitecture]")
             return False
 
-    def detectBinarySuffix(self):
-        """Detect which binary suffix to use based on OS distribution
-        Returns 'ubuntu' for Ubuntu/Debian systems
-        Returns 'rhel8' for RHEL/AlmaLinux/Rocky 8.x systems
-        Returns 'rhel9' for RHEL/AlmaLinux/Rocky 9.x systems
-        """
+    def detectPlatform(self):
+        """Detect OS platform for binary selection (rhel8, rhel9, ubuntu)"""
         try:
-            # Check /etc/os-release first for more accurate detection
+            # Check for Ubuntu
+            if os.path.exists('/etc/lsb-release'):
+                with open('/etc/lsb-release', 'r') as f:
+                    content = f.read()
+                    if 'Ubuntu' in content or 'ubuntu' in content:
+                        return 'ubuntu'
+
+            # Check for RHEL-based distributions
             if os.path.exists('/etc/os-release'):
                 with open('/etc/os-release', 'r') as f:
-                    os_release = f.read().lower()
+                    content = f.read().lower()
 
-                # Check for Ubuntu/Debian FIRST
-                if 'ubuntu' in os_release or 'debian' in os_release:
-                    return 'ubuntu'
+                    # Check for version 8.x (RHEL, AlmaLinux, Rocky, CloudLinux, CentOS 8)
+                    if 'version="8.' in content or 'version_id="8.' in content:
+                        if any(distro in content for distro in ['red hat', 'almalinux', 'rocky', 'cloudlinux', 'centos']):
+                            return 'rhel8'
 
-                # Check for RHEL-based distributions and extract version
-                if any(x in os_release for x in ['almalinux', 'rocky', 'rhel', 'centos stream']):
-                    # Extract version number
-                    for line in os_release.split('\n'):
-                        if 'version_id' in line:
-                            version = line.split('=')[1].strip('"').split('.')[0]
-                            if version == '9':
-                                return 'rhel9'
-                            elif version == '8':
-                                return 'rhel8'
-                    # Default to rhel9 if version extraction fails
-                    return 'rhel9'
+                    # Check for version 9.x
+                    if 'version="9.' in content or 'version_id="9.' in content:
+                        if any(distro in content for distro in ['red hat', 'almalinux', 'rocky', 'cloudlinux', 'centos']):
+                            return 'rhel9'
 
-            # Fallback: Use distro variable
-            # Ubuntu/Debian → ubuntu suffix
-            if self.distro == ubuntu:
-                return 'ubuntu'
-
-            # CentOS 8+/AlmaLinux/Rocky/OpenEuler → rhel9 by default
-            elif self.distro == cent8 or self.distro == openeuler:
-                return 'rhel9'
-
-            # CentOS 7 → ubuntu suffix (uses libcrypt.so.1)
-            elif self.distro == centos:
-                return 'ubuntu'
-
-            # Default to ubuntu for unknown distros
-            else:
-                InstallCyberPanel.stdOut("Unknown OS distribution, defaulting to Ubuntu binaries", 1)
-                return 'ubuntu'
+            # Default to rhel9 if can't detect (safer default for newer systems)
+            InstallCyberPanel.stdOut("WARNING: Could not detect platform, defaulting to rhel9", 1)
+            return 'rhel9'
 
         except Exception as msg:
-            logging.InstallLog.writeToFile(str(msg) + " [detectBinarySuffix]")
-            InstallCyberPanel.stdOut("Error detecting OS, defaulting to Ubuntu binaries", 1)
-            return 'ubuntu'
+            logging.InstallLog.writeToFile(str(msg) + " [detectPlatform]")
+            InstallCyberPanel.stdOut(f"ERROR detecting platform: {msg}, defaulting to rhel9", 1)
+            return 'rhel9'
 
-    def downloadCustomBinary(self, url, destination):
-        """Download custom binary file"""
+    def downloadCustomBinary(self, url, destination, expected_sha256=None):
+        """Download custom binary file with optional checksum verification"""
         try:
             InstallCyberPanel.stdOut(f"Downloading {os.path.basename(destination)}...", 1)
 
@@ -350,7 +276,27 @@ class InstallCyberPanel:
                         InstallCyberPanel.stdOut(f"Downloaded successfully ({file_size / (1024*1024):.2f} MB)", 1)
                     else:
                         InstallCyberPanel.stdOut(f"Downloaded successfully ({file_size / 1024:.2f} KB)", 1)
-                    return True
+
+                    # Verify checksum if provided
+                    if expected_sha256:
+                        InstallCyberPanel.stdOut("Verifying checksum...", 1)
+                        import hashlib
+                        sha256_hash = hashlib.sha256()
+                        with open(destination, "rb") as f:
+                            for byte_block in iter(lambda: f.read(4096), b""):
+                                sha256_hash.update(byte_block)
+                        actual_sha256 = sha256_hash.hexdigest()
+
+                        if actual_sha256 == expected_sha256:
+                            InstallCyberPanel.stdOut("Checksum verified successfully", 1)
+                            return True
+                        else:
+                            InstallCyberPanel.stdOut(f"ERROR: Checksum mismatch!", 1)
+                            InstallCyberPanel.stdOut(f"Expected: {expected_sha256}", 1)
+                            InstallCyberPanel.stdOut(f"Got:      {actual_sha256}", 1)
+                            return False
+                    else:
+                        return True
                 else:
                     InstallCyberPanel.stdOut(f"ERROR: Downloaded file too small ({file_size} bytes)", 1)
                     return False
@@ -361,76 +307,6 @@ class InstallCyberPanel:
         except Exception as msg:
             logging.InstallLog.writeToFile(str(msg) + " [downloadCustomBinary]")
             InstallCyberPanel.stdOut(f"ERROR: {msg}", 1)
-            return False
-
-    def verifyCustomBinary(self, binary_path):
-        """Verify custom binary has correct dependencies and can run"""
-        try:
-            InstallCyberPanel.stdOut("Verifying custom binary compatibility...", 1)
-
-            # Check library dependencies
-            command = f'ldd {binary_path}'
-            result = subprocess.run(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
-
-            if result.returncode != 0:
-                InstallCyberPanel.stdOut("ERROR: Failed to check binary dependencies", 1)
-                return False
-
-            # Check for missing libraries
-            if 'not found' in result.stdout:
-                InstallCyberPanel.stdOut("ERROR: Binary has missing library dependencies:", 1)
-                for line in result.stdout.split('\n'):
-                    if 'not found' in line:
-                        InstallCyberPanel.stdOut(f"  {line.strip()}", 1)
-                return False
-
-            # Try to run the binary with -v to check if it can execute
-            command = f'{binary_path} -v'
-            result = subprocess.run(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True, timeout=5)
-
-            if result.returncode != 0:
-                InstallCyberPanel.stdOut("ERROR: Binary failed to execute", 1)
-                if result.stderr:
-                    InstallCyberPanel.stdOut(f"  Error: {result.stderr.strip()}", 1)
-                return False
-
-            InstallCyberPanel.stdOut("Binary verification successful", 1)
-            return True
-
-        except subprocess.TimeoutExpired:
-            InstallCyberPanel.stdOut("ERROR: Binary verification timed out", 1)
-            return False
-        except Exception as msg:
-            logging.InstallLog.writeToFile(str(msg) + " [verifyCustomBinary]")
-            InstallCyberPanel.stdOut(f"ERROR: Verification failed: {msg}", 1)
-            return False
-
-    def rollbackCustomBinary(self, backup_dir, binary_path, module_path):
-        """Rollback to original binary if custom binary fails"""
-        try:
-            InstallCyberPanel.stdOut("Rolling back to original binary...", 1)
-
-            backup_binary = f"{backup_dir}/openlitespeed.backup"
-
-            # Restore original binary if backup exists
-            if os.path.exists(backup_binary):
-                shutil.copy2(backup_binary, binary_path)
-                os.chmod(binary_path, 0o755)
-                InstallCyberPanel.stdOut("Original binary restored successfully", 1)
-            else:
-                InstallCyberPanel.stdOut("WARNING: No backup found, cannot restore", 1)
-
-            # Remove failed custom module
-            if os.path.exists(module_path):
-                os.remove(module_path)
-                InstallCyberPanel.stdOut("Custom module removed", 1)
-
-            InstallCyberPanel.stdOut("Rollback completed", 1)
-            return True
-
-        except Exception as msg:
-            logging.InstallLog.writeToFile(str(msg) + " [rollbackCustomBinary]")
-            InstallCyberPanel.stdOut(f"ERROR: Rollback failed: {msg}", 1)
             return False
 
     def installCustomOLSBinaries(self):
@@ -446,24 +322,43 @@ class InstallCyberPanel:
                 InstallCyberPanel.stdOut("Standard OLS will be used", 1)
                 return True  # Not a failure, just skip
 
-            # Detect OS and select appropriate binary suffix
-            binary_suffix = self.detectBinarySuffix()
-            InstallCyberPanel.stdOut(f"Detected OS type: using '{binary_suffix}' binaries", 1)
+            # Detect platform
+            platform = self.detectPlatform()
+            InstallCyberPanel.stdOut(f"Detected platform: {platform}", 1)
 
-            # URLs for custom binaries with OS-specific paths
-            BASE_URL = "https://cyberpanel.net/binaries"
+            # Platform-specific URLs and checksums (OpenLiteSpeed v2.4.4 — all features config-driven, static linking)
+            # Includes: PHPConfig API, Origin Header Forwarding, ReadApacheConf (with Portmap), Auto-SSL (ACME v2), ModSecurity ABI Compatibility
+            BINARY_CONFIGS = {
+                'rhel8': {
+                    'url': 'https://cyberpanel.net/openlitespeed-2.4.4-x86_64-rhel8',
+                    'sha256': '70002c488309c9ed650f3de2959bcf4db847b8204f6fe242e523523b621fd316',
+                    'module_url': 'https://cyberpanel.net/cyberpanel_ols-2.4.4-x86_64-rhel8.so',
+                    'module_sha256': '27f7fbbb74e83c217708960d4b18e2732b0798beecba8ed6eac01509165cb432'
+                },
+                'rhel9': {
+                    'url': 'https://cyberpanel.net/openlitespeed-2.4.4-x86_64-rhel9',
+                    'sha256': '4fed6d0c70b23ebb73efc6f17f2f2bb2afc84b23b36c02308b8b2fefc56a291c',
+                    'module_url': 'https://cyberpanel.net/cyberpanel_ols-2.4.4-x86_64-rhel9.so',
+                    'module_sha256': '50cb00fa2b8269ec9b0bf300f1b26d3b76d3791c1b022343e1290a0d25e7fda8'
+                },
+                'ubuntu': {
+                    'url': 'https://cyberpanel.net/openlitespeed-2.4.4-x86_64-ubuntu',
+                    'sha256': '004b69dcc7daf21412ddbdfff5fd4e191293035a8f7c5e7cffd7be7ada070445',
+                    'module_url': 'https://cyberpanel.net/cyberpanel_ols-2.4.4-x86_64-ubuntu.so',
+                    'module_sha256': 'bd47069d13bb098201f3e72d4d56876193c898ebfa0ac2eb26796abebc991a88'
+                }
+            }
 
-            # Set URLs based on OS type
-            if binary_suffix == 'rhel8':
-                OLS_BINARY_URL = f"{BASE_URL}/rhel8/openlitespeed-phpconfig-x86_64-rhel8"
-                MODULE_URL = f"{BASE_URL}/rhel8/cyberpanel_ols_x86_64_rhel8.so"
-            elif binary_suffix == 'rhel9':
-                OLS_BINARY_URL = f"{BASE_URL}/rhel9/openlitespeed-phpconfig-x86_64-rhel"
-                MODULE_URL = f"{BASE_URL}/rhel9/cyberpanel_ols_x86_64_rhel.so"
-            else:  # ubuntu
-                OLS_BINARY_URL = f"{BASE_URL}/ubuntu/openlitespeed-phpconfig-x86_64-ubuntu"
-                MODULE_URL = f"{BASE_URL}/ubuntu/cyberpanel_ols_x86_64_ubuntu.so"
+            config = BINARY_CONFIGS.get(platform)
+            if not config:
+                InstallCyberPanel.stdOut(f"ERROR: No binaries available for platform {platform}", 1)
+                InstallCyberPanel.stdOut("Skipping custom binary installation", 1)
+                return True  # Not fatal
 
+            OLS_BINARY_URL = config['url']
+            OLS_BINARY_SHA256 = config['sha256']
+            MODULE_URL = config['module_url']
+            MODULE_SHA256 = config['module_sha256']
             OLS_BINARY_PATH = "/usr/local/lsws/bin/openlitespeed"
             MODULE_PATH = "/usr/local/lsws/modules/cyberpanel_ols.so"
 
@@ -486,17 +381,22 @@ class InstallCyberPanel:
 
             InstallCyberPanel.stdOut("Downloading custom binaries...", 1)
 
-            # Download OpenLiteSpeed binary
-            if not self.downloadCustomBinary(OLS_BINARY_URL, tmp_binary):
-                InstallCyberPanel.stdOut("ERROR: Failed to download OLS binary", 1)
+            # Download OpenLiteSpeed binary with checksum verification
+            if not self.downloadCustomBinary(OLS_BINARY_URL, tmp_binary, OLS_BINARY_SHA256):
+                InstallCyberPanel.stdOut("ERROR: Failed to download or verify OLS binary", 1)
                 InstallCyberPanel.stdOut("Continuing with standard OLS", 1)
                 return True  # Not fatal, continue with standard OLS
 
-            # Download module
-            if not self.downloadCustomBinary(MODULE_URL, tmp_module):
-                InstallCyberPanel.stdOut("ERROR: Failed to download module", 1)
-                InstallCyberPanel.stdOut("Continuing with standard OLS", 1)
-                return True  # Not fatal, continue with standard OLS
+            # Download module with checksum verification (if available)
+            module_downloaded = False
+            if MODULE_URL and MODULE_SHA256:
+                if not self.downloadCustomBinary(MODULE_URL, tmp_module, MODULE_SHA256):
+                    InstallCyberPanel.stdOut("ERROR: Failed to download or verify module", 1)
+                    InstallCyberPanel.stdOut("Continuing with standard OLS", 1)
+                    return True  # Not fatal, continue with standard OLS
+                module_downloaded = True
+            else:
+                InstallCyberPanel.stdOut("Note: No CyberPanel module for this platform", 1)
 
             # Install OpenLiteSpeed binary
             InstallCyberPanel.stdOut("Installing custom binaries...", 1)
@@ -510,46 +410,35 @@ class InstallCyberPanel:
                 logging.InstallLog.writeToFile(str(e) + " [installCustomOLSBinaries - binary install]")
                 return False
 
-            # Install module
-            try:
-                os.makedirs(os.path.dirname(MODULE_PATH), exist_ok=True)
-                shutil.move(tmp_module, MODULE_PATH)
-                os.chmod(MODULE_PATH, 0o644)
-                InstallCyberPanel.stdOut("Installed CyberPanel module", 1)
-            except Exception as e:
-                InstallCyberPanel.stdOut(f"ERROR: Failed to install module: {e}", 1)
-                logging.InstallLog.writeToFile(str(e) + " [installCustomOLSBinaries - module install]")
-                return False
+            # Install module (if downloaded)
+            if module_downloaded:
+                try:
+                    os.makedirs(os.path.dirname(MODULE_PATH), exist_ok=True)
+                    shutil.move(tmp_module, MODULE_PATH)
+                    os.chmod(MODULE_PATH, 0o644)
+                    InstallCyberPanel.stdOut("Installed CyberPanel module", 1)
+                except Exception as e:
+                    InstallCyberPanel.stdOut(f"ERROR: Failed to install module: {e}", 1)
+                    logging.InstallLog.writeToFile(str(e) + " [installCustomOLSBinaries - module install]")
+                    return False
 
-            # Verify installation files exist
-            if not (os.path.exists(OLS_BINARY_PATH) and os.path.exists(MODULE_PATH)):
-                InstallCyberPanel.stdOut("ERROR: Installation verification failed - files not found", 1)
-                return False
+            # Verify installation
+            if os.path.exists(OLS_BINARY_PATH):
+                if not module_downloaded or os.path.exists(MODULE_PATH):
+                    InstallCyberPanel.stdOut("=" * 50, 1)
+                    InstallCyberPanel.stdOut("Custom Binaries Installed Successfully", 1)
+                    InstallCyberPanel.stdOut("Features enabled:", 1)
+                    InstallCyberPanel.stdOut("  - Static-linked cross-platform binary", 1)
+                    if module_downloaded:
+                        InstallCyberPanel.stdOut("  - Apache-style .htaccess support", 1)
+                        InstallCyberPanel.stdOut("  - php_value/php_flag directives", 1)
+                        InstallCyberPanel.stdOut("  - Enhanced header control", 1)
+                    InstallCyberPanel.stdOut(f"Backup: {backup_dir}", 1)
+                    InstallCyberPanel.stdOut("=" * 50, 1)
+                    return True
 
-            # Verify binary compatibility
-            if not self.verifyCustomBinary(OLS_BINARY_PATH):
-                InstallCyberPanel.stdOut("ERROR: Custom binary verification failed", 1)
-                InstallCyberPanel.stdOut("This usually means wrong binary type for your OS", 1)
-
-                # Rollback to original binary
-                if os.path.exists(backup_dir):
-                    self.rollbackCustomBinary(backup_dir, OLS_BINARY_PATH, MODULE_PATH)
-                    InstallCyberPanel.stdOut("Continuing with standard OLS", 1)
-                else:
-                    InstallCyberPanel.stdOut("WARNING: Cannot rollback, no backup found", 1)
-
-                return True  # Non-fatal, continue with standard OLS
-
-            # Success!
-            InstallCyberPanel.stdOut("=" * 50, 1)
-            InstallCyberPanel.stdOut("Custom Binaries Installed Successfully", 1)
-            InstallCyberPanel.stdOut("Features enabled:", 1)
-            InstallCyberPanel.stdOut("  - Apache-style .htaccess support", 1)
-            InstallCyberPanel.stdOut("  - php_value/php_flag directives", 1)
-            InstallCyberPanel.stdOut("  - Enhanced header control", 1)
-            InstallCyberPanel.stdOut(f"Backup: {backup_dir}", 1)
-            InstallCyberPanel.stdOut("=" * 50, 1)
-            return True
+            InstallCyberPanel.stdOut("ERROR: Installation verification failed", 1)
+            return False
 
         except Exception as msg:
             logging.InstallLog.writeToFile(str(msg) + " [installCustomOLSBinaries]")
@@ -727,7 +616,7 @@ module cyberpanel_ols {
         return self.reStartLiteSpeed()
 
     def installAllPHPVersions(self):
-        php_versions = ['71', '72', '73', '74', '80', '81', '82', '83', '84', '85']
+        php_versions = ['71', '72', '73', '74', '80', '81', '82', '83']
         
         if self.distro == ubuntu:
             # Install base PHP 7.x packages
@@ -955,12 +844,6 @@ gpgcheck=1
 
         if self.remotemysql == 'OFF':
             ############## Start mariadb ######################
-            
-            # Check if AlmaLinux 9 and apply fixes
-            if self.is_almalinux9():
-                self.stdOut("AlmaLinux 9 detected - applying MariaDB fixes", 1)
-                self.fix_almalinux9_mariadb()
-            
             self.manage_service('mariadb', 'start')
 
             ############## Enable mariadb at system startup ######################
