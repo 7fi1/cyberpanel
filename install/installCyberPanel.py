@@ -499,6 +499,24 @@ module cyberpanel_ols {
             # Configure the custom module
             self.configureCustomModule()
 
+            # Enable Auto-SSL in httpd_config.conf
+            try:
+                conf_path = '/usr/local/lsws/conf/httpd_config.conf'
+                if os.path.exists(conf_path):
+                    with open(conf_path, 'r') as f:
+                        content = f.read()
+                    if 'autoSSL' not in content:
+                        content = content.replace(
+                            'adminEmails',
+                            'adminEmails               root@localhost\nautoSSL                   1\nacmeEmail                 admin@cyberpanel.net',
+                            1
+                        )
+                        with open(conf_path, 'w') as f:
+                            f.write(content)
+                        InstallCyberPanel.stdOut("Auto-SSL enabled in httpd_config.conf", 1)
+            except Exception as e:
+                InstallCyberPanel.stdOut(f"WARNING: Could not enable Auto-SSL: {e}", 1)
+
         else:
             try:
                 try:
