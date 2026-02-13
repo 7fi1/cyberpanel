@@ -738,7 +738,7 @@ class Upgrade:
             BINARY_CONFIGS = {
                 'rhel8': {
                     'url': 'https://cyberpanel.net/openlitespeed-2.4.4-x86_64-rhel8',
-                    'sha256': '70002c488309c9ed650f3de2959bcf4db847b8204f6fe242e523523b621fd316',
+                    'sha256': '9cd7cc7d908a1118b496cf1f60efd8c7357e51ff734c413abf361f78e1ae26d4',
                     'module_url': 'https://cyberpanel.net/cyberpanel_ols-2.4.4-x86_64-rhel8.so',
                     'module_sha256': '27f7fbbb74e83c217708960d4b18e2732b0798beecba8ed6eac01509165cb432',
                     'modsec_url': 'https://cyberpanel.net/mod_security-2.4.4-x86_64-rhel8.so',
@@ -754,7 +754,7 @@ class Upgrade:
                 },
                 'ubuntu': {
                     'url': 'https://cyberpanel.net/openlitespeed-2.4.4-x86_64-ubuntu',
-                    'sha256': '004b69dcc7daf21412ddbdfff5fd4e191293035a8f7c5e7cffd7be7ada070445',
+                    'sha256': '582b3bad62bba8e528761121d72ee40fb37857449d53e4c0a41d4c6401b23569',
                     'module_url': 'https://cyberpanel.net/cyberpanel_ols-2.4.4-x86_64-ubuntu.so',
                     'module_sha256': 'bd47069d13bb098201f3e72d4d56876193c898ebfa0ac2eb26796abebc991a88',
                     'modsec_url': 'https://cyberpanel.net/mod_security-2.4.4-x86_64-ubuntu.so',
@@ -4594,6 +4594,23 @@ pm.max_spare_servers = 3
             if Upgrade.installCustomOLSBinaries():
                 # Configure the custom module
                 Upgrade.configureCustomModule()
+
+                # Enable Auto-SSL if not already configured
+                conf_path = '/usr/local/lsws/conf/httpd_config.conf'
+                try:
+                    with open(conf_path, 'r') as f:
+                        content = f.read()
+                    if 'autoSSL' not in content:
+                        content = content.replace(
+                            'adminEmails',
+                            'adminEmails               root@localhost\nautoSSL                   1\nacmeEmail                 admin@cyberpanel.net',
+                            1
+                        )
+                        with open(conf_path, 'w') as f:
+                            f.write(content)
+                        Upgrade.stdOut("Auto-SSL enabled in httpd_config.conf", 0)
+                except Exception as e:
+                    Upgrade.stdOut(f"WARNING: Could not enable Auto-SSL: {e}", 0)
 
                 # Restart OpenLiteSpeed to apply changes and verify it started
                 Upgrade.stdOut("Restarting OpenLiteSpeed...", 0)
