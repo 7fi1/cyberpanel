@@ -4602,7 +4602,7 @@ pm.max_spare_servers = 3
                         content = f.read()
                     if 'autoSSL' not in content:
                         content = content.replace(
-                            'adminEmails',
+                            'adminEmails               root@localhost',
                             'adminEmails               root@localhost\nautoSSL                   1\nacmeEmail                 admin@cyberpanel.net',
                             1
                         )
