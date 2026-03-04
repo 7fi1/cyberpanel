@@ -79,8 +79,10 @@ class SieveClient:
             raise Exception('Sieve authentication failed: %s' % msg)
 
     def _authenticate_master(self, user, master_user, master_password):
+        # SASL PLAIN format per RFC 4616: <authz_id>\x00<authn_id>\x00<password>
+        # authz_id = target user, authn_id = master user, password = master password
         auth_str = base64.b64encode(
-            ('%s\x00%s*%s\x00%s' % (user, user, master_user, master_password)).encode('utf-8')
+            ('%s\x00%s\x00%s' % (user, master_user, master_password)).encode('utf-8')
         ).decode('ascii')
         self._send('AUTHENTICATE "PLAIN" "%s"' % auth_str)
         ok, _, msg = self._read_response()

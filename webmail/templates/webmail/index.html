@@ -34,8 +34,8 @@
                 <div class="wm-folder-item" ng-repeat="folder in folders"
                      ng-class="{'active': currentFolder === folder.name}"
                      ng-click="selectFolder(folder.name)">
-                    <i class="fa" ng-class="getFolderIcon(folder.name)"></i>
-                    <span class="wm-folder-name">{$ folder.name $}</span>
+                    <i class="fa" ng-class="getFolderIcon(folder)"></i>
+                    <span class="wm-folder-name">{$ folder.display_name || folder.name $}</span>
                     <span class="wm-badge" ng-if="folder.unread_count > 0">{$ folder.unread_count $}</span>
                 </div>
             </div>
