@@ -212,13 +212,22 @@ app.controller('webmailCtrl', ['$scope', '$http', '$sce', '$timeout', function($
         $scope.loadMessages();
     };
 
-    $scope.getFolderIcon = function(name) {
-        var n = name.toLowerCase();
+    $scope.getFolderIcon = function(folder) {
+        // Use folder_type from backend if available (mapped from Dovecot folder names)
+        var ftype = folder.folder_type || '';
+        if (ftype === 'inbox') return 'fa-inbox';
+        if (ftype === 'sent') return 'fa-paper-plane';
+        if (ftype === 'drafts') return 'fa-file';
+        if (ftype === 'trash') return 'fa-trash';
+        if (ftype === 'junk') return 'fa-ban';
+        if (ftype === 'archive') return 'fa-box-archive';
+        // Fallback to name-based detection
+        var n = (folder.display_name || folder.name || '').toLowerCase();
         if (n === 'inbox') return 'fa-inbox';
-        if (n === 'sent' || n.indexOf('sent') >= 0) return 'fa-paper-plane';
-        if (n === 'drafts' || n.indexOf('draft') >= 0) return 'fa-file';
-        if (n === 'trash' || n.indexOf('trash') >= 0) return 'fa-trash';
-        if (n === 'junk' || n === 'spam' || n.indexOf('junk') >= 0) return 'fa-ban';
+        if (n.indexOf('sent') >= 0) return 'fa-paper-plane';
+        if (n.indexOf('draft') >= 0) return 'fa-file';
+        if (n.indexOf('deleted') >= 0 || n.indexOf('trash') >= 0) return 'fa-trash';
+        if (n.indexOf('junk') >= 0 || n.indexOf('spam') >= 0) return 'fa-ban';
         if (n.indexOf('archive') >= 0) return 'fa-box-archive';
         return 'fa-folder';
     };
@@ -226,6 +235,10 @@ app.controller('webmailCtrl', ['$scope', '$http', '$sce', '$timeout', function($
     $scope.createFolder = function() {
         var name = prompt('Folder name:');
         if (!name) return;
+        // Dovecot namespace: prefix with INBOX. and use . as separator
+        if (name.indexOf('INBOX.') !== 0) {
+            name = 'INBOX.' + name;
+        }
         apiCall('/webmail/api/createFolder', {name: name}, function(data) {
             if (data.status === 1) {
                 $scope.loadFolders();

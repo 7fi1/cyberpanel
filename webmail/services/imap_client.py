@@ -6,7 +6,26 @@ from email.header import decode_header
 
 
 class IMAPClient:
-    """Wrapper around imaplib.IMAP4_SSL for Dovecot IMAP operations."""
+    """Wrapper around imaplib.IMAP4_SSL for Dovecot IMAP operations.
+
+    CyberPanel's Dovecot uses namespace: separator='.', prefix='INBOX.'
+    So folders are: INBOX, INBOX.Sent, INBOX.Drafts, INBOX.Deleted Items,
+    INBOX.Junk E-mail, INBOX.Archive, etc.
+    """
+
+    # Dovecot namespace config: separator='.', prefix='INBOX.'
+    NS_PREFIX = 'INBOX.'
+    NS_SEP = '.'
+
+    # Map of standard folder purposes to actual Dovecot folder names
+    # (CyberPanel creates these in mailUtilities.py)
+    SPECIAL_FOLDERS = {
+        'sent': 'INBOX.Sent',
+        'drafts': 'INBOX.Drafts',
+        'trash': 'INBOX.Deleted Items',
+        'junk': 'INBOX.Junk E-mail',
+        'archive': 'INBOX.Archive',
+    }
 
     def __init__(self, email_address, password, host='localhost', port=993,
                  master_user=None, master_password=None):
@@ -68,6 +87,23 @@ class IMAPClient:
             return {'name': name, 'delimiter': delimiter, 'flags': flags}
         return None
 
+    def _display_name(self, folder_name):
+        """Strip INBOX. prefix for display, keep INBOX as-is."""
+        if folder_name == 'INBOX':
+            return 'Inbox'
+        if folder_name.startswith(self.NS_PREFIX):
+            return folder_name[len(self.NS_PREFIX):]
+        return folder_name
+
+    def _folder_type(self, folder_name):
+        """Identify special folder type for UI icon mapping."""
+        for ftype, fname in self.SPECIAL_FOLDERS.items():
+            if folder_name == fname:
+                return ftype
+        if folder_name == 'INBOX':
+            return 'inbox'
+        return 'folder'
+
     def list_folders(self):
         status, data = self.conn.list()
         if status != 'OK':
@@ -83,10 +119,9 @@ class IMAPClient:
             unread = 0
             total = 0
             try:
-                st, counts = self.conn.status(
-                    '"%s"' % folder_name if ' ' in folder_name else folder_name,
-                    '(MESSAGES UNSEEN)'
-                )
+                # Quote folder names with spaces for STATUS command
+                quoted = '"%s"' % folder_name
+                st, counts = self.conn.status(quoted, '(MESSAGES UNSEEN)')
                 if st == 'OK' and counts[0]:
                     count_str = counts[0].decode('utf-8', errors='replace') if isinstance(counts[0], bytes) else counts[0]
                     m = re.search(r'MESSAGES\s+(\d+)', count_str)
@@ -99,6 +134,8 @@ class IMAPClient:
                 pass
             folders.append({
                 'name': folder_name,
+                'display_name': self._display_name(folder_name),
+                'folder_type': self._folder_type(folder_name),
                 'delimiter': parsed['delimiter'],
                 'flags': parsed['flags'],
                 'unread_count': unread,
@@ -106,8 +143,12 @@ class IMAPClient:
             })
         return folders
 
+    def _select(self, folder):
+        """Select a folder, quoting names with spaces."""
+        return self.conn.select('"%s"' % folder)
+
     def list_messages(self, folder='INBOX', page=1, per_page=25, sort='date_desc'):
-        self.conn.select(folder)
+        self._select(folder)
         status, data = self.conn.uid('search', None, 'ALL')
         if status != 'OK':
             return {'messages': [], 'total': 0, 'page': page, 'pages': 0}
@@ -166,7 +207,7 @@ class IMAPClient:
         return {'messages': messages, 'total': total, 'page': page, 'pages': pages}
 
     def search_messages(self, folder='INBOX', query='', criteria='ALL'):
-        self.conn.select(folder)
+        self._select(folder)
         if query:
             search_criteria = '(OR OR (FROM "%s") (TO "%s") (SUBJECT "%s"))' % (query, query, query)
         else:
@@ -177,7 +218,7 @@ class IMAPClient:
         return data[0].split() if data[0] else []
 
     def get_message(self, folder, uid):
-        self.conn.select(folder)
+        self._select(folder)
         status, data = self.conn.uid('fetch', str(uid).encode(), '(RFC822 FLAGS)')
         if status != 'OK' or not data or not data[0]:
             return None
@@ -205,7 +246,7 @@ class IMAPClient:
         return parsed
 
     def get_attachment(self, folder, uid, part_id):
-        self.conn.select(folder)
+        self._select(folder)
         status, data = self.conn.uid('fetch', str(uid).encode(), '(RFC822)')
         if status != 'OK' or not data or not data[0]:
             return None
@@ -236,15 +277,17 @@ class IMAPClient:
         return None
 
     def move_messages(self, folder, uids, target_folder):
-        self.conn.select(folder)
+        self._select(folder)
         uid_str = ','.join(str(u) for u in uids)
+        # Quote target folder name for folders with spaces (e.g. "INBOX.Deleted Items")
+        quoted_target = '"%s"' % target_folder
         try:
-            status, _ = self.conn.uid('move', uid_str, target_folder)
+            status, _ = self.conn.uid('move', uid_str, quoted_target)
             if status == 'OK':
                 return True
         except Exception:
             pass
-        status, _ = self.conn.uid('copy', uid_str, target_folder)
+        status, _ = self.conn.uid('copy', uid_str, quoted_target)
         if status == 'OK':
             self.conn.uid('store', uid_str, '+FLAGS', '(\\Deleted)')
             self.conn.expunge()
@@ -252,25 +295,27 @@ class IMAPClient:
         return False
 
     def delete_messages(self, folder, uids):
-        self.conn.select(folder)
+        self._select(folder)
         uid_str = ','.join(str(u) for u in uids)
-        trash_folders = ['Trash', 'INBOX.Trash', '[Gmail]/Trash']
+        # CyberPanel/Dovecot uses "INBOX.Deleted Items" as trash
+        trash_folders = ['INBOX.Deleted Items', 'INBOX.Trash', 'Trash']
         if folder not in trash_folders:
             for trash in trash_folders:
                 try:
-                    status, _ = self.conn.uid('copy', uid_str, trash)
+                    status, _ = self.conn.uid('copy', uid_str, '"%s"' % trash)
                     if status == 'OK':
                         self.conn.uid('store', uid_str, '+FLAGS', '(\\Deleted)')
                         self.conn.expunge()
                         return True
                 except Exception:
                     continue
+        # Already in trash or no trash folder found - permanently delete
         self.conn.uid('store', uid_str, '+FLAGS', '(\\Deleted)')
         self.conn.expunge()
         return True
 
     def set_flags(self, folder, uids, flags, action='add'):
-        self.conn.select(folder)
+        self._select(folder)
         uid_str = ','.join(str(u) for u in uids)
         flag_str = '(%s)' % ' '.join(flags)
         if action == 'add':
@@ -304,5 +349,5 @@ class IMAPClient:
         if isinstance(raw_message, str):
             raw_message = raw_message.encode('utf-8')
         flag_str = '(%s)' % flags if flags else None
-        status, _ = self.conn.append(folder, flag_str, None, raw_message)
+        status, _ = self.conn.append('"%s"' % folder, flag_str, None, raw_message)
         return status == 'OK'

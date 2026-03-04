@@ -75,6 +75,16 @@ class WebmailManager:
         addr = self._get_email()
         if not addr:
             raise Exception('No email account selected')
+
+        # If using master user (SSO), we can't auth to SMTP since
+        # auth_master_user_separator is not set in Dovecot.
+        # Use local relay via port 25 instead (Postfix permits localhost).
+        master_user, master_pass = self._get_master_config()
+        is_standalone = self.request.session.get('webmail_standalone', False)
+
+        if master_user and master_pass and not is_standalone:
+            return SMTPClient(addr, '', use_local_relay=True)
+
         password = self.request.session.get('webmail_password', '')
         return SMTPClient(addr, password)
 
@@ -233,7 +243,9 @@ class WebmailManager:
         name = data.get('name', '')
         if not name:
             return self._error('Folder name is required.')
-        protected = ['INBOX', 'Sent', 'Drafts', 'Trash', 'Junk', 'Spam']
+        # CyberPanel/Dovecot folder names (INBOX. prefix, separator '.')
+        protected = ['INBOX', 'INBOX.Sent', 'INBOX.Drafts', 'INBOX.Deleted Items',
+                      'INBOX.Junk E-mail', 'INBOX.Archive']
         if name in protected:
             return self._error('Cannot delete system folder.')
         try:
@@ -407,7 +419,8 @@ class WebmailManager:
             )
 
             with self._get_imap() as imap:
-                draft_folders = ['Drafts', 'INBOX.Drafts', 'Draft']
+                # CyberPanel's Dovecot uses INBOX.Drafts
+                draft_folders = ['INBOX.Drafts', 'Drafts', 'Draft']
                 saved = False
                 for folder in draft_folders:
                     try:
@@ -417,8 +430,8 @@ class WebmailManager:
                     except Exception:
                         continue
                 if not saved:
-                    imap.create_folder('Drafts')
-                    imap.append_message('Drafts', mime_msg.as_bytes(), '\\Draft \\Seen')
+                    imap.create_folder('INBOX.Drafts')
+                    imap.append_message('INBOX.Drafts', mime_msg.as_bytes(), '\\Draft \\Seen')
 
             return self._success()
         except Exception as e:
@@ -664,7 +677,12 @@ class WebmailManager:
             return self._error(str(e))
 
     def _sync_sieve_rules(self, email):
-        """Generate sieve script from DB rules and upload to Dovecot."""
+        """Generate sieve script from DB rules and upload to Dovecot.
+
+        ManageSieve may not be available if dovecot-sieve/pigeonhole is not
+        installed or if the ManageSieve service isn't running on port 4190.
+        Rules are always saved to the database; Sieve sync is best-effort.
+        """
         rules = SieveRule.objects.filter(email_account=email, is_active=True).order_by('priority')
         rule_dicts = []
         for r in rules:
@@ -683,6 +701,10 @@ class WebmailManager:
             with self._get_sieve(email) as sieve:
                 sieve.put_script('cyberpanel', script)
                 sieve.activate_script('cyberpanel')
+        except ConnectionRefusedError:
+            logging.CyberCPLogFileWriter.writeToFile(
+                'Sieve sync skipped for %s: ManageSieve not running on port 4190. '
+                'Install dovecot-sieve and enable ManageSieve.' % email)
         except Exception as e:
             logging.CyberCPLogFileWriter.writeToFile('Sieve sync failed for %s: %s' % (email, str(e)))
 
