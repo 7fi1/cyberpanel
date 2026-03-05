@@ -686,21 +686,42 @@ module cyberpanel_ols {
         """Install Sieve (Dovecot Sieve) for email filtering on all OS variants"""
         try:
             InstallCyberPanel.stdOut("Installing Sieve (Dovecot Sieve) for email filtering...", 1)
-            
+
             if self.distro == ubuntu:
                 # Install dovecot-sieve and dovecot-managesieved
                 self.install_package('dovecot-sieve dovecot-managesieved')
             else:
                 # For CentOS/AlmaLinux/OpenEuler
                 self.install_package('dovecot-pigeonhole')
-            
+
+            # Write ManageSieve config
+            managesieve_conf = '/etc/dovecot/conf.d/20-managesieve.conf'
+            with open(managesieve_conf, 'w') as f:
+                f.write("""protocols = $protocols sieve
+
+service managesieve-login {
+  inet_listener sieve {
+    port = 4190
+  }
+}
+
+service managesieve {
+  process_limit = 256
+}
+
+protocol sieve {
+  managesieve_notify_capability = mailto
+  managesieve_sieve_capability = fileinto reject envelope encoded-character vacation subaddress comparator-i;ascii-numeric relational regex imap4flags copy include variables body enotify environment mailbox date index ihave duplicate mime foreverypart extracttext
+}
+""")
+
             # Add Sieve port 4190 to firewall
             from plogical.firewallUtilities import FirewallUtilities
             FirewallUtilities.addSieveFirewallRule()
-            
+
             InstallCyberPanel.stdOut("Sieve successfully installed and configured!", 1)
             return 1
-            
+
         except BaseException as msg:
             logging.InstallLog.writeToFile('[ERROR] ' + str(msg) + " [installSieve]")
             return 0

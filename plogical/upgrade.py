@@ -2850,6 +2850,85 @@ CREATE TABLE `websiteFunctions_backupsv2` (`id` integer AUTO_INCREMENT NOT NULL 
             pass
 
     @staticmethod
+    def setupSieve():
+        """Enable Sieve plugin and ManageSieve for email filtering (idempotent)"""
+        try:
+            if not os.path.exists('/etc/dovecot/dovecot.conf'):
+                Upgrade.stdOut("Dovecot not installed, skipping Sieve setup.", 0)
+                return
+
+            dovecot_conf = '/etc/dovecot/dovecot.conf'
+            with open(dovecot_conf, 'r') as f:
+                content = f.read()
+
+            changed = False
+
+            # Add sieve to protocols if missing
+            if 'sieve' not in content.split('\n')[0]:
+                content = content.replace('protocols = imap pop3', 'protocols = imap pop3 sieve', 1)
+                changed = True
+
+            # Add sieve plugin to protocol lda if missing
+            import re
+            lda_match = re.search(r'(protocol lda\s*\{[^}]*mail_plugins\s*=\s*)(zlib)(\s*\n)', content)
+            if lda_match and 'sieve' not in lda_match.group(0):
+                content = content.replace(lda_match.group(0),
+                    lda_match.group(1) + 'zlib sieve' + lda_match.group(3))
+                changed = True
+
+            if changed:
+                with open(dovecot_conf, 'w') as f:
+                    f.write(content)
+
+            # Write ManageSieve config if not properly configured
+            managesieve_conf = '/etc/dovecot/conf.d/20-managesieve.conf'
+            write_managesieve = True
+            if os.path.exists(managesieve_conf):
+                with open(managesieve_conf, 'r') as f:
+                    existing = f.read()
+                if 'inet_listener sieve' in existing and not existing.strip().startswith('#'):
+                    write_managesieve = False
+
+            if write_managesieve:
+                with open(managesieve_conf, 'w') as f:
+                    f.write("""protocols = $protocols sieve
+
+service managesieve-login {
+  inet_listener sieve {
+    port = 4190
+  }
+}
+
+service managesieve {
+  process_limit = 256
+}
+
+protocol sieve {
+  managesieve_notify_capability = mailto
+  managesieve_sieve_capability = fileinto reject envelope encoded-character vacation subaddress comparator-i;ascii-numeric relational regex imap4flags copy include variables body enotify environment mailbox date index ihave duplicate mime foreverypart extracttext
+}
+""")
+
+            # Install sieve packages if missing
+            if os.path.exists('/etc/lsb-release') or os.path.exists('/etc/debian_version'):
+                Upgrade.executioner('apt-get install -y dovecot-sieve dovecot-managesieved', 'Install Sieve packages', 0)
+            else:
+                Upgrade.executioner('yum install -y dovecot-pigeonhole', 'Install Sieve packages', 0)
+
+            # Open firewall port
+            try:
+                from plogical.firewallUtilities import FirewallUtilities
+                FirewallUtilities.addSieveFirewallRule()
+            except:
+                pass
+
+            subprocess.call(['systemctl', 'restart', 'dovecot'])
+            Upgrade.stdOut("Sieve setup complete!", 0)
+
+        except BaseException as msg:
+            Upgrade.stdOut("setupSieve error: " + str(msg), 0)
+
+    @staticmethod
     def setupWebmail():
         """Set up Dovecot master user and webmail config for SSO (idempotent)"""
         try:
@@ -4917,6 +4996,7 @@ pm.max_spare_servers = 3
         Upgrade.manageServiceMigrations()
         Upgrade.fixMailTLS()
         Upgrade.setupWebmail()
+        Upgrade.setupSieve()
         Upgrade.enableServices()
 
         Upgrade.installPHP73()
