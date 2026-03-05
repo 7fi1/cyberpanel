@@ -709,6 +709,16 @@ module cyberpanel_ols {
     def setupWebmail():
         """Set up Dovecot master user and webmail config for SSO"""
         try:
+            # Skip if dovecot not installed
+            if not os.path.exists('/etc/dovecot/dovecot.conf'):
+                InstallCyberPanel.stdOut("Dovecot not installed, skipping webmail setup.", 1)
+                return 1
+
+            # Skip if already configured
+            if os.path.exists('/etc/cyberpanel/webmail.conf') and os.path.exists('/etc/dovecot/master-users'):
+                InstallCyberPanel.stdOut("Webmail master user already configured.", 1)
+                return 1
+
             InstallCyberPanel.stdOut("Setting up webmail master user for SSO...", 1)
 
             from plogical.randomPassword import generate_pass
@@ -732,6 +742,9 @@ module cyberpanel_ols {
             os.chmod('/etc/dovecot/master-users', 0o600)
             subprocess.call(['chown', 'dovecot:dovecot', '/etc/dovecot/master-users'])
 
+            # Ensure /etc/cyberpanel/ exists
+            os.makedirs('/etc/cyberpanel', exist_ok=True)
+
             # Write /etc/cyberpanel/webmail.conf
             import json as json_module
             webmail_conf = {
@@ -742,6 +755,33 @@ module cyberpanel_ols {
                 json_module.dump(webmail_conf, f)
             os.chmod('/etc/cyberpanel/webmail.conf', 0o600)
             subprocess.call(['chown', 'cyberpanel:cyberpanel', '/etc/cyberpanel/webmail.conf'])
+
+            # Patch dovecot.conf if master passdb block missing
+            dovecot_conf_path = '/etc/dovecot/dovecot.conf'
+            with open(dovecot_conf_path, 'r') as f:
+                dovecot_content = f.read()
+
+            if 'auth_master_user_separator' not in dovecot_content:
+                master_block = """auth_master_user_separator = *
+
+passdb {
+    driver = passwd-file
+    master = yes
+    args = /etc/dovecot/master-users
+    result_success = continue
+}
+
+"""
+                dovecot_content = dovecot_content.replace(
+                    'passdb {',
+                    master_block + 'passdb {',
+                    1
+                )
+                with open(dovecot_conf_path, 'w') as f:
+                    f.write(dovecot_content)
+
+            # Restart Dovecot to pick up changes
+            subprocess.call(['systemctl', 'restart', 'dovecot'])
 
             InstallCyberPanel.stdOut("Webmail master user setup complete!", 1)
             return 1
