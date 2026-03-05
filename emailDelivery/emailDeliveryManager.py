@@ -61,7 +61,6 @@ class EmailDeliveryManager:
         except Exception as e:
             self.logger.writeToFile('[EmailDeliveryManager.home] Error: %s' % str(e))
             proc = httpProc(request, 'emailDelivery/index.html', {
-                'error': str(e),
                 'isConnected': False,
                 'adminEmail': '',
                 'adminName': '',
@@ -578,9 +577,13 @@ class EmailDeliveryManager:
                 smtpPassword = result.get('data', {}).get('new_password', '')
 
             # Configure Postfix relay via mailUtilities subprocess
-            execPath = "/usr/local/CyberCP/bin/python /usr/local/CyberCP/plogical/mailUtilities.py"
-            execPath += " configureRelayHost --smtpHost %s --smtpPort %s --smtpUser '%s' --smtpPassword '%s'" % (
-                account.smtp_host, account.smtp_port, account.smtp_username, smtpPassword
+            import shlex
+            execPath = "/usr/local/CyberCP/bin/python /usr/local/CyberCP/plogical/mailUtilities.py" \
+                       " configureRelayHost --smtpHost %s --smtpPort %s --smtpUser %s --smtpPassword %s" % (
+                shlex.quote(str(account.smtp_host)),
+                shlex.quote(str(account.smtp_port)),
+                shlex.quote(str(account.smtp_username)),
+                shlex.quote(str(smtpPassword))
             )
             output = ProcessUtilities.outputExecutioner(execPath)
 
