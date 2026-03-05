@@ -705,7 +705,8 @@ module cyberpanel_ols {
             logging.InstallLog.writeToFile('[ERROR] ' + str(msg) + " [installSieve]")
             return 0
 
-    def setupWebmail(self):
+    @staticmethod
+    def setupWebmail():
         """Set up Dovecot master user and webmail config for SSO"""
         try:
             InstallCyberPanel.stdOut("Setting up webmail master user for SSO...", 1)
@@ -1364,8 +1365,7 @@ def Main(cwd, mysql, distro, ent, serial=None, port="8090", ftp=None, dns=None, 
     logging.InstallLog.writeToFile('Installing Sieve for email filtering..,55')
     installer.installSieve()
 
-    logging.InstallLog.writeToFile('Setting up webmail master user..,57')
-    installer.setupWebmail()
+    ## setupWebmail is called later, after Dovecot is installed (see install.py)
 
     logging.InstallLog.writeToFile('Installing MySQL,60')
     installer.installMySQL(mysql)

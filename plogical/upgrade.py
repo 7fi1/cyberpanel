@@ -2805,48 +2805,48 @@ CREATE TABLE `websiteFunctions_backupsv2` (`id` integer AUTO_INCREMENT NOT NULL 
     def setupWebmail():
         """Set up Dovecot master user and webmail config for SSO (idempotent)"""
         try:
-            # Skip if already configured
-            if os.path.exists('/etc/cyberpanel/webmail.conf'):
-                Upgrade.stdOut("Webmail master user already configured, skipping.", 0)
-                return
-
             # Skip if no mail server installed
             if not os.path.exists('/etc/dovecot/dovecot.conf'):
                 Upgrade.stdOut("Dovecot not installed, skipping webmail setup.", 0)
                 return
 
-            Upgrade.stdOut("Setting up webmail master user for SSO...", 0)
+            # Always run migrations and dovecot.conf patching even if conf exists
+            already_configured = os.path.exists('/etc/cyberpanel/webmail.conf') and \
+                                 os.path.exists('/etc/dovecot/master-users')
 
-            from plogical.randomPassword import generate_pass
+            if not already_configured:
+                Upgrade.stdOut("Setting up webmail master user for SSO...", 0)
 
-            master_password = generate_pass(32)
+                from plogical.randomPassword import generate_pass
 
-            # Hash the password using doveadm
-            result = subprocess.run(
-                ['doveadm', 'pw', '-s', 'SHA512-CRYPT', '-p', master_password],
-                capture_output=True, text=True
-            )
-            if result.returncode != 0:
-                Upgrade.stdOut("doveadm pw failed: " + result.stderr, 0)
-                return
+                master_password = generate_pass(32)
 
-            password_hash = result.stdout.strip()
+                # Hash the password using doveadm
+                result = subprocess.run(
+                    ['doveadm', 'pw', '-s', 'SHA512-CRYPT', '-p', master_password],
+                    capture_output=True, text=True
+                )
+                if result.returncode != 0:
+                    Upgrade.stdOut("doveadm pw failed: " + result.stderr, 0)
+                    return
 
-            # Write /etc/dovecot/master-users
-            with open('/etc/dovecot/master-users', 'w') as f:
-                f.write('cyberpanel_master:' + password_hash + '\n')
-            os.chmod('/etc/dovecot/master-users', 0o600)
-            subprocess.call(['chown', 'dovecot:dovecot', '/etc/dovecot/master-users'])
+                password_hash = result.stdout.strip()
 
-            # Write /etc/cyberpanel/webmail.conf
-            webmail_conf = {
-                'master_user': 'cyberpanel_master',
-                'master_password': master_password
-            }
-            with open('/etc/cyberpanel/webmail.conf', 'w') as f:
-                json.dump(webmail_conf, f)
-            os.chmod('/etc/cyberpanel/webmail.conf', 0o600)
-            subprocess.call(['chown', 'cyberpanel:cyberpanel', '/etc/cyberpanel/webmail.conf'])
+                # Write /etc/dovecot/master-users
+                with open('/etc/dovecot/master-users', 'w') as f:
+                    f.write('cyberpanel_master:' + password_hash + '\n')
+                os.chmod('/etc/dovecot/master-users', 0o600)
+                subprocess.call(['chown', 'dovecot:dovecot', '/etc/dovecot/master-users'])
+
+                # Write /etc/cyberpanel/webmail.conf
+                webmail_conf = {
+                    'master_user': 'cyberpanel_master',
+                    'master_password': master_password
+                }
+                with open('/etc/cyberpanel/webmail.conf', 'w') as f:
+                    json.dump(webmail_conf, f)
+                os.chmod('/etc/cyberpanel/webmail.conf', 0o600)
+                subprocess.call(['chown', 'cyberpanel:cyberpanel', '/etc/cyberpanel/webmail.conf'])
 
             # Patch dovecot.conf if master user config not present
             dovecot_conf_path = '/etc/dovecot/dovecot.conf'

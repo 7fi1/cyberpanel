@@ -209,7 +209,9 @@ class IMAPClient:
     def search_messages(self, folder='INBOX', query='', criteria='ALL'):
         self._select(folder)
         if query:
-            search_criteria = '(OR OR (FROM "%s") (TO "%s") (SUBJECT "%s"))' % (query, query, query)
+            # Escape quotes to prevent IMAP search injection
+            safe_query = query.replace('\\', '\\\\').replace('"', '\\"')
+            search_criteria = '(OR OR (FROM "%s") (TO "%s") (SUBJECT "%s"))' % (safe_query, safe_query, safe_query)
         else:
             search_criteria = criteria
         status, data = self.conn.uid('search', None, search_criteria)
@@ -263,13 +265,16 @@ class IMAPClient:
         msg = email.message_from_bytes(raw) if isinstance(raw, bytes) else email.message_from_string(raw)
         part_idx = 0
         for part in msg.walk():
-            if part.get_content_maintype() == 'multipart':
+            content_type = part.get_content_type()
+            if content_type.startswith('multipart/'):
                 continue
-            if part.get('Content-Disposition') and 'attachment' in part.get('Content-Disposition', ''):
+            disposition = str(part.get('Content-Disposition', ''))
+            # Match the same indexing logic as email_parser.py:
+            # count parts that are attachments or non-text with disposition
+            if 'attachment' in disposition or (content_type not in ('text/html', 'text/plain') and disposition):
                 if str(part_idx) == str(part_id):
                     filename = part.get_filename() or 'attachment'
                     filename = self._decode_header_value(filename)
-                    content_type = part.get_content_type()
                     payload = part.get_payload(decode=True)
                     return (filename, content_type, payload)
                 part_idx += 1
