@@ -184,9 +184,12 @@ class WebmailManager:
         accounts = self._get_managed_accounts()
         if not accounts:
             return self._error('No email accounts found for your user.')
-        email = accounts[0]
-        self.request.session['webmail_email'] = email
-        return self._success({'email': email, 'accounts': accounts})
+        # Preserve previously selected account if still valid
+        current = self.request.session.get('webmail_email')
+        if not current or current not in accounts:
+            current = accounts[0]
+        self.request.session['webmail_email'] = current
+        return self._success({'email': current, 'accounts': accounts})
 
     def apiListAccounts(self):
         accounts = self._get_managed_accounts()

@@ -171,6 +171,8 @@ app.controller('webmailCtrl', ['$scope', '$http', '$sce', '$timeout', function($
                 $scope.switchEmail = data.email;
                 $scope.loadFolders();
                 $scope.loadSettings();
+            } else {
+                notify(data.error_message || 'No email accounts found. Create an email account first or use the standalone login.', 'error');
             }
         });
     };
@@ -199,6 +201,8 @@ app.controller('webmailCtrl', ['$scope', '$http', '$sce', '$timeout', function($
             if (data.status === 1) {
                 $scope.folders = data.folders;
                 $scope.loadMessages();
+            } else {
+                notify(data.error_message || 'Failed to load folders.', 'error');
             }
         });
     };
