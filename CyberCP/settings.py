@@ -76,6 +76,7 @@ INSTALLED_APPS = [
     'IncBackups',
     'aiScanner',
     'webmail',
+    'emailDelivery',
     #    'WebTerminal'
 ]
 
