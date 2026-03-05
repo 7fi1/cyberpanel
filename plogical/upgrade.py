@@ -2876,9 +2876,38 @@ CREATE TABLE `websiteFunctions_backupsv2` (`id` integer AUTO_INCREMENT NOT NULL 
                     lda_match.group(1) + 'zlib sieve' + lda_match.group(3))
                 changed = True
 
+            # Add lda_mailbox_autocreate/autosubscribe for sieve fileinto
+            if 'lda_mailbox_autocreate' not in content:
+                content = re.sub(
+                    r'(protocol lda\s*\{[^}]*mail_plugins\s*=\s*zlib sieve\n)',
+                    r'\1    lda_mailbox_autocreate = yes\n    lda_mailbox_autosubscribe = yes\n',
+                    content)
+                changed = True
+
+            # Add sieve storage settings to plugin section
+            if 'sieve_dir' not in content:
+                content = re.sub(
+                    r'(plugin\s*\{[^}]*zlib_save_level\s*=\s*6\n)',
+                    r'\1\n  sieve = ~/sieve/.dovecot.sieve\n  sieve_dir = ~/sieve\n',
+                    content)
+                changed = True
+
             if changed:
                 with open(dovecot_conf, 'w') as f:
                     f.write(content)
+
+            # Fix dovecot-sql.conf.ext to include home directory for sieve storage
+            sql_conf = '/etc/dovecot/dovecot-sql.conf.ext'
+            if os.path.exists(sql_conf):
+                with open(sql_conf, 'r') as f:
+                    sql_content = f.read()
+                if 'as home' not in sql_content and "user_query" in sql_content:
+                    sql_content = sql_content.replace(
+                        "user_query = SELECT '5000' as uid, '5000' as gid, mail FROM e_users WHERE email='%u';",
+                        "user_query = SELECT '5000' as uid, '5000' as gid, mail, CONCAT('/home/vmail/', SUBSTRING_INDEX(email, '@', -1), '/', SUBSTRING_INDEX(email, '@', 1)) as home FROM e_users WHERE email='%u';"
+                    )
+                    with open(sql_conf, 'w') as f:
+                        f.write(sql_content)
 
             # Write ManageSieve config if not properly configured
             managesieve_conf = '/etc/dovecot/conf.d/20-managesieve.conf'
