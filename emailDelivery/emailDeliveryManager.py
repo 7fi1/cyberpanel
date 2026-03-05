@@ -1,10 +1,10 @@
 import json
 import requests
-from django.shortcuts import render
 from django.http import JsonResponse
 from loginSystem.models import Administrator
 from plogical.acl import ACLManager
 from plogical.CyberCPLogFileWriter import CyberCPLogFileWriter as logging
+from plogical.httpProc import httpProc
 from plogical.processUtilities import ProcessUtilities
 from .models import CyberMailAccount, CyberMailDomain
 
@@ -49,22 +49,24 @@ class EmailDeliveryManager:
             except CyberMailAccount.DoesNotExist:
                 pass
 
-            context = {
+            data = {
                 'isConnected': isConnected,
                 'adminEmail': admin.email,
                 'adminName': admin.firstName if hasattr(admin, 'firstName') else admin.userName,
             }
 
-            return render(request, 'emailDelivery/index.html', context)
+            proc = httpProc(request, 'emailDelivery/index.html', data, 'admin')
+            return proc.render()
 
         except Exception as e:
             self.logger.writeToFile('[EmailDeliveryManager.home] Error: %s' % str(e))
-            return render(request, 'emailDelivery/index.html', {
+            proc = httpProc(request, 'emailDelivery/index.html', {
                 'error': str(e),
                 'isConnected': False,
                 'adminEmail': '',
                 'adminName': '',
             })
+            return proc.render()
 
     def getStatus(self, request, userID):
         try:
