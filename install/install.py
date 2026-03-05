@@ -2880,11 +2880,13 @@ def main():
         checks.install_postfix_dovecot()
         checks.setup_email_Passwords(installCyberPanel.InstallCyberPanel.mysqlPassword, mysql)
         checks.setup_postfix_dovecot_config(mysql)
+        installCyberPanel.InstallCyberPanel.setupWebmail()
     else:
         if args.postfix == 'ON':
             checks.install_postfix_dovecot()
             checks.setup_email_Passwords(installCyberPanel.InstallCyberPanel.mysqlPassword, mysql)
             checks.setup_postfix_dovecot_config(mysql)
+            installCyberPanel.InstallCyberPanel.setupWebmail()
 
     checks.install_unzip()
     checks.install_zip()

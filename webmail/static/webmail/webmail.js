@@ -148,12 +148,13 @@ app.controller('webmailCtrl', ['$scope', '$http', '$sce', '$timeout', function($
     var draftTimer = null;
 
     // ── Helper ───────────────────────────────────────────────
-    function apiCall(url, data, callback) {
+    function apiCall(url, data, callback, errback) {
         var config = {headers: {'X-CSRFToken': getCookie('csrftoken')}};
         $http.post(url, data || {}, config).then(function(resp) {
             if (callback) callback(resp.data);
         }, function(err) {
             console.error('API error:', url, err);
+            if (errback) errback(err);
         });
     }
 
@@ -187,6 +188,10 @@ app.controller('webmailCtrl', ['$scope', '$http', '$sce', '$timeout', function($
                 $scope.currentPage = 1;
                 $scope.openMsg = null;
                 $scope.viewMode = 'list';
+                $scope.messages = [];
+                $scope.contacts = [];
+                $scope.filteredContacts = [];
+                $scope.sieveRules = [];
                 $scope.loadFolders();
                 $scope.loadSettings();
             } else {
@@ -267,7 +272,11 @@ app.controller('webmailCtrl', ['$scope', '$http', '$sce', '$timeout', function($
                 $scope.totalMessages = data.total;
                 $scope.totalPages = data.pages;
                 $scope.selectAll = false;
+            } else {
+                notify(data.error_message || 'Failed to load messages.', 'error');
             }
+        }, function() {
+            $scope.loading = false;
         });
     };
 
@@ -296,10 +305,28 @@ app.controller('webmailCtrl', ['$scope', '$http', '$sce', '$timeout', function($
             query: $scope.searchQuery
         }, function(data) {
             $scope.loading = false;
-            if (data.status === 1) {
-                // Re-fetch with found UIDs (simplified: reload)
-                $scope.loadMessages();
+            if (data.status === 1 && data.uids && data.uids.length > 0) {
+                // Fetch the found messages by their UIDs
+                apiCall('/webmail/api/listMessages', {
+                    folder: $scope.currentFolder,
+                    page: 1,
+                    perPage: data.uids.length,
+                    uids: data.uids
+                }, function(msgData) {
+                    if (msgData.status === 1) {
+                        $scope.messages = msgData.messages;
+                        $scope.totalMessages = msgData.total;
+                        $scope.totalPages = msgData.pages;
+                    }
+                });
+            } else if (data.status === 1) {
+                $scope.messages = [];
+                $scope.totalMessages = 0;
+                $scope.totalPages = 1;
+                notify('No messages found.', 'info');
             }
+        }, function() {
+            $scope.loading = false;
         });
     };
 
@@ -311,15 +338,26 @@ app.controller('webmailCtrl', ['$scope', '$http', '$sce', '$timeout', function($
         }, function(data) {
             if (data.status === 1) {
                 $scope.openMsg = data.message;
-                $scope.trustedBody = $sce.trustAsHtml(data.message.body_html || ('<pre>' + (data.message.body_text || '') + '</pre>'));
+                var html = data.message.body_html || '';
+                var text = data.message.body_text || '';
+                // Use sanitized HTML from backend, or escape plain text
+                if (html) {
+                    $scope.trustedBody = $sce.trustAsHtml(html);
+                } else {
+                    // Escape plain text to prevent XSS
+                    var escaped = text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+                    $scope.trustedBody = $sce.trustAsHtml('<pre>' + escaped + '</pre>');
+                }
                 $scope.viewMode = 'read';
-                msg.is_read = true;
-                // Update folder unread count
-                $scope.folders.forEach(function(f) {
-                    if (f.name === $scope.currentFolder && f.unread_count > 0) {
-                        f.unread_count--;
-                    }
-                });
+                // Only decrement unread count if message was actually unread
+                if (!msg.is_read) {
+                    msg.is_read = true;
+                    $scope.folders.forEach(function(f) {
+                        if (f.name === $scope.currentFolder && f.unread_count > 0) {
+                            f.unread_count--;
+                        }
+                    });
+                }
             }
         });
     };
@@ -344,11 +382,12 @@ app.controller('webmailCtrl', ['$scope', '$http', '$sce', '$timeout', function($
 
     $scope.replyTo = function() {
         if (!$scope.openMsg) return;
+        var subj = $scope.openMsg.subject || '';
         $scope.compose = {
             to: $scope.openMsg.from,
             cc: '',
             bcc: '',
-            subject: ($scope.openMsg.subject.match(/^Re:/i) ? '' : 'Re: ') + $scope.openMsg.subject,
+            subject: (subj.match(/^Re:/i) ? '' : 'Re: ') + subj,
             body: '',
             files: [],
             inReplyTo: $scope.openMsg.message_id || '',
@@ -374,7 +413,7 @@ app.controller('webmailCtrl', ['$scope', '$http', '$sce', '$timeout', function($
             to: $scope.openMsg.from,
             cc: cc.join(', '),
             bcc: '',
-            subject: ($scope.openMsg.subject.match(/^Re:/i) ? '' : 'Re: ') + $scope.openMsg.subject,
+            subject: (($scope.openMsg.subject || '').match(/^Re:/i) ? '' : 'Re: ') + ($scope.openMsg.subject || ''),
             body: '',
             files: [],
             inReplyTo: $scope.openMsg.message_id || '',
@@ -384,7 +423,7 @@ app.controller('webmailCtrl', ['$scope', '$http', '$sce', '$timeout', function($
         $timeout(function() {
             var editor = document.getElementById('wm-compose-body');
             if (editor) {
-                editor.innerHTML = '<br><br><div class="wm-quoted">On ' + $scope.openMsg.date + ', ' + $scope.openMsg.from + ' wrote:<br><blockquote>' + ($scope.openMsg.body_html || $scope.openMsg.body_text || '') + '</blockquote></div>';
+                editor.innerHTML = '<br><br><div class="wm-quoted">On ' + ($scope.openMsg.date || '') + ', ' + ($scope.openMsg.from || '') + ' wrote:<br><blockquote>' + ($scope.openMsg.body_html || $scope.openMsg.body_text || '') + '</blockquote></div>';
             }
         }, 100);
         startDraftAutoSave();
@@ -392,11 +431,12 @@ app.controller('webmailCtrl', ['$scope', '$http', '$sce', '$timeout', function($
 
     $scope.forwardMsg = function() {
         if (!$scope.openMsg) return;
+        var fsubj = $scope.openMsg.subject || '';
         $scope.compose = {
             to: '',
             cc: '',
             bcc: '',
-            subject: ($scope.openMsg.subject.match(/^Fwd:/i) ? '' : 'Fwd: ') + $scope.openMsg.subject,
+            subject: (fsubj.match(/^Fwd:/i) ? '' : 'Fwd: ') + fsubj,
             body: '',
             files: [],
             inReplyTo: '',
@@ -614,6 +654,7 @@ app.controller('webmailCtrl', ['$scope', '$http', '$sce', '$timeout', function($
 
     // ── View Mode ────────────────────────────────────────────
     $scope.setView = function(mode) {
+        stopDraftAutoSave();
         $scope.viewMode = mode;
         $scope.openMsg = null;
         if (mode === 'contacts') $scope.loadContacts();
@@ -680,6 +721,17 @@ app.controller('webmailCtrl', ['$scope', '$http', '$sce', '$timeout', function($
     $scope.composeToContact = function(c) {
         $scope.compose = {to: c.email_address, cc: '', bcc: '', subject: '', body: '', files: [], inReplyTo: '', references: ''};
         $scope.viewMode = 'compose';
+        $scope.showBcc = false;
+        $timeout(function() {
+            var editor = document.getElementById('wm-compose-body');
+            if (editor) {
+                editor.innerHTML = '';
+                if ($scope.wmSettings.signatureHtml) {
+                    editor.innerHTML = '<br><br><div class="wm-signature">-- <br>' + $scope.wmSettings.signatureHtml + '</div>';
+                }
+            }
+        }, 100);
+        startDraftAutoSave();
     };
 
     // ── Sieve Rules ──────────────────────────────────────────

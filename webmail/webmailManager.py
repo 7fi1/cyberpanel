@@ -313,7 +313,9 @@ class WebmailManager:
                     return self._error('Attachment not found.')
                 filename, content_type, payload = result
             response = HttpResponse(payload, content_type=content_type)
-            response['Content-Disposition'] = 'attachment; filename="%s"' % filename
+            # Sanitize filename to prevent header injection
+            safe_filename = filename.replace('"', '_').replace('\r', '').replace('\n', '')
+            response['Content-Disposition'] = 'attachment; filename="%s"' % safe_filename
             return response
         except Exception as e:
             return self._error(str(e))
@@ -409,6 +411,8 @@ class WebmailManager:
     def apiSaveDraft(self):
         try:
             email_addr = self._get_email()
+            if not email_addr:
+                return self._error('Not logged in.')
             data = self._get_post_data()
             to = data.get('to', '')
             subject = data.get('subject', '')
@@ -756,6 +760,9 @@ class WebmailManager:
 
     def apiProxyImage(self):
         """Proxy external images to prevent tracking and mixed content."""
+        if not self._get_email():
+            return self._error('Not logged in.')
+
         url_b64 = self.request.GET.get('url', '') or self.request.POST.get('url', '')
         try:
             url = base64.urlsafe_b64decode(url_b64).decode('utf-8')
@@ -764,6 +771,16 @@ class WebmailManager:
 
         if not url.startswith(('http://', 'https://')):
             return self._error('Invalid URL scheme.')
+
+        # Block internal/private IPs to prevent SSRF
+        import urllib.parse
+        hostname = urllib.parse.urlparse(url).hostname or ''
+        if hostname in ('localhost', '127.0.0.1', '::1', '0.0.0.0') or \
+           hostname.startswith(('10.', '192.168.', '172.16.', '172.17.', '172.18.',
+                                '172.19.', '172.20.', '172.21.', '172.22.', '172.23.',
+                                '172.24.', '172.25.', '172.26.', '172.27.', '172.28.',
+                                '172.29.', '172.30.', '172.31.', '169.254.')):
+            return self._error('Invalid URL.')
 
         try:
             import urllib.request
@@ -776,5 +793,5 @@ class WebmailManager:
                     return self._error('Not an image.')
                 data = resp.read(5 * 1024 * 1024)  # 5MB max
             return HttpResponse(data, content_type=content_type)
-        except Exception as e:
-            return self._error(str(e))
+        except Exception:
+            return self._error('Failed to fetch image.')

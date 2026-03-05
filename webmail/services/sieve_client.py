@@ -39,6 +39,8 @@ class SieveClient:
         lines = []
         while True:
             line = self._read_line()
+            if not line and not self.buf:
+                return False, lines, 'Connection closed'
             if line.startswith('OK'):
                 return True, lines, line
             elif line.startswith('NO'):
@@ -167,9 +169,9 @@ class SieveClient:
         for rule in rules:
             field = rule.get('condition_field', 'from')
             cond_type = rule.get('condition_type', 'contains')
-            cond_value = rule.get('condition_value', '')
+            cond_value = rule.get('condition_value', '').replace('\\', '\\\\').replace('"', '\\"')
             action_type = rule.get('action_type', 'move')
-            action_value = rule.get('action_value', '')
+            action_value = rule.get('action_value', '').replace('\\', '\\\\').replace('"', '\\"')
 
             # Map field to Sieve header
             if field == 'from':
