@@ -1678,6 +1678,54 @@ $cfg['Servers'][$i]['LogoutURL'] = 'phpmyadminsignin.php?logout';
             except:
                 pass
 
+            # CyberMail Email Delivery Tables
+            try:
+                cursor.execute('''
+                    CREATE TABLE `cybermail_accounts` (
+                        `id` integer AUTO_INCREMENT NOT NULL PRIMARY KEY,
+                        `admin_id` integer NOT NULL UNIQUE,
+                        `platform_account_id` integer DEFAULT NULL,
+                        `api_key` varchar(255) NOT NULL DEFAULT '',
+                        `email` varchar(255) NOT NULL DEFAULT '',
+                        `plan_name` varchar(100) NOT NULL DEFAULT 'Free',
+                        `plan_slug` varchar(50) NOT NULL DEFAULT 'free',
+                        `emails_per_month` integer NOT NULL DEFAULT 15000,
+                        `is_connected` bool NOT NULL DEFAULT 0,
+                        `relay_enabled` bool NOT NULL DEFAULT 0,
+                        `smtp_credential_id` integer DEFAULT NULL,
+                        `smtp_username` varchar(255) NOT NULL DEFAULT '',
+                        `smtp_host` varchar(255) NOT NULL DEFAULT 'mail.cyberpersons.com',
+                        `smtp_port` integer NOT NULL DEFAULT 587,
+                        `created_at` datetime(6) NOT NULL,
+                        `updated_at` datetime(6) NOT NULL,
+                        CONSTRAINT `cybermail_accounts_admin_id_fk` FOREIGN KEY (`admin_id`)
+                        REFERENCES `loginSystem_administrator` (`id`) ON DELETE CASCADE
+                    )
+                ''')
+            except:
+                pass
+
+            try:
+                cursor.execute('''
+                    CREATE TABLE `cybermail_domains` (
+                        `id` integer AUTO_INCREMENT NOT NULL PRIMARY KEY,
+                        `account_id` integer NOT NULL,
+                        `domain` varchar(255) NOT NULL DEFAULT '',
+                        `platform_domain_id` integer DEFAULT NULL,
+                        `status` varchar(50) NOT NULL DEFAULT 'pending',
+                        `spf_verified` bool NOT NULL DEFAULT 0,
+                        `dkim_verified` bool NOT NULL DEFAULT 0,
+                        `dmarc_verified` bool NOT NULL DEFAULT 0,
+                        `dns_configured` bool NOT NULL DEFAULT 0,
+                        `created_at` datetime(6) NOT NULL,
+                        KEY `cybermail_domains_account_id_idx` (`account_id`),
+                        CONSTRAINT `cybermail_domains_account_id_fk` FOREIGN KEY (`account_id`)
+                        REFERENCES `cybermail_accounts` (`id`) ON DELETE CASCADE
+                    )
+                ''')
+            except:
+                pass
+
             try:
                 cursor.execute(
                     'CREATE TABLE `loginSystem_acl` (`id` integer AUTO_INCREMENT NOT NULL PRIMARY KEY, `name` varchar(50) NOT NULL UNIQUE, `adminStatus` integer NOT NULL DEFAULT 0, `versionManagement` integer NOT NULL DEFAULT 0, `createNewUser` integer NOT NULL DEFAULT 0, `deleteUser` integer NOT NULL DEFAULT 0, `resellerCenter` integer NOT NULL DEFAULT 0, `changeUserACL` integer NOT NULL DEFAULT 0, `createWebsite` integer NOT NULL DEFAULT 0, `modifyWebsite` integer NOT NULL DEFAULT 0, `suspendWebsite` integer NOT NULL DEFAULT 0, `deleteWebsite` integer NOT NULL DEFAULT 0, `createPackage` integer NOT NULL DEFAULT 0, `deletePackage` integer NOT NULL DEFAULT 0, `modifyPackage` integer NOT NULL DEFAULT 0, `createDatabase` integer NOT NULL DEFAULT 0, `deleteDatabase` integer NOT NULL DEFAULT 0, `listDatabases` integer NOT NULL DEFAULT 0, `createNameServer` integer NOT NULL DEFAULT 0, `createDNSZone` integer NOT NULL DEFAULT 0, `deleteZone` integer NOT NULL DEFAULT 0, `addDeleteRecords` integer NOT NULL DEFAULT 0, `createEmail` integer NOT NULL DEFAULT 0, `deleteEmail` integer NOT NULL DEFAULT 0, `emailForwarding` integer NOT NULL DEFAULT 0, `changeEmailPassword` integer NOT NULL DEFAULT 0, `dkimManager` integer NOT NULL DEFAULT 0, `createFTPAccount` integer NOT NULL DEFAULT 0, `deleteFTPAccount` integer NOT NULL DEFAULT 0, `listFTPAccounts` integer NOT NULL DEFAULT 0, `createBackup` integer NOT NULL DEFAULT 0, `restoreBackup` integer NOT NULL DEFAULT 0, `addDeleteDestinations` integer NOT NULL DEFAULT 0, `scheduleBackups` integer NOT NULL DEFAULT 0, `remoteBackups` integer NOT NULL DEFAULT 0, `manageSSL` integer NOT NULL DEFAULT 0, `hostnameSSL` integer NOT NULL DEFAULT 0, `mailServerSSL` integer NOT NULL DEFAULT 0)')
