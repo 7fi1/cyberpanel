@@ -118,10 +118,11 @@ class EmailComposer:
             references = ('%s %s' % (references, in_reply_to)).strip()
 
         # Quote original
-        orig_date = original.get('date', '')
-        orig_from = original.get('from', '')
+        from html import escape as html_escape
+        orig_date = html_escape(original.get('date', ''))
+        orig_from = html_escape(original.get('from', ''))
         quoted = '<br><br><div class="wm-quoted">On %s, %s wrote:<br><blockquote>%s</blockquote></div>' % (
-            orig_date, orig_from, original.get('body_html', '') or original.get('body_text', '')
+            orig_date, orig_from, original.get('body_html', '') or html_escape(original.get('body_text', ''))
         )
         full_html = body_html + quoted
 
@@ -152,10 +153,11 @@ class EmailComposer:
         if not subject.lower().startswith('fwd:'):
             subject = 'Fwd: %s' % subject
 
-        orig_from = original.get('from', '')
-        orig_to = original.get('to', '')
-        orig_date = original.get('date', '')
-        orig_subject = original.get('subject', '')
+        from html import escape as html_escape
+        orig_from = html_escape(original.get('from', ''))
+        orig_to = html_escape(original.get('to', ''))
+        orig_date = html_escape(original.get('date', ''))
+        orig_subject = html_escape(original.get('subject', ''))
 
         forwarded = (
             '<br><br><div class="wm-forwarded">'
@@ -166,7 +168,7 @@ class EmailComposer:
             'To: %s<br><br>'
             '%s</div>'
         ) % (orig_from, orig_date, orig_subject, orig_to,
-             original.get('body_html', '') or original.get('body_text', ''))
+             original.get('body_html', '') or html_escape(original.get('body_text', '')))
 
         full_html = body_html + forwarded
 

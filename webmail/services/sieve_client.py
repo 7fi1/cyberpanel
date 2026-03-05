@@ -104,9 +104,18 @@ class SieveClient:
                 scripts.append((match.group(1), bool(match.group(2))))
         return scripts
 
+    @staticmethod
+    def _safe_name(name):
+        """Sanitize script name to prevent ManageSieve injection."""
+        import re
+        safe = re.sub(r'[^a-zA-Z0-9_.-]', '', name)
+        if not safe:
+            safe = 'default'
+        return safe
+
     def get_script(self, name):
         """Get the content of a Sieve script."""
-        self._send('GETSCRIPT "%s"' % name)
+        self._send('GETSCRIPT "%s"' % self._safe_name(name))
         ok, lines, _ = self._read_response()
         if not ok:
             return ''
@@ -114,8 +123,9 @@ class SieveClient:
 
     def put_script(self, name, content):
         """Upload a Sieve script."""
+        safe = self._safe_name(name)
         encoded = content.encode('utf-8')
-        self._send('PUTSCRIPT "%s" {%d+}' % (name, len(encoded)))
+        self._send('PUTSCRIPT "%s" {%d+}' % (safe, len(encoded)))
         self.sock.sendall(encoded + b'\r\n')
         ok, _, msg = self._read_response()
         if not ok:
@@ -124,7 +134,7 @@ class SieveClient:
 
     def activate_script(self, name):
         """Set a script as the active script."""
-        self._send('SETACTIVE "%s"' % name)
+        self._send('SETACTIVE "%s"' % self._safe_name(name))
         ok, _, msg = self._read_response()
         return ok
 
@@ -136,7 +146,7 @@ class SieveClient:
 
     def delete_script(self, name):
         """Delete a Sieve script."""
-        self._send('DELETESCRIPT "%s"' % name)
+        self._send('DELETESCRIPT "%s"' % self._safe_name(name))
         ok, _, _ = self._read_response()
         return ok
 

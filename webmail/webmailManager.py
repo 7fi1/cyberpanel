@@ -325,8 +325,12 @@ class WebmailManager:
                     return self._error('Attachment not found.')
                 filename, content_type, payload = result
             response = HttpResponse(payload, content_type=content_type)
-            # Sanitize filename to prevent header injection
-            safe_filename = filename.replace('"', '_').replace('\r', '').replace('\n', '')
+            # Sanitize filename to prevent header injection and path traversal
+            import os as _os
+            safe_filename = _os.path.basename(filename)
+            safe_filename = safe_filename.replace('"', '_').replace('\r', '').replace('\n', '').replace('\x00', '')
+            if not safe_filename:
+                safe_filename = 'attachment'
             response['Content-Disposition'] = 'attachment; filename="%s"' % safe_filename
             return response
         except Exception as e:
@@ -794,12 +798,15 @@ class WebmailManager:
 
         # Block internal/private IPs to prevent SSRF
         import urllib.parse
+        import socket
+        import ipaddress
         hostname = urllib.parse.urlparse(url).hostname or ''
-        if hostname in ('localhost', '127.0.0.1', '::1', '0.0.0.0') or \
-           hostname.startswith(('10.', '192.168.', '172.16.', '172.17.', '172.18.',
-                                '172.19.', '172.20.', '172.21.', '172.22.', '172.23.',
-                                '172.24.', '172.25.', '172.26.', '172.27.', '172.28.',
-                                '172.29.', '172.30.', '172.31.', '169.254.')):
+        try:
+            resolved_ip = socket.gethostbyname(hostname)
+            ip_obj = ipaddress.ip_address(resolved_ip)
+            if ip_obj.is_private or ip_obj.is_loopback or ip_obj.is_link_local or ip_obj.is_multicast or ip_obj.is_reserved:
+                return self._error('Invalid URL.')
+        except (socket.gaierror, ValueError):
             return self._error('Invalid URL.')
 
         try:
