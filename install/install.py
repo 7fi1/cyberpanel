@@ -1396,6 +1396,16 @@ $cfg['Servers'][$i]['LogoutURL'] = 'phpmyadminsignin.php?logout';
                 command = "mkdir -p /etc/pki/dovecot/certs/"
                 preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
 
+                # Copy self-signed certs to where Postfix main.cf expects them
+                command = "cp /etc/dovecot/cert.pem /etc/pki/dovecot/certs/dovecot.pem"
+                preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
+
+                command = "cp /etc/dovecot/key.pem /etc/pki/dovecot/private/dovecot.pem"
+                preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
+
+                command = "chmod 600 /etc/pki/dovecot/private/dovecot.pem"
+                preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
+
                 command = "mkdir -p /etc/opendkim/keys/"
                 preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
 

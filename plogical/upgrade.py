@@ -2891,6 +2891,59 @@ passdb {
             Upgrade.stdOut("setupWebmail error: " + str(msg), 0)
 
     @staticmethod
+    def fixMailTLS():
+        """Ensure Postfix/Dovecot TLS cert files exist at expected paths.
+
+        On Ubuntu, the install creates dirs at /etc/pki/dovecot/ but never
+        copies the self-signed certs there. This breaks STARTTLS and prevents
+        external mail servers (Gmail, etc.) from delivering inbound mail.
+        """
+        try:
+            cert_path = '/etc/pki/dovecot/certs/dovecot.pem'
+            key_path = '/etc/pki/dovecot/private/dovecot.pem'
+
+            # Skip if certs already exist
+            if os.path.exists(cert_path) and os.path.exists(key_path):
+                return
+
+            # Skip if no mail server
+            if not os.path.exists('/etc/dovecot/dovecot.conf'):
+                return
+
+            Upgrade.stdOut("Fixing mail TLS certificates...", 0)
+
+            os.makedirs('/etc/pki/dovecot/certs', exist_ok=True)
+            os.makedirs('/etc/pki/dovecot/private', exist_ok=True)
+
+            # Prefer existing Dovecot self-signed certs
+            if os.path.exists('/etc/dovecot/cert.pem') and os.path.exists('/etc/dovecot/key.pem'):
+                import shutil
+                shutil.copy2('/etc/dovecot/cert.pem', cert_path)
+                shutil.copy2('/etc/dovecot/key.pem', key_path)
+            else:
+                # Generate a new self-signed cert
+                hostname = ProcessUtilities.outputExecutioner(
+                    'hostname').strip() or 'localhost'
+                subprocess.call([
+                    'openssl', 'req', '-x509', '-nodes', '-days', '3650',
+                    '-newkey', 'rsa:2048',
+                    '-subj', '/CN=%s' % hostname,
+                    '-keyout', key_path,
+                    '-out', cert_path
+                ])
+
+            os.chmod(cert_path, 0o644)
+            os.chmod(key_path, 0o600)
+
+            # Restart Postfix to pick up the certs
+            subprocess.call(['systemctl', 'restart', 'postfix'])
+
+            Upgrade.stdOut("Mail TLS certificates fixed.", 0)
+
+        except BaseException as msg:
+            Upgrade.stdOut("fixMailTLS error: " + str(msg), 0)
+
+    @staticmethod
     def manageServiceMigrations():
         try:
             connection, cursor = Upgrade.setupConnection('cyberpanel')
@@ -4814,6 +4867,7 @@ pm.max_spare_servers = 3
         Upgrade.s3BackupMigrations()
         Upgrade.containerMigrations()
         Upgrade.manageServiceMigrations()
+        Upgrade.fixMailTLS()
         Upgrade.setupWebmail()
         Upgrade.enableServices()
 
