@@ -740,7 +740,7 @@ module cyberpanel_ols {
             with open('/etc/cyberpanel/webmail.conf', 'w') as f:
                 json_module.dump(webmail_conf, f)
             os.chmod('/etc/cyberpanel/webmail.conf', 0o600)
-            subprocess.call(['chown', 'nobody:nobody', '/etc/cyberpanel/webmail.conf'])
+            subprocess.call(['chown', 'cyberpanel:cyberpanel', '/etc/cyberpanel/webmail.conf'])
 
             InstallCyberPanel.stdOut("Webmail master user setup complete!", 1)
             return 1

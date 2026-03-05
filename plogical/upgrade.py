@@ -2846,7 +2846,7 @@ CREATE TABLE `websiteFunctions_backupsv2` (`id` integer AUTO_INCREMENT NOT NULL 
             with open('/etc/cyberpanel/webmail.conf', 'w') as f:
                 json.dump(webmail_conf, f)
             os.chmod('/etc/cyberpanel/webmail.conf', 0o600)
-            subprocess.call(['chown', 'nobody:nobody', '/etc/cyberpanel/webmail.conf'])
+            subprocess.call(['chown', 'cyberpanel:cyberpanel', '/etc/cyberpanel/webmail.conf'])
 
             # Patch dovecot.conf if master user config not present
             dovecot_conf_path = '/etc/dovecot/dovecot.conf'
