@@ -3009,7 +3009,7 @@ protocol sieve {
                 with open('/etc/cyberpanel/webmail.conf', 'w') as f:
                     json.dump(webmail_conf, f)
                 os.chmod('/etc/cyberpanel/webmail.conf', 0o600)
-                subprocess.call(['chown', 'lscpd:lscpd', '/etc/cyberpanel/webmail.conf'])
+                subprocess.call(['chown', 'cyberpanel:cyberpanel', '/etc/cyberpanel/webmail.conf'])
 
             # Patch dovecot.conf if master user config not present
             dovecot_conf_path = '/etc/dovecot/dovecot.conf'
@@ -3047,7 +3047,7 @@ passdb {
 
             # Fix webmail.conf ownership for lscpd (may be wrong on existing installs)
             if os.path.exists('/etc/cyberpanel/webmail.conf'):
-                subprocess.call(['chown', 'lscpd:lscpd', '/etc/cyberpanel/webmail.conf'])
+                subprocess.call(['chown', 'cyberpanel:cyberpanel', '/etc/cyberpanel/webmail.conf'])
                 os.chmod('/etc/cyberpanel/webmail.conf', 0o600)
 
             # Restart Dovecot
