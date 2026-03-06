@@ -1018,10 +1018,10 @@ $cfg['Servers'][$i]['LogoutURL'] = 'phpmyadminsignin.php?logout';
                     command = 'dnf --nogpg install -y https://mirror.ghettoforge.net/distributions/gf/gf-release-latest.gf.el8.noarch.rpm'
                     preFlightsChecks.call(command, self.distro, command, command, 1, 0, os.EX_OSERR)
 
-                command = 'dnf install --enablerepo=gf-plus postfix3 postfix3-mysql -y'
+                command = 'dnf install --enablerepo=gf-plus postfix3 postfix3-mysql cyrus-sasl-plain -y'
                 preFlightsChecks.call(command, self.distro, command, command, 1, 1, os.EX_OSERR)
             elif self.distro == openeuler:
-                command = 'dnf install postfix -y'
+                command = 'dnf install postfix cyrus-sasl-plain -y'
                 preFlightsChecks.call(command, self.distro, command, command, 1, 1, os.EX_OSERR)
 
             else:

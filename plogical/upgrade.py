@@ -2857,6 +2857,11 @@ CREATE TABLE `websiteFunctions_backupsv2` (`id` integer AUTO_INCREMENT NOT NULL 
                 Upgrade.stdOut("Dovecot not installed, skipping Sieve setup.", 0)
                 return
 
+            ## Ensure cyrus-sasl-plain is installed (needed for SMTP relay on RHEL/Alma/CentOS)
+            if os.path.exists('/etc/redhat-release'):
+                command = 'dnf install -y cyrus-sasl-plain'
+                ProcessUtilities.executioner(command)
+
             import re
 
             dovecot_conf = '/etc/dovecot/dovecot.conf'
