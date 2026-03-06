@@ -1044,9 +1044,15 @@ $cfg['Servers'][$i]['LogoutURL'] = 'phpmyadminsignin.php?logout';
             if self.distro == centos:
                 command = 'yum --enablerepo=gf-plus -y install dovecot23 dovecot23-mysql'
             elif self.distro == cent8:
-                command = 'dnf install --enablerepo=gf-plus dovecot23 dovecot23-mysql -y'
+                clAPVersion = FetchCloudLinuxAlmaVersionVersion()
+                type = clAPVersion.split('-')[0]
+                version = int(clAPVersion.split('-')[1])
+                if type == 'al' and version >= 90:
+                    command = 'dnf install -y dovecot dovecot-mysql'
+                else:
+                    command = 'dnf install --enablerepo=gf-plus dovecot23 dovecot23-mysql -y'
             elif self.distro == openeuler:
-                command = 'dnf install dovecot -y'
+                command = 'dnf install -y dovecot dovecot-mysql'
             else:
                 command = 'DEBIAN_FRONTEND=noninteractive apt-get -y install dovecot-mysql dovecot-imapd dovecot-pop3d'
 
