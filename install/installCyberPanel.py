@@ -717,8 +717,13 @@ protocol sieve {
 """)
 
             # Add Sieve port 4190 to firewall
-            from plogical.firewallUtilities import FirewallUtilities
-            FirewallUtilities.addSieveFirewallRule()
+            try:
+                import firewall.core.fw as fw
+                subprocess.call(['firewall-cmd', '--permanent', '--add-port=4190/tcp'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                subprocess.call(['firewall-cmd', '--reload'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            except Exception:
+                # firewalld may not be available, try ufw
+                subprocess.call(['ufw', 'allow', '4190/tcp'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
             InstallCyberPanel.stdOut("Sieve successfully installed and configured!", 1)
             return 1
@@ -743,9 +748,9 @@ protocol sieve {
 
             InstallCyberPanel.stdOut("Setting up webmail master user for SSO...", 1)
 
-            from plogical.randomPassword import generate_pass
-
-            master_password = generate_pass(32)
+            import secrets, string
+            chars = string.ascii_letters + string.digits
+            master_password = ''.join(secrets.choice(chars) for _ in range(32))
 
             # Hash the password using doveadm
             result = subprocess.run(
