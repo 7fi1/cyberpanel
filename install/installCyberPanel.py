@@ -776,7 +776,7 @@ protocol sieve {
             with open('/etc/cyberpanel/webmail.conf', 'w') as f:
                 json_module.dump(webmail_conf, f)
             os.chmod('/etc/cyberpanel/webmail.conf', 0o600)
-            subprocess.call(['chown', 'lscpd:lscpd', '/etc/cyberpanel/webmail.conf'])
+            subprocess.call(['chown', 'cyberpanel:cyberpanel', '/etc/cyberpanel/webmail.conf'])
 
             # Patch dovecot.conf if master passdb block missing
             dovecot_conf_path = '/etc/dovecot/dovecot.conf'
