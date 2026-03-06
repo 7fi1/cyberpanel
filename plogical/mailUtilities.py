@@ -1707,6 +1707,12 @@ LogFile /var/log/clamav/clamav.log
     @staticmethod
     def configureRelayHost(smtpHost, smtpPort, smtpUser, smtpPassword):
         try:
+            ## Ensure cyrus-sasl-plain is installed (required for SASL PLAIN auth on RHEL/Alma/CentOS)
+            if os.path.exists('/etc/redhat-release'):
+                ProcessUtilities.executioner('dnf install -y cyrus-sasl-plain')
+            elif os.path.exists('/usr/bin/apt-get'):
+                ProcessUtilities.executioner('apt-get install -y libsasl2-modules')
+
             postfixPath = '/etc/postfix/main.cf'
 
             with open(postfixPath, 'r') as f:
