@@ -120,10 +120,19 @@ app.controller('systemStatusInfo', function ($scope, $http, $timeout) {
 
     $scope.uptimeLoaded = false;
     $scope.uptime = 'Loading...';
-    
+    $scope.statusError = false;
+
     getStuff();
-    
+
     $scope.getSystemStatus = function() {
+        getStuff();
+    };
+
+    $scope.retryStatus = function() {
+        $scope.statusError = false;
+        $scope.cpuUsage = undefined;
+        $scope.ramUsage = undefined;
+        $scope.diskUsage = undefined;
         getStuff();
     };
 
@@ -136,6 +145,7 @@ app.controller('systemStatusInfo', function ($scope, $http, $timeout) {
 
         function ListInitialData(response) {
 
+            $scope.statusError = false;
             $scope.cpuUsage = response.data.cpuUsage;
             $scope.ramUsage = response.data.ramUsage;
             $scope.diskUsage = response.data.diskUsage;
@@ -165,6 +175,7 @@ app.controller('systemStatusInfo', function ($scope, $http, $timeout) {
         function cantLoadInitialData(response) {
             $scope.uptime = 'Unavailable';
             $scope.uptimeLoaded = true;
+            $scope.statusError = true;
         }
 
         $timeout(getStuff, 60000); // Update every minute
@@ -911,7 +922,8 @@ app.controller('dashboardStatsController', function ($scope, $http, $timeout) {
     $scope.totalDBs = 0;
     $scope.totalEmails = 0;
     $scope.totalFTPUsers = 0;
-    
+    $scope.statsLoaded = false;
+
     // Hide system charts for non-admin users
     $scope.hideSystemCharts = false;
 
@@ -1170,6 +1182,7 @@ app.controller('dashboardStatsController', function ($scope, $http, $timeout) {
                 $scope.totalDBs = response.data.total_dbs;
                 $scope.totalEmails = response.data.total_emails;
                 $scope.totalFTPUsers = response.data.total_ftp_users;
+                $scope.statsLoaded = true;
             }
         });
     }
@@ -1711,17 +1724,18 @@ app.controller('dashboardStatsController', function ($scope, $http, $timeout) {
         
         console.log('Killing process:', pid, 'for user:', user);
         $http.post('/base/killSSHProcess', { pid: pid, user: user }, { timeout: 10000 }).then(function(response) {
+            var notify = window.cpToast || function (m) { alert(m); };
             if (response.data && response.data.success) {
-                alert('Process ' + pid + ' killed successfully.');
+                notify('Process ' + pid + ' killed successfully.', 'success');
                 // Reload activity data
                 if ($scope.sshActivityUser) {
                     var login = { user: $scope.sshActivityUser, ip: '', tty: '' };
                     $scope.viewSSHActivity(login);
                 }
             } else if (response.data && response.data.error) {
-                alert('Error: ' + response.data.error);
+                notify('Error: ' + response.data.error, 'error');
             } else {
-                alert('Unknown error occurred.');
+                notify('Unknown error occurred.', 'error');
             }
         }, function(err) {
             console.error('Error killing process:', err);
@@ -1735,7 +1749,7 @@ app.controller('dashboardStatsController', function ($scope, $http, $timeout) {
             } else {
                 errorMsg += 'Please try again.';
             }
-            alert(errorMsg);
+            (window.cpToast || function (m) { alert(m); })(errorMsg, 'error');
         });
     };
     
