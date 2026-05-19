@@ -146,7 +146,7 @@ sh <(curl https://raw.githubusercontent.com/usmannasir/cyberpanel/stable/preUpgr
 - 📖 [Additional Guides](guides/INDEX.md) - Detailed guides for Docker, AI Scanner, Mautic, and more
 - 📚 [Local Documentation](guides/) - All guides available in this repository
 - 🤝 [Contributing Guide](CONTRIBUTING.md) - How to contribute to CyberPanel development
-- ✅ [Changelog](https://community.cyberpanel.net/t/change-logs/161)
+- ✅ [Changelog](https://cyberpanel.net/KnowledgeBase/home/change-logs/)
 - 💬 [Forums](https://community.cyberpanel.net)
 - 📢 [Discord](https://discord.gg/g8k8Db3)
 - 📵 [Facebook Group](https://www.facebook.com/groups/cyberpanel)

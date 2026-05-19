@@ -2,7 +2,7 @@
 
 All notable changes to CyberPanel are documented here. The canonical,
 continuously updated changelog also lives at
-https://community.cyberpanel.net/t/change-logs/161
+https://cyberpanel.net/KnowledgeBase/home/change-logs/
 
 ## v2.4.7 (build 7) — 2026-05-19
 
