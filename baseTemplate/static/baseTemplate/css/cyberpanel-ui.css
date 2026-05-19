@@ -1626,3 +1626,68 @@ textarea:focus-visible,
 @keyframes cpToastIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
 
 button[aria-busy="true"] { opacity: 0.75; cursor: progress; }
+
+/* ============================================================
+   Declutter pass
+   - quieter section labels (were heavy solid-accent bars)
+   - flat sidebar items (were elevated white cards w/ shadows)
+   - tighter header
+   ============================================================ */
+#sidebar .section-header {
+    background: transparent;
+    color: var(--text-secondary);
+    box-shadow: none;
+    padding: 4px 16px 2px;
+    margin: 20px 8px 4px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    text-align: left;
+    opacity: 0.7;
+}
+
+#sidebar .menu-item {
+    background: transparent;
+    box-shadow: none;
+    margin: 1px 10px;
+    padding: 10px 14px;
+}
+#sidebar .menu-item:hover {
+    background: var(--bg-hover);
+    box-shadow: none;
+}
+#sidebar .menu-item .icon-wrapper,
+#sidebar .menu-item:hover .icon-wrapper {
+    background: transparent;
+}
+#sidebar .submenu {
+    padding: 2px 10px 6px 26px;
+}
+#sidebar .submenu .menu-item {
+    background: transparent;
+    box-shadow: none;
+    margin: 1px 0;
+    padding: 8px 12px;
+}
+#sidebar .submenu .menu-item:hover {
+    box-shadow: none;
+    background: var(--bg-hover);
+}
+/* keep the active item clearly highlighted */
+#sidebar .menu-item.active {
+    background: var(--accent-color);
+    box-shadow: 0 2px 8px rgba(88,86,214,0.25);
+}
+#sidebar .submenu .menu-item.active {
+    background: var(--accent-color);
+}
+
+/* Header: no wrap, breathing room between brand and actions */
+#header { gap: 24px; }
+#header-right { gap: 18px; }
+#header-right .social-links { gap: 10px; }
+#header-right .social-links a {
+    width: 34px;
+    height: 34px;
+    font-size: 16px;
+}
