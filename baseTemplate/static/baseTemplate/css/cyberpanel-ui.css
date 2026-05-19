@@ -1691,3 +1691,46 @@ button[aria-busy="true"] { opacity: 0.75; cursor: progress; }
     height: 34px;
     font-size: 16px;
 }
+
+/* ============================================================
+   Design refinement pass
+   Neutralize the purple wash, lighten chrome, tighten type.
+   (light theme only; dark palette already reads well)
+   ============================================================ */
+:root {
+    --bg-primary: #f4f5fa;
+    --bg-sidebar: #f6f7fc;
+    --bg-hover: #eceefb;
+    --border-color: #e9ebf4;
+    --shadow-color: rgba(17, 24, 39, 0.06);
+}
+
+/* Header: a clean hairline instead of a heavy drop shadow */
+#header {
+    box-shadow: 0 1px 0 var(--border-color);
+}
+#header .logo-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(88, 86, 214, 0.16);
+}
+#header .logo-text .brand {
+    font-size: 22px;
+    letter-spacing: -0.3px;
+}
+#header .logo-text .tagline {
+    font-size: 12px;
+}
+
+/* Sidebar header/IP cards: lighter, less boxed */
+.sidebar-logo,
+#sidebar .server-info {
+    box-shadow: none;
+    border: 1px solid var(--border-color);
+}
+
+/* Thinner, calmer scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-thumb { background: var(--border-color); }
+::-webkit-scrollbar-thumb:hover { background: var(--accent-color); }

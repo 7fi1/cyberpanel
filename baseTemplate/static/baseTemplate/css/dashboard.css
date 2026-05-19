@@ -753,3 +753,71 @@ a.insight-card:focus-visible {
 @media (max-width: 600px) {
     .chart-container { height: 220px; }
 }
+
+/* ============================================================
+   Design refinement pass (dashboard content)
+   ============================================================ */
+.dashboard-container { max-width: 1320px; }
+
+.overview-section,
+.insights-section,
+.activity-section {
+    border-radius: 16px;
+    border-color: var(--border-color);
+    box-shadow: 0 1px 3px var(--shadow-color);
+}
+
+/* Section titles as quiet eyebrow labels with a small marker */
+.section-title {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1.4px;
+    color: var(--text-secondary);
+    gap: 9px;
+}
+.section-title::before {
+    width: 3px;
+    height: 13px;
+    border-radius: 3px;
+    background: var(--accent-color);
+}
+
+/* Cards: consistent radius + subtle interactive lift */
+.stat-card,
+.insight-card {
+    border-radius: 14px;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+.stat-card:hover {
+    border-color: var(--accent-color);
+    box-shadow: 0 6px 18px var(--shadow-color);
+}
+a.insight-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px var(--shadow-color);
+}
+
+.stat-card-title { letter-spacing: 0.6px; }
+.stat-card-value { font-weight: 700; }
+
+.progress-bar-container { height: 7px; border-radius: 6px; }
+.progress-bar { border-radius: 6px; }
+
+/* Insight cards: smaller, cleaner hierarchy */
+.insight-card { padding: 18px 12px; }
+.insight-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 11px;
+    font-size: 17px;
+    margin-bottom: 12px;
+}
+.insight-value { font-size: 24px; }
+.insight-label { font-size: 12px; }
+
+/* Flatten the table header gradient to a clean solid */
+.activity-table th,
+.activity-table thead {
+    background: var(--accent-color);
+}
+.activity-tab.active { box-shadow: none; }
