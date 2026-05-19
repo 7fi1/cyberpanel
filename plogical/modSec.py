@@ -116,6 +116,85 @@ class modSec:
             return False
 
     @staticmethod
+    def detectPlatform():
+        """Detect OS platform for compatible binary selection"""
+        try:
+            # Check for Ubuntu/Debian
+            if os.path.exists('/etc/lsb-release'):
+                with open('/etc/lsb-release', 'r') as f:
+                    content = f.read()
+                    if 'Ubuntu' in content or 'ubuntu' in content:
+                        return 'ubuntu'
+
+            # Check for Debian
+            if os.path.exists('/etc/debian_version'):
+                return 'ubuntu'  # Use Ubuntu binary for Debian
+
+            # Check for RHEL-based distributions
+            if os.path.exists('/etc/os-release'):
+                with open('/etc/os-release', 'r') as f:
+                    content = f.read().lower()
+
+                    # Check for version 8.x
+                    if 'version="8.' in content or 'version_id="8' in content:
+                        return 'rhel8'
+
+                    # Check for version 9.x
+                    if 'version="9.' in content or 'version_id="9' in content:
+                        return 'rhel9'
+
+            return 'rhel9'  # Default to rhel9
+        except:
+            return 'rhel9'
+
+    @staticmethod
+    def downloadCompatibleModSec(platform):
+        """Download and install compatible ModSecurity binary"""
+        try:
+            config = modSec.MODSEC_COMPATIBLE.get(platform)
+            if not config:
+                logging.CyberCPLogFileWriter.writeToFile(f"No compatible ModSecurity for platform {platform}")
+                return False
+
+            modsec_path = "/usr/local/lsws/modules/mod_security.so"
+            tmp_path = "/tmp/mod_security-compatible.so"
+
+            # Download compatible binary
+            command = f"wget -q {config['url']} -O {tmp_path}"
+            result = subprocess.call(shlex.split(command))
+            if result != 0:
+                logging.CyberCPLogFileWriter.writeToFile("Failed to download compatible ModSecurity")
+                return False
+
+            # Verify checksum
+            import hashlib
+            sha256_hash = hashlib.sha256()
+            with open(tmp_path, "rb") as f:
+                for byte_block in iter(lambda: f.read(4096), b""):
+                    sha256_hash.update(byte_block)
+            actual_sha256 = sha256_hash.hexdigest()
+
+            if actual_sha256 != config['sha256']:
+                logging.CyberCPLogFileWriter.writeToFile(f"ModSecurity checksum mismatch: expected {config['sha256']}, got {actual_sha256}")
+                os.remove(tmp_path)
+                return False
+
+            # Backup original if exists
+            if os.path.exists(modsec_path):
+                shutil.copy2(modsec_path, f"{modsec_path}.stock")
+
+            # Install compatible version
+            shutil.move(tmp_path, modsec_path)
+            os.chmod(modsec_path, 0o644)
+
+            logging.CyberCPLogFileWriter.writeToFile("Installed compatible ModSecurity binary")
+            return True
+
+        except BaseException as msg:
+            logging.CyberCPLogFileWriter.writeToFile(str(msg) + " [downloadCompatibleModSec]")
+            return False
+
+    @staticmethod
     def isCustomOLSBinaryInstalled():
         """Detect if custom OpenLiteSpeed binary is installed"""
         try:
