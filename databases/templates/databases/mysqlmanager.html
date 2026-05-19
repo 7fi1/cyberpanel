@@ -668,9 +668,8 @@
 </div>
 
 <script>
-    // Add refresh functionality if not already present
-    if (typeof app !== 'undefined') {
-        app.controller('Mysqlmanager', function($scope, $http, $interval) {
+    document.addEventListener('DOMContentLoaded', function() {
+        angular.module('CyberCP').controller('Mysqlmanager', function($scope, $http, $interval) {
             // Existing controller code...
             
             $scope.refreshProcesses = function() {
@@ -683,7 +682,7 @@
                 // The actual refresh logic should be implemented in the controller
             };
         });
-    }
+    });
 </script>
 
 {% endblock %}
