@@ -4,10 +4,9 @@
 
 {% block header_scripts %}
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            var cyberCPModule = angular.module('CyberCP');
+        var cyberCPModule = angular.module('CyberCP');
 
-            cyberCPModule.controller('listWordPressSites', function($scope, $http) {
+        cyberCPModule.controller('listWordPressSites', function($scope, $http) {
             $scope.wpSites = {{ wpsite|safe }};
             $scope.debug = {{ debug_info|safe }};
             $scope.totalSites = {{ total_sites }};
@@ -374,7 +373,6 @@
         // Ensure modal is hidden on page load
         $(document).ready(function() {
             $('#passwordProtectionModal').modal('hide');
-        });
         });
     </script>
     
