@@ -1,1 +1,1 @@
-{"version":"2.4","build":6}
+{"version":"2.4","build":7}
