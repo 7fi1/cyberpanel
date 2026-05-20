@@ -8,6 +8,9 @@ from django.test import SimpleTestCase
 from plogical.securityUtils import (
     LEGACY_TERMINAL_JWT_SECRET,
     api_token_matches,
+    get_remote_transfer_dir_path,
+    get_remote_transfer_log_path,
+    get_remote_transfer_pid_path,
     get_terminal_jwt_secret,
     is_safe_sql_identifier,
     is_safe_numeric_id,
@@ -76,6 +79,35 @@ class SecurityUtilsTests(SimpleTestCase):
         self.assertFalse(is_safe_port("70000"))
         self.assertTrue(is_safe_remote_host("host.example.com"))
         self.assertFalse(is_safe_remote_host("host;rm"))
+
+    def test_remote_transfer_log_path_accepts_numeric_ids_only(self):
+        with tempfile.TemporaryDirectory() as base_path:
+            expected_path = os.path.realpath(os.path.join(base_path, "transfer-1234", "backup_log"))
+
+            self.assertEqual(get_remote_transfer_log_path("1234", base_path), expected_path)
+            self.assertEqual(get_remote_transfer_log_path("../1234", base_path), "")
+            self.assertEqual(get_remote_transfer_log_path("/etc/passwd", base_path), "")
+            self.assertEqual(get_remote_transfer_log_path("1234;id", base_path), "")
+            self.assertEqual(get_remote_transfer_log_path("1234\nid", base_path), "")
+            self.assertEqual(get_remote_transfer_log_path("$(id)", base_path), "")
+            self.assertEqual(get_remote_transfer_log_path("`id`", base_path), "")
+
+    def test_remote_transfer_log_path_rejects_symlink_escape(self):
+        with tempfile.TemporaryDirectory() as base_path, tempfile.TemporaryDirectory() as outside_path:
+            transfer_path = os.path.join(base_path, "transfer-1234")
+            os.symlink(outside_path, transfer_path)
+
+            self.assertEqual(get_remote_transfer_log_path("1234", base_path), "")
+
+    def test_remote_transfer_cancel_paths_share_same_validation(self):
+        with tempfile.TemporaryDirectory() as base_path:
+            expected_dir = os.path.realpath(os.path.join(base_path, "transfer-1234"))
+            expected_pid = os.path.realpath(os.path.join(expected_dir, "pid"))
+
+            self.assertEqual(get_remote_transfer_dir_path("1234", base_path), expected_dir)
+            self.assertEqual(get_remote_transfer_pid_path("1234", base_path), expected_pid)
+            self.assertEqual(get_remote_transfer_dir_path("../1234", base_path), "")
+            self.assertEqual(get_remote_transfer_pid_path("1234;id", base_path), "")
 
     def test_api_password_change_allows_self_service(self):
         admin = SimpleNamespace(pk=10)
