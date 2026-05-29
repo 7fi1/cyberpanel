@@ -299,6 +299,16 @@
             {% if admin or createEmail %}{l:'{% trans "Create Email Account" %}', h:'{% url "createEmailAccount" %}', i:'fa-circle-plus', g:'{% trans "Quick actions" %}'},{% endif %}
             {% if admin or createDatabase %}{l:'{% trans "Create Database" %}', h:'{% url "createDatabase" %}', i:'fa-circle-plus', g:'{% trans "Quick actions" %}'},{% endif %}
             {l:'{% trans "Build Services" %}', h:'{% url "buildServices" %}', i:'fa-rocket', g:'{% trans "Quick actions" %}'},
+            // Build services (open the marketing pages on cyberpanel.net)
+            {l:'{% trans "Website Development" %}', h:'https://cyberpanel.net/custom-development/web?utm_source=cyberpanel&utm_medium=panel&utm_campaign=build_services', i:'fa-globe', g:'{% trans "Build services" %}', t:'_blank'},
+            {l:'{% trans "WordPress & eCommerce" %}', h:'https://cyberpanel.net/custom-development/wordpress?utm_source=cyberpanel&utm_medium=panel&utm_campaign=build_services', i:'fab fa-wordpress', g:'{% trans "Build services" %}', t:'_blank'},
+            {l:'{% trans "Website Speed Optimization" %}', h:'https://cyberpanel.net/custom-development/speed-optimization?utm_source=cyberpanel&utm_medium=panel&utm_campaign=build_services', i:'fa-gauge-high', g:'{% trans "Build services" %}', t:'_blank'},
+            {l:'{% trans "Android App Development" %}', h:'https://cyberpanel.net/custom-development/android?utm_source=cyberpanel&utm_medium=panel&utm_campaign=build_services', i:'fab fa-android', g:'{% trans "Build services" %}', t:'_blank'},
+            {l:'{% trans "iOS App Development" %}', h:'https://cyberpanel.net/custom-development/ios?utm_source=cyberpanel&utm_medium=panel&utm_campaign=build_services', i:'fab fa-apple', g:'{% trans "Build services" %}', t:'_blank'},
+            {l:'{% trans "Custom Software & APIs" %}', h:'https://cyberpanel.net/custom-development/custom-software?utm_source=cyberpanel&utm_medium=panel&utm_campaign=build_services', i:'fa-code', g:'{% trans "Build services" %}', t:'_blank'},
+            {l:'{% trans "UI / UX Design" %}', h:'https://cyberpanel.net/custom-development/design?utm_source=cyberpanel&utm_medium=panel&utm_campaign=build_services', i:'fa-pen-ruler', g:'{% trans "Build services" %}', t:'_blank'},
+            {l:'{% trans "DevOps & Server Management" %}', h:'https://cyberpanel.net/custom-development/devops?utm_source=cyberpanel&utm_medium=panel&utm_campaign=build_services', i:'fa-server', g:'{% trans "Build services" %}', t:'_blank'},
+            {l:'{% trans "Maintenance & Support" %}', h:'https://cyberpanel.net/custom-development/support?utm_source=cyberpanel&utm_medium=panel&utm_campaign=build_services', i:'fa-life-ring', g:'{% trans "Build services" %}', t:'_blank'},
             // Sites
             {l:'{% trans "Dashboard" %}', h:'{% url "index" %}', i:'fa-gauge-high', g:'{% trans "Sites" %}'},
             {l:'{% trans "Websites" %}', h:'{% url "listWebsites" %}', i:'fa-globe', g:'{% trans "Sites" %}'},
