@@ -173,12 +173,32 @@
             </div>
         </div>
 
-        <!-- ============================ HOME ============================ -->
-        <div class="section-header">{% trans "HOME" %}</div>
+        <!-- ============================ HOSTING ============================ -->
+        <div class="section-header">{% trans "HOSTING" %}</div>
 
         <a href="{% url 'index' %}" class="menu-item {% if request.resolver_match.url_name == 'index' %}active{% endif %}">
             <div class="icon-wrapper"><i class="fas fa-gauge-high"></i></div>
             <span>{% trans "Dashboard" %}</span>
+        </a>
+        <a href="{% url 'listWebsites' %}" class="menu-item">
+            <div class="icon-wrapper"><i class="fas fa-globe"></i></div>
+            <span>{% trans "Websites" %}</span>
+        </a>
+        <a href="{% url 'ListWPSites' %}" class="menu-item">
+            <div class="icon-wrapper"><i class="fab fa-wordpress"></i></div>
+            <span>{% trans "WordPress" %}</span>
+        </a>
+        <a href="{% url 'cpHub' 'email' %}" class="menu-item">
+            <div class="icon-wrapper"><i class="fas fa-envelope"></i></div>
+            <span>{% trans "Email" %}</span>
+        </a>
+        <a href="{% url 'cpHub' 'data' %}" class="menu-item">
+            <div class="icon-wrapper"><i class="fas fa-database"></i></div>
+            <span>{% trans "Databases & FTP" %}</span>
+        </a>
+        <a href="{% url 'cpHub' 'backups' %}" class="menu-item">
+            <div class="icon-wrapper"><i class="fas fa-shield-halved"></i></div>
+            <span>{% trans "Backups" %}</span>
         </a>
 
         <!-- Build Services: prominent, available to everyone -->
@@ -188,625 +208,35 @@
             <span class="badge badge-promo">{% trans "HIRE US" %}</span>
         </a>
 
-        <!-- ============================ SITES ============================ -->
-        <div class="section-header">{% trans "SITES" %}</div>
+        <!-- ============================ ACCOUNT ============================ -->
+        <div class="section-header">{% trans "ACCOUNT" %}</div>
 
-        <a href="#" class="menu-item" onclick="toggleSubmenu('websites-submenu', this); return false;">
-            <div class="icon-wrapper"><i class="fas fa-globe"></i></div>
-            <span>{% trans "Websites" %}</span>
-            <i class="fas fa-chevron-right chevron"></i>
+        <a href="{% url 'cpHub' 'access' %}" class="menu-item">
+            <div class="icon-wrapper"><i class="fas fa-users"></i></div>
+            <span>{% trans "Users & Plans" %}</span>
         </a>
-        <div id="websites-submenu" class="submenu">
-            <a href="{% url 'listWebsites' %}" class="menu-item">
-                <span>{% trans "All Websites" %}</span>
-            </a>
-            {% if admin or createWebsite %}
-            <a href="{% url 'createWebsite' %}" class="menu-item">
-                <span>{% trans "Create Website" %}</span>
-            </a>
-            {% endif %}
-            <a href="{% url 'listChildDomains' %}" class="menu-item">
-                <span>{% trans "Sub / Addon Domains" %}</span>
-            </a>
-            <a href="{% url 'CreateNewDomain' %}" class="menu-item">
-                <span>{% trans "Create Sub / Addon Domain" %}</span>
-            </a>
-        </div>
-
-        <a href="#" class="menu-item" onclick="toggleSubmenu('wordpress-submenu', this); return false;">
-            <div class="icon-wrapper"><i class="fab fa-wordpress"></i></div>
-            <span>{% trans "WordPress" %}</span>
-            <i class="fas fa-chevron-right chevron"></i>
-        </a>
-        <div id="wordpress-submenu" class="submenu">
-            <a href="{% url 'ListWPSites' %}" class="menu-item">
-                <span>{% trans "All WordPress Sites" %}</span>
-            </a>
-            <a href="{% url 'createWordpress' %}" class="menu-item">
-                <span>{% trans "Deploy WordPress" %}</span>
-            </a>
-            <a href="{% url 'ConfigurePlugins' %}" class="menu-item">
-                <span>{% trans "Plugins" %}</span>
-            </a>
-            <a href="{% url 'RestoreBackups' %}" class="menu-item">
-                <span>{% trans "Backups & Restore" %}</span>
-            </a>
-            <a href="{% url 'RemoteBackupConfig' %}" class="menu-item">
-                <span>{% trans "Remote Backup" %}</span>
-            </a>
-        </div>
-
-        <a href="#" class="menu-item" onclick="toggleSubmenu('dns-submenu', this); return false;">
-            <div class="icon-wrapper"><i class="fas fa-sitemap"></i></div>
-            <span>{% trans "Domains & DNS" %}</span>
-            <i class="fas fa-chevron-right chevron"></i>
-        </a>
-        <div id="dns-submenu" class="submenu">
-            {% if admin or addDeleteRecords %}
-            <a href="{% url 'addDeleteDNSRecords' %}" class="menu-item">
-                <span>{% trans "DNS Records" %}</span>
-            </a>
-            <a href="{% url 'addDeleteDNSRecordsCloudFlare' %}" class="menu-item">
-                <span>{% trans "Cloudflare" %}</span>
-            </a>
-            {% endif %}
-            {% if admin or createDNSZone %}
-            <a href="{% url 'createDNSZone' %}" class="menu-item">
-                <span>{% trans "Create DNS Zone" %}</span>
-            </a>
-            {% endif %}
-            {% if admin or deleteZone %}
-            <a href="{% url 'deleteDNSZone' %}" class="menu-item">
-                <span>{% trans "Delete Zone" %}</span>
-            </a>
-            {% endif %}
-            {% if admin or createNameServer %}
-            <a href="{% url 'createNameserver' %}" class="menu-item">
-                <span>{% trans "Create Nameserver" %}</span>
-            </a>
-            {% endif %}
-            {% if admin %}
-            <a href="{% url 'configureDefaultNameServers' %}" class="menu-item">
-                <span>{% trans "Default Nameservers" %}</span>
-            </a>
-            {% endif %}
-            {% if admin or addDeleteRecords %}
-            <a href="{% url 'ResetDNSConfigurations' %}" class="menu-item">
-                <span>{% trans "Reset DNS Configurations" %}</span>
-            </a>
-            {% endif %}
-        </div>
-
-        <a href="#" class="menu-item" onclick="toggleSubmenu('ssl-submenu', this); return false;">
-            <div class="icon-wrapper"><i class="fas fa-lock"></i></div>
-            <span>{% trans "SSL" %}</span>
-            <i class="fas fa-chevron-right chevron"></i>
-        </a>
-        <div id="ssl-submenu" class="submenu">
-            {% if admin or manageSSL %}
-            <a href="{% url 'v2ManageSSL' %}" class="menu-item">
-                <span>{% trans "Manage SSL" %}</span>
-            </a>
-            <a href="{% url 'manageSSL' %}" class="menu-item">
-                <span>{% trans "Manage SSL (Classic)" %}</span>
-            </a>
-            {% endif %}
-            {% if admin or hostnameSSL %}
-            <a href="{% url 'sslForHostName' %}" class="menu-item">
-                <span>{% trans "Hostname SSL" %}</span>
-            </a>
-            {% endif %}
-            {% if admin or mailServerSSL %}
-            <a href="{% url 'sslForMailServer' %}" class="menu-item">
-                <span>{% trans "Mail Server SSL" %}</span>
-            </a>
-            {% endif %}
-        </div>
 
         {% if admin %}
-        <a href="#" class="menu-item" onclick="toggleSubmenu('docker-submenu', this); return false;">
-            <div class="icon-wrapper"><i class="fas fa-ship"></i></div>
-            <span>{% trans "Docker Apps" %}</span>
-            <i class="fas fa-chevron-right chevron"></i>
-        </a>
-        <div id="docker-submenu" class="submenu">
-            <a href="{% url 'ListDockerSites' %}" class="menu-item">
-                <span>{% trans "All Docker Apps" %}</span>
-            </a>
-            <a href="{% url 'CreateDockersite' %}" class="menu-item">
-                <span>{% trans "Create Docker App" %}</span>
-            </a>
-            <a href="{% url 'CreateDockerPackage' %}" class="menu-item">
-                <span>{% trans "Docker Packages" %}</span>
-            </a>
-            <a href="{% url 'AssignPackage' %}" class="menu-item">
-                <span>{% trans "Assign Package" %}</span>
-            </a>
-        </div>
-        {% endif %}
+        <!-- ========================= ADMINISTRATION ========================= -->
+        <div class="section-header">{% trans "ADMINISTRATION" %}</div>
 
-        <!-- ============================ EMAIL ============================ -->
-        <div class="section-header">{% trans "EMAIL" %}</div>
-
-        <a href="#" class="menu-item" onclick="toggleSubmenu('email-submenu', this); return false;">
-            <div class="icon-wrapper"><i class="fas fa-envelope"></i></div>
-            <span>{% trans "Email Accounts" %}</span>
-            <i class="fas fa-chevron-right chevron"></i>
-        </a>
-        <div id="email-submenu" class="submenu">
-            {% if admin or listEmails %}
-            <a href="{% url 'listEmails' %}" class="menu-item">
-                <span>{% trans "All Email Accounts" %}</span>
-            </a>
-            {% endif %}
-            {% if admin or createEmail %}
-            <a href="{% url 'createEmailAccount' %}" class="menu-item">
-                <span>{% trans "Create Email" %}</span>
-            </a>
-            {% endif %}
-            {% if admin or emailForwarding %}
-            <a href="{% url 'emailForwarding' %}" class="menu-item">
-                <span>{% trans "Forwarding" %}</span>
-            </a>
-            <a href="{% url 'catchAllEmail' %}" class="menu-item">
-                <span>{% trans "Catch-All" %}</span>
-            </a>
-            <a href="{% url 'patternForwarding' %}" class="menu-item">
-                <span>{% trans "Pattern Forwarding" %}</span>
-            </a>
-            <a href="{% url 'EmailLimits' %}" class="menu-item">
-                <span>{% trans "Email Limits" %}</span>
-            </a>
-            {% endif %}
-            {% if admin or changeEmailPassword %}
-            <a href="{% url 'changeEmailAccountPassword' %}" class="menu-item">
-                <span>{% trans "Change Password" %}</span>
-            </a>
-            {% endif %}
-            {% if admin or dkimManager %}
-            <a href="{% url 'dkimManager' %}" class="menu-item">
-                <span>{% trans "DKIM Manager" %}</span>
-            </a>
-            {% endif %}
-            {% if admin %}
-            <a href="{% url 'plusAddressingSettings' %}" class="menu-item">
-                <span>{% trans "Plus-Addressing" %}</span>
-            </a>
-            {% endif %}
-            {% if admin or createEmail %}
-            <a href="/webmail/" class="menu-item">
-                <span>{% trans "Access Webmail" %}</span>
-            </a>
-            {% endif %}
-        </div>
-
-        {% if admin %}
-        <a href="#" class="menu-item" onclick="toggleSubmenu('mail-settings-submenu', this); return false;">
-            <div class="icon-wrapper"><i class="fas fa-gears"></i></div>
-            <span>{% trans "Mail Settings" %}</span>
-            <i class="fas fa-chevron-right chevron"></i>
-        </a>
-        <div id="mail-settings-submenu" class="submenu">
-            <a href="{% url 'emailDeliveryHome' %}" class="menu-item">
-                <span>{% trans "Email Delivery" %}</span>
-                <span class="badge">NEW</span>
-            </a>
-            <a href="{% url 'EmailDebugger' %}" class="menu-item">
-                <span>{% trans "Email Debugger" %}</span>
-            </a>
-            <a href="{% url 'mailQueue' %}" class="menu-item">
-                <span>{% trans "Mail Queue" %}</span>
-            </a>
-            <a href="{% url 'SpamAssassin' %}" class="menu-item">
-                <span>{% trans "SpamAssassin" %}</span>
-            </a>
-            <a href="{% url 'Rspamd' %}" class="menu-item">
-                <span>{% trans "Rspamd" %}</span>
-            </a>
-            <a href="{% url 'MailScanner' %}" class="menu-item">
-                <span>{% trans "MailScanner" %}</span>
-            </a>
-            <a href="{% url 'emailMarketing' %}" class="menu-item">
-                <span>{% trans "Email Marketing" %}</span>
-            </a>
-        </div>
-        {% endif %}
-
-        <!-- ============================ DATA ============================ -->
-        <div class="section-header">{% trans "DATA" %}</div>
-
-        <a href="#" class="menu-item" onclick="toggleSubmenu('databases-submenu', this); return false;">
-            <div class="icon-wrapper"><i class="fas fa-database"></i></div>
-            <span>{% trans "Databases" %}</span>
-            <i class="fas fa-chevron-right chevron"></i>
-        </a>
-        <div id="databases-submenu" class="submenu">
-            {% if admin or listDatabases %}
-            <a href="{% url 'listDBs' %}" class="menu-item">
-                <span>{% trans "All Databases" %}</span>
-            </a>
-            {% endif %}
-            {% if admin or createDatabase %}
-            <a href="{% url 'createDatabase' %}" class="menu-item">
-                <span>{% trans "Create Database" %}</span>
-            </a>
-            <a href="{% url 'phpMyAdmin' %}" class="menu-item" target="_blank" rel="noopener">
-                <span>{% trans "phpMyAdmin" %}</span>
-            </a>
-            {% endif %}
-            {% if admin %}
-            <a href="{% url 'MysqlManager' %}" class="menu-item">
-                <span>{% trans "MySQL Manager" %}</span>
-                <span class="badge">NEW</span>
-            </a>
-            {% endif %}
-        </div>
-
-        <a href="#" class="menu-item" onclick="toggleSubmenu('ftp-submenu', this); return false;">
-            <div class="icon-wrapper"><i class="fas fa-folder"></i></div>
-            <span>{% trans "FTP" %}</span>
-            <i class="fas fa-chevron-right chevron"></i>
-        </a>
-        <div id="ftp-submenu" class="submenu">
-            {% if admin or listFTPAccounts %}
-            <a href="{% url 'listFTPAccounts' %}" class="menu-item">
-                <span>{% trans "All FTP Accounts" %}</span>
-            </a>
-            {% endif %}
-            {% if admin or createFTPAccount %}
-            <a href="{% url 'createFTPAccount' %}" class="menu-item">
-                <span>{% trans "Create FTP Account" %}</span>
-            </a>
-            {% endif %}
-            {% if admin or listFTPAccounts %}
-            <a href="{% url 'ResetFTPConfigurations' %}" class="menu-item">
-                <span>{% trans "Reset FTP Configurations" %}</span>
-            </a>
-            {% endif %}
-        </div>
-
-        {% if admin %}
-        <a href="{% url 'Filemanager' %}" class="menu-item">
-            <div class="icon-wrapper"><i class="fas fa-folder-open"></i></div>
-            <span>{% trans "Root File Manager" %}</span>
-        </a>
-        {% endif %}
-
-        <!-- ============================ BACKUPS ============================ -->
-        <div class="section-header">{% trans "BACKUPS" %}</div>
-
-        <a href="#" class="menu-item" onclick="toggleSubmenu('backup-submenu', this); return false;">
-            <div class="icon-wrapper"><i class="fas fa-shield-halved"></i></div>
-            <span>{% trans "Backups" %}</span>
-            <i class="fas fa-chevron-right chevron"></i>
-        </a>
-        <div id="backup-submenu" class="submenu">
-            {% if admin or createBackup %}
-            <a href="{% url 'OneClickBackups' %}" class="menu-item">
-                <span>{% trans "One-Click Backups" %}</span>
-            </a>
-            <a href="{% url 'backupDestinationsInc' %}" class="menu-item">
-                <span>{% trans "Incremental Backups" %}</span>
-            </a>
-            <a href="{% url 'backupSite' %}" class="menu-item">
-                <span>{% trans "Create Backup" %}</span>
-            </a>
-            {% endif %}
-            {% if admin or restoreBackup %}
-            <a href="{% url 'restoreSite' %}" class="menu-item">
-                <span>{% trans "Restore Backup" %}</span>
-            </a>
-            {% endif %}
-            {% if admin or scheduleBackups %}
-            <a href="{% url 'scheduleBackup' %}" class="menu-item">
-                <span>{% trans "Schedule Backup" %}</span>
-            </a>
-            {% endif %}
-            {% if admin or addDeleteDestinations %}
-            <a href="{% url 'backupDestinations' %}" class="menu-item">
-                <span>{% trans "Destinations" %}</span>
-            </a>
-            {% endif %}
-            {% if admin or googleDriveBackups %}
-            <a href="{% url 'gDrive' %}" class="menu-item">
-                <span>{% trans "Google Drive" %}</span>
-            </a>
-            {% endif %}
-            {% if admin or remoteBackups %}
-            <a href="{% url 'remoteBackups' %}" class="menu-item">
-                <span>{% trans "Remote Backups" %}</span>
-            </a>
-            {% endif %}
-            {% if admin or createBackup %}
-            <a href="{% url 'createBackupInc' %}" class="menu-item">
-                <span>{% trans "Legacy v1 (Deprecated)" %}</span>
-            </a>
-            {% endif %}
-        </div>
-
-        {% if admin %}
-        <!-- ============================ SERVER (admin) ============================ -->
-        <div class="section-header">{% trans "SERVER" %}</div>
-
-        <a href="#" class="menu-item" onclick="toggleSubmenu('services-submenu', this); return false;">
+        <a href="{% url 'cpHub' 'server' %}" class="menu-item">
             <div class="icon-wrapper"><i class="fas fa-server"></i></div>
-            <span>{% trans "Services" %}</span>
-            <i class="fas fa-chevron-right chevron"></i>
+            <span>{% trans "Server" %}</span>
         </a>
-        <div id="services-submenu" class="submenu">
-            <a href="{% url 'services' %}" class="menu-item">
-                <span>{% trans "Services Status" %}</span>
-            </a>
-            <a href="{% url 'manageApplications' %}" class="menu-item">
-                <span>{% trans "Applications" %}</span>
-            </a>
-            <a href="{% url 'managePowerDNS' %}" class="menu-item">
-                <span>{% trans "Manage PowerDNS" %}</span>
-            </a>
-            <a href="{% url 'managePostfix' %}" class="menu-item">
-                <span>{% trans "Manage Postfix" %}</span>
-            </a>
-            <a href="{% url 'managePureFtpd' %}" class="menu-item">
-                <span>{% trans "Manage FTP" %}</span>
-            </a>
-        </div>
-
-        <a href="#" class="menu-item" onclick="toggleSubmenu('server-status-submenu', this); return false;">
-            <div class="icon-wrapper"><i class="fas fa-chart-line"></i></div>
-            <span>{% trans "Server Status" %}</span>
-            <i class="fas fa-chevron-right chevron"></i>
-        </a>
-        <div id="server-status-submenu" class="submenu">
-            <a href="{% url 'topProcesses' %}" class="menu-item">
-                <span>{% trans "Top Processes" %}</span>
-            </a>
-            <a href="{% url 'litespeedStatus' %}" class="menu-item">
-                <span>{% trans "LiteSpeed Status" %}</span>
-            </a>
-            <a href="{% url 'CyberPanelPort' %}" class="menu-item">
-                <span>{% trans "Change Port" %}</span>
-            </a>
-            <a href="{% url 'packageManager' %}" class="menu-item">
-                <span>{% trans "Package Manager" %}</span>
-            </a>
-        </div>
-
-        <a href="#" class="menu-item" onclick="toggleSubmenu('php-submenu', this); return false;">
-            <div class="icon-wrapper"><i class="fas fa-code"></i></div>
-            <span>{% trans "PHP" %}</span>
-            <i class="fas fa-chevron-right chevron"></i>
-        </a>
-        <div id="php-submenu" class="submenu">
-            <a href="{% url 'installExtensions' %}" class="menu-item">
-                <span>{% trans "Install Extensions" %}</span>
-            </a>
-            <a href="{% url 'editPHPConfigs' %}" class="menu-item">
-                <span>{% trans "Edit PHP Configs" %}</span>
-            </a>
-        </div>
-
-        <a href="#" class="menu-item" onclick="toggleSubmenu('tuning-submenu', this); return false;">
-            <div class="icon-wrapper"><i class="fas fa-sliders"></i></div>
-            <span>{% trans "Tuning" %}</span>
-            <i class="fas fa-chevron-right chevron"></i>
-        </a>
-        <div id="tuning-submenu" class="submenu">
-            <a href="{% url 'liteSpeedTuning' %}" class="menu-item">
-                <span>{% trans "LiteSpeed Tuning" %}</span>
-            </a>
-            {% if serverCheck == 1 %}
-            <a href="{% url 'litespeed_ent_conf' %}" class="menu-item">
-                <span>{% trans "LiteSpeed Ent Global Conf" %}</span>
-            </a>
-            {% endif %}
-            <a href="{% url 'phpTuning' %}" class="menu-item">
-                <span>{% trans "PHP Tuning" %}</span>
-            </a>
-        </div>
-
-        <a href="#" class="menu-item" onclick="toggleSubmenu('docker-manager-submenu', this); return false;">
-            <div class="icon-wrapper"><i class="fas fa-cubes"></i></div>
-            <span>{% trans "Docker Manager" %}</span>
-            <i class="fas fa-chevron-right chevron"></i>
-        </a>
-        <div id="docker-manager-submenu" class="submenu">
-            <a href="{% url 'manageImages' %}" class="menu-item">
-                <span>{% trans "Manage Images" %}</span>
-            </a>
-            <a href="{% url 'listContainers' %}" class="menu-item">
-                <span>{% trans "Manage Containers" %}</span>
-            </a>
-            <a href="{% url 'containerImage' %}" class="menu-item">
-                <span>{% trans "Create New Container" %}</span>
-            </a>
-        </div>
-
-        <a href="#" class="menu-item" onclick="toggleSubmenu('cloudlinux-submenu', this); return false;">
-            <div class="icon-wrapper"><i class="fas fa-fire"></i></div>
-            <span>{% trans "CloudLinux" %}</span>
-            <i class="fas fa-chevron-right chevron"></i>
-        </a>
-        <div id="cloudlinux-submenu" class="submenu">
-            <a href="{% url 'CreatePackageCL' %}" class="menu-item">
-                <span>{% trans "Create Package" %}</span>
-            </a>
-            <a href="{% url 'listPackagesCL' %}" class="menu-item">
-                <span>{% trans "List Packages" %}</span>
-            </a>
-            <a href="{% url 'monitorUsage' %}" class="menu-item">
-                <span>{% trans "Monitor Usage" %}</span>
-            </a>
-            <a href="{% url 'CageFS' %}" class="menu-item">
-                <span>{% trans "CageFS" %}</span>
-            </a>
-        </div>
-
-        <a href="#" class="menu-item" onclick="toggleSubmenu('logs-submenu', this); return false;">
-            <div class="icon-wrapper"><i class="fas fa-file-lines"></i></div>
-            <span>{% trans "Logs" %}</span>
-            <i class="fas fa-chevron-right chevron"></i>
-        </a>
-        <div id="logs-submenu" class="submenu">
-            <a href="{% url 'cyberCPMainLogFile' %}" class="menu-item">
-                <span>{% trans "CyberPanel Main Log" %}</span>
-            </a>
-            <a href="{% url 'accessLogs' %}" class="menu-item">
-                <span>{% trans "Access Log" %}</span>
-            </a>
-            <a href="{% url 'errorLogs' %}" class="menu-item">
-                <span>{% trans "Error Logs" %}</span>
-            </a>
-            <a href="{% url 'emaillogs' %}" class="menu-item">
-                <span>{% trans "Email Log" %}</span>
-            </a>
-            <a href="{% url 'ftplogs' %}" class="menu-item">
-                <span>{% trans "FTP Logs" %}</span>
-            </a>
-            <a href="{% url 'serverMail' %}" class="menu-item">
-                <span>{% trans "Server Mail" %}</span>
-            </a>
-            <a href="{% url 'modSecAuditLogs' %}" class="menu-item">
-                <span>{% trans "ModSec Audit Logs" %}</span>
-            </a>
-        </div>
-
-        <!-- ============================ SECURITY (admin) ============================ -->
-        <div class="section-header">{% trans "SECURITY" %}</div>
-
-        <a href="#" class="menu-item" onclick="toggleSubmenu('security-submenu', this); return false;">
+        <a href="{% url 'cpHub' 'security' %}" class="menu-item">
             <div class="icon-wrapper"><i class="fas fa-shield"></i></div>
             <span>{% trans "Security" %}</span>
-            <i class="fas fa-chevron-right chevron"></i>
         </a>
-        <div id="security-submenu" class="submenu">
-            <a href="{% url 'aiScannerHome' %}" class="menu-item">
-                <span>{% trans "AI Scanner" %}</span>
-                <span class="badge">NEW</span>
-            </a>
-            <a href="{% url 'firewallHome' %}" class="menu-item">
-                <span>{% trans "Firewall" %}</span>
-            </a>
-            <a href="{% url 'secureSSH' %}" class="menu-item">
-                <span>{% trans "Secure SSH" %}</span>
-            </a>
-            <a href="{% url 'modSecurity' %}" class="menu-item">
-                <span>{% trans "ModSecurity Conf" %}</span>
-            </a>
-            <a href="{% url 'modSecRules' %}" class="menu-item">
-                <span>{% trans "ModSecurity Rules" %}</span>
-            </a>
-            <a href="{% url 'modSecRulesPacks' %}" class="menu-item">
-                <span>{% trans "ModSecurity Rule Packs" %}</span>
-            </a>
-            <a href="{% url 'imunify' %}" class="menu-item">
-                <span>{% trans "Imunify 360" %}</span>
-            </a>
-            <a href="{% url 'imunifyAV' %}" class="menu-item">
-                <span>{% trans "ImunifyAV" %}</span>
-            </a>
-        </div>
-        {% endif %}
-
-        <!-- ============================ ACCESS ============================ -->
-        <div class="section-header">{% trans "ACCESS" %}</div>
-
-        <a href="#" class="menu-item" onclick="toggleSubmenu('users-submenu', this); return false;">
-            <div class="icon-wrapper"><i class="fas fa-users"></i></div>
-            <span>{% trans "Users" %}</span>
-            <i class="fas fa-chevron-right chevron"></i>
-        </a>
-        <div id="users-submenu" class="submenu">
-            <a href="{% url 'viewProfile' %}" class="menu-item">
-                <span>{% trans "View Profile" %}</span>
-            </a>
-            {% if admin or listUsers %}
-            <a href="{% url 'listUsers' %}" class="menu-item">
-                <span>{% trans "List Users" %}</span>
-            </a>
-            {% endif %}
-            {% if admin or createNewUser %}
-            <a href="{% url 'createUser' %}" class="menu-item">
-                <span>{% trans "Create New User" %}</span>
-            </a>
-            {% endif %}
-            <a href="{% url 'modifyUsers' %}" class="menu-item">
-                <span>{% trans "Modify User" %}</span>
-            </a>
-            {% if admin or resellerCenter %}
-            <a href="{% url 'resellerCenter' %}" class="menu-item">
-                <span>{% trans "Reseller Center" %}</span>
-            </a>
-            {% endif %}
-            {% if admin %}
-            <a href="{% url 'createNewACL' %}" class="menu-item">
-                <span>{% trans "Create New ACL" %}</span>
-            </a>
-            <a href="{% url 'modifyACL' %}" class="menu-item">
-                <span>{% trans "Modify ACL" %}</span>
-            </a>
-            <a href="{% url 'deleteACL' %}" class="menu-item">
-                <span>{% trans "Delete ACL" %}</span>
-            </a>
-            <a href="{% url 'apiAccess' %}" class="menu-item">
-                <span>{% trans "API Access" %}</span>
-            </a>
-            {% endif %}
-        </div>
-
-        <a href="#" class="menu-item" onclick="toggleSubmenu('packages-submenu', this); return false;">
-            <div class="icon-wrapper"><i class="fas fa-box"></i></div>
-            <span>{% trans "Packages" %}</span>
-            <i class="fas fa-chevron-right chevron"></i>
-        </a>
-        <div id="packages-submenu" class="submenu">
-            {% if admin or listPackages %}
-            <a href="{% url 'listPackages' %}" class="menu-item">
-                <span>{% trans "All Packages" %}</span>
-            </a>
-            {% endif %}
-            {% if admin or createPackage %}
-            <a href="{% url 'createPackage' %}" class="menu-item">
-                <span>{% trans "Create Package" %}</span>
-            </a>
-            {% endif %}
-            {% if admin or modifyPackage %}
-            <a href="{% url 'modifyPackage' %}" class="menu-item">
-                <span>{% trans "Modify Package" %}</span>
-            </a>
-            {% endif %}
-            {% if admin or deletePackage %}
-            <a href="{% url 'deletePackage' %}" class="menu-item">
-                <span>{% trans "Delete Package" %}</span>
-            </a>
-            {% endif %}
-        </div>
-
-        {% if admin %}
-        <a href="#" class="menu-item" onclick="toggleSubmenu('plugins-submenu', this); return false;">
-            <div class="icon-wrapper"><i class="fas fa-plug"></i></div>
-            <span>{% trans "Plugins" %}</span>
-            <i class="fas fa-chevron-right chevron"></i>
-        </a>
-        <div id="plugins-submenu" class="submenu">
-            <a href="{% url 'installed' %}" class="menu-item">
-                <span>{% trans "Installed" %}</span>
-            </a>
-        </div>
-        {% endif %}
-
-        <!-- ============================ SYSTEM ============================ -->
-        <div class="section-header">{% trans "SYSTEM" %}</div>
-
-        {% if admin %}
-        <a href="{% url 'versionManagment' %}" class="menu-item">
-            <div class="icon-wrapper"><i class="fas fa-code-branch"></i></div>
-            <span>{% trans "Version Management" %}</span>
-        </a>
-        <a href="{% url 'design' %}" class="menu-item">
-            <div class="icon-wrapper"><i class="fas fa-palette"></i></div>
-            <span>{% trans "Design" %}</span>
+        <a href="{% url 'cpHub' 'settings' %}" class="menu-item">
+            <div class="icon-wrapper"><i class="fas fa-sliders"></i></div>
+            <span>{% trans "Settings" %}</span>
         </a>
         {% endif %}
+
+        <!-- ============================ HELP ============================ -->
+        <div class="section-header">{% trans "HELP" %}</div>
+
         <a href="https://platform.cyberpersons.com/" class="menu-item" target="_blank" rel="noopener">
             <div class="icon-wrapper"><i class="fas fa-link"></i></div>
             <span>{% trans "Connect" %}</span>
@@ -847,37 +277,101 @@
     (function () {
         var overlay, input, results, emptyEl, items = [], filtered = [], activeIdx = 0;
 
-        // Quick actions surfaced first (label, href, icon, group)
-        var quickActions = [
-            {label: '{% trans "Create Website" %}', href: '{% url "createWebsite" %}', icon: 'fa-circle-plus', group: '{% trans "Quick actions" %}'},
-            {label: '{% trans "Deploy WordPress" %}', href: '{% url "createWordpress" %}', icon: 'fa-circle-plus', group: '{% trans "Quick actions" %}'},
-            {% if admin or createEmail %}{label: '{% trans "Create Email Account" %}', href: '{% url "createEmailAccount" %}', icon: 'fa-circle-plus', group: '{% trans "Quick actions" %}'},{% endif %}
-            {% if admin or createDatabase %}{label: '{% trans "Create Database" %}', href: '{% url "createDatabase" %}', icon: 'fa-circle-plus', group: '{% trans "Quick actions" %}'},{% endif %}
-            {label: '{% trans "Build Services" %}', href: '{% url "buildServices" %}', icon: 'fa-rocket', group: '{% trans "Quick actions" %}'}
+        // Comprehensive page index — the palette is the universal fast path now
+        // that the sidebar is intentionally shallow. ACL-gated server-side.
+        var CP_PAGES = [
+            // Quick actions
+            {% if admin or createWebsite %}{l:'{% trans "Create Website" %}', h:'{% url "createWebsite" %}', i:'fa-circle-plus', g:'{% trans "Quick actions" %}'},{% endif %}
+            {l:'{% trans "Deploy WordPress" %}', h:'{% url "createWordpress" %}', i:'fa-circle-plus', g:'{% trans "Quick actions" %}'},
+            {% if admin or createEmail %}{l:'{% trans "Create Email Account" %}', h:'{% url "createEmailAccount" %}', i:'fa-circle-plus', g:'{% trans "Quick actions" %}'},{% endif %}
+            {% if admin or createDatabase %}{l:'{% trans "Create Database" %}', h:'{% url "createDatabase" %}', i:'fa-circle-plus', g:'{% trans "Quick actions" %}'},{% endif %}
+            {l:'{% trans "Build Services" %}', h:'{% url "buildServices" %}', i:'fa-rocket', g:'{% trans "Quick actions" %}'},
+            // Sites
+            {l:'{% trans "Dashboard" %}', h:'{% url "index" %}', i:'fa-gauge-high', g:'{% trans "Sites" %}'},
+            {l:'{% trans "Websites" %}', h:'{% url "listWebsites" %}', i:'fa-globe', g:'{% trans "Sites" %}'},
+            {l:'{% trans "WordPress Sites" %}', h:'{% url "ListWPSites" %}', i:'fab fa-wordpress', g:'{% trans "Sites" %}'},
+            {l:'{% trans "Sub / Addon Domains" %}', h:'{% url "listChildDomains" %}', i:'fa-diagram-project', g:'{% trans "Sites" %}'},
+            {l:'{% trans "Create Sub / Addon Domain" %}', h:'{% url "CreateNewDomain" %}', i:'fa-circle-plus', g:'{% trans "Sites" %}'},
+            // Email
+            {% if admin or listEmails %}{l:'{% trans "Email Accounts" %}', h:'{% url "listEmails" %}', i:'fa-inbox', g:'{% trans "Email" %}'},{% endif %}
+            {% if admin or emailForwarding %}{l:'{% trans "Email Forwarding" %}', h:'{% url "emailForwarding" %}', i:'fa-share', g:'{% trans "Email" %}'},
+            {l:'{% trans "Catch-All Email" %}', h:'{% url "catchAllEmail" %}', i:'fa-filter', g:'{% trans "Email" %}'},
+            {l:'{% trans "Email Limits" %}', h:'{% url "EmailLimits" %}', i:'fa-gauge', g:'{% trans "Email" %}'},{% endif %}
+            {% if admin or dkimManager %}{l:'{% trans "DKIM Manager" %}', h:'{% url "dkimManager" %}', i:'fa-signature', g:'{% trans "Email" %}'},{% endif %}
+            {l:'{% trans "Webmail" %}', h:'/webmail/', i:'fa-envelope-open-text', g:'{% trans "Email" %}'},
+            {% if admin %}{l:'{% trans "Email Delivery" %}', h:'{% url "emailDeliveryHome" %}', i:'fa-paper-plane', g:'{% trans "Email" %}'},
+            {l:'{% trans "Email Debugger" %}', h:'{% url "EmailDebugger" %}', i:'fa-stethoscope', g:'{% trans "Email" %}'},
+            {l:'{% trans "Mail Queue" %}', h:'{% url "mailQueue" %}', i:'fa-list-check', g:'{% trans "Email" %}'},
+            {l:'{% trans "Email Marketing" %}', h:'{% url "emailMarketing" %}', i:'fa-bullhorn', g:'{% trans "Email" %}'},{% endif %}
+            // Data
+            {% if admin or listDatabases %}{l:'{% trans "Databases" %}', h:'{% url "listDBs" %}', i:'fa-database', g:'{% trans "Data" %}'},{% endif %}
+            {% if admin or createDatabase %}{l:'{% trans "phpMyAdmin" %}', h:'{% url "phpMyAdmin" %}', i:'fa-table', g:'{% trans "Data" %}', t:'_blank'},{% endif %}
+            {% if admin %}{l:'{% trans "MySQL Manager" %}', h:'{% url "MysqlManager" %}', i:'fa-sliders', g:'{% trans "Data" %}'},{% endif %}
+            {% if admin or listFTPAccounts %}{l:'{% trans "FTP Accounts" %}', h:'{% url "listFTPAccounts" %}', i:'fa-folder', g:'{% trans "Data" %}'},{% endif %}
+            // Backups
+            {% if admin or createBackup %}{l:'{% trans "One-Click Backups" %}', h:'{% url "OneClickBackups" %}', i:'fa-bolt', g:'{% trans "Backups" %}'},
+            {l:'{% trans "Incremental Backups" %}', h:'{% url "backupDestinationsInc" %}', i:'fa-layer-group', g:'{% trans "Backups" %}'},
+            {l:'{% trans "Create Backup" %}', h:'{% url "backupSite" %}', i:'fa-box-archive', g:'{% trans "Backups" %}'},{% endif %}
+            {% if admin or restoreBackup %}{l:'{% trans "Restore Backup" %}', h:'{% url "restoreSite" %}', i:'fa-rotate-left', g:'{% trans "Backups" %}'},{% endif %}
+            {% if admin or scheduleBackups %}{l:'{% trans "Schedule Backup" %}', h:'{% url "scheduleBackup" %}', i:'fa-clock', g:'{% trans "Backups" %}'},{% endif %}
+            // Account
+            {l:'{% trans "View Profile" %}', h:'{% url "viewProfile" %}', i:'fa-id-card', g:'{% trans "Account" %}'},
+            {% if admin or listUsers %}{l:'{% trans "List Users" %}', h:'{% url "listUsers" %}', i:'fa-users', g:'{% trans "Account" %}'},{% endif %}
+            {% if admin or createNewUser %}{l:'{% trans "Create User" %}', h:'{% url "createUser" %}', i:'fa-user-plus', g:'{% trans "Account" %}'},{% endif %}
+            {% if admin or listPackages %}{l:'{% trans "Packages" %}', h:'{% url "listPackages" %}', i:'fa-box', g:'{% trans "Account" %}'},{% endif %}
+            {% if admin or resellerCenter %}{l:'{% trans "Reseller Center" %}', h:'{% url "resellerCenter" %}', i:'fa-handshake', g:'{% trans "Account" %}'},{% endif %}
+            {% if admin %}
+            // Server (admin)
+            {l:'{% trans "Services Status" %}', h:'{% url "services" %}', i:'fa-server', g:'{% trans "Server" %}'},
+            {l:'{% trans "Applications" %}', h:'{% url "manageApplications" %}', i:'fa-cubes', g:'{% trans "Server" %}'},
+            {l:'{% trans "PHP Extensions" %}', h:'{% url "installExtensions" %}', i:'fa-puzzle-piece', g:'{% trans "Server" %}'},
+            {l:'{% trans "PHP Configs" %}', h:'{% url "editPHPConfigs" %}', i:'fa-code', g:'{% trans "Server" %}'},
+            {l:'{% trans "LiteSpeed Tuning" %}', h:'{% url "liteSpeedTuning" %}', i:'fa-gauge-high', g:'{% trans "Server" %}'},
+            {l:'{% trans "Top Processes" %}', h:'{% url "topProcesses" %}', i:'fa-microchip', g:'{% trans "Server" %}'},
+            {l:'{% trans "Package Manager" %}', h:'{% url "packageManager" %}', i:'fa-box-open', g:'{% trans "Server" %}'},
+            {l:'{% trans "Change Port" %}', h:'{% url "CyberPanelPort" %}', i:'fa-plug', g:'{% trans "Server" %}'},
+            {l:'{% trans "Docker Apps" %}', h:'{% url "ListDockerSites" %}', i:'fa-ship', g:'{% trans "Server" %}'},
+            {l:'{% trans "Containers" %}', h:'{% url "listContainers" %}', i:'fa-cubes', g:'{% trans "Server" %}'},
+            {l:'{% trans "Root File Manager" %}', h:'{% url "Filemanager" %}', i:'fa-folder-open', g:'{% trans "Server" %}'},
+            {l:'{% trans "DNS Zones" %}', h:'{% url "createDNSZone" %}', i:'fa-sitemap', g:'{% trans "Server" %}'},
+            {l:'{% trans "Nameservers" %}', h:'{% url "createNameserver" %}', i:'fa-server', g:'{% trans "Server" %}'},
+            {l:'{% trans "Main Log" %}', h:'{% url "cyberCPMainLogFile" %}', i:'fa-file-lines', g:'{% trans "Server" %}'},
+            {l:'{% trans "Access Logs" %}', h:'{% url "accessLogs" %}', i:'fa-file-lines', g:'{% trans "Server" %}'},
+            {l:'{% trans "Error Logs" %}', h:'{% url "errorLogs" %}', i:'fa-triangle-exclamation', g:'{% trans "Server" %}'},
+            // Security (admin)
+            {l:'{% trans "AI Scanner" %}', h:'{% url "aiScannerHome" %}', i:'fa-brain', g:'{% trans "Security" %}'},
+            {l:'{% trans "Firewall" %}', h:'{% url "firewallHome" %}', i:'fa-fire-flame-curved', g:'{% trans "Security" %}'},
+            {l:'{% trans "Secure SSH" %}', h:'{% url "secureSSH" %}', i:'fa-terminal', g:'{% trans "Security" %}'},
+            {l:'{% trans "ModSecurity" %}', h:'{% url "modSecurity" %}', i:'fa-shield-halved', g:'{% trans "Security" %}'},
+            {l:'{% trans "ModSecurity Rules" %}', h:'{% url "modSecRules" %}', i:'fa-list', g:'{% trans "Security" %}'},
+            {l:'{% trans "Imunify 360" %}', h:'{% url "imunify" %}', i:'fa-shield-virus', g:'{% trans "Security" %}'},
+            {l:'{% trans "Manage SSL" %}', h:'{% url "v2ManageSSL" %}', i:'fa-lock', g:'{% trans "Security" %}'},
+            {l:'{% trans "Hostname SSL" %}', h:'{% url "sslForHostName" %}', i:'fa-server', g:'{% trans "Security" %}'},
+            // Settings (admin)
+            {l:'{% trans "Version Management" %}', h:'{% url "versionManagment" %}', i:'fa-code-branch', g:'{% trans "Settings" %}'},
+            {l:'{% trans "Design" %}', h:'{% url "design" %}', i:'fa-palette', g:'{% trans "Settings" %}'},
+            {l:'{% trans "Setup Wizard" %}', h:'{% url "onboarding" %}', i:'fa-wand-magic-sparkles', g:'{% trans "Settings" %}'},
+            {% endif %}
         ];
 
         function buildIndex() {
-            items = quickActions.slice();
-            // Scrape real links from the sidebar so the index always matches the nav
+            items = CP_PAGES.map(function (p) {
+                return {label: p.l, href: p.h, icon: (p.i.indexOf('fa-') === 0 ? 'fas ' + p.i : p.i), group: p.g, target: p.t || ''};
+            });
+            // Normalize icon prefix (CP_PAGES uses bare fa-* or full "fab fa-*")
+            // Supplement with any sidebar links not already indexed (e.g. plugin items)
             var sidebar = document.getElementById('sidebar');
             if (!sidebar) { return; }
             var seen = {};
+            items.forEach(function (it) { seen[it.href] = 1; });
             sidebar.querySelectorAll('a.menu-item[href]').forEach(function (a) {
                 var href = a.getAttribute('href');
-                if (!href || href === '#') { return; }
+                if (!href || href === '#' || seen[href]) { return; }
+                seen[href] = 1;
                 var lbl = a.querySelector('span');
                 var label = (lbl ? lbl.textContent : a.textContent).trim();
-                if (!label || seen[label + href]) { return; }
-                seen[label + href] = 1;
-                // Derive the group from the nearest preceding section-header / parent toggle
-                var group = '';
-                var parentSub = a.closest('.submenu');
-                if (parentSub && parentSub.previousElementSibling) {
-                    var p = parentSub.previousElementSibling.querySelector('span');
-                    if (p) { group = p.textContent.trim(); }
-                }
-                items.push({label: label, href: href, icon: 'fa-arrow-right', group: group || '{% trans "Pages" %}',
-                            target: a.getAttribute('target') || ''});
+                if (!label) { return; }
+                items.push({label: label, href: href, icon: 'fas fa-arrow-right', group: '{% trans "Pages" %}', target: a.getAttribute('target') || ''});
             });
         }
 
@@ -898,7 +392,7 @@
                 row.className = 'cp-cmdk-item' + (i === activeIdx ? ' active' : '');
                 row.href = it.href;
                 if (it.target) { row.target = it.target; }
-                row.innerHTML = '<span class="cp-cmdk-ic"><i class="fas ' + it.icon + '"></i></span>' +
+                row.innerHTML = '<span class="cp-cmdk-ic"><i class="' + it.icon + '"></i></span>' +
                                 '<span><div>' + it.label + '</div>' +
                                 (it.group ? '<div class="cp-cmdk-sub">' + it.group + '</div>' : '') + '</span>';
                 row.addEventListener('mouseenter', function () { activeIdx = i; paintActive(); });
