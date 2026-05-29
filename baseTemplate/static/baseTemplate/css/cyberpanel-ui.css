@@ -1,16 +1,16 @@
         /* CSS Variables for Theme */
         :root {
             /* Light Theme Colors */
-            --bg-primary: #f0f0ff;
-            --bg-secondary: white;
-            --bg-sidebar: #f3f1ff;
-            --bg-sidebar-item: white;
-            --bg-hover: #e8e6ff;
+            --bg-primary: #f6f7f9;
+            --bg-secondary: #ffffff;
+            --bg-sidebar: #fbfbfc;
+            --bg-sidebar-item: transparent;
+            --bg-hover: #eef0f4;
             --text-primary: #2f3640;
-            --text-secondary: #64748b;
+            --text-secondary: #6b7280;
             --text-heading: #1e293b;
-            --border-color: #e8e9ff;
-            --shadow-color: rgba(0,0,0,0.05);
+            --border-color: #e7e9ee;
+            --shadow-color: rgba(17,24,39,0.05);
             --accent-color: #5856d6;
             --accent-hover: #4644c0;
             --danger-color: #ef4444;
@@ -18,10 +18,10 @@
             --warning-bg: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
             --ai-banner-bg: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%);
             /* Extended semantic tokens (theme-aware) */
-            --bg-muted: #f8f9fa;
-            --bg-code: #f0f0ff;
+            --bg-muted: #f6f7f9;
+            --bg-code: #f3f4f6;
             --text-on-accent: #ffffff;
-            --border-soft: #e8e9ff;
+            --border-soft: #edeef2;
             --table-head-bg: linear-gradient(135deg, #5b5fcf 0%, #4a4fc7 100%);
             --table-head-text: #ffffff;
             /* Usage threshold colors */
@@ -38,23 +38,23 @@
             --info-soft-bg: #dbeafe;
             --info-soft-text: #3b82f6;
             /* Skeleton loader */
-            --skeleton-base: #e8e9ff;
-            --skeleton-shine: #f4f5ff;
+            --skeleton-base: #e9ebef;
+            --skeleton-shine: #f4f5f7;
             --focus-ring: #5856d6;
         }
         
         /* Dark Theme Colors */
         [data-theme="dark"] {
-            --bg-primary: #0f0f23;
-            --bg-secondary: #1a1a3e;
-            --bg-sidebar: #16162e;
-            --bg-sidebar-item: #1e1e42;
-            --bg-hover: #252550;
+            --bg-primary: #15161b;
+            --bg-secondary: #1d1f26;
+            --bg-sidebar: #191a20;
+            --bg-sidebar-item: #23252d;
+            --bg-hover: #272a33;
             --text-primary: #e4e4e7;
-            --text-secondary: #9ca3af;
+            --text-secondary: #9aa1ad;
             --text-heading: #f3f4f6;
-            --border-color: #2a2a5e;
-            --shadow-color: rgba(0,0,0,0.3);
+            --border-color: #2c2f39;
+            --shadow-color: rgba(0,0,0,0.25);
             --accent-color: #7c7ff3;
             --accent-hover: #6b6ee8;
             --danger-color: #f87171;
@@ -62,10 +62,10 @@
             --warning-bg: linear-gradient(135deg, #78350f 0%, #92400e 100%);
             --ai-banner-bg: linear-gradient(135deg, #4c1d95 0%, #5b21b6 50%, #6d28d9 100%);
             /* Extended semantic tokens (dark) */
-            --bg-muted: #1e1e42;
-            --bg-code: #252550;
+            --bg-muted: #1d1f26;
+            --bg-code: #23252d;
             --text-on-accent: #ffffff;
-            --border-soft: #2a2a5e;
+            --border-soft: #2c2f39;
             --table-head-bg: linear-gradient(135deg, #3b3f9e 0%, #2f3387 100%);
             --table-head-text: #f3f4f6;
             --bar-ok: #34d399;
@@ -79,8 +79,8 @@
             --danger-soft-text: #fca5a5;
             --info-soft-bg: #1e3a8a;
             --info-soft-text: #93c5fd;
-            --skeleton-base: #252550;
-            --skeleton-shine: #2f2f63;
+            --skeleton-base: #262932;
+            --skeleton-shine: #2f323c;
             --focus-ring: #a5a3f0;
         }
         
@@ -2009,3 +2009,149 @@ button[aria-busy="true"] { opacity: 0.75; cursor: progress; }
     display: inline-flex; align-items: center; gap: 6px;
     color: #8b5cf6; font-weight: 600; text-decoration: none;
 }
+
+/* =================================================================
+   v2.4.8 — CALM PASS: lighter, flatter, easier on the eyes
+   ================================================================= */
+
+/* Soft accent tint used for subtle active/selected states */
+:root { --accent-soft-bg: rgba(88,86,214,0.10); }
+[data-theme="dark"] { --accent-soft-bg: rgba(124,127,243,0.16); }
+
+/* Comfortable base typography */
+body {
+    font-size: 14px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    letter-spacing: 0;
+}
+
+/* Header: a quiet hairline instead of a heavy drop shadow */
+#header { box-shadow: none; border-bottom: 1px solid var(--border-color); }
+#header .logo-icon { box-shadow: none; }
+#header .logo-text .brand { font-size: 20px; font-weight: 650; }
+#header .logo-text .tagline { font-size: 12px; }
+#header-right { gap: 14px; }
+
+/* Quiet down the loud lift + glow on header controls */
+#header-right .social-links a:hover,
+.theme-toggle:hover,
+#header-right .logout-btn:hover {
+    box-shadow: none;
+    transform: none;
+}
+.theme-toggle:hover,
+#header-right .social-links a:hover { background: var(--bg-hover); color: var(--accent-color); border-color: var(--border-color); }
+#header-right .logout-btn:hover { background: var(--bg-hover); color: var(--accent-color); }
+
+/* Sidebar: clean panel with a hairline edge */
+#sidebar { border-right: 1px solid var(--border-color); }
+
+/* Logo block: just a logo, not a raised card */
+.sidebar-logo {
+    background: transparent;
+    box-shadow: none;
+    border: none;
+    margin: 16px 16px 4px;
+    padding: 4px 6px;
+}
+
+/* Server info: a calm, lightly-bordered strip */
+#sidebar .server-info {
+    background: var(--bg-muted);
+    box-shadow: none;
+    border: 1px solid var(--border-color);
+    margin: 6px 14px 12px;
+    border-radius: 10px;
+}
+
+/* Section headers: subtle uppercase labels, not solid purple pills */
+#sidebar .section-header {
+    background: transparent;
+    color: var(--text-secondary);
+    margin: 16px 18px 6px;
+    padding: 0;
+    font-size: 10.5px;
+    letter-spacing: 0.7px;
+    font-weight: 700;
+    text-align: left;
+    border-radius: 0;
+    opacity: 0.65;
+}
+
+/* Menu items: flat list rows — no per-item card, no shadow */
+#sidebar .menu-item {
+    background: transparent;
+    box-shadow: none;
+    margin: 1px 10px;
+    padding: 9px 12px;
+    border-radius: 8px;
+    gap: 11px;
+    font-size: 13.5px;
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+#sidebar .menu-item:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+    box-shadow: none;
+}
+#sidebar .menu-item.active {
+    background: var(--accent-soft-bg);
+    color: var(--accent-color);
+    box-shadow: none;
+    font-weight: 600;
+}
+#sidebar .menu-item.active i { color: var(--accent-color); }
+
+/* Inline icons, no heavy icon boxes */
+#sidebar .menu-item .icon-wrapper,
+#sidebar .menu-item:hover .icon-wrapper,
+#sidebar .menu-item.active .icon-wrapper {
+    background: transparent;
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+}
+#sidebar .menu-item i { font-size: 15px; color: var(--text-secondary); }
+#sidebar .menu-item:hover i { color: var(--accent-color); }
+
+/* Keep the promo entry distinctive but a touch softer */
+#sidebar .menu-item.menu-item-promo {
+    box-shadow: 0 2px 8px rgba(139,92,246,0.22);
+}
+#sidebar .menu-item.menu-item-promo i,
+#sidebar .menu-item.menu-item-promo:hover i { color: #fff; }
+
+/* Sidebar search: lighter field */
+.sidebar-search { margin: 0 14px 4px; }
+
+/* Cards everywhere: soft hairline + whisper shadow, gentle hover */
+.stat-card, .insight-card, .cp-qa-card, .cp-tile, .cp-bs-svc,
+.cp-onboarding, .cp-site-head, .cp-bs-steps, .cp-bs-cta, .activity-section {
+    box-shadow: 0 1px 2px var(--shadow-color);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+}
+.cp-qa-card:hover, .cp-tile:hover, .cp-bs-svc:hover, .insight-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px var(--shadow-color);
+}
+
+/* Section titles on pages: calm, not shouting */
+.section-title {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.6px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+}
+
+/* Soft icon tiles inside cards */
+.cp-qa-ic, .cp-tile .cp-tile-ic, .cp-bs-svc .cp-bs-ic, .cp-cmdk-item .cp-cmdk-ic {
+    background: var(--accent-soft-bg);
+}
+
+/* Breadcrumb: quieter */
+.cp-breadcrumb { font-size: 12.5px; }

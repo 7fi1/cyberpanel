@@ -127,8 +127,8 @@
     }
     
     .insight-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 5px 20px rgba(91,95,207,0.1);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px var(--shadow-color);
         border-color: var(--accent-color, #5b5fcf);
     }
     
