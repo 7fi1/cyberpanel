@@ -140,10 +140,18 @@ def getSystemStatus(request):
             json_data = json.dumps(HTTPData)
             return HttpResponse(json_data)
         else:
-            # Non-admin users get user-specific resource information
+            # Non-admin users get user-specific resource information.
+            # The disk-usage loop below spawns `du` per website, which is slow
+            # and was running on every dashboard poll — cache the result briefly.
+            from django.core.cache import cache
+            cache_key = 'cp_user_sysstatus_%s' % val
+            cached = cache.get(cache_key)
+            if cached is not None:
+                return HttpResponse(json.dumps(cached))
+
             import subprocess
             import os
-            
+
             # Calculate user's disk usage
             total_disk_used = 0
             total_disk_limit = 0
@@ -210,9 +218,14 @@ def getSystemStatus(request):
                 'uptime': 'User Account Active'
             }
             
+            try:
+                cache.set(cache_key, user_data, 300)
+            except Exception:
+                pass
+
             json_data = json.dumps(user_data)
             return HttpResponse(json_data)
-            
+
     except Exception as e:
         # Return default values on error
         default_data = {
