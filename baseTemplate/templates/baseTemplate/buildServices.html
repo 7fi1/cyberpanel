@@ -3,6 +3,9 @@
 {% load static %}
 {% block title %}{% trans "Build Services - CyberPanel" %}{% endblock %}
 
+{# Static marketing page — no per-module JS needed #}
+{% block module_scripts %}{% endblock %}
+
 {% block content %}
 {% with BS_BASE="https://cyberpanel.net/custom-development" UTM="?utm_source=cyberpanel&utm_medium=panel&utm_campaign=build_services" %}
 <div class="dashboard-wrapper">

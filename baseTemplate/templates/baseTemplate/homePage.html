@@ -7,6 +7,9 @@
 <link rel="stylesheet" type="text/css" href="{% static 'baseTemplate/css/dashboard.css' %}?v={{ CP_VERSION }}">
 {% endblock %}
 
+{# Dashboard uses controllers from system-status.js (loaded in head) — skip the 1.1MB module bundle #}
+{% block module_scripts %}{% endblock %}
+
 {% block content %}
 <div class="dashboard-wrapper">
     <div class="dashboard-container" ng-controller="dashboardStatsController">

@@ -3,6 +3,9 @@
 {% load static %}
 {% block title %}{{ domain }} — {% trans "Site Workspace" %}{% endblock %}
 
+{# Workspace is tiles + small inline tab JS — no per-module JS needed #}
+{% block module_scripts %}{% endblock %}
+
 {% block content %}
 <div class="dashboard-wrapper">
     <div class="dashboard-container">

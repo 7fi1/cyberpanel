@@ -3,6 +3,9 @@
 {% load static %}
 {% block title %}{{ section|capfirst }} - CyberPanel{% endblock %}
 
+{# Hub pages are pure navigation tiles — no per-module JS needed #}
+{% block module_scripts %}{% endblock %}
+
 {% block content %}
 <div class="dashboard-wrapper">
     <div class="dashboard-container">

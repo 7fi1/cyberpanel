@@ -10,7 +10,15 @@
     
     {% load static %}
     <link rel="icon" type="image/x-icon" href="{% static 'baseTemplate/assets/finalBase/favicon.png' %}?v={{ CP_VERSION }}">
-    
+
+    <!-- Speed up third-party asset fetches (DNS + TLS handshake up front) -->
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="preconnect" href="https://code.jquery.com" crossorigin>
+    <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
+    <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+    <link rel="dns-prefetch" href="https://code.jquery.com">
+
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" type="text/css" href="{% static 'baseTemplate/assets/bootstrap/css/bootstrap.min.css' %}?v={{ CP_VERSION }}">
     <link rel="stylesheet" type="text/css" href="{% static 'baseTemplate/bootstrap-toggle.min.css' %}?v={{ CP_VERSION }}">
@@ -27,14 +35,15 @@
 
     <script src="{% static 'baseTemplate/assets/bootstrap/js/bootstrap.min.js' %}?v={{ CP_VERSION }}"></script>
     <script src="{% static 'baseTemplate/bootstrap-toggle.min.js' %}?v={{ CP_VERSION }}"></script>
-    <script src="https://cdn.jsdelivr.net/npm/qrious/dist/qrious.min.js"></script>
+    <!-- QRious is only used by 2FA QR codes; load it without blocking parse -->
+    <script defer src="https://cdn.jsdelivr.net/npm/qrious/dist/qrious.min.js"></script>
     <script src="{% static 'baseTemplate/custom-js/system-status.js' %}?v={{ CP_VERSION }}"></script>
     
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Chart.js — only used by post-load controllers; defer so it never blocks paint -->
+    <script defer src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <!-- PNotify -->
     <link rel="stylesheet" type="text/css" href="{% static 'baseTemplate/custom-js/pnotify.custom.min.css' %}?v={{ CP_VERSION }}">
@@ -457,22 +466,25 @@
     })();
     </script>
 
-    <!-- Additional Scripts -->
-    <script src="{% static 'packages/packages.js' %}?v={{ CP_VERSION }}"></script>
-    <script src="{% static 'websiteFunctions/websiteFunctions.js' %}?v={{ CP_VERSION }}"></script>
-    <script src="{% static 'userManagment/userManagment.js' %}?v={{ CP_VERSION }}"></script>
-    <script src="{% static 'databases/databases.js' %}?v={{ CP_VERSION }}"></script>
-    <script src="{% static 'dns/dns.js' %}?v={{ CP_VERSION }}"></script>
-    <script src="{% static 'mailServer/mailServer.js' %}?v={{ CP_VERSION }}"></script>
-    <script src="{% static 'ftp/ftp.js' %}?v={{ CP_VERSION }}"></script>
-    <script src="{% static 'backup/backup.js' %}?v={{ CP_VERSION }}"></script>
-    <script src="{% static 'managePHP/managePHP.js' %}?v={{ CP_VERSION }}"></script>
-    <script src="{% static 'serverLogs/serverLogs.js' %}?v={{ CP_VERSION }}"></script>
-    <script src="{% static 'serverStatus/serverStatus.js' %}?v={{ CP_VERSION }}"></script>
-    <script src="{% static 'firewall/firewall.js' %}?v={{ CP_VERSION }}"></script>
-    <script src="{% static 'emailPremium/emailPremium.js' %}?v={{ CP_VERSION }}"></script>
-    <script src="{% static 'manageServices/manageServices.js' %}?v={{ CP_VERSION }}"></script>
-    <script src="{% static 'CLManager/CLManager.js' %}?v={{ CP_VERSION }}"></script>
+    <!-- Per-module controllers. Lightweight shell pages (dashboard, hubs,
+         build services, site workspace) override this block to skip ~1.1MB. -->
+    {% block module_scripts %}
+    <script defer src="{% static 'packages/packages.js' %}?v={{ CP_VERSION }}"></script>
+    <script defer src="{% static 'websiteFunctions/websiteFunctions.js' %}?v={{ CP_VERSION }}"></script>
+    <script defer src="{% static 'userManagment/userManagment.js' %}?v={{ CP_VERSION }}"></script>
+    <script defer src="{% static 'databases/databases.js' %}?v={{ CP_VERSION }}"></script>
+    <script defer src="{% static 'dns/dns.js' %}?v={{ CP_VERSION }}"></script>
+    <script defer src="{% static 'mailServer/mailServer.js' %}?v={{ CP_VERSION }}"></script>
+    <script defer src="{% static 'ftp/ftp.js' %}?v={{ CP_VERSION }}"></script>
+    <script defer src="{% static 'backup/backup.js' %}?v={{ CP_VERSION }}"></script>
+    <script defer src="{% static 'managePHP/managePHP.js' %}?v={{ CP_VERSION }}"></script>
+    <script defer src="{% static 'serverLogs/serverLogs.js' %}?v={{ CP_VERSION }}"></script>
+    <script defer src="{% static 'serverStatus/serverStatus.js' %}?v={{ CP_VERSION }}"></script>
+    <script defer src="{% static 'firewall/firewall.js' %}?v={{ CP_VERSION }}"></script>
+    <script defer src="{% static 'emailPremium/emailPremium.js' %}?v={{ CP_VERSION }}"></script>
+    <script defer src="{% static 'manageServices/manageServices.js' %}?v={{ CP_VERSION }}"></script>
+    <script defer src="{% static 'CLManager/CLManager.js' %}?v={{ CP_VERSION }}"></script>
+    {% endblock %}
     
     <!-- Scripts -->
     <script>
