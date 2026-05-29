@@ -1,0 +1,129 @@
+/* =====================================================================
+   CyberPanel Theme Harmonizer  (v2.4.8)
+   ---------------------------------------------------------------------
+   Internal pages (dns, ftp, email, server, databases, firewall…) each ship
+   their own embedded <style> with hardcoded colors copied from the OLD
+   palette (#5b5fcf, #e8e9ff, #2f3640, #f8f9ff…). That makes them look busy
+   and breaks dark mode. This sheet re-skins the SHARED class vocabulary to
+   the design tokens so every page is calm + theme-correct in one place.
+
+   Scope: visual only (color / background / border-color / box-shadow).
+   No layout properties are touched. !important is required to beat the
+   hardcoded per-page declarations.
+   ===================================================================== */
+
+/* ---- Card / box surfaces: token background, hairline, whisper shadow ---- */
+.content-card,
+.content-box-wrapper,
+.info-box,
+.card,
+.cyber-card,
+.example-box-wrapper,
+.panel.panel-body,
+.modal-content {
+    background: var(--bg-secondary) !important;
+    border-color: var(--border-color) !important;
+    color: var(--text-primary) !important;
+    box-shadow: 0 1px 2px var(--shadow-color) !important;
+}
+
+/* ---- Page wrappers: text color only (let them sit on the page bg) ---- */
+.modern-container,
+.page-container { color: var(--text-primary) !important; }
+
+/* ---- Headings & secondary text (also helps dark-mode legibility) ---- */
+.page-title,
+.card-title,
+.section-title,
+.card-header,
+.content-box-header,
+.cyber-section-title { color: var(--text-heading) !important; }
+.page-subtitle,
+.form-label,
+.text-muted,
+.help-block { color: var(--text-secondary) !important; }
+
+/* ---- Page header: quiet, no heavy card look ---- */
+.page-header {
+    background: transparent !important;
+    border-color: var(--border-color) !important;
+    box-shadow: none !important;
+}
+
+/* ---- Form fields ---- */
+.form-control,
+select.form-control,
+textarea.form-control {
+    background: var(--bg-secondary) !important;
+    border-color: var(--border-color) !important;
+    color: var(--text-primary) !important;
+    box-shadow: none !important;
+}
+.form-control:focus {
+    border-color: var(--accent-color) !important;
+    box-shadow: 0 0 0 3px var(--accent-soft-bg) !important;
+}
+.form-control::placeholder { color: var(--text-secondary) !important; opacity: .7; }
+
+/* ---- Buttons: one calm system, semantic colors preserved ---- */
+.btn { box-shadow: none !important; }
+.btn-primary {
+    background: var(--accent-color) !important;
+    border-color: var(--accent-color) !important;
+    color: #fff !important;
+}
+.btn-primary:hover,
+.btn-primary:focus { background: var(--accent-hover) !important; border-color: var(--accent-hover) !important; color: #fff !important; }
+.btn-secondary,
+.btn-default {
+    background: var(--bg-hover) !important;
+    border-color: var(--border-color) !important;
+    color: var(--text-primary) !important;
+}
+.btn-secondary:hover,
+.btn-default:hover { background: var(--bg-muted) !important; color: var(--accent-color) !important; }
+.btn-danger {
+    background: var(--danger-color) !important;
+    border-color: var(--danger-color) !important;
+    color: #fff !important;
+}
+.btn-outline,
+.btn-outline-primary {
+    background: transparent !important;
+    border-color: var(--border-color) !important;
+    color: var(--accent-color) !important;
+}
+
+/* ---- Alerts: soft, theme-aware ---- */
+.alert { border-color: var(--border-color) !important; box-shadow: none !important; }
+.alert-success { background: var(--success-soft-bg) !important; color: var(--success-soft-text) !important; border-color: transparent !important; }
+.alert-danger,
+.alert-error  { background: var(--danger-soft-bg) !important; color: var(--danger-soft-text) !important; border-color: transparent !important; }
+.alert-warning { background: var(--warn-soft-bg) !important; color: var(--warn-soft-text) !important; border-color: transparent !important; }
+.alert-info    { background: var(--info-soft-bg) !important; color: var(--info-soft-text) !important; border-color: transparent !important; }
+
+/* ---- Tables ---- */
+.table { color: var(--text-primary) !important; }
+.table > thead > tr > th,
+.table th {
+    background: var(--bg-muted) !important;
+    color: var(--text-secondary) !important;
+    border-color: var(--border-color) !important;
+}
+.table > tbody > tr > td,
+.table td { border-color: var(--border-color) !important; }
+.table-striped > tbody > tr:nth-of-type(odd) { background: var(--bg-muted) !important; }
+.table-hover > tbody > tr:hover,
+.table tr:hover { background: var(--bg-hover) !important; }
+
+/* ---- Modals ---- */
+.modal-header,
+.modal-footer { background: var(--bg-secondary) !important; border-color: var(--border-color) !important; color: var(--text-primary) !important; }
+
+/* ---- Misc shared bits ---- */
+.empty-state { background: var(--bg-muted) !important; border-color: var(--border-color) !important; color: var(--text-secondary) !important; }
+.docs-link { color: var(--accent-color) !important; }
+.badge { box-shadow: none !important; }
+
+/* Tame oversized drop shadows that pages copy around (calmer, not flat) */
+.shadow, .box-shadow, .elevated { box-shadow: 0 1px 2px var(--shadow-color) !important; }

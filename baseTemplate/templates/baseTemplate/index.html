@@ -53,6 +53,10 @@
     <link rel="stylesheet" type="text/css" href="{% static 'baseTemplate/css/cyberpanel-ui.css' %}?v={{ CP_VERSION }}">
 
     {% block header_scripts %}{% endblock %}
+
+    <!-- Theme harmonizer: re-skins legacy per-page styles to the design tokens.
+         Loads AFTER page styles so it calms every internal page consistently. -->
+    <link rel="stylesheet" type="text/css" href="{% static 'baseTemplate/css/cyberpanel-harmonize.css' %}?v={{ CP_VERSION }}">
 </head>
 <body>
     <a href="#main-content" class="skip-link">{% trans "Skip to main content" %}</a>
