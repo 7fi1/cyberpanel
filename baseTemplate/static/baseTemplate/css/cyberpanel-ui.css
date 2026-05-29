@@ -1872,6 +1872,27 @@ button[aria-busy="true"] { opacity: 0.75; cursor: progress; }
 .cp-build-card h3 { margin: 0 0 6px; font-size: 20px; color: #fff; }
 .cp-build-card p { margin: 0 0 16px; font-size: 14px; color: rgba(255,255,255,0.88); max-width: 640px; }
 .cp-build-card .cp-build-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+/* Base button shape — used by standalone buttons like the bottom "Start your
+   project" CTA. Scoped variants (hero, build card) override colors below. */
+.cp-build-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 22px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 14px;
+    line-height: 1;
+    text-decoration: none;
+    cursor: pointer;
+    background: var(--accent-color);
+    color: #fff;
+    border: 1px solid transparent;
+    transition: transform 0.15s ease, filter 0.15s ease, background 0.15s ease;
+}
+.cp-build-btn:hover,
+.cp-build-btn:focus { transform: translateY(-2px); filter: brightness(1.06); color: #fff; text-decoration: none; }
 .cp-build-card .cp-build-btn {
     display: inline-flex; align-items: center; gap: 8px;
     padding: 10px 18px; border-radius: 9px; font-weight: 600; font-size: 14px;
