@@ -2176,3 +2176,49 @@ body {
 
 /* Breadcrumb: quieter */
 .cp-breadcrumb { font-size: 12.5px; }
+
+/* =================================================================
+   v2.4.8 — Service promo banner (e.g. managed Email Delivery)
+   ================================================================= */
+.cp-service-banner {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(135deg, #0ea5e9 0%, #6366f1 100%);
+    color: #fff;
+    border-radius: 14px;
+    padding: 22px 26px;
+    margin-bottom: 24px;
+    box-shadow: 0 6px 20px rgba(14,165,233,0.22);
+}
+.cp-service-banner .cp-sb-ic {
+    width: 52px; height: 52px; border-radius: 13px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(255,255,255,0.18); color: #fff; font-size: 24px;
+}
+.cp-service-banner .cp-sb-body { flex: 1; min-width: 240px; }
+.cp-service-banner .cp-sb-title {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 18px; font-weight: 700; color: #fff; margin: 0 0 4px;
+}
+.cp-service-banner .cp-sb-title .cp-sb-tag {
+    font-size: 10px; font-weight: 700; letter-spacing: .5px;
+    background: rgba(255,255,255,0.22); color: #fff;
+    padding: 3px 8px; border-radius: 6px; text-transform: uppercase;
+}
+.cp-service-banner p { margin: 0; font-size: 13.5px; color: rgba(255,255,255,0.92); max-width: 680px; }
+.cp-service-banner .cp-sb-cta {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: #fff; color: #1e40af;
+    padding: 11px 20px; border-radius: 10px;
+    font-weight: 600; font-size: 14px; text-decoration: none;
+    white-space: nowrap; transition: transform 0.15s ease, filter 0.15s ease;
+}
+.cp-service-banner .cp-sb-cta:hover { transform: translateY(-2px); filter: brightness(1.03); color: #1e40af; text-decoration: none; }
+.cp-service-banner .cp-sb-deco {
+    position: absolute; right: -20px; bottom: -34px; font-size: 150px;
+    opacity: 0.12; transform: rotate(-12deg); pointer-events: none;
+}

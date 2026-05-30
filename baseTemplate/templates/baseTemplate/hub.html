@@ -12,6 +12,19 @@
 
     {# ============================ EMAIL ============================ #}
     {% if section == 'email' %}
+        <!-- Managed Email Delivery service promo -->
+        <div class="cp-service-banner">
+            <i class="fas fa-paper-plane cp-sb-deco" aria-hidden="true"></i>
+            <div class="cp-sb-ic"><i class="fas fa-paper-plane"></i></div>
+            <div class="cp-sb-body">
+                <div class="cp-sb-title">{% trans "Email Delivery Service" %} <span class="cp-sb-tag">{% trans "Managed" %}</span></div>
+                <p>{% trans "Stop landing in spam. Get reliable, high-deliverability sending with a managed SMTP relay, dedicated IPs, SPF/DKIM/DMARC done right, and delivery analytics — fully integrated with CyberPanel." %}</p>
+            </div>
+            <a class="cp-sb-cta" href="https://cyberpanel.net/email-delivery-service?utm_source=cyberpanel&utm_medium=panel&utm_campaign=email_delivery" target="_blank" rel="noopener">
+                <i class="fas fa-arrow-right" aria-hidden="true"></i> {% trans "Learn more" %}
+            </a>
+        </div>
+
         <h2 class="section-title">{% trans "EMAIL" %}</h2>
         <div class="cp-tile-grid">
             {% if admin or listEmails %}<a class="cp-tile" href="{% url 'listEmails' %}"><span class="cp-tile-ic"><i class="fas fa-inbox"></i></span><span><div class="cp-tile-title">{% trans "Email Accounts" %}</div><div class="cp-tile-sub">{% trans "View all mailboxes" %}</div></span></a>{% endif %}

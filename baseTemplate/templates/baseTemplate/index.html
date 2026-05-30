@@ -101,6 +101,15 @@
                         <button type="button" class="cp-notif-clear" id="cp-notif-clear">{% trans "Dismiss all" %}</button>
                     </div>
                     <div class="cp-notif-list" id="cp-notif-list">
+                        <div class="cp-notif-item" data-key="emaildelivery" data-storekey="emailDeliveryNotificationDismissed" data-store="local">
+                            <div class="cp-notif-ic ic-accent"><i class="fas fa-paper-plane" aria-hidden="true"></i></div>
+                            <div class="cp-notif-body">
+                                <div class="cp-notif-title">{% trans "Reliable email delivery" %}</div>
+                                <div class="cp-notif-desc">{% trans "Land in the inbox, not spam — with CyberPanel's managed Email Delivery service." %}</div>
+                                <a class="cp-notif-action" href="https://cyberpanel.net/email-delivery-service?utm_source=cyberpanel&utm_medium=panel&utm_campaign=email_delivery" target="_blank" rel="noopener">{% trans "Learn more" %}</a>
+                            </div>
+                            <button class="cp-notif-x" type="button" aria-label="{% trans 'Dismiss' %}"><i class="fas fa-times" aria-hidden="true"></i></button>
+                        </div>
                         <div class="cp-notif-item" data-key="backup" data-storekey="backupNotificationDismissed" data-store="session">
                             <div class="cp-notif-ic ic-warn"><i class="fas fa-shield-alt" aria-hidden="true"></i></div>
                             <div class="cp-notif-body">
