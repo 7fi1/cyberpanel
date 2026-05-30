@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import json
+import shutil
 from django.shortcuts import redirect
 from django.http import HttpResponse
 from loginSystem.models import Administrator
@@ -22,7 +23,15 @@ from django.views.decorators.csrf import csrf_exempt
 from userManagment.views import submitUserCreation as suc
 from userManagment.views import submitUserDeletion as duc
 from plogical.acl import ACLManager
-from plogical.securityUtils import api_token_matches, is_safe_numeric_id, is_safe_port, is_safe_remote_host
+from plogical.securityUtils import (
+    api_token_matches,
+    get_remote_transfer_dir_path,
+    get_remote_transfer_log_path,
+    get_remote_transfer_pid_path,
+    is_safe_numeric_id,
+    is_safe_port,
+    is_safe_remote_host,
+)
 # Create your views here.
 
 def validate_api_input(input_value, field_name="field"):
@@ -551,17 +560,17 @@ def FetchRemoteTransferStatus(request):
             if auth_error:
                 return api_auth_response(auth_error, 'fetchStatus')
 
-            if not is_safe_numeric_id(data['dir']):
+            log_path = get_remote_transfer_log_path(data.get('dir'))
+            if not log_path:
                 return HttpResponse(json.dumps({'fetchStatus': 0, 'error_message': 'Invalid transfer directory.'}))
-            dir = "/home/backup/transfer-"+str(data['dir'])+"/backup_log"
 
             try:
-                command = f"cat {dir}"
-                status = ProcessUtilities.outputExecutioner(command)
+                with open(log_path, 'r') as transfer_log:
+                    status = transfer_log.read()
 
                 final_json = json.dumps({'fetchStatus': 1, 'error_message': "None", "status": status})
                 return HttpResponse(final_json)
-            except:
+            except OSError:
                 final_json = json.dumps({'fetchStatus': 1, 'error_message': "None", "status": "Just started.."})
                 return HttpResponse(final_json)
 
@@ -581,20 +590,23 @@ def cancelRemoteTransfer(request):
             if auth_error:
                 return api_auth_response(auth_error, 'cancelStatus')
 
-            if not is_safe_numeric_id(data['dir']):
+            transfer_path = get_remote_transfer_dir_path(data.get('dir'))
+            pid_path = get_remote_transfer_pid_path(data.get('dir'))
+            if not transfer_path or not pid_path:
                 return HttpResponse(json.dumps({'cancelStatus': 0, 'error_message': 'Invalid transfer directory.'}))
-            dir = "/home/backup/transfer-"+str(data['dir'])
 
-            path = dir + "/pid"
+            with open(pid_path, 'r') as pid_file:
+                pid = pid_file.read().strip()
 
-            command = "cat " + path
-            pid = ProcessUtilities.outputExecutioner(command)
+            if not is_safe_numeric_id(pid):
+                return HttpResponse(json.dumps({'cancelStatus': 0, 'error_message': 'Invalid transfer process.'}))
 
-            command = "kill -KILL " + pid
-            ProcessUtilities.executioner(command)
+            try:
+                os.kill(int(pid), 9)
+            except OSError:
+                pass
 
-            command = "rm -rf " + dir
-            ProcessUtilities.executioner(command)
+            shutil.rmtree(transfer_path, ignore_errors=True)
 
             data = {'cancelStatus': 1, 'error_message': "None"}
             json_data = json.dumps(data)

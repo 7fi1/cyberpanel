@@ -1507,7 +1507,8 @@ if [[ $Panel_Port = "" ]] ; then
   Panel_Port="8090"
 fi
 
-if curl -I -XGET -k "https://127.0.0.1:${Panel_Port#*:}" | grep -q "200 OK" ; then
+Panel_HTTP_Code=$(curl -k -L -s -o /dev/null -w "%{http_code}" "https://127.0.0.1:${Panel_Port#*:}/")
+if [[ "$Panel_HTTP_Code" =~ ^(200|302|401|403)$ ]] ; then
   echo "###################################################################"
   echo "                CyberPanel Upgraded                                "
   echo "###################################################################"

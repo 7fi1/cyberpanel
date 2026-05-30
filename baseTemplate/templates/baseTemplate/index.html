@@ -10,7 +10,15 @@
     
     {% load static %}
     <link rel="icon" type="image/x-icon" href="{% static 'baseTemplate/assets/finalBase/favicon.png' %}?v={{ CP_VERSION }}">
-    
+
+    <!-- Speed up third-party asset fetches (DNS + TLS handshake up front) -->
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="preconnect" href="https://code.jquery.com" crossorigin>
+    <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
+    <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+    <link rel="dns-prefetch" href="https://code.jquery.com">
+
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" type="text/css" href="{% static 'baseTemplate/assets/bootstrap/css/bootstrap.min.css' %}?v={{ CP_VERSION }}">
     <link rel="stylesheet" type="text/css" href="{% static 'baseTemplate/bootstrap-toggle.min.css' %}?v={{ CP_VERSION }}">
@@ -21,29 +29,34 @@
     </style>
     
     <!-- Core Scripts -->
-    <script defer src="{% static 'baseTemplate/angularjs.1.6.5.js' %}?v={{ CP_VERSION }}"></script>
-    <script defer src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
+    <script src="{% static 'baseTemplate/angularjs.1.6.5.js' %}?v={{ CP_VERSION }}"></script>
+    <script src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
     <!-- Bootstrap JavaScript -->
 
-    <script defer src="{% static 'baseTemplate/assets/bootstrap/js/bootstrap.min.js' %}?v={{ CP_VERSION }}"></script>
-    <script defer src="{% static 'baseTemplate/bootstrap-toggle.min.js' %}?v={{ CP_VERSION }}"></script>
+    <script src="{% static 'baseTemplate/assets/bootstrap/js/bootstrap.min.js' %}?v={{ CP_VERSION }}"></script>
+    <script src="{% static 'baseTemplate/bootstrap-toggle.min.js' %}?v={{ CP_VERSION }}"></script>
+    <!-- QRious is only used by 2FA QR codes; load it without blocking parse -->
     <script defer src="https://cdn.jsdelivr.net/npm/qrious/dist/qrious.min.js"></script>
-    <script defer src="{% static 'baseTemplate/custom-js/system-status.js' %}?v={{ CP_VERSION }}"></script>
+    <script src="{% static 'baseTemplate/custom-js/system-status.js' %}?v={{ CP_VERSION }}"></script>
     
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Chart.js -->
+    <!-- Chart.js — only used by post-load controllers; defer so it never blocks paint -->
     <script defer src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <!-- PNotify -->
     <link rel="stylesheet" type="text/css" href="{% static 'baseTemplate/custom-js/pnotify.custom.min.css' %}?v={{ CP_VERSION }}">
-    <script defer src="{% static 'baseTemplate/custom-js/pnotify.custom.min.js' %}?v={{ CP_VERSION }}"></script>
+    <script src="{% static 'baseTemplate/custom-js/pnotify.custom.min.js' %}?v={{ CP_VERSION }}"></script>
     
     <!-- Modern Design System -->
     <link rel="stylesheet" type="text/css" href="{% static 'baseTemplate/css/cyberpanel-ui.css' %}?v={{ CP_VERSION }}">
 
     {% block header_scripts %}{% endblock %}
+
+    <!-- Theme harmonizer: re-skins legacy per-page styles to the design tokens.
+         Loads AFTER page styles so it calms every internal page consistently. -->
+    <link rel="stylesheet" type="text/css" href="{% static 'baseTemplate/css/cyberpanel-harmonize.css' %}?v={{ CP_VERSION }}">
 </head>
 <body>
     <a href="#main-content" class="skip-link">{% trans "Skip to main content" %}</a>
@@ -74,6 +87,9 @@
                     <i class="fab fa-twitter"></i>
                 </a>
             </div>
+            <button id="cp-cmdk-trigger" class="theme-toggle" type="button" title="{% trans 'Search (Ctrl/Cmd-K)' %}" aria-label="{% trans 'Open command palette' %}">
+                <i class="fas fa-magnifying-glass" aria-hidden="true"></i>
+            </button>
             <div class="cp-notif" id="cp-notif">
                 <button id="cp-notif-btn" class="cp-notif-btn" type="button" title="{% trans 'Notifications' %}" aria-label="{% trans 'Notifications' %}" aria-haspopup="true" aria-expanded="false" aria-controls="cp-notif-panel">
                     <i class="fas fa-bell" aria-hidden="true"></i>
@@ -85,6 +101,15 @@
                         <button type="button" class="cp-notif-clear" id="cp-notif-clear">{% trans "Dismiss all" %}</button>
                     </div>
                     <div class="cp-notif-list" id="cp-notif-list">
+                        <div class="cp-notif-item" data-key="emaildelivery" data-storekey="emailDeliveryNotificationDismissed" data-store="local">
+                            <div class="cp-notif-ic ic-accent"><i class="fas fa-paper-plane" aria-hidden="true"></i></div>
+                            <div class="cp-notif-body">
+                                <div class="cp-notif-title">{% trans "Reliable email delivery" %}</div>
+                                <div class="cp-notif-desc">{% trans "Land in the inbox, not spam — with CyberPanel's managed Email Delivery service." %}</div>
+                                <a class="cp-notif-action" href="https://cyberpanel.net/email-delivery-service?utm_source=cyberpanel&utm_medium=panel&utm_campaign=email_delivery" target="_blank" rel="noopener">{% trans "Learn more" %}</a>
+                            </div>
+                            <button class="cp-notif-x" type="button" aria-label="{% trans 'Dismiss' %}"><i class="fas fa-times" aria-hidden="true"></i></button>
+                        </div>
                         <div class="cp-notif-item" data-key="backup" data-storekey="backupNotificationDismissed" data-store="session">
                             <div class="cp-notif-ic ic-warn"><i class="fas fa-shield-alt" aria-hidden="true"></i></div>
                             <div class="cp-notif-body">
@@ -148,15 +173,13 @@
         </div>
         <div class="sidebar-search-empty" id="sidebar-search-empty" hidden>{% trans "No matching menu items" %}</div>
 
-        <div class="section-header">OVERVIEW</div>
-        
         <div class="server-info" ng-controller="systemStatusInfo" ng-init="getSystemStatus()">
             <div class="server-icon">
                 <i class="fas fa-desktop"></i>
             </div>
             <div class="server-details">
                 <div class="info-line">
-                    <strong>IP:</strong> 
+                    <strong>IP:</strong>
                     <span class="ip-value" onclick="copyIP(this, '{{ ipAddress }}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();copyIP(this, '{{ ipAddress }}');}" role="button" tabindex="0" title="{% trans 'Click to copy' %}" aria-label="{% trans 'Copy server IP address' %} {{ ipAddress }}">
                         {{ ipAddress }}
                         <span class="copy-tooltip" aria-hidden="true">{% trans "Copied!" %}</span>
@@ -171,722 +194,79 @@
                 </div>
             </div>
         </div>
-        
+
+        <!-- ============================ HOSTING ============================ -->
+        <div class="section-header">{% trans "HOSTING" %}</div>
+
         <a href="{% url 'index' %}" class="menu-item {% if request.resolver_match.url_name == 'index' %}active{% endif %}">
-            <div class="icon-wrapper">
-                <i class="fas fa-th-large"></i>
-            </div>
-            <span>Dashboard</span>
+            <div class="icon-wrapper"><i class="fas fa-gauge-high"></i></div>
+            <span>{% trans "Dashboard" %}</span>
         </a>
+        <a href="{% url 'listWebsites' %}" class="menu-item">
+            <div class="icon-wrapper"><i class="fas fa-globe"></i></div>
+            <span>{% trans "Websites" %}</span>
+        </a>
+        <a href="{% url 'ListWPSites' %}" class="menu-item">
+            <div class="icon-wrapper"><i class="fab fa-wordpress"></i></div>
+            <span>{% trans "WordPress" %}</span>
+        </a>
+        <a href="{% url 'cpHub' 'email' %}" class="menu-item">
+            <div class="icon-wrapper"><i class="fas fa-envelope"></i></div>
+            <span>{% trans "Email" %}</span>
+        </a>
+        <a href="{% url 'cpHub' 'data' %}" class="menu-item">
+            <div class="icon-wrapper"><i class="fas fa-database"></i></div>
+            <span>{% trans "Databases & FTP" %}</span>
+        </a>
+        <a href="{% url 'cpHub' 'backups' %}" class="menu-item">
+            <div class="icon-wrapper"><i class="fas fa-shield-halved"></i></div>
+            <span>{% trans "Backups" %}</span>
+        </a>
+
+        <!-- Build Services: prominent, available to everyone -->
+        <a href="{% url 'buildServices' %}" class="menu-item menu-item-promo">
+            <div class="icon-wrapper"><i class="fas fa-rocket"></i></div>
+            <span>{% trans "Build Services" %}</span>
+            <span class="badge badge-promo">{% trans "HIRE US" %}</span>
+        </a>
+
+        <!-- ============================ ACCOUNT ============================ -->
+        <div class="section-header">{% trans "ACCOUNT" %}</div>
+
+        <a href="{% url 'cpHub' 'access' %}" class="menu-item">
+            <div class="icon-wrapper"><i class="fas fa-users"></i></div>
+            <span>{% trans "Users & Plans" %}</span>
+        </a>
+
         {% if admin %}
-        <a href="{% url 'versionManagment' %}" class="menu-item">
-            <div class="icon-wrapper">
-                <i class="fas fa-code-branch"></i>
-            </div>
-            <span>Version Management</span>
+        <!-- ========================= ADMINISTRATION ========================= -->
+        <div class="section-header">{% trans "ADMINISTRATION" %}</div>
+
+        <a href="{% url 'cpHub' 'server' %}" class="menu-item">
+            <div class="icon-wrapper"><i class="fas fa-server"></i></div>
+            <span>{% trans "Server" %}</span>
         </a>
-        <a href="{% url 'design' %}" class="menu-item">
-            <div class="icon-wrapper">
-                <i class="fas fa-palette"></i>
-            </div>
-            <span>Design</span>
+        <a href="{% url 'cpHub' 'security' %}" class="menu-item">
+            <div class="icon-wrapper"><i class="fas fa-shield"></i></div>
+            <span>{% trans "Security" %}</span>
+        </a>
+        <a href="{% url 'cpHub' 'settings' %}" class="menu-item">
+            <div class="icon-wrapper"><i class="fas fa-sliders"></i></div>
+            <span>{% trans "Settings" %}</span>
         </a>
         {% endif %}
+
+        <!-- ============================ HELP ============================ -->
+        <div class="section-header">{% trans "HELP" %}</div>
+
         <a href="https://platform.cyberpersons.com/" class="menu-item" target="_blank" rel="noopener">
-            <div class="icon-wrapper">
-                <i class="fas fa-link"></i>
-            </div>
-            <span>Connect</span>
+            <div class="icon-wrapper"><i class="fas fa-link"></i></div>
+            <span>{% trans "Connect" %}</span>
         </a>
         <a href="https://cyberpanel.net/KnowledgeBase/" class="menu-item" target="_blank" rel="noopener">
-            <div class="icon-wrapper">
-                <i class="fas fa-comments"></i>
-            </div>
-            <span>Community</span>
+            <div class="icon-wrapper"><i class="fas fa-comments"></i></div>
+            <span>{% trans "Community" %}</span>
         </a>
-        
-        <div class="section-header">MAIN</div>
-            
-        <a href="#" class="menu-item" onclick="toggleSubmenu('users-submenu', this); return false;">
-            <div class="icon-wrapper">
-                <i class="fas fa-users"></i>
-            </div>
-            <span>Users</span>
-            <i class="fas fa-chevron-right chevron"></i>
-        </a>
-        <div id="users-submenu" class="submenu">
-                <a href="{% url 'viewProfile' %}" class="menu-item">
-                    <span>View Profile</span>
-                </a>
-                {% if admin or createNewUser %}
-                <a href="{% url 'createUser' %}" class="menu-item">
-                    <span>Create New User</span>
-                </a>
-                {% endif %}
-                {% if admin or listUsers %}
-                <a href="{% url 'listUsers' %}" class="menu-item">
-                    <span>List Users</span>
-                </a>
-                {% endif %}
-                <a href="{% url 'modifyUsers' %}" class="menu-item">
-                    <span>Modify User</span>
-                </a>
-                {% if admin or resellerCenter %}
-                <a href="{% url 'resellerCenter' %}" class="menu-item">
-                    <span>Reseller Center</span>
-                </a>
-                {% endif %}
-                {% if admin %}
-                <a href="{% url 'createNewACL' %}" class="menu-item">
-                    <span>Create New ACL</span>
-                </a>
-                <a href="{% url 'deleteACL' %}" class="menu-item">
-                    <span>Delete ACL</span>
-                </a>
-                <a href="{% url 'modifyACL' %}" class="menu-item">
-                    <span>Modify ACL</span>
-                </a>
-                <a href="{% url 'apiAccess' %}" class="menu-item">
-                    <span>API Access</span>
-                </a>
-                {% endif %}
-        </div>
-            
-        <a href="#" class="menu-item" onclick="toggleSubmenu('wordpress-submenu', this); return false;">
-            <div class="icon-wrapper">
-                <i class="fab fa-wordpress"></i>
-            </div>
-            <span>WordPress</span>
-            <span class="badge">NEW</span>
-            <i class="fas fa-chevron-right chevron"></i>
-        </a>
-        <div id="wordpress-submenu" class="submenu">
-                <a href="{% url 'createWordpress' %}" class="menu-item">
-                    <span>Deploy WordPress</span>
-                </a>
-                <a href="{% url 'ListWPSites' %}" class="menu-item">
-                    <span>List WordPress</span>
-                </a>
-                <a href="{% url 'ConfigurePlugins' %}" class="menu-item">
-                    <span>Configure Plugins</span>
-                </a>
-                <a href="{% url 'RestoreBackups' %}" class="menu-item">
-                    <span>Restore Backups</span>
-                </a>
-                <a href="{% url 'RemoteBackupConfig' %}" class="menu-item">
-                    <span>Remote Backup</span>
-                </a>
-            </div>
-            
-            {% if admin %}
-            <a href="#" class="menu-item" onclick="toggleSubmenu('docker-submenu', this); return false;">
-                <div class="icon-wrapper">
-                    <i class="fas fa-ship"></i>
-                </div>
-                <span>Docker Apps</span>
-                <i class="fas fa-chevron-right chevron"></i>
-            </a>
-            <div id="docker-submenu" class="submenu">
-                <a href="{% url 'CreateDockersite' %}" class="menu-item">
-                    <span>Create Docker Apps</span>
-                </a>
-                <a href="{% url 'ListDockerSites' %}" class="menu-item">
-                    <span>List Docker Apps</span>
-                </a>
-                <a href="{% url 'CreateDockerPackage' %}" class="menu-item">
-                    <span>Docker Packages</span>
-                </a>
-                <a href="{% url 'AssignPackage' %}" class="menu-item">
-                    <span>Assign Package</span>
-                </a>
-            </div>
-            {% endif %}
-            
-            <a href="#" class="menu-item" onclick="toggleSubmenu('websites-submenu', this); return false;">
-                <div class="icon-wrapper">
-                    <i class="fas fa-globe"></i>
-                </div>
-                <span>Websites</span>
-                <i class="fas fa-chevron-right chevron"></i>
-            </a>
-            <div id="websites-submenu" class="submenu">
-                {% if admin or createWebsite %}
-                <a href="{% url 'createWebsite' %}" class="menu-item">
-                    <span>Create Website</span>
-                </a>
-                {% endif %}
-                <a href="{% url 'listWebsites' %}" class="menu-item">
-                    <span>List Websites</span>
-                </a>
-                <a href="{% url 'CreateNewDomain' %}" class="menu-item">
-                    <span>Create Sub/Addon Domain</span>
-                </a>
-                <a href="{% url 'listChildDomains' %}" class="menu-item">
-                    <span>List Sub/Addon Domains</span>
-                </a>
-                {% if admin or modifyWebsite %}
-                <a href="{% url 'modifyWebsite' %}" class="menu-item">
-                    <span>Modify Website</span>
-                </a>
-                {% endif %}
-                {% if admin or suspendWebsite %}
-                <a href="{% url 'siteState' %}" class="menu-item">
-                    <span>Suspend/Unsuspend</span>
-                </a>
-                {% endif %}
-                {% if admin or deleteWebsite %}
-                <a href="{% url 'deleteWebsite' %}" class="menu-item">
-                    <span>Delete Website</span>
-                </a>
-                {% endif %}
-            </div>
-            
-            <a href="#" class="menu-item" onclick="toggleSubmenu('packages-submenu', this); return false;">
-                <div class="icon-wrapper">
-                    <i class="fas fa-cube"></i>
-                </div>
-                <span>Packages</span>
-                <i class="fas fa-chevron-right chevron"></i>
-            </a>
-            <div id="packages-submenu" class="submenu">
-                {% if admin or createPackage %}
-                <a href="{% url 'createPackage' %}" class="menu-item">
-                    <span>Create Package</span>
-                </a>
-                {% endif %}
-                {% if admin or listPackages %}
-                <a href="{% url 'listPackages' %}" class="menu-item">
-                    <span>List Packages</span>
-                </a>
-                {% endif %}
-                {% if admin or deletePackage %}
-                <a href="{% url 'deletePackage' %}" class="menu-item">
-                    <span>Delete Package</span>
-                </a>
-                {% endif %}
-                {% if admin or modifyPackage %}
-                <a href="{% url 'modifyPackage' %}" class="menu-item">
-                    <span>Modify Package</span>
-                </a>
-                {% endif %}
-            </div>
-            
-            <a href="#" class="menu-item" onclick="toggleSubmenu('databases-submenu', this); return false;">
-                <div class="icon-wrapper">
-                    <i class="fas fa-database"></i>
-                </div>
-                <span>Databases</span>
-                <i class="fas fa-chevron-right chevron"></i>
-            </a>
-            <div id="databases-submenu" class="submenu">
-                {% if admin or createDatabase %}
-                <a href="{% url 'createDatabase' %}" class="menu-item">
-                    <span>Create Database</span>
-                </a>
-                {% endif %}
-                {% if admin or deleteDatabase %}
-                <a href="{% url 'deleteDatabase' %}" class="menu-item">
-                    <span>Delete Database</span>
-                </a>
-                {% endif %}
-                {% if admin or listDatabases %}
-                <a href="{% url 'listDBs' %}" class="menu-item">
-                    <span>List Databases</span>
-                </a>
-                {% endif %}
-                {% if admin or createDatabase %}
-                <a href="{% url 'phpMyAdmin' %}" class="menu-item" target="_blank" rel="noopener">
-                    <span>PHPMYAdmin</span>
-                </a>
-                {% endif %}
-            </div>
-            
-            <a href="#" class="menu-item" onclick="toggleSubmenu('dns-submenu', this); return false;">
-                <div class="icon-wrapper">
-                    <i class="fas fa-sitemap"></i>
-                </div>
-                <span>DNS</span>
-                <i class="fas fa-chevron-right chevron"></i>
-            </a>
-            <div id="dns-submenu" class="submenu">
-                {% if admin or createNameServer %}
-                <a href="{% url 'createNameserver' %}" class="menu-item">
-                    <span>Create Nameserver</span>
-                </a>
-                {% endif %}
-                {% if admin %}
-                <a href="{% url 'configureDefaultNameServers' %}" class="menu-item">
-                    <span>Config Default Nameservers</span>
-                </a>
-                {% endif %}
-                {% if admin or createDNSZone %}
-                <a href="{% url 'createDNSZone' %}" class="menu-item">
-                    <span>Create DNS Zone</span>
-                </a>
-                {% endif %}
-                {% if admin or deleteZone %}
-                <a href="{% url 'deleteDNSZone' %}" class="menu-item">
-                    <span>Delete Zone</span>
-                </a>
-                {% endif %}
-                {% if admin or addDeleteRecords %}
-                <a href="{% url 'addDeleteDNSRecords' %}" class="menu-item">
-                    <span>Add/Delete Records</span>
-                </a>
-                {% endif %}
-                {% if admin or addDeleteRecords %}
-                <a href="{% url 'addDeleteDNSRecordsCloudFlare' %}" class="menu-item">
-                    <span>CloudFlare</span>
-                </a>
-                {% endif %}
-                {% if admin or addDeleteRecords %}
-                <a href="{% url 'ResetDNSConfigurations' %}" class="menu-item">
-                    <span>Reset DNS Configurations</span>
-                </a>
-                {% endif %}
-            </div>
-            
-            <a href="#" class="menu-item" onclick="toggleSubmenu('email-submenu', this); return false;">
-                <div class="icon-wrapper">
-                    <i class="fas fa-envelope"></i>
-                </div>
-                <span>Email</span>
-                <i class="fas fa-chevron-right chevron"></i>
-            </a>
-            <div id="email-submenu" class="submenu">
-                {% if admin or createEmail %}
-                <a href="{% url 'createEmailAccount' %}" class="menu-item">
-                    <span>Create Email</span>
-                </a>
-                {% endif %}
-                {% if admin or listEmails %}
-                <a href="{% url 'listEmails' %}" class="menu-item">
-                    <span>List Emails</span>
-                </a>
-                {% endif %}
-                {% if admin or deleteEmail %}
-                <a href="{% url 'deleteEmailAccount' %}" class="menu-item">
-                    <span>Delete Email</span>
-                </a>
-                {% endif %}
-                {% if admin or emailForwarding %}
-                <a href="{% url 'EmailLimits' %}" class="menu-item">
-                    <span>Email Limits</span>
-                </a>
-                {% endif %}
-                {% if admin or emailForwarding %}
-                <a href="{% url 'emailForwarding' %}" class="menu-item">
-                    <span>Email Forwarding</span>
-                </a>
-                {% endif %}
-                {% if admin or emailForwarding %}
-                <a href="{% url 'catchAllEmail' %}" class="menu-item">
-                    <span>Catch-All Email</span>
-                </a>
-                {% endif %}
-                {% if admin or emailForwarding %}
-                <a href="{% url 'patternForwarding' %}" class="menu-item">
-                    <span>Pattern Forwarding</span>
-                </a>
-                {% endif %}
-                {% if admin %}
-                <a href="{% url 'plusAddressingSettings' %}" class="menu-item">
-                    <span>Plus-Addressing</span>
-                </a>
-                {% endif %}
-                {% if admin or changeEmailPassword %}
-                <a href="{% url 'changeEmailAccountPassword' %}" class="menu-item">
-                    <span>Change Password</span>
-                </a>
-                {% endif %}
-                {% if admin or dkimManager %}
-                <a href="{% url 'dkimManager' %}" class="menu-item">
-                    <span>DKIM Manager</span>
-                </a>
-                {% endif %}
-                {% if admin or createEmail %}
-                <a href="/webmail/" class="menu-item">
-                    <span>Access Webmail</span>
-                </a>
-                {% endif %}
-            </div>
-            
-            <a href="#" class="menu-item" onclick="toggleSubmenu('ftp-submenu', this); return false;">
-                <div class="icon-wrapper">
-                    <i class="fas fa-folder"></i>
-                </div>
-                <span>FTP</span>
-                <i class="fas fa-chevron-right chevron"></i>
-            </a>
-            <div id="ftp-submenu" class="submenu">
-                {% if admin or createFTPAccount %}
-                <a href="{% url 'createFTPAccount' %}" class="menu-item">
-                    <span>Create FTP Account</span>
-                </a>
-                {% endif %}
-                {% if admin or deleteFTPAccount %}
-                <a href="{% url 'deleteFTPAccount' %}" class="menu-item delete">
-                    <span>Delete FTP Account</span>
-                </a>
-                {% endif %}
-                {% if admin or listFTPAccounts %}
-                <a href="{% url 'listFTPAccounts' %}" class="menu-item">
-                    <span>List FTP Accounts</span>
-                </a>
-                {% endif %}
-                {% if admin or listFTPAccounts %}
-                <a href="{% url 'ResetFTPConfigurations' %}" class="menu-item">
-                    <span>Reset FTP Configurations</span>
-                </a>
-                {% endif %}
-            </div>
-            
-            <a href="#" class="menu-item" onclick="toggleSubmenu('backup-submenu', this); return false;">
-                <div class="icon-wrapper">
-                    <i class="fas fa-save"></i>
-                </div>
-                <span>Backup</span>
-                <i class="fas fa-chevron-right chevron"></i>
-            </a>
-            <div id="backup-submenu" class="submenu">
-                {% if admin or createBackup %}
-                <a href="{% url 'OneClickBackups' %}" class="menu-item">
-                    <span>One-Click Backups</span>
-                </a>
-                {% endif %}
-                {% if admin or createBackup %}
-                <a href="{% url 'backupSite' %}" class="menu-item">
-                    <span>Create Backup</span>
-                </a>
-                {% endif %}
-                {% if admin or restoreBackup %}
-                <a href="{% url 'restoreSite' %}" class="menu-item">
-                    <span>Restore Backup</span>
-                </a>
-                {% endif %}
-                {% if admin or addDeleteDestinations %}
-                <a href="{% url 'backupDestinations' %}" class="menu-item">
-                    <span>Add/Delete Destination</span>
-                </a>
-                {% endif %}
-                {% if admin or scheduleBackups %}
-                <a href="{% url 'scheduleBackup' %}" class="menu-item">
-                    <span>Schedule Backup</span>
-                </a>
-                {% endif %}
-                {% if admin or googleDriveBackups %}
-                <a href="{% url 'gDrive' %}" class="menu-item">
-                    <span>Setup Google Drive</span>
-                </a>
-                {% endif %}
-                {% if admin or remoteBackups %}
-                <a href="{% url 'remoteBackups' %}" class="menu-item">
-                    <span>Remote Backups</span>
-                </a>
-                {% endif %}
-        </div>
-            
-        <a href="#" class="menu-item" onclick="toggleSubmenu('incremental-backup-submenu', this); return false;">
-            <div class="icon-wrapper">
-                <i class="fas fa-save"></i>
-            </div>
-            <span>Incremental Backup</span>
-            <i class="fas fa-chevron-right chevron"></i>
-        </a>
-        <div id="incremental-backup-submenu" class="submenu">
-            {% if admin or createBackup %}
-            <a href="{% url 'backupDestinationsInc' %}" class="menu-item">
-                <span>Backups v2</span>
-            </a>
-            <a href="{% url 'createBackupInc' %}" class="menu-item">
-                <span>v1 (Deprecated)</span>
-            </a>
-            {% endif %}
-        </div>
-            
-        <a href="#" class="menu-item" onclick="toggleSubmenu('ssl-submenu', this); return false;">
-            <div class="icon-wrapper">
-                <i class="fas fa-lock"></i>
-            </div>
-            <span>SSL</span>
-            <i class="fas fa-chevron-right chevron"></i>
-        </a>
-        <div id="ssl-submenu" class="submenu">
-            {% if admin or manageSSL %}
-            <a href="{% url 'v2ManageSSL' %}" class="menu-item">
-                <span>Manage SSL v2</span>
-            </a>
-            <a href="{% url 'manageSSL' %}" class="menu-item">
-                <span>Manage SSL</span>
-            </a>
-            {% endif %}
-            {% if admin or hostnameSSL %}
-            <a href="{% url 'sslForHostName' %}" class="menu-item">
-                <span>Hostname SSL</span>
-            </a>
-            {% endif %}
-            {% if admin or mailServerSSL %}
-            <a href="{% url 'sslForMailServer' %}" class="menu-item">
-                <span>MailServer SSL</span>
-            </a>
-            {% endif %}
-        </div>
-        
-        {% if admin %}
-        <div class="section-header">SERVER</div>
-            
-        <a href="{% url 'MysqlManager' %}" class="menu-item">
-            <div class="icon-wrapper">
-                <i class="fas fa-database"></i>
-            </div>
-            <span>MySQL Manager</span>
-            <span class="badge">NEW</span>
-        </a>
-            
-        <a href="{% url 'Filemanager' %}" class="menu-item">
-            <div class="icon-wrapper">
-                <i class="fas fa-folder-open"></i>
-            </div>
-            <span>Root File Manager</span>
-        </a>
-            
-            <a href="#" class="menu-item" onclick="toggleSubmenu('cloudlinux-submenu', this); return false;">
-                <div class="icon-wrapper">
-                    <i class="fas fa-fire"></i>
-                </div>
-                <span>CloudLinux</span>
-                <span class="badge">NEW</span>
-                <i class="fas fa-chevron-right chevron"></i>
-            </a>
-            <div id="cloudlinux-submenu" class="submenu">
-                <a href="{% url 'CreatePackageCL' %}" class="menu-item">
-                    <span>Create Package</span>
-                </a>
-                <a href="{% url 'listPackagesCL' %}" class="menu-item">
-                    <span>List Packages</span>
-                </a>
-                <a href="{% url 'monitorUsage' %}" class="menu-item">
-                    <span>Monitor Usage</span>
-                </a>
-                <a href="{% url 'CageFS' %}" class="menu-item">
-                    <span>CageFS</span>
-                </a>
-            </div>
-            
-            <a href="#" class="menu-item" onclick="toggleSubmenu('docker-manager-submenu', this); return false;">
-                <div class="icon-wrapper">
-                    <i class="fas fa-cogs"></i>
-                </div>
-                <span>Docker Manager</span>
-                <i class="fas fa-chevron-right chevron"></i>
-            </a>
-            <div id="docker-manager-submenu" class="submenu">
-                <a href="{% url 'manageImages' %}" class="menu-item">
-                    <span>Manage Images</span>
-                </a>
-                <a href="{% url 'listContainers' %}" class="menu-item">
-                    <span>Manage Containers</span>
-                </a>
-                <a href="{% url 'containerImage' %}" class="menu-item">
-                    <span>Create New Container</span>
-                </a>
-            </div>
-            
-            <a href="#" class="menu-item" onclick="toggleSubmenu('tuning-submenu', this); return false;">
-                <div class="icon-wrapper">
-                    <i class="fas fa-adjust"></i>
-                </div>
-                <span>Tuning</span>
-                <i class="fas fa-chevron-right chevron"></i>
-            </a>
-            <div id="tuning-submenu" class="submenu">
-                <a href="{% url 'liteSpeedTuning' %}" class="menu-item">
-                    <span>LiteSpeed Tuning</span>
-                </a>
-                {% if serverCheck == 1 %}
-                <a href="{% url 'litespeed_ent_conf' %}" class="menu-item">
-                    <span>LiteSpeed Ent Global Conf</span>
-                </a>
-                {% endif %}
-                <a href="{% url 'phpTuning' %}" class="menu-item">
-                    <span>PHP Tuning</span>
-                </a>
-            </div>
-            
-            <a href="#" class="menu-item" onclick="toggleSubmenu('server-status-submenu', this); return false;">
-                <div class="icon-wrapper">
-                    <i class="fas fa-cog"></i>
-                </div>
-                <span>Server Status</span>
-                <i class="fas fa-chevron-right chevron"></i>
-            </a>
-            <div id="server-status-submenu" class="submenu">
-                <a href="{% url 'topProcesses' %}" class="menu-item">
-                    <span>Top Processes</span>
-                </a>
-                <a href="{% url 'litespeedStatus' %}" class="menu-item">
-                    <span>LiteSpeed Status</span>
-                </a>
-                <a href="{% url 'CyberPanelPort' %}" class="menu-item">
-                    <span>Change Port</span>
-                </a>
-                <a href="{% url 'packageManager' %}" class="menu-item">
-                    <span>Package Manager</span>
-                </a>
-            </div>
-            
-            <a href="#" class="menu-item" onclick="toggleSubmenu('php-submenu', this); return false;">
-                <div class="icon-wrapper">
-                    <i class="fas fa-code"></i>
-                </div>
-                <span>PHP</span>
-                <i class="fas fa-chevron-right chevron"></i>
-            </a>
-            <div id="php-submenu" class="submenu">
-                <a href="{% url 'installExtensions' %}" class="menu-item">
-                    <span>Install Extensions</span>
-                </a>
-                <a href="{% url 'editPHPConfigs' %}" class="menu-item">
-                    <span>Edit PHP Configs</span>
-                </a>
-            </div>
-            
-            <a href="#" class="menu-item" onclick="toggleSubmenu('logs-submenu', this); return false;">
-                <div class="icon-wrapper">
-                    <i class="fas fa-file"></i>
-                </div>
-                <span>Logs</span>
-                <i class="fas fa-chevron-right chevron"></i>
-            </a>
-            <div id="logs-submenu" class="submenu">
-                <a href="{% url 'serverMail' %}" class="menu-item">
-                    <span>Server Mail</span>
-                </a>
-                <a href="{% url 'cyberCPMainLogFile' %}" class="menu-item">
-                    <span>CyberPanel Main Log File</span>
-                </a>
-                <a href="{% url 'accessLogs' %}" class="menu-item">
-                    <span>Access Log</span>
-                </a>
-                <a href="{% url 'errorLogs' %}" class="menu-item">
-                    <span>Error Logs</span>
-                </a>
-                <a href="{% url 'emaillogs' %}" class="menu-item">
-                    <span>Email Log</span>
-                </a>
-                <a href="{% url 'ftplogs' %}" class="menu-item">
-                    <span>FTP Logs</span>
-                </a>
-                <a href="{% url 'modSecAuditLogs' %}" class="menu-item">
-                    <span>ModSec Audit Logs</span>
-                </a>
-            </div>
-            
-            <a href="#" class="menu-item" onclick="toggleSubmenu('security-submenu', this); return false;">
-                <div class="icon-wrapper">
-                    <i class="fas fa-shield"></i>
-                </div>
-                <span>Security</span>
-                <i class="fas fa-chevron-right chevron"></i>
-            </a>
-            <div id="security-submenu" class="submenu">
-                <a href="{% url 'firewallHome' %}" class="menu-item">
-                    <span>Firewall</span>
-                </a>
-                <a href="{% url 'secureSSH' %}" class="menu-item">
-                    <span>Secure SSH</span>
-                </a>
-                <a href="{% url 'modSecurity' %}" class="menu-item">
-                    <span>ModSecurity Conf</span>
-                </a>
-                <a href="{% url 'modSecRules' %}" class="menu-item">
-                    <span>ModSecurity Rules</span>
-                </a>
-                <a href="{% url 'modSecRulesPacks' %}" class="menu-item">
-                    <span>ModSecurity Rules Packs</span>
-                </a>
-                <a href="{% url 'imunify' %}" class="menu-item">
-                    <span>Imunify 360</span>
-                </a>
-                <a href="{% url 'imunifyAV' %}" class="menu-item">
-                    <span>ImunifyAV</span>
-                </a>
-                <a href="{% url 'aiScannerHome' %}" class="menu-item">
-                    <span>AI Scanner</span>
-                </a>
-            </div>
-            
-            <a href="#" class="menu-item" onclick="toggleSubmenu('mail-settings-submenu', this); return false;">
-                <div class="icon-wrapper">
-                    <i class="fas fa-envelope"></i>
-                </div>
-                <span>Mail Settings</span>
-                <span class="badge">NEW</span>
-                <i class="fas fa-chevron-right chevron"></i>
-            </a>
-            <div id="mail-settings-submenu" class="submenu">
-                <a href="{% url 'EmailDebugger' %}" class="menu-item">
-                    <span>Email Debugger</span>
-                </a>
-                <a href="{% url 'mailQueue' %}" class="menu-item">
-                    <span>Mail Queue</span>
-                </a>
-                <a href="{% url 'SpamAssassin' %}" class="menu-item">
-                    <span>SpamAssassin</span>
-                </a>
-                <a href="{% url 'emailMarketing' %}" class="menu-item">
-                    <span>Email Marketing</span>
-                </a>
-                <a href="{% url 'MailScanner' %}" class="menu-item">
-                    <span>MailScanner</span>
-                </a>
-                <a href="{% url 'Rspamd' %}" class="menu-item">
-                    <span>RSPAMD</span>
-                </a>
-                <a href="{% url 'emailDeliveryHome' %}" class="menu-item">
-                    <span>Email Delivery</span>
-                    <span class="badge">NEW</span>
-                </a>
-            </div>
-
-            <a href="#" class="menu-item" onclick="toggleSubmenu('manage-services-submenu', this); return false;">
-                <div class="icon-wrapper">
-                    <i class="fas fa-folder-open"></i>
-                </div>
-                <span>Manage Services</span>
-                <i class="fas fa-chevron-right chevron"></i>
-            </a>
-            <div id="manage-services-submenu" class="submenu">
-                <a href="{% url 'manageApplications' %}" class="menu-item">
-                    <span>Applications</span>
-                </a>
-                <a href="{% url 'services' %}" class="menu-item">
-                    <span>Services Status</span>
-                </a>
-                <a href="{% url 'managePowerDNS' %}" class="menu-item">
-                    <span>Manage PowerDNS</span>
-                </a>
-                <a href="{% url 'managePostfix' %}" class="menu-item">
-                    <span>Manage Postfix</span>
-                </a>
-                <a href="{% url 'managePureFtpd' %}" class="menu-item">
-                    <span>Manage FTP</span>
-                </a>
-            </div>
-            
-            <a href="#" class="menu-item" onclick="toggleSubmenu('plugins-submenu', this); return false;">
-                <div class="icon-wrapper">
-                    <i class="fas fa-plug"></i>
-                </div>
-                <span>Plugins</span>
-                <i class="fas fa-chevron-right chevron"></i>
-            </a>
-            <div id="plugins-submenu" class="submenu">
-                <a href="{% url 'installed' %}" class="menu-item">
-                    <span>Installed</span>
-                </a>
-        </div>
-        {% endif %}
     </nav>
 
     <!-- Main Content -->
@@ -900,7 +280,218 @@
         {% block content %}{% endblock %}
     </main>
     
-    <!-- Additional Scripts -->
+    <!-- Command Palette (Ctrl/Cmd-K) -->
+    <div class="cp-cmdk-overlay" id="cp-cmdk-overlay" hidden role="dialog" aria-modal="true" aria-label="{% trans 'Command palette' %}">
+        <div class="cp-cmdk" role="document">
+            <div class="cp-cmdk-search">
+                <i class="fas fa-magnifying-glass" aria-hidden="true"></i>
+                <input type="text" id="cp-cmdk-input" autocomplete="off" spellcheck="false"
+                       placeholder="{% trans 'Search pages and actions…' %}" aria-label="{% trans 'Search pages and actions' %}">
+                <span class="cp-cmdk-hint">ESC</span>
+            </div>
+            <div class="cp-cmdk-results" id="cp-cmdk-results"></div>
+            <div class="cp-cmdk-empty" id="cp-cmdk-empty" hidden>{% trans "No results" %}</div>
+        </div>
+    </div>
+
+    <script>
+    /* -------- Command palette: searches nav pages + quick actions -------- */
+    (function () {
+        var overlay, input, results, emptyEl, items = [], filtered = [], activeIdx = 0;
+
+        // Comprehensive page index — the palette is the universal fast path now
+        // that the sidebar is intentionally shallow. ACL-gated server-side.
+        var CP_PAGES = [
+            // Quick actions
+            {% if admin or createWebsite %}{l:'{% trans "Create Website" %}', h:'{% url "createWebsite" %}', i:'fa-circle-plus', g:'{% trans "Quick actions" %}'},{% endif %}
+            {l:'{% trans "Deploy WordPress" %}', h:'{% url "createWordpress" %}', i:'fa-circle-plus', g:'{% trans "Quick actions" %}'},
+            {% if admin or createEmail %}{l:'{% trans "Create Email Account" %}', h:'{% url "createEmailAccount" %}', i:'fa-circle-plus', g:'{% trans "Quick actions" %}'},{% endif %}
+            {% if admin or createDatabase %}{l:'{% trans "Create Database" %}', h:'{% url "createDatabase" %}', i:'fa-circle-plus', g:'{% trans "Quick actions" %}'},{% endif %}
+            {l:'{% trans "Build Services" %}', h:'{% url "buildServices" %}', i:'fa-rocket', g:'{% trans "Quick actions" %}'},
+            // Build services (open the marketing pages on cyberpanel.net)
+            {l:'{% trans "Website Development" %}', h:'https://cyberpanel.net/custom-development/web?utm_source=cyberpanel&utm_medium=panel&utm_campaign=build_services', i:'fa-globe', g:'{% trans "Build services" %}', t:'_blank'},
+            {l:'{% trans "WordPress & eCommerce" %}', h:'https://cyberpanel.net/custom-development/wordpress?utm_source=cyberpanel&utm_medium=panel&utm_campaign=build_services', i:'fab fa-wordpress', g:'{% trans "Build services" %}', t:'_blank'},
+            {l:'{% trans "Website Speed Optimization" %}', h:'https://cyberpanel.net/custom-development/speed-optimization?utm_source=cyberpanel&utm_medium=panel&utm_campaign=build_services', i:'fa-gauge-high', g:'{% trans "Build services" %}', t:'_blank'},
+            {l:'{% trans "Android App Development" %}', h:'https://cyberpanel.net/custom-development/android?utm_source=cyberpanel&utm_medium=panel&utm_campaign=build_services', i:'fab fa-android', g:'{% trans "Build services" %}', t:'_blank'},
+            {l:'{% trans "iOS App Development" %}', h:'https://cyberpanel.net/custom-development/ios?utm_source=cyberpanel&utm_medium=panel&utm_campaign=build_services', i:'fab fa-apple', g:'{% trans "Build services" %}', t:'_blank'},
+            {l:'{% trans "Custom Software & APIs" %}', h:'https://cyberpanel.net/custom-development/custom-software?utm_source=cyberpanel&utm_medium=panel&utm_campaign=build_services', i:'fa-code', g:'{% trans "Build services" %}', t:'_blank'},
+            {l:'{% trans "UI / UX Design" %}', h:'https://cyberpanel.net/custom-development/design?utm_source=cyberpanel&utm_medium=panel&utm_campaign=build_services', i:'fa-pen-ruler', g:'{% trans "Build services" %}', t:'_blank'},
+            {l:'{% trans "DevOps & Server Management" %}', h:'https://cyberpanel.net/custom-development/devops?utm_source=cyberpanel&utm_medium=panel&utm_campaign=build_services', i:'fa-server', g:'{% trans "Build services" %}', t:'_blank'},
+            {l:'{% trans "Maintenance & Support" %}', h:'https://cyberpanel.net/custom-development/support?utm_source=cyberpanel&utm_medium=panel&utm_campaign=build_services', i:'fa-life-ring', g:'{% trans "Build services" %}', t:'_blank'},
+            // Sites
+            {l:'{% trans "Dashboard" %}', h:'{% url "index" %}', i:'fa-gauge-high', g:'{% trans "Sites" %}'},
+            {l:'{% trans "Websites" %}', h:'{% url "listWebsites" %}', i:'fa-globe', g:'{% trans "Sites" %}'},
+            {l:'{% trans "WordPress Sites" %}', h:'{% url "ListWPSites" %}', i:'fab fa-wordpress', g:'{% trans "Sites" %}'},
+            {l:'{% trans "Sub / Addon Domains" %}', h:'{% url "listChildDomains" %}', i:'fa-diagram-project', g:'{% trans "Sites" %}'},
+            {l:'{% trans "Create Sub / Addon Domain" %}', h:'{% url "CreateNewDomain" %}', i:'fa-circle-plus', g:'{% trans "Sites" %}'},
+            // Email
+            {% if admin or listEmails %}{l:'{% trans "Email Accounts" %}', h:'{% url "listEmails" %}', i:'fa-inbox', g:'{% trans "Email" %}'},{% endif %}
+            {% if admin or emailForwarding %}{l:'{% trans "Email Forwarding" %}', h:'{% url "emailForwarding" %}', i:'fa-share', g:'{% trans "Email" %}'},
+            {l:'{% trans "Catch-All Email" %}', h:'{% url "catchAllEmail" %}', i:'fa-filter', g:'{% trans "Email" %}'},
+            {l:'{% trans "Email Limits" %}', h:'{% url "EmailLimits" %}', i:'fa-gauge', g:'{% trans "Email" %}'},{% endif %}
+            {% if admin or dkimManager %}{l:'{% trans "DKIM Manager" %}', h:'{% url "dkimManager" %}', i:'fa-signature', g:'{% trans "Email" %}'},{% endif %}
+            {l:'{% trans "Webmail" %}', h:'/webmail/', i:'fa-envelope-open-text', g:'{% trans "Email" %}'},
+            {% if admin %}{l:'{% trans "Email Delivery" %}', h:'{% url "emailDeliveryHome" %}', i:'fa-paper-plane', g:'{% trans "Email" %}'},
+            {l:'{% trans "Email Debugger" %}', h:'{% url "EmailDebugger" %}', i:'fa-stethoscope', g:'{% trans "Email" %}'},
+            {l:'{% trans "Mail Queue" %}', h:'{% url "mailQueue" %}', i:'fa-list-check', g:'{% trans "Email" %}'},
+            {l:'{% trans "Email Marketing" %}', h:'{% url "emailMarketing" %}', i:'fa-bullhorn', g:'{% trans "Email" %}'},{% endif %}
+            // Data
+            {% if admin or listDatabases %}{l:'{% trans "Databases" %}', h:'{% url "listDBs" %}', i:'fa-database', g:'{% trans "Data" %}'},{% endif %}
+            {% if admin or createDatabase %}{l:'{% trans "phpMyAdmin" %}', h:'{% url "phpMyAdmin" %}', i:'fa-table', g:'{% trans "Data" %}', t:'_blank'},{% endif %}
+            {% if admin %}{l:'{% trans "MySQL Manager" %}', h:'{% url "MysqlManager" %}', i:'fa-sliders', g:'{% trans "Data" %}'},{% endif %}
+            {% if admin or listFTPAccounts %}{l:'{% trans "FTP Accounts" %}', h:'{% url "listFTPAccounts" %}', i:'fa-folder', g:'{% trans "Data" %}'},{% endif %}
+            // Backups
+            {% if admin or createBackup %}{l:'{% trans "One-Click Backups" %}', h:'{% url "OneClickBackups" %}', i:'fa-bolt', g:'{% trans "Backups" %}'},
+            {l:'{% trans "Incremental Backups" %}', h:'{% url "backupDestinationsInc" %}', i:'fa-layer-group', g:'{% trans "Backups" %}'},
+            {l:'{% trans "Create Backup" %}', h:'{% url "backupSite" %}', i:'fa-box-archive', g:'{% trans "Backups" %}'},{% endif %}
+            {% if admin or restoreBackup %}{l:'{% trans "Restore Backup" %}', h:'{% url "restoreSite" %}', i:'fa-rotate-left', g:'{% trans "Backups" %}'},{% endif %}
+            {% if admin or scheduleBackups %}{l:'{% trans "Schedule Backup" %}', h:'{% url "scheduleBackup" %}', i:'fa-clock', g:'{% trans "Backups" %}'},{% endif %}
+            // Account
+            {l:'{% trans "View Profile" %}', h:'{% url "viewProfile" %}', i:'fa-id-card', g:'{% trans "Account" %}'},
+            {% if admin or listUsers %}{l:'{% trans "List Users" %}', h:'{% url "listUsers" %}', i:'fa-users', g:'{% trans "Account" %}'},{% endif %}
+            {% if admin or createNewUser %}{l:'{% trans "Create User" %}', h:'{% url "createUser" %}', i:'fa-user-plus', g:'{% trans "Account" %}'},{% endif %}
+            {% if admin or listPackages %}{l:'{% trans "Packages" %}', h:'{% url "listPackages" %}', i:'fa-box', g:'{% trans "Account" %}'},{% endif %}
+            {% if admin or resellerCenter %}{l:'{% trans "Reseller Center" %}', h:'{% url "resellerCenter" %}', i:'fa-handshake', g:'{% trans "Account" %}'},{% endif %}
+            {% if admin %}
+            // Server (admin)
+            {l:'{% trans "Services Status" %}', h:'{% url "services" %}', i:'fa-server', g:'{% trans "Server" %}'},
+            {l:'{% trans "Applications" %}', h:'{% url "manageApplications" %}', i:'fa-cubes', g:'{% trans "Server" %}'},
+            {l:'{% trans "PHP Extensions" %}', h:'{% url "installExtensions" %}', i:'fa-puzzle-piece', g:'{% trans "Server" %}'},
+            {l:'{% trans "PHP Configs" %}', h:'{% url "editPHPConfigs" %}', i:'fa-code', g:'{% trans "Server" %}'},
+            {l:'{% trans "LiteSpeed Tuning" %}', h:'{% url "liteSpeedTuning" %}', i:'fa-gauge-high', g:'{% trans "Server" %}'},
+            {l:'{% trans "Top Processes" %}', h:'{% url "topProcesses" %}', i:'fa-microchip', g:'{% trans "Server" %}'},
+            {l:'{% trans "Package Manager" %}', h:'{% url "packageManager" %}', i:'fa-box-open', g:'{% trans "Server" %}'},
+            {l:'{% trans "Change Port" %}', h:'{% url "CyberPanelPort" %}', i:'fa-plug', g:'{% trans "Server" %}'},
+            {l:'{% trans "Docker Apps" %}', h:'{% url "ListDockerSites" %}', i:'fa-ship', g:'{% trans "Server" %}'},
+            {l:'{% trans "Containers" %}', h:'{% url "listContainers" %}', i:'fa-cubes', g:'{% trans "Server" %}'},
+            {l:'{% trans "Root File Manager" %}', h:'{% url "Filemanager" %}', i:'fa-folder-open', g:'{% trans "Server" %}'},
+            {l:'{% trans "DNS Zones" %}', h:'{% url "createDNSZone" %}', i:'fa-sitemap', g:'{% trans "Server" %}'},
+            {l:'{% trans "Nameservers" %}', h:'{% url "createNameserver" %}', i:'fa-server', g:'{% trans "Server" %}'},
+            {l:'{% trans "Main Log" %}', h:'{% url "cyberCPMainLogFile" %}', i:'fa-file-lines', g:'{% trans "Server" %}'},
+            {l:'{% trans "Access Logs" %}', h:'{% url "accessLogs" %}', i:'fa-file-lines', g:'{% trans "Server" %}'},
+            {l:'{% trans "Error Logs" %}', h:'{% url "errorLogs" %}', i:'fa-triangle-exclamation', g:'{% trans "Server" %}'},
+            // Security (admin)
+            {l:'{% trans "AI Scanner" %}', h:'{% url "aiScannerHome" %}', i:'fa-brain', g:'{% trans "Security" %}'},
+            {l:'{% trans "Firewall" %}', h:'{% url "firewallHome" %}', i:'fa-fire-flame-curved', g:'{% trans "Security" %}'},
+            {l:'{% trans "Secure SSH" %}', h:'{% url "secureSSH" %}', i:'fa-terminal', g:'{% trans "Security" %}'},
+            {l:'{% trans "ModSecurity" %}', h:'{% url "modSecurity" %}', i:'fa-shield-halved', g:'{% trans "Security" %}'},
+            {l:'{% trans "ModSecurity Rules" %}', h:'{% url "modSecRules" %}', i:'fa-list', g:'{% trans "Security" %}'},
+            {l:'{% trans "Imunify 360" %}', h:'{% url "imunify" %}', i:'fa-shield-virus', g:'{% trans "Security" %}'},
+            {l:'{% trans "Manage SSL" %}', h:'{% url "v2ManageSSL" %}', i:'fa-lock', g:'{% trans "Security" %}'},
+            {l:'{% trans "Hostname SSL" %}', h:'{% url "sslForHostName" %}', i:'fa-server', g:'{% trans "Security" %}'},
+            // Settings (admin)
+            {l:'{% trans "Version Management" %}', h:'{% url "versionManagment" %}', i:'fa-code-branch', g:'{% trans "Settings" %}'},
+            {l:'{% trans "Design" %}', h:'{% url "design" %}', i:'fa-palette', g:'{% trans "Settings" %}'},
+            {l:'{% trans "Setup Wizard" %}', h:'{% url "onboarding" %}', i:'fa-wand-magic-sparkles', g:'{% trans "Settings" %}'},
+            {% endif %}
+        ];
+
+        function buildIndex() {
+            items = CP_PAGES.map(function (p) {
+                return {label: p.l, href: p.h, icon: (p.i.indexOf('fa-') === 0 ? 'fas ' + p.i : p.i), group: p.g, target: p.t || ''};
+            });
+            // Normalize icon prefix (CP_PAGES uses bare fa-* or full "fab fa-*")
+            // Supplement with any sidebar links not already indexed (e.g. plugin items)
+            var sidebar = document.getElementById('sidebar');
+            if (!sidebar) { return; }
+            var seen = {};
+            items.forEach(function (it) { seen[it.href] = 1; });
+            sidebar.querySelectorAll('a.menu-item[href]').forEach(function (a) {
+                var href = a.getAttribute('href');
+                if (!href || href === '#' || seen[href]) { return; }
+                seen[href] = 1;
+                var lbl = a.querySelector('span');
+                var label = (lbl ? lbl.textContent : a.textContent).trim();
+                if (!label) { return; }
+                items.push({label: label, href: href, icon: 'fas fa-arrow-right', group: '{% trans "Pages" %}', target: a.getAttribute('target') || ''});
+            });
+        }
+
+        function render() {
+            results.innerHTML = '';
+            if (!filtered.length) { emptyEl.hidden = false; return; }
+            emptyEl.hidden = true;
+            var lastGroup = null;
+            filtered.forEach(function (it, i) {
+                if (it.group !== lastGroup) {
+                    var gl = document.createElement('div');
+                    gl.className = 'cp-cmdk-group-label';
+                    gl.textContent = it.group;
+                    results.appendChild(gl);
+                    lastGroup = it.group;
+                }
+                var row = document.createElement('a');
+                row.className = 'cp-cmdk-item' + (i === activeIdx ? ' active' : '');
+                row.href = it.href;
+                if (it.target) { row.target = it.target; }
+                row.innerHTML = '<span class="cp-cmdk-ic"><i class="' + it.icon + '"></i></span>' +
+                                '<span><div>' + it.label + '</div>' +
+                                (it.group ? '<div class="cp-cmdk-sub">' + it.group + '</div>' : '') + '</span>';
+                row.addEventListener('mouseenter', function () { activeIdx = i; paintActive(); });
+                results.appendChild(row);
+            });
+        }
+        function paintActive() {
+            var rows = results.querySelectorAll('.cp-cmdk-item');
+            rows.forEach(function (r, i) { r.classList.toggle('active', i === activeIdx); });
+        }
+        function search(term) {
+            term = term.trim().toLowerCase();
+            if (!term) { filtered = items.slice(0, 8); }
+            else { filtered = items.filter(function (it) { return it.label.toLowerCase().indexOf(term) !== -1 || (it.group || '').toLowerCase().indexOf(term) !== -1; }); }
+            activeIdx = 0; render();
+        }
+        function open() {
+            if (!items.length) { buildIndex(); }
+            overlay.hidden = false;
+            input.value = ''; search('');
+            setTimeout(function () { input.focus(); }, 10);
+            document.addEventListener('keydown', onKey, true);
+        }
+        function close() {
+            overlay.hidden = true;
+            document.removeEventListener('keydown', onKey, true);
+        }
+        function go() {
+            var it = filtered[activeIdx];
+            if (!it) { return; }
+            if (it.target === '_blank') { window.open(it.href, '_blank'); close(); }
+            else { window.location.href = it.href; }
+        }
+        function onKey(e) {
+            if (e.key === 'ArrowDown') { e.preventDefault(); activeIdx = Math.min(activeIdx + 1, filtered.length - 1); paintActive(); scrollActive(); }
+            else if (e.key === 'ArrowUp') { e.preventDefault(); activeIdx = Math.max(activeIdx - 1, 0); paintActive(); scrollActive(); }
+            else if (e.key === 'Enter') { e.preventDefault(); go(); }
+            else if (e.key === 'Escape') { e.preventDefault(); close(); }
+        }
+        function scrollActive() {
+            var row = results.querySelectorAll('.cp-cmdk-item')[activeIdx];
+            if (row && row.scrollIntoView) { row.scrollIntoView({block: 'nearest'}); }
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            overlay = document.getElementById('cp-cmdk-overlay');
+            input = document.getElementById('cp-cmdk-input');
+            results = document.getElementById('cp-cmdk-results');
+            emptyEl = document.getElementById('cp-cmdk-empty');
+            if (!overlay) { return; }
+            input.addEventListener('input', function () { search(input.value); });
+            overlay.addEventListener('click', function (e) { if (e.target === overlay) { close(); } });
+            var trigger = document.getElementById('cp-cmdk-trigger');
+            if (trigger) { trigger.addEventListener('click', open); }
+            document.addEventListener('keydown', function (e) {
+                if ((e.metaKey || e.ctrlKey) && (e.key === 'k' || e.key === 'K')) {
+                    e.preventDefault();
+                    if (overlay.hidden) { open(); } else { close(); }
+                }
+            });
+        });
+    })();
+    </script>
+
+    <!-- Per-module controllers. Lightweight shell pages (dashboard, hubs,
+         build services, site workspace) override this block to skip ~1.1MB. -->
+    {% block module_scripts %}
     <script defer src="{% static 'packages/packages.js' %}?v={{ CP_VERSION }}"></script>
     <script defer src="{% static 'websiteFunctions/websiteFunctions.js' %}?v={{ CP_VERSION }}"></script>
     <script defer src="{% static 'userManagment/userManagment.js' %}?v={{ CP_VERSION }}"></script>
@@ -916,6 +507,7 @@
     <script defer src="{% static 'emailPremium/emailPremium.js' %}?v={{ CP_VERSION }}"></script>
     <script defer src="{% static 'manageServices/manageServices.js' %}?v={{ CP_VERSION }}"></script>
     <script defer src="{% static 'CLManager/CLManager.js' %}?v={{ CP_VERSION }}"></script>
+    {% endblock %}
     
     <!-- Scripts -->
     <script>

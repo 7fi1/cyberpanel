@@ -1109,6 +1109,43 @@ def launchChild(request, domain, childDomain):
         return redirect(loadLoginPage)
 
 
+def siteWorkspace(request, domain):
+    # Single-site workspace: one hub that gathers every action for a domain
+    # (files, SSL, DNS, email, databases, backups, advanced) into tabbed tiles.
+    try:
+        userID = request.session['userID']
+        currentACL = ACLManager.loadedACL(userID)
+        admin = Administrator.objects.get(pk=userID)
+
+        if ACLManager.checkOwnership(domain, admin, currentACL) != 1:
+            return ACLManager.loadError()
+
+        from websiteFunctions.models import Websites
+        try:
+            website = Websites.objects.get(domain=domain)
+        except Websites.DoesNotExist:
+            return ACLManager.loadError()
+
+        try:
+            packageName = website.package.packageName
+        except BaseException:
+            packageName = ''
+
+        data = {
+            'domain': domain,
+            'adminEmail': website.adminEmail,
+            'phpSelection': website.phpSelection,
+            'sslState': website.ssl,
+            'siteState': website.state,
+            'externalApp': website.externalApp,
+            'packageName': packageName,
+        }
+        proc = httpProc(request, 'baseTemplate/siteWorkspace.html', data)
+        return proc.render()
+    except KeyError:
+        return redirect(loadLoginPage)
+
+
 def getDataFromLogFile(request):
     try:
         userID = request.session['userID']

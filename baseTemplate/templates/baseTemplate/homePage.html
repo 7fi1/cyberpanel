@@ -7,9 +7,110 @@
 <link rel="stylesheet" type="text/css" href="{% static 'baseTemplate/css/dashboard.css' %}?v={{ CP_VERSION }}">
 {% endblock %}
 
+{# Dashboard uses controllers from system-status.js (loaded in head) — skip the 1.1MB module bundle #}
+{% block module_scripts %}{% endblock %}
+
 {% block content %}
 <div class="dashboard-wrapper">
     <div class="dashboard-container" ng-controller="dashboardStatsController">
+
+    <!-- Greeting + Quick Actions -->
+    <div class="dashboard-greeting" style="margin-bottom:18px;">
+        <h2 class="section-title" style="margin-bottom:4px;">{% trans "Welcome back" %}{% if fullName %}, {{ fullName }}{% endif %}</h2>
+        <p style="color:var(--text-secondary);margin:0;">{% trans "What would you like to do today?" %} <span style="opacity:.7;">{% trans "Tip: press Ctrl/Cmd-K to search anything." %}</span></p>
+    </div>
+    <div class="cp-quick-actions">
+        {% if admin or createWebsite %}
+        <a class="cp-qa-card" href="{% url 'createWebsite' %}">
+            <span class="cp-qa-ic"><i class="fas fa-globe"></i></span>
+            <span class="cp-qa-text"><span class="cp-qa-title">{% trans "Create Website" %}</span><span class="cp-qa-sub">{% trans "Launch a new site" %}</span></span>
+        </a>
+        {% endif %}
+        <a class="cp-qa-card" href="{% url 'createWordpress' %}">
+            <span class="cp-qa-ic" style="background:#5b87da;color:#fff;"><i class="fab fa-wordpress"></i></span>
+            <span class="cp-qa-text"><span class="cp-qa-title">{% trans "Deploy WordPress" %}</span><span class="cp-qa-sub">{% trans "One-click install" %}</span></span>
+        </a>
+        {% if admin or createEmail %}
+        <a class="cp-qa-card" href="{% url 'createEmailAccount' %}">
+            <span class="cp-qa-ic"><i class="fas fa-envelope"></i></span>
+            <span class="cp-qa-text"><span class="cp-qa-title">{% trans "Add Email" %}</span><span class="cp-qa-sub">{% trans "New mailbox" %}</span></span>
+        </a>
+        {% endif %}
+        {% if admin or createBackup %}
+        <a class="cp-qa-card" href="{% url 'OneClickBackups' %}">
+            <span class="cp-qa-ic"><i class="fas fa-shield-halved"></i></span>
+            <span class="cp-qa-text"><span class="cp-qa-title">{% trans "Back Up" %}</span><span class="cp-qa-sub">{% trans "Protect your data" %}</span></span>
+        </a>
+        {% endif %}
+        <a class="cp-qa-card" href="{% url 'buildServices' %}">
+            <span class="cp-qa-ic" style="background:linear-gradient(135deg,#6366f1,#a855f7);color:#fff;"><i class="fas fa-rocket"></i></span>
+            <span class="cp-qa-text"><span class="cp-qa-title">{% trans "Build Services" %}</span><span class="cp-qa-sub">{% trans "Let us build it" %}</span></span>
+        </a>
+    </div>
+
+    <!-- Onboarding checklist (shown when there are no websites yet) -->
+    <div class="cp-onboarding" ng-if="statsLoaded && (totalSites || 0) == 0">
+        <h3>{% trans "Get started with CyberPanel" %}</h3>
+        <p>{% trans "A few quick steps to get your hosting up and running." %}</p>
+        <div class="cp-ob-steps">
+            {% if admin or createWebsite %}
+            <a class="cp-ob-step" href="{% url 'createWebsite' %}">
+                <span class="cp-ob-num">1</span>
+                <span class="cp-ob-body"><span class="cp-ob-title">{% trans "Create your first website" %}</span><span class="cp-ob-sub">{% trans "Add a domain and pick a PHP version" %}</span></span>
+                <span class="cp-ob-go"><i class="fas fa-arrow-right"></i></span>
+            </a>
+            {% endif %}
+            <a class="cp-ob-step" href="{% url 'addDeleteDNSRecords' %}">
+                <span class="cp-ob-num">2</span>
+                <span class="cp-ob-body"><span class="cp-ob-title">{% trans "Point your domain" %}</span><span class="cp-ob-sub">{% trans "Set up DNS records for your domain" %}</span></span>
+                <span class="cp-ob-go"><i class="fas fa-arrow-right"></i></span>
+            </a>
+            <a class="cp-ob-step" href="{% url 'v2ManageSSL' %}">
+                <span class="cp-ob-num">3</span>
+                <span class="cp-ob-body"><span class="cp-ob-title">{% trans "Issue an SSL certificate" %}</span><span class="cp-ob-sub">{% trans "Secure your site with free HTTPS" %}</span></span>
+                <span class="cp-ob-go"><i class="fas fa-arrow-right"></i></span>
+            </a>
+            {% if admin or createEmail %}
+            <a class="cp-ob-step" href="{% url 'createEmailAccount' %}">
+                <span class="cp-ob-num">4</span>
+                <span class="cp-ob-body"><span class="cp-ob-title">{% trans "Set up email" %}</span><span class="cp-ob-sub">{% trans "Create a mailbox for your domain" %}</span></span>
+                <span class="cp-ob-go"><i class="fas fa-arrow-right"></i></span>
+            </a>
+            {% endif %}
+            {% if admin or createBackup %}
+            <a class="cp-ob-step" href="{% url 'OneClickBackups' %}">
+                <span class="cp-ob-num">5</span>
+                <span class="cp-ob-body"><span class="cp-ob-title">{% trans "Configure backups" %}</span><span class="cp-ob-sub">{% trans "Schedule automatic backups" %}</span></span>
+                <span class="cp-ob-go"><i class="fas fa-arrow-right"></i></span>
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Dismissible Build Services promo card -->
+    <div class="cp-build-card" id="cp-build-card" hidden>
+        <button class="cp-build-x" type="button" id="cp-build-card-x" aria-label="{% trans 'Dismiss' %}"><i class="fas fa-times"></i></button>
+        <i class="fas fa-rocket cp-build-bg" aria-hidden="true"></i>
+        <h3>{% trans "Need an app or custom website built?" %}</h3>
+        <p>{% trans "CyberPanel offers professional development services — websites, web apps, Android & iOS apps, and custom software, delivered and deployed for you." %}</p>
+        <div class="cp-build-actions">
+            <a class="cp-build-btn primary" href="{% url 'buildServices' %}"><i class="fas fa-arrow-right"></i> {% trans "Explore Build Services" %}</a>
+            <a class="cp-build-btn ghost" href="https://cyberpanel.net/custom-development?utm_source=cyberpanel&utm_medium=panel&utm_campaign=dashboard_card" target="_blank" rel="noopener">{% trans "Get a quote" %}</a>
+        </div>
+    </div>
+    <script>
+    (function () {
+        try {
+            var card = document.getElementById('cp-build-card');
+            if (!card) { return; }
+            var KEY = 'cpBuildCardDismissed';
+            if (localStorage.getItem(KEY) !== 'true') { card.hidden = false; }
+            var x = document.getElementById('cp-build-card-x');
+            if (x) { x.addEventListener('click', function () { try { localStorage.setItem(KEY, 'true'); } catch (e) {} card.hidden = true; }); }
+        } catch (e) {}
+    })();
+    </script>
+
     <!-- Overview Section -->
     <div class="overview-section">
         <h2 class="section-title">{% trans "OVERVIEW" %}</h2>

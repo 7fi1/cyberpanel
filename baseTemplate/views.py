@@ -29,7 +29,7 @@ import pwd
 # Create your views here.
 
 VERSION = '2.4'
-BUILD = 7
+BUILD = 8
 
 
 @ensure_csrf_cookie
@@ -140,10 +140,18 @@ def getSystemStatus(request):
             json_data = json.dumps(HTTPData)
             return HttpResponse(json_data)
         else:
-            # Non-admin users get user-specific resource information
+            # Non-admin users get user-specific resource information.
+            # The disk-usage loop below spawns `du` per website, which is slow
+            # and was running on every dashboard poll — cache the result briefly.
+            from django.core.cache import cache
+            cache_key = 'cp_user_sysstatus_%s' % val
+            cached = cache.get(cache_key)
+            if cached is not None:
+                return HttpResponse(json.dumps(cached))
+
             import subprocess
             import os
-            
+
             # Calculate user's disk usage
             total_disk_used = 0
             total_disk_limit = 0
@@ -210,9 +218,14 @@ def getSystemStatus(request):
                 'uptime': 'User Account Active'
             }
             
+            try:
+                cache.set(cache_key, user_data, 300)
+            except Exception:
+                pass
+
             json_data = json.dumps(user_data)
             return HttpResponse(json_data)
-            
+
     except Exception as e:
         # Return default values on error
         default_data = {
@@ -457,6 +470,28 @@ def onboarding(request):
     template = 'baseTemplate/onboarding.html'
 
     proc = httpProc(request, template, None, 'admin')
+    return proc.render()
+
+
+@ensure_csrf_cookie
+def cpHub(request, section):
+    # Category landing pages ("hubs") that replace the old deep sidebar
+    # accordions with a scannable grid of labelled tiles.
+    section = (section or '').lower()
+    adminOnly = {'server', 'security', 'settings'}
+    func = 'admin' if section in adminOnly else None
+    template = 'baseTemplate/hub.html'
+    proc = httpProc(request, template, {'section': section}, func)
+    return proc.render()
+
+
+@ensure_csrf_cookie
+def buildServices(request):
+    # In-panel landing for CyberPanel development services (Android, iOS,
+    # web and custom software). The full marketing page lives on
+    # cyberpanel.net; this page introduces the offering and deep-links out.
+    template = 'baseTemplate/buildServices.html'
+    proc = httpProc(request, template, {})
     return proc.render()
 
 
