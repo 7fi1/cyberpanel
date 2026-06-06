@@ -2977,13 +2977,19 @@ def main():
         # command = 'mkdir -p /usr/local/lscp/cyberpanel/snappymail/data/data/default/configs/'
         # subprocess.call(shlex.split(command))
 
+        # Generate a strong, unique SnappyMail admin password instead of a
+        # well-known default. The same value is applied via SetPassword() below,
+        # so the password recovery in cyberpanel.sh continues to work while no
+        # install ever ships with predictable webmail admin credentials.
+        snappymailAdminPassword = generate_pass()
+
         writeToFile = open('/usr/local/lscp/cyberpanel/snappymail/data/_data_/_default_/configs/application.ini', 'a')
 
         writeToFile.write("""
 [security]
 admin_login = "admin"
-admin_password = "12345"
-""")
+admin_password = "%s"
+""" % (snappymailAdminPassword))
         writeToFile.close()
 
         content = """<?php
@@ -2995,7 +3001,7 @@ $oConfig = \snappymail\Api::Config();
 $oConfig->SetPassword('%s');
 echo $oConfig->Save() ? 'Done' : 'Error';
 
-?>""" % (generate_pass())
+?>""" % (snappymailAdminPassword)
 
         writeToFile = open('/usr/local/CyberCP/public/snappymail.php', 'w')
         writeToFile.write(content)
