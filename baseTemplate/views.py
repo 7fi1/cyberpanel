@@ -180,39 +180,34 @@ def getSystemStatus(request):
                 if website.package:
                     total_disk_limit += website.package.diskSpace
             
-            # Convert MB to GB for display
+            # du -sm reports MB and package.diskSpace is stored in MB; convert both to GB for display
             total_disk_used_gb = round(total_disk_used / 1024, 2)
-            total_disk_limit_gb = total_disk_limit if total_disk_limit > 0 else 100  # Default 100GB if no limit
+            total_disk_limit_gb = round(total_disk_limit / 1024, 2) if total_disk_limit > 0 else 100  # Default 100GB if no limit
             disk_free_gb = max(0, total_disk_limit_gb - total_disk_used_gb)
             disk_usage_percent = min(100, int((total_disk_used_gb / total_disk_limit_gb) * 100)) if total_disk_limit_gb > 0 else 0
-            
-            # Calculate bandwidth usage (simplified - you may want to implement actual bandwidth tracking)
-            bandwidth_used = 0
-            bandwidth_limit = 0
-            for website in user_websites:
-                if website.package:
-                    bandwidth_limit += website.package.bandwidth
-            
-            bandwidth_limit_gb = bandwidth_limit if bandwidth_limit > 0 else 1000  # Default 1000GB if no limit
-            bandwidth_usage_percent = 0  # You can implement actual bandwidth tracking here
-            
-            # Count resources
-            total_websites = user_websites.count()
-            total_databases = 0
-            total_emails = 0
-            
-            website_names = list(user_websites.values_list('domain', flat=True))
-            if website_names:
-                total_databases = Databases.objects.filter(website__domain__in=website_names).count()
-                total_emails = EUsers.objects.filter(emailOwner__domainOwner__domain__in=website_names).count()
-            
+
+            # CPU and RAM are real server metrics (the user's sites run on this server);
+            # disk shown above is the user's own quota usage, not the whole server.
+            try:
+                import psutil
+                vm = psutil.virtual_memory()
+                cpu_usage = int(psutil.cpu_percent())
+                ram_usage = int(vm.percent)
+                cpu_cores = psutil.cpu_count() or 0
+                ram_total_mb = int(vm.total / (1024 * 1024))
+            except Exception:
+                cpu_usage = 0
+                ram_usage = 0
+                cpu_cores = 0
+                ram_total_mb = 0
+
             # Prepare response data matching the expected format
             user_data = {
-                'cpuUsage': min(100, int((total_websites * 5))),  # Estimate based on website count
-                'ramUsage': min(100, int((total_databases * 10) + (total_emails * 2))),  # Estimate based on resources
+                'cpuUsage': cpu_usage,
+                'ramUsage': ram_usage,
                 'diskUsage': disk_usage_percent,
-                'cpuCores': 2,  # Default for display
-                'ramTotalMB': 4096,  # Default for display
+                'cpuCores': cpu_cores,
+                'ramTotalMB': ram_total_mb,
                 'diskTotalGB': int(total_disk_limit_gb),
                 'diskFreeGB': int(disk_free_gb),
                 'uptime': 'User Account Active'
@@ -601,7 +596,8 @@ def getDashboardStats(request):
                 total_emails = EUsers.objects.filter(emailOwner__domainOwner__domain__in=website_names).count()
                 
                 # Count FTP users associated with user's domains
-                total_ftp_users = FTPUsers.objects.filter(domain__in=website_names).count()
+                # FTPUsers.domain is a ForeignKey to Websites, so filter through the relation
+                total_ftp_users = FTPUsers.objects.filter(domain__domain__in=website_names).count()
             else:
                 total_wp_sites = 0
                 total_dbs = 0

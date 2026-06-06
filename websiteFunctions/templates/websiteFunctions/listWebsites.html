@@ -754,6 +754,16 @@
                                 <a href="/filemanager/{$ web.domain $}" class="btn btn-outline btn-sm" title="{% trans 'File Manager' %}">
                                     Filemanager
                                 </a>
+                                {% if admin or suspendWebsite %}
+                                <a href="{% url 'siteState' %}" class="btn btn-outline btn-sm" title="{% trans 'Suspend / Unsuspend Website' %}">
+                                    <i class="fas fa-pause"></i> {% trans "Suspend" %}
+                                </a>
+                                {% endif %}
+                                {% if admin or deleteWebsite %}
+                                <a href="{% url 'deleteWebsite' %}" class="btn btn-outline-danger btn-sm" title="{% trans 'Delete Website' %}">
+                                    <i class="fas fa-trash"></i> {% trans "Delete" %}
+                                </a>
+                                {% endif %}
                             </div>
                         </div>
                         

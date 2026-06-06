@@ -118,11 +118,13 @@ def validate_access_token(token, scan_id):
 
             logging.writeToFile(f'[API] Found API key for admin: {scanner_settings.admin.userName}')
 
-            # Get the scan - don't require it to belong to the same admin
-            # (platform may be using any valid CyberPanel API key for file operations)
+            # Require the scan to belong to the admin that owns this API key.
+            # This prevents a valid API key from one account being used to operate
+            # on another account's scans/sites.
             try:
                 scan = ScanHistory.objects.get(
-                    scan_id=scan_id
+                    scan_id=scan_id,
+                    admin=scanner_settings.admin
                 )
 
                 # Get wp_path from WPSites (WordPress installations)
@@ -176,66 +178,10 @@ def validate_access_token(token, scan_id):
 
         except Exception as e:
             logging.writeToFile(f'[API] API key validation error: {str(e)}')
-            pass  # Fall through to OPTION 3
+            return None, "Token validation failed"
 
-        # OPTION 3: Simple validation for platform callbacks
-        # If we have a valid CyberPanel API key and a valid scan, allow access
-        # This handles cases where the platform is using the API key to fix files
-        try:
-            from .models import AIScannerSettings, ScanHistory
-
-            # Check if ANY admin has this API key (less restrictive for platform callbacks)
-            has_valid_key = AIScannerSettings.objects.filter(api_key=token).exists()
-
-            if has_valid_key:
-                # Check if the scan exists (any admin's scan)
-                try:
-                    scan = ScanHistory.objects.get(scan_id=scan_id)
-
-                    # Get WordPress site info
-                    from websiteFunctions.models import WPSites, Websites
-                    wp_site = WPSites.objects.filter(
-                        FinalURL__icontains=scan.domain
-                    ).first()
-
-                    if wp_site:
-                        # Get the external app (user) for this website
-                        external_app = wp_site.owner.externalApp
-
-                        # If no external app, try to get it from the website directly
-                        if not external_app:
-                            try:
-                                website = Websites.objects.get(domain=scan.domain)
-                                external_app = website.externalApp
-                            except Websites.DoesNotExist:
-                                pass
-
-                        # If still no external app, use the admin username as fallback
-                        if not external_app:
-                            external_app = wp_site.owner.admin.userName
-                            logging.writeToFile(f'[API] Warning: No externalApp for {scan.domain}, using admin username: {external_app}')
-
-                        logging.writeToFile(f'[API] Platform callback validated: API key exists, scan {scan_id} found, user {external_app}')
-                        return AuthWrapper(
-                            domain=scan.domain,
-                            wp_path=wp_site.path,
-                            auth_type='api_key',
-                            external_app=external_app,
-                            source_obj=None
-                        ), None
-                    else:
-                        logging.writeToFile(f'[API] WordPress site not found for scan {scan_id}')
-                        return None, "WordPress site not found"
-
-                except ScanHistory.DoesNotExist:
-                    logging.writeToFile(f'[API] Scan {scan_id} not found in OPTION 3')
-                    return None, "Scan not found"
-            else:
-                logging.writeToFile(f'[API] No valid API key found matching: {token[:20]}...')
-
-        except Exception as e:
-            logging.writeToFile(f'[API] OPTION 3 validation error: {str(e)}')
-            pass  # Fall through to final error
+        # No authentication path matched - fail closed.
+        return None, "Invalid token"
 
     except Exception as e:
         logging.writeToFile(f'[API] Token validation error: {str(e)}')

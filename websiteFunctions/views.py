@@ -1493,7 +1493,7 @@ def setupGitRepo(request):
 def gitNotify(request, domain):
     try:
         wm = WebsiteManager(domain)
-        return wm.gitNotify()
+        return wm.gitNotify(request=request)
     except KeyError:
         return redirect(loadLoginPage)
 
@@ -1877,7 +1877,7 @@ def addSSHKey(request):
 def webhook(request, domain):
     try:
         wm = WebsiteManager()
-        return wm.webhook(domain, json.loads(request.body))
+        return wm.webhook(domain, json.loads(request.body), request=request)
     except KeyError:
         return redirect(loadLoginPage)
 

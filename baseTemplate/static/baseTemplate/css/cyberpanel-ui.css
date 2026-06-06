@@ -1696,8 +1696,14 @@ button[aria-busy="true"] { opacity: 0.75; cursor: progress; }
    Design refinement pass
    Neutralize the purple wash, lighten chrome, tighten type.
    (light theme only; dark palette already reads well)
+   ------------------------------------------------------------
+   Scoped with :not([data-theme="dark"]) so these light values do
+   NOT leak into dark mode. A bare :root here has the same
+   specificity as [data-theme="dark"] but comes later in source,
+   so it would otherwise win and force the page background, sidebar
+   and borders light even in dark mode (issue #1804).
    ============================================================ */
-:root {
+:root:not([data-theme="dark"]) {
     --bg-primary: #f4f5fa;
     --bg-sidebar: #f6f7fc;
     --bg-hover: #eceefb;
