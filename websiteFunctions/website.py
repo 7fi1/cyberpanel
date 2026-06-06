@@ -4833,6 +4833,58 @@ context /cyberpanel_suspension_page.html {
             json_data = json.dumps(data_ret)
             return HttpResponse(json_data)
 
+    @staticmethod
+    def webhookSecretPath(domain):
+        return '/home/cyberpanel/git/%s.webhook_secret' % (domain)
+
+    @staticmethod
+    def readWebhookSecret(domain):
+        try:
+            secretPath = WebsiteManager.webhookSecretPath(domain)
+            if os.path.exists(secretPath):
+                secret = open(secretPath, 'r').read().strip()
+                if secret:
+                    return secret
+        except BaseException:
+            pass
+        return ''
+
+    @staticmethod
+    def getOrCreateWebhookSecret(domain):
+        existing = WebsiteManager.readWebhookSecret(domain)
+        if existing:
+            return existing
+        try:
+            import secrets as _secrets
+            gitConfFolder = '/home/cyberpanel/git'
+            if not os.path.exists(gitConfFolder):
+                os.mkdir(gitConfFolder)
+            secret = _secrets.token_urlsafe(32)
+            secretPath = WebsiteManager.webhookSecretPath(domain)
+            fd = os.open(secretPath, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+            with os.fdopen(fd, 'w') as secretFile:
+                secretFile.write(secret)
+            return secret
+        except BaseException:
+            return ''
+
+    @staticmethod
+    def verifyWebhookSecret(domain, request=None):
+        # Opt-in authentication: enforce ONLY when a secret has been provisioned
+        # for this repo. Repos created before this feature have no secret file and
+        # therefore keep working exactly as before (no breakage).
+        expected = WebsiteManager.readWebhookSecret(domain)
+        if not expected:
+            return True
+        provided = ''
+        if request is not None:
+            try:
+                provided = request.GET.get('secret', '') or request.META.get('HTTP_X_WEBHOOK_SECRET', '')
+            except BaseException:
+                provided = ''
+        from plogical.securityUtils import constant_time_equal
+        return constant_time_equal(provided, expected)
+
     def setupGit(self, request=None, userID=None, data=None):
         currentACL = ACLManager.loadedACL(userID)
         admin = Administrator.objects.get(pk=userID)
@@ -4854,6 +4906,10 @@ context /cyberpanel_suspension_page.html {
             port = ProcessUtilities.fetchCurrentPort()
 
             webhookURL = 'https://' + ipAddress + ':%s/websites/' % (port) + self.domain + '/gitNotify'
+
+            webhookSecret = WebsiteManager.readWebhookSecret(self.domain)
+            if webhookSecret:
+                webhookURL = webhookURL + '?secret=' + webhookSecret
 
             proc = httpProc(request, 'websiteFunctions/setupGit.html',
                             {'domainName': self.domain, 'installed': 1, 'webhookURL': webhookURL})
@@ -4902,6 +4958,11 @@ StrictHostKeyChecking no
 
             mailUtilities.checkHome()
 
+            # Provision an opt-in webhook secret for this newly set-up repo so the
+            # displayed webhook URLs are authenticated. Repos set up before this
+            # change have no secret file and stay unenforced (backward compatible).
+            WebsiteManager.getOrCreateWebhookSecret(self.domain)
+
             extraArgs = {}
             extraArgs['admin'] = admin
             extraArgs['domainName'] = data['domain']
@@ -4927,8 +4988,11 @@ StrictHostKeyChecking no
             json_data = json.dumps(data_ret)
             return HttpResponse(json_data)
 
-    def gitNotify(self, userID=None, data=None):
+    def gitNotify(self, userID=None, data=None, request=None):
         try:
+
+            if not WebsiteManager.verifyWebhookSecret(self.domain, request):
+                return HttpResponse(json.dumps({'pulled': 0, 'error_message': 'Invalid or missing webhook secret.'}), status=403)
 
             extraArgs = {}
             extraArgs['domain'] = self.domain
@@ -6195,6 +6259,10 @@ StrictHostKeyChecking no
 
                 webHookURL = 'https://%s:%s/websites/%s/webhook' % (ACLManager.fetchIP(), port, self.domain)
 
+                webhookSecret = WebsiteManager.readWebhookSecret(self.domain)
+                if webhookSecret:
+                    webHookURL = webHookURL + '?secret=' + webhookSecret
+
                 data_ret = {'status': 1, 'repo': 1, 'finalBranches': branches, 'deploymentKey': deploymentKey,
                             'remote': remote, 'remoteResult': remoteResult, 'totalCommits': totalCommits,
                             'home': self.home,
@@ -7238,10 +7306,13 @@ StrictHostKeyChecking no
             json_data = json.dumps(data_ret)
             return HttpResponse(json_data)
 
-    def webhook(self, domain, data=None):
+    def webhook(self, domain, data=None, request=None):
         try:
 
             self.domain = domain
+
+            if not WebsiteManager.verifyWebhookSecret(domain, request):
+                return HttpResponse(json.dumps({'status': 0, 'error_message': 'Invalid or missing webhook secret.'}), status=403)
 
             ### set default ssh key
 
