@@ -129,6 +129,70 @@
 .modal-footer { background: var(--bg-secondary) !important; border-color: var(--border-color) !important; color: var(--text-primary) !important; }
 
 /* =====================================================================
+   Shared "card surface" idiom classes (#1804)
+   ---------------------------------------------------------------------
+   Many internal pages (email limits, backups, docker, git, onboarding…)
+   hardcode `background: white / #fff / #f8f9ff` on their hero card,
+   header, body and table chrome instead of going through the design
+   tokens. These class names are NOT in the vocabulary above, so in dark
+   mode they render as blinding white panels with dark text. These rules
+   route the most common surface idioms through tokens. In LIGHT mode the
+   tokens resolve to the same near-white values (--bg-secondary #ffffff,
+   --bg-muted #f6f7f9), so the look is unchanged; in DARK mode the panels
+   finally go dark and stay legible.
+   ===================================================================== */
+#main-content .main-card,
+#main-content .stats-card,
+#main-content .data-card,
+#main-content .section-card {
+    background: var(--bg-secondary) !important;
+    border-color: var(--border-color) !important;
+    color: var(--text-primary) !important;
+    box-shadow: 0 1px 2px var(--shadow-color) !important;
+}
+#main-content .card-header,
+#main-content .main-card .card-header,
+#main-content .stats-table thead,
+#main-content .stats-table th,
+#main-content .data-table thead,
+#main-content .data-table th {
+    background: var(--bg-muted) !important;
+    border-color: var(--border-color) !important;
+    color: var(--text-secondary) !important;
+}
+#main-content .card-body,
+#main-content .stats-table,
+#main-content .data-table { background: var(--bg-secondary) !important; color: var(--text-primary) !important; }
+#main-content .stats-table td,
+#main-content .data-table td { border-color: var(--border-color) !important; color: var(--text-primary) !important; }
+#main-content .stats-table tbody tr:hover,
+#main-content .data-table tbody tr:hover { background: var(--bg-hover) !important; }
+
+/* Quiet "docs" pill that hardcodes white bg + lilac border ---------- */
+#main-content .docs-link {
+    background: var(--bg-secondary) !important;
+    border-color: var(--border-color) !important;
+}
+
+/* Inline code / token chips that hardcode a light grey fill --------- */
+#main-content .code-badge,
+#main-content .code-chip,
+#main-content .mono-badge {
+    background: var(--bg-muted) !important;
+    color: var(--text-primary) !important;
+    border-color: var(--border-color) !important;
+}
+
+/* Bootstrap modal close "×": a bare <button> with no background shows the
+   browser's light-grey UA default in dark mode. Keep it transparent. */
+[data-theme="dark"] #main-content .close,
+[data-theme="dark"] .modal .close {
+    background: transparent !important;
+    color: var(--text-secondary) !important;
+    text-shadow: none !important;
+}
+
+/* =====================================================================
    Site management page (website.html) bespoke components — centralized
    here so there is a single source of truth for the calm look.
    ===================================================================== */
