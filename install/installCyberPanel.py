@@ -302,6 +302,56 @@ class InstallCyberPanel:
             InstallCyberPanel.stdOut(f"ERROR: {msg}", 1)
             return False
 
+    def verifyChecksum(self, file_path, expected_sha256):
+        """Verify a downloaded file against an expected SHA256.
+
+        Returns True when the hash matches OR when no expected hash is
+        configured (verification is then skipped and the size-check still
+        applies). Returns False only on a real mismatch, so callers can
+        abort and keep the existing/stock binary.
+        """
+        if not expected_sha256:
+            return True  # no published hash to check against; skip
+        try:
+            import hashlib
+            h = hashlib.sha256()
+            with open(file_path, 'rb') as f:
+                for chunk in iter(lambda: f.read(1024 * 1024), b''):
+                    h.update(chunk)
+            actual = h.hexdigest()
+            if actual.lower() == expected_sha256.lower():
+                InstallCyberPanel.stdOut(f"SHA256 verified: {os.path.basename(file_path)}", 1)
+                return True
+            InstallCyberPanel.stdOut(f"ERROR: SHA256 mismatch for {os.path.basename(file_path)}", 1)
+            InstallCyberPanel.stdOut(f"  expected: {expected_sha256}", 1)
+            InstallCyberPanel.stdOut(f"  actual:   {actual}", 1)
+            return False
+        except Exception as msg:
+            logging.InstallLog.writeToFile(str(msg) + " [verifyChecksum]")
+            InstallCyberPanel.stdOut(f"ERROR: {msg} [verifyChecksum]", 1)
+            return False
+
+    def checkGlibcCompat(self, binary_path):
+        """Pre-flight ABI check: ldd the downloaded binary and fail if any
+        shared library is unresolved ('not found'). Prevents installing a
+        binary that can't load on this OS (the GLIBC/libcrypt outage class).
+        A fully static binary reports 'not a dynamic executable' (no
+        'not found') and passes. ldd being unavailable is non-blocking.
+        """
+        try:
+            result = subprocess.run(['ldd', binary_path], capture_output=True, text=True, timeout=15)
+            output = (result.stdout or '') + (result.stderr or '')
+            if 'not found' in output:
+                InstallCyberPanel.stdOut("ERROR: Downloaded binary has unresolved libraries (incompatible with this OS):", 1)
+                for line in output.splitlines():
+                    if 'not found' in line:
+                        InstallCyberPanel.stdOut(f"  {line.strip()}", 1)
+                return False
+            return True
+        except Exception as msg:
+            InstallCyberPanel.stdOut(f"WARNING: Could not run ldd pre-check ({msg}); continuing", 1)
+            return True
+
     def installCustomOLSBinaries(self):
         """Install custom OpenLiteSpeed binaries with PHP config support"""
         try:
@@ -334,16 +384,31 @@ class InstallCyberPanel:
                     'url': 'https://cyberpanel.net/openlitespeed-2.5.0-x86_64-rhel8',
                     'module_url': 'https://cyberpanel.net/cyberpanel_ols-2.7.3-x86_64-rhel8.so',
                     'modsec_url': 'https://cyberpanel.net/mod_security-2.5.0-x86_64-rhel8.so',
+                    'sha256': {
+                        'binary': '48c8423edfaec3fe1b6eee118925ed3ac55314c53e9bdf2e5bdd4960c4806a62',
+                        'module': '83111c8a3310b40e998070b07002a205975a06e09c6e0f8e8054e8d18b8682e1',
+                        'modsec': 'bbbf003bdc7979b98f09b640dffe2cbbe5f855427f41319e4c121403c05837b2',
+                    },
                 },
                 'rhel9': {
                     'url': 'https://cyberpanel.net/openlitespeed-2.5.0-x86_64-rhel9',
                     'module_url': 'https://cyberpanel.net/cyberpanel_ols-2.7.3-x86_64-rhel9.so',
                     'modsec_url': 'https://cyberpanel.net/mod_security-2.5.0-x86_64-rhel9.so',
+                    'sha256': {
+                        'binary': '780163ee7c0304c9b1db6abaeeaca2e58dbfc05436de776e921ca1d493462596',
+                        'module': 'a189da7ec5c09c5ba836209aa10746b691bbef21010cbe4c4c622614cf03c5e1',
+                        'modsec': '19deb2ffbaf1334cf4ce4d46d53f747a75b29e835bf5a01f91ebcc0c78e98629',
+                    },
                 },
                 'ubuntu': {
                     'url': 'https://cyberpanel.net/openlitespeed-2.5.0-x86_64-ubuntu',
                     'module_url': 'https://cyberpanel.net/cyberpanel_ols-2.7.3-x86_64-ubuntu.so',
                     'modsec_url': 'https://cyberpanel.net/mod_security-2.5.0-x86_64-ubuntu.so',
+                    'sha256': {
+                        'binary': '2a836d4bf17fe5152d15dd60fd3817c1d3c294b48b35f12b776fa2efb7771422',
+                        'module': 'f1c1ab881625fa6fe6545e45283220e86245a1e3c96e29c4d86af9ab15fd6c2b',
+                        'modsec': 'ed02c813136720bd4b9de5925f6e41bdc8392e494d7740d035479aaca6d1e0cd',
+                    },
                 }
             }
 
@@ -356,6 +421,7 @@ class InstallCyberPanel:
             OLS_BINARY_URL = config['url']
             MODULE_URL = config['module_url']
             MODSEC_URL = config.get('modsec_url')
+            SHA256 = config.get('sha256', {})
             OLS_BINARY_PATH = "/usr/local/lsws/bin/openlitespeed"
             MODULE_PATH = "/usr/local/lsws/modules/cyberpanel_ols.so"
             MODSEC_PATH = "/usr/local/lsws/modules/mod_security.so"
@@ -389,12 +455,23 @@ class InstallCyberPanel:
                 InstallCyberPanel.stdOut("Continuing with standard OLS", 1)
                 return True  # Not fatal, continue with standard OLS
 
+            # Verify integrity (SHA256) and ABI compatibility (ldd) before touching the live install
+            if not self.verifyChecksum(tmp_binary, SHA256.get('binary')):
+                InstallCyberPanel.stdOut("ERROR: OLS binary failed checksum verification; keeping stock OLS", 1)
+                return True  # Not fatal, continue with standard OLS
+            if not self.checkGlibcCompat(tmp_binary):
+                InstallCyberPanel.stdOut("ERROR: OLS binary is not ABI-compatible with this OS; keeping stock OLS", 1)
+                return True  # Not fatal, continue with standard OLS
+
             # Download module (if available)
             module_downloaded = False
             if MODULE_URL:
                 if not self.downloadCustomBinary(MODULE_URL, tmp_module):
                     InstallCyberPanel.stdOut("ERROR: Failed to download or verify module", 1)
                     InstallCyberPanel.stdOut("Continuing with standard OLS", 1)
+                    return True  # Not fatal, continue with standard OLS
+                if not self.verifyChecksum(tmp_module, SHA256.get('module')):
+                    InstallCyberPanel.stdOut("ERROR: Module failed checksum verification; keeping stock OLS", 1)
                     return True  # Not fatal, continue with standard OLS
                 module_downloaded = True
             else:
@@ -406,7 +483,10 @@ class InstallCyberPanel:
             if MODSEC_URL:
                 InstallCyberPanel.stdOut("Downloading ModSecurity WAF module...", 1)
                 if self.downloadCustomBinary(MODSEC_URL, tmp_modsec):
-                    modsec_downloaded = True
+                    if self.verifyChecksum(tmp_modsec, SHA256.get('modsec')):
+                        modsec_downloaded = True
+                    else:
+                        InstallCyberPanel.stdOut("WARNING: ModSecurity failed checksum verification; continuing without it", 1)
                 else:
                     InstallCyberPanel.stdOut("WARNING: Failed to download ModSecurity module; continuing without it", 1)
 
@@ -446,9 +526,44 @@ class InstallCyberPanel:
                     logging.InstallLog.writeToFile(str(e) + " [installCustomOLSBinaries - modsec install]")
                     # Non-fatal, continue
 
-            # Verify installation
+            # Verify installation - test the binary actually runs before declaring success
             if os.path.exists(OLS_BINARY_PATH):
                 if not module_downloaded or os.path.exists(MODULE_PATH):
+                    InstallCyberPanel.stdOut("Verifying new binary...", 1)
+                    try:
+                        result = subprocess.run(
+                            [OLS_BINARY_PATH, '-v'],
+                            capture_output=True,
+                            text=True,
+                            timeout=10
+                        )
+                        if result.returncode != 0:
+                            raise Exception(f"Binary test failed with exit code {result.returncode}")
+                        version_output = result.stdout if result.stdout else result.stderr
+                        if 'LiteSpeed' in version_output or 'OpenLiteSpeed' in version_output:
+                            InstallCyberPanel.stdOut("Binary version check passed", 1)
+                        else:
+                            InstallCyberPanel.stdOut("WARNING: Could not verify binary version", 1)
+                    except Exception as e:
+                        # The custom binary doesn't run here - roll back to the stock binary
+                        # that was backed up so the install is left with a working OLS.
+                        InstallCyberPanel.stdOut(f"ERROR: Binary verification failed: {e}", 1)
+                        logging.InstallLog.writeToFile(str(e) + " [installCustomOLSBinaries - verify]")
+                        backup_binary = f"{backup_dir}/openlitespeed.backup"
+                        if os.path.exists(backup_binary):
+                            InstallCyberPanel.stdOut("Rolling back to stock OpenLiteSpeed binary...", 1)
+                            try:
+                                shutil.copy2(backup_binary, OLS_BINARY_PATH)
+                                os.chmod(OLS_BINARY_PATH, 0o755)
+                                backup_modsec = f"{backup_dir}/mod_security.so.backup"
+                                if modsec_downloaded and os.path.exists(backup_modsec):
+                                    shutil.copy2(backup_modsec, MODSEC_PATH)
+                                InstallCyberPanel.stdOut("Rollback completed; using stock OLS", 1)
+                            except Exception as rollback_err:
+                                InstallCyberPanel.stdOut(f"WARNING: Rollback may have failed: {rollback_err}", 1)
+                                logging.InstallLog.writeToFile(str(rollback_err) + " [installCustomOLSBinaries - rollback]")
+                        return True  # Not fatal - stock OLS remains in place
+
                     InstallCyberPanel.stdOut("=" * 50, 1)
                     InstallCyberPanel.stdOut("Custom Binaries Installed Successfully", 1)
                     InstallCyberPanel.stdOut("Features enabled:", 1)

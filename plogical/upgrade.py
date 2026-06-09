@@ -709,6 +709,57 @@ class Upgrade:
             return False
 
     @staticmethod
+    def verifyChecksum(file_path, expected_sha256):
+        """Verify a downloaded file against an expected SHA256.
+
+        Returns True when the hash matches OR when no expected hash is
+        configured (verification is then skipped and the size-check still
+        applies). Returns False only on a real mismatch, so callers can
+        abort and keep the existing/stock binary.
+        """
+        if not expected_sha256:
+            return True  # no published hash to check against; skip
+        try:
+            import hashlib
+            h = hashlib.sha256()
+            with open(file_path, 'rb') as f:
+                for chunk in iter(lambda: f.read(1024 * 1024), b''):
+                    h.update(chunk)
+            actual = h.hexdigest()
+            if actual.lower() == expected_sha256.lower():
+                Upgrade.stdOut(f"SHA256 verified: {os.path.basename(file_path)}", 0)
+                return True
+            Upgrade.stdOut(f"ERROR: SHA256 mismatch for {os.path.basename(file_path)}", 0)
+            Upgrade.stdOut(f"  expected: {expected_sha256}", 0)
+            Upgrade.stdOut(f"  actual:   {actual}", 0)
+            return False
+        except Exception as msg:
+            Upgrade.stdOut(f"ERROR: {msg} [verifyChecksum]", 0)
+            return False
+
+    @staticmethod
+    def checkGlibcCompat(binary_path):
+        """Pre-flight ABI check: ldd the downloaded binary and fail if any
+        shared library is unresolved ('not found'). Prevents installing a
+        binary that can't load on this OS (the GLIBC/libcrypt outage class).
+        A fully static binary reports 'not a dynamic executable' (no
+        'not found') and passes. ldd being unavailable is non-blocking.
+        """
+        try:
+            result = subprocess.run(['ldd', binary_path], capture_output=True, text=True, timeout=15)
+            output = (result.stdout or '') + (result.stderr or '')
+            if 'not found' in output:
+                Upgrade.stdOut("ERROR: Downloaded binary has unresolved libraries (incompatible with this OS):", 0)
+                for line in output.splitlines():
+                    if 'not found' in line:
+                        Upgrade.stdOut(f"  {line.strip()}", 0)
+                return False
+            return True
+        except Exception as msg:
+            Upgrade.stdOut(f"WARNING: Could not run ldd pre-check ({msg}); continuing", 0)
+            return True
+
+    @staticmethod
     def installCustomOLSBinaries():
         """Install custom OpenLiteSpeed binaries with PHP config support"""
         try:
@@ -741,16 +792,31 @@ class Upgrade:
                     'url': 'https://cyberpanel.net/openlitespeed-2.5.0-x86_64-rhel8',
                     'module_url': 'https://cyberpanel.net/cyberpanel_ols-2.7.3-x86_64-rhel8.so',
                     'modsec_url': 'https://cyberpanel.net/mod_security-2.5.0-x86_64-rhel8.so',
+                    'sha256': {
+                        'binary': '48c8423edfaec3fe1b6eee118925ed3ac55314c53e9bdf2e5bdd4960c4806a62',
+                        'module': '83111c8a3310b40e998070b07002a205975a06e09c6e0f8e8054e8d18b8682e1',
+                        'modsec': 'bbbf003bdc7979b98f09b640dffe2cbbe5f855427f41319e4c121403c05837b2',
+                    },
                 },
                 'rhel9': {
                     'url': 'https://cyberpanel.net/openlitespeed-2.5.0-x86_64-rhel9',
                     'module_url': 'https://cyberpanel.net/cyberpanel_ols-2.7.3-x86_64-rhel9.so',
                     'modsec_url': 'https://cyberpanel.net/mod_security-2.5.0-x86_64-rhel9.so',
+                    'sha256': {
+                        'binary': '780163ee7c0304c9b1db6abaeeaca2e58dbfc05436de776e921ca1d493462596',
+                        'module': 'a189da7ec5c09c5ba836209aa10746b691bbef21010cbe4c4c622614cf03c5e1',
+                        'modsec': '19deb2ffbaf1334cf4ce4d46d53f747a75b29e835bf5a01f91ebcc0c78e98629',
+                    },
                 },
                 'ubuntu': {
                     'url': 'https://cyberpanel.net/openlitespeed-2.5.0-x86_64-ubuntu',
                     'module_url': 'https://cyberpanel.net/cyberpanel_ols-2.7.3-x86_64-ubuntu.so',
                     'modsec_url': 'https://cyberpanel.net/mod_security-2.5.0-x86_64-ubuntu.so',
+                    'sha256': {
+                        'binary': '2a836d4bf17fe5152d15dd60fd3817c1d3c294b48b35f12b776fa2efb7771422',
+                        'module': 'f1c1ab881625fa6fe6545e45283220e86245a1e3c96e29c4d86af9ab15fd6c2b',
+                        'modsec': 'ed02c813136720bd4b9de5925f6e41bdc8392e494d7740d035479aaca6d1e0cd',
+                    },
                 }
             }
 
@@ -763,6 +829,7 @@ class Upgrade:
             OLS_BINARY_URL = config['url']
             MODULE_URL = config['module_url']
             MODSEC_URL = config.get('modsec_url')
+            SHA256 = config.get('sha256', {})
             OLS_BINARY_PATH = "/usr/local/lsws/bin/openlitespeed"
             MODULE_PATH = "/usr/local/lsws/modules/cyberpanel_ols.so"
             MODSEC_PATH = "/usr/local/lsws/modules/mod_security.so"
@@ -796,12 +863,23 @@ class Upgrade:
                 Upgrade.stdOut("Continuing with standard OLS", 0)
                 return True  # Not fatal, continue with standard OLS
 
+            # Verify integrity (SHA256) and ABI compatibility (ldd) before touching the live install
+            if not Upgrade.verifyChecksum(tmp_binary, SHA256.get('binary')):
+                Upgrade.stdOut("ERROR: OLS binary failed checksum verification; keeping stock OLS", 0)
+                return True  # Not fatal, continue with standard OLS
+            if not Upgrade.checkGlibcCompat(tmp_binary):
+                Upgrade.stdOut("ERROR: OLS binary is not ABI-compatible with this OS; keeping stock OLS", 0)
+                return True  # Not fatal, continue with standard OLS
+
             # Download module (if available)
             module_downloaded = False
             if MODULE_URL:
                 if not Upgrade.downloadCustomBinary(MODULE_URL, tmp_module):
                     Upgrade.stdOut("ERROR: Failed to download or verify module", 0)
                     Upgrade.stdOut("Continuing with standard OLS", 0)
+                    return True  # Not fatal, continue with standard OLS
+                if not Upgrade.verifyChecksum(tmp_module, SHA256.get('module')):
+                    Upgrade.stdOut("ERROR: Module failed checksum verification; keeping stock OLS", 0)
                     return True  # Not fatal, continue with standard OLS
                 module_downloaded = True
             else:
@@ -813,7 +891,10 @@ class Upgrade:
             if os.path.exists(MODSEC_PATH) and MODSEC_URL:
                 Upgrade.stdOut("Existing ModSecurity detected - downloading compatible version...", 0)
                 if Upgrade.downloadCustomBinary(MODSEC_URL, tmp_modsec):
-                    modsec_downloaded = True
+                    if Upgrade.verifyChecksum(tmp_modsec, SHA256.get('modsec')):
+                        modsec_downloaded = True
+                    else:
+                        Upgrade.stdOut("WARNING: ModSecurity failed checksum verification; leaving existing ModSecurity in place", 0)
                 else:
                     Upgrade.stdOut("WARNING: Failed to download compatible ModSecurity", 0)
                     Upgrade.stdOut("ModSecurity may crash due to ABI incompatibility", 0)
