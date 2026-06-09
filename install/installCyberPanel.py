@@ -333,14 +333,17 @@ class InstallCyberPanel:
                 'rhel8': {
                     'url': 'https://cyberpanel.net/openlitespeed-2.5.0-x86_64-rhel8',
                     'module_url': 'https://cyberpanel.net/cyberpanel_ols-2.7.3-x86_64-rhel8.so',
+                    'modsec_url': 'https://cyberpanel.net/mod_security-2.5.0-x86_64-rhel8.so',
                 },
                 'rhel9': {
                     'url': 'https://cyberpanel.net/openlitespeed-2.5.0-x86_64-rhel9',
                     'module_url': 'https://cyberpanel.net/cyberpanel_ols-2.7.3-x86_64-rhel9.so',
+                    'modsec_url': 'https://cyberpanel.net/mod_security-2.5.0-x86_64-rhel9.so',
                 },
                 'ubuntu': {
                     'url': 'https://cyberpanel.net/openlitespeed-2.5.0-x86_64-ubuntu',
                     'module_url': 'https://cyberpanel.net/cyberpanel_ols-2.7.3-x86_64-ubuntu.so',
+                    'modsec_url': 'https://cyberpanel.net/mod_security-2.5.0-x86_64-ubuntu.so',
                 }
             }
 
@@ -352,8 +355,10 @@ class InstallCyberPanel:
 
             OLS_BINARY_URL = config['url']
             MODULE_URL = config['module_url']
+            MODSEC_URL = config.get('modsec_url')
             OLS_BINARY_PATH = "/usr/local/lsws/bin/openlitespeed"
             MODULE_PATH = "/usr/local/lsws/modules/cyberpanel_ols.so"
+            MODSEC_PATH = "/usr/local/lsws/modules/mod_security.so"
 
             # Create backup
             from datetime import datetime
@@ -365,12 +370,16 @@ class InstallCyberPanel:
                 if os.path.exists(OLS_BINARY_PATH):
                     shutil.copy2(OLS_BINARY_PATH, f"{backup_dir}/openlitespeed.backup")
                     InstallCyberPanel.stdOut(f"Backup created at: {backup_dir}", 1)
+                # Also backup existing ModSecurity if it exists
+                if os.path.exists(MODSEC_PATH):
+                    shutil.copy2(MODSEC_PATH, f"{backup_dir}/mod_security.so.backup")
             except Exception as e:
                 InstallCyberPanel.stdOut(f"WARNING: Could not create backup: {e}", 1)
 
             # Download binaries to temp location
             tmp_binary = "/tmp/openlitespeed-custom"
             tmp_module = "/tmp/cyberpanel_ols.so"
+            tmp_modsec = "/tmp/mod_security.so"
 
             InstallCyberPanel.stdOut("Downloading custom binaries...", 1)
 
@@ -390,6 +399,16 @@ class InstallCyberPanel:
                 module_downloaded = True
             else:
                 InstallCyberPanel.stdOut("Note: No CyberPanel module for this platform", 1)
+
+            # Download the matching ModSecurity WAF module (ABI-compatible with the
+            # custom OLS binary). Non-fatal: if it fails the rest of the install proceeds.
+            modsec_downloaded = False
+            if MODSEC_URL:
+                InstallCyberPanel.stdOut("Downloading ModSecurity WAF module...", 1)
+                if self.downloadCustomBinary(MODSEC_URL, tmp_modsec):
+                    modsec_downloaded = True
+                else:
+                    InstallCyberPanel.stdOut("WARNING: Failed to download ModSecurity module; continuing without it", 1)
 
             # Install OpenLiteSpeed binary
             InstallCyberPanel.stdOut("Installing custom binaries...", 1)
@@ -415,6 +434,18 @@ class InstallCyberPanel:
                     logging.InstallLog.writeToFile(str(e) + " [installCustomOLSBinaries - module install]")
                     return False
 
+            # Install ModSecurity WAF module (if downloaded)
+            if modsec_downloaded:
+                try:
+                    os.makedirs(os.path.dirname(MODSEC_PATH), exist_ok=True)
+                    shutil.move(tmp_modsec, MODSEC_PATH)
+                    os.chmod(MODSEC_PATH, 0o644)
+                    InstallCyberPanel.stdOut("Installed ModSecurity WAF module", 1)
+                except Exception as e:
+                    InstallCyberPanel.stdOut(f"WARNING: Failed to install ModSecurity: {e}", 1)
+                    logging.InstallLog.writeToFile(str(e) + " [installCustomOLSBinaries - modsec install]")
+                    # Non-fatal, continue
+
             # Verify installation
             if os.path.exists(OLS_BINARY_PATH):
                 if not module_downloaded or os.path.exists(MODULE_PATH):
@@ -426,6 +457,8 @@ class InstallCyberPanel:
                         InstallCyberPanel.stdOut("  - Apache-style .htaccess support", 1)
                         InstallCyberPanel.stdOut("  - php_value/php_flag directives", 1)
                         InstallCyberPanel.stdOut("  - Enhanced header control", 1)
+                    if modsec_downloaded:
+                        InstallCyberPanel.stdOut("  - ModSecurity WAF module", 1)
                     InstallCyberPanel.stdOut(f"Backup: {backup_dir}", 1)
                     InstallCyberPanel.stdOut("=" * 50, 1)
                     return True
