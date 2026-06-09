@@ -639,6 +639,12 @@ class Upgrade:
                 with open('/etc/lsb-release', 'r') as f:
                     content = f.read()
                     if 'Ubuntu' in content or 'ubuntu' in content:
+                        # The 'ubuntu' artifact is built on 22.04 (needs GLIBC_2.34) and
+                        # does NOT run on Ubuntu 20.04 (glibc 2.31, ticket #OXHTOK7AH).
+                        # Skip the overlay there and keep stock OLS.
+                        if 'DISTRIB_RELEASE=20.04' in content:
+                            Upgrade.stdOut("Ubuntu 20.04 detected: custom OLS binary requires GLIBC_2.34 (22.04+); keeping stock OLS", 0)
+                            return 'skip'
                         return 'ubuntu'
 
             # Check for RHEL-based distributions
@@ -653,6 +659,12 @@ class Upgrade:
 
                     # Check for version 9.x
                     if 'version="9.' in content or 'version_id="9.' in content:
+                        if any(distro in content for distro in ['red hat', 'almalinux', 'rocky', 'cloudlinux', 'centos']):
+                            return 'rhel9'
+
+                    # Check for version 10.x (AlmaLinux 10, etc.) — the el9 binary runs on el10
+                    # (GLIBC_2.35 <= 2.39, libcrypt.so.2), so map it to the rhel9 artifact.
+                    if 'version="10.' in content or 'version_id="10.' in content:
                         if any(distro in content for distro in ['red hat', 'almalinux', 'rocky', 'cloudlinux', 'centos']):
                             return 'rhel9'
 
@@ -714,24 +726,31 @@ class Upgrade:
             platform = Upgrade.detectPlatform()
             Upgrade.stdOut(f"Detected platform: {platform}", 0)
 
-            # Platform-specific URLs and checksums (OpenLiteSpeed v2.4.4 — all features config-driven, static linking)
+            # Some platforms intentionally skip the custom overlay (e.g. Ubuntu 20.04,
+            # where the binary's GLIBC requirement isn't met) and keep stock OLS.
+            if platform == 'skip':
+                Upgrade.stdOut("Custom binary installation skipped for this platform; using standard OLS", 0)
+                return True  # Not a failure, just skip
+
+            # Platform-specific URLs and checksums (OpenLiteSpeed v2.5.0 — all features config-driven, static linking)
             # Includes: PHPConfig API, Origin Header Forwarding, ReadApacheConf (with Portmap), Auto-SSL (ACME v2), ModSecurity ABI Compatibility
-            # Module v2.7.2: preserves Content-Encoding on LSCache hits; OLS binary stays 2.4.4
+            # Module v2.7.3: preserves Content-Encoding on LSCache hits
+            # rhel9 artifact covers EL9 + EL10 (AlmaLinux 10); ubuntu artifact covers 22.04/24.04 (not 20.04 — see detectPlatform)
             BINARY_CONFIGS = {
                 'rhel8': {
-                    'url': 'https://cyberpanel.net/openlitespeed-2.4.4-x86_64-rhel8',
-                    'module_url': 'https://cyberpanel.net/cyberpanel_ols-2.7.2-x86_64-rhel8.so',
-                    'modsec_url': 'https://cyberpanel.net/mod_security-2.4.4-x86_64-rhel8.so',
+                    'url': 'https://cyberpanel.net/openlitespeed-2.5.0-x86_64-rhel8',
+                    'module_url': 'https://cyberpanel.net/cyberpanel_ols-2.7.3-x86_64-rhel8.so',
+                    'modsec_url': 'https://cyberpanel.net/mod_security-2.5.0-x86_64-rhel8.so',
                 },
                 'rhel9': {
-                    'url': 'https://cyberpanel.net/openlitespeed-2.4.4-x86_64-rhel9',
-                    'module_url': 'https://cyberpanel.net/cyberpanel_ols-2.7.2-x86_64-rhel9.so',
-                    'modsec_url': 'https://cyberpanel.net/mod_security-2.4.4-x86_64-rhel9.so',
+                    'url': 'https://cyberpanel.net/openlitespeed-2.5.0-x86_64-rhel9',
+                    'module_url': 'https://cyberpanel.net/cyberpanel_ols-2.7.3-x86_64-rhel9.so',
+                    'modsec_url': 'https://cyberpanel.net/mod_security-2.5.0-x86_64-rhel9.so',
                 },
                 'ubuntu': {
-                    'url': 'https://cyberpanel.net/openlitespeed-2.4.4-x86_64-ubuntu',
-                    'module_url': 'https://cyberpanel.net/cyberpanel_ols-2.7.2-x86_64-ubuntu.so',
-                    'modsec_url': 'https://cyberpanel.net/mod_security-2.4.4-x86_64-ubuntu.so',
+                    'url': 'https://cyberpanel.net/openlitespeed-2.5.0-x86_64-ubuntu',
+                    'module_url': 'https://cyberpanel.net/cyberpanel_ols-2.7.3-x86_64-ubuntu.so',
+                    'modsec_url': 'https://cyberpanel.net/mod_security-2.5.0-x86_64-ubuntu.so',
                 }
             }
 
