@@ -602,9 +602,25 @@ class InstallCyberPanel:
             # Check if module is already configured
             with open(CONFIG_FILE, 'r') as f:
                 content = f.read()
-                if 'cyberpanel_ols' in content:
+            if 'cyberpanel_ols' in content:
+                # Module present - make sure it isn't disabled. A stray
+                # 'ls_enabled 0' inside the block silently turns off LSCache
+                # and every .htaccess feature, so flip it back on.
+                import re
+                new_content = re.sub(
+                    r'(module\s+cyberpanel_ols\s*\{.*?\})',
+                    lambda m: re.sub(r'ls_enabled\s+0', 'ls_enabled          1', m.group(0)),
+                    content,
+                    flags=re.DOTALL,
+                )
+                if new_content != content:
+                    shutil.copy2(CONFIG_FILE, f"{CONFIG_FILE}.backup")
+                    with open(CONFIG_FILE, 'w') as f:
+                        f.write(new_content)
+                    InstallCyberPanel.stdOut("Module was disabled (ls_enabled 0); re-enabled LSCache module", 1)
+                else:
                     InstallCyberPanel.stdOut("Module already configured", 1)
-                    return True
+                return True
 
             # Add module configuration
             module_config = """
