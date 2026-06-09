@@ -371,14 +371,18 @@ def saveModifications(request):
                 json_data = json.dumps(data_ret)
                 return HttpResponse(json_data)
 
-            token = hashPassword.generateToken(accountUsername, data['passwordByPass'])
-            password = hashPassword.hash_password(data['passwordByPass'])
-
             user.firstName = firstName
             user.lastName = lastName
             user.email = email
-            user.password = password
-            user.token = token
+
+            # Only change the password when a new, non-empty one is supplied.
+            # Leaving the password field blank must preserve the existing password
+            # (otherwise the account would be left with a blank/empty password).
+            newPassword = data.get('passwordByPass') or ''
+            if newPassword.strip():
+                user.password = hashPassword.hash_password(newPassword)
+                user.token = hashPassword.generateToken(accountUsername, newPassword)
+
             user.type = 0
             user.twoFA = twofa
 
