@@ -15,6 +15,7 @@ import shutil
 import time
 import MySQLdb as mysql
 import random
+import secrets
 import string
 
 def update_all_config_files_with_password(new_password):
@@ -212,7 +213,7 @@ except ImportError:
             else:
                 # CentOS/others - generate new password
                 chars = string.ascii_letters + string.digits
-                cyberpanel_password = ''.join(random.choice(chars) for _ in range(14))
+                cyberpanel_password = ''.join(secrets.choice(chars) for _ in range(14))
                 reset_to_root = False
             
             try:
@@ -1120,7 +1121,7 @@ module cyberpanel_ols {
 
             ## Write secret phrase
 
-            rString = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+            rString = ''.join([secrets.choice(string.ascii_letters + string.digits) for n in range(32)])
 
             data = open('/usr/local/CyberCP/public/phpmyadmin/config.sample.inc.php', 'r').readlines()
 
@@ -3878,7 +3879,7 @@ milter_default_action = accept
                 def generate_pass(length=14):
                     chars = string.ascii_uppercase + string.ascii_lowercase + string.digits
                     size = length
-                    return ''.join(random.choice(chars) for x in range(size))
+                    return ''.join(secrets.choice(chars) for x in range(size))
 
                 content = """<?php
 $_ENV['snappymail_INCLUDE_AS_API'] = true;

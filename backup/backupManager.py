@@ -684,8 +684,11 @@ class BackupManager:
             else:
                 return ACLManager.loadErrorJson()
 
+            if '..' in str(backupFile) or '..' in str(dir):
+                return ACLManager.loadErrorJson()
+
             execPath = "sudo nice -n 10 /usr/local/CyberCP/bin/python " + virtualHostUtilities.cyberPanel + "/plogical/backupUtilities.py"
-            execPath = execPath + " submitRestore --backupFile " + backupFile + " --dir " + dir
+            execPath = execPath + " submitRestore --backupFile " + shlex.quote(backupFile) + " --dir " + shlex.quote(str(dir))
             ProcessUtilities.popenExecutioner(execPath)
             time.sleep(4)
 
@@ -699,6 +702,9 @@ class BackupManager:
 
     def restoreStatus(self, data=None):
         try:
+            if '..' in str(data['backupFile']) or '..' in str(data.get('dir', '')):
+                return ACLManager.loadErrorJson()
+
             backupFile = data['backupFile'].strip(".tar.gz")
 
             path = os.path.join("/home", "backup", data['backupFile'])
@@ -713,12 +719,12 @@ class BackupManager:
 
             if os.path.exists(path):
                 try:
-                    execPath = "sudo cat " + path + "/status"
+                    execPath = "sudo cat " + shlex.quote(path + "/status")
                     status = ProcessUtilities.outputExecutioner(execPath)
 
                     if status.find("Done") > -1:
 
-                        command = "sudo rm -rf " + path
+                        command = "sudo rm -rf " + shlex.quote(path)
                         ProcessUtilities.executioner(command)
 
                         final_json = json.dumps(
@@ -727,7 +733,7 @@ class BackupManager:
                         return HttpResponse(final_json)
                     elif status.find("[5009]") > -1:
                         ## removing temporarily generated files while restoring
-                        command = "sudo rm -rf " + path
+                        command = "sudo rm -rf " + shlex.quote(path)
                         ProcessUtilities.executioner(command)
                         final_json = json.dumps({'restoreStatus': 1, 'error_message': "None",
                                                  "status": status, 'abort': 1, 'alreadyRunning': 0,

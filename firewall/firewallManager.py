@@ -11,7 +11,9 @@ sys.path.append('/usr/local/CyberCP')
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "CyberCP.settings")
 django.setup()
 import json
+import shlex
 from plogical.acl import ACLManager
+from plogical.securityUtils import is_safe_port
 import plogical.CyberCPLogFileWriter as logging
 from plogical.virtualHostUtilities import virtualHostUtilities
 import subprocess
@@ -356,13 +358,16 @@ class FirewallManager:
             sshPort = data['sshPort']
             rootLogin = data['rootLogin']
 
+            if not is_safe_port(sshPort):
+                return ACLManager.loadErrorJson('saveStatus', 0)
+
             if rootLogin == True:
                 rootLogin = "1"
             else:
                 rootLogin = "0"
 
             execPath = "/usr/local/CyberCP/bin/python " + virtualHostUtilities.cyberPanel + "/plogical/firewallUtilities.py"
-            execPath = execPath + " saveSSHConfigs --type " + str(type) + " --sshPort " + sshPort + " --rootLogin " + rootLogin
+            execPath = execPath + " saveSSHConfigs --type " + shlex.quote(str(type)) + " --sshPort " + str(sshPort) + " --rootLogin " + rootLogin
 
             output = ProcessUtilities.outputExecutioner(execPath)
 
@@ -417,7 +422,7 @@ class FirewallManager:
             key = data['key']
 
             execPath = "/usr/local/CyberCP/bin/python " + virtualHostUtilities.cyberPanel + "/plogical/firewallUtilities.py"
-            execPath = execPath + " deleteSSHKey --key '" + key + "'"
+            execPath = execPath + " deleteSSHKey --key " + shlex.quote(key)
 
             output = ProcessUtilities.outputExecutioner(execPath)
 
@@ -1554,7 +1559,7 @@ class FirewallManager:
             ProcessUtilities.executioner(command)
 
             execPath = "sudo /usr/local/CyberCP/bin/python " + virtualHostUtilities.cyberPanel + "/plogical/csf.py"
-            execPath = execPath + " modifyPorts --protocol " + protocol + " --ports " + portsPath
+            execPath = execPath + " modifyPorts --protocol " + shlex.quote(protocol) + " --ports " + portsPath
             output = ProcessUtilities.outputExecutioner(execPath)
 
             if output.find("1,None") > -1:
