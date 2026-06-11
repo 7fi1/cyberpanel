@@ -113,7 +113,19 @@ class secMiddleware:
                 except:
                     data = request.POST
 
-                for key, value in data.items():
+                # Skip the input character validation for the webmail app.
+                # All webmail input (message bodies, subjects, recipient names,
+                # search queries, sieve rules, contacts) is free-form text that is
+                # handled exclusively through Python IMAP/SMTP/Sieve libraries and
+                # never reaches a shell, so the command-injection character checks
+                # only produce false positives (e.g. an email reply containing ;,
+                # |, $ or backticks). See issue #1813. Note: this only skips input
+                # validation -- the request still falls through to the response
+                # path below where the security headers (nosniff, X-Frame-Options,
+                # CSP, Referrer-Policy) are applied.
+                webmailRequest = pathActual.startswith('/webmail/')
+
+                for key, value in ({} if webmailRequest else data).items():
                     valueAlreadyChecked = 0
 
                     # Key/value scanning logging removed

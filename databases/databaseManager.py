@@ -20,6 +20,11 @@ import plogical.randomPassword as randomPassword
 from plogical.httpProc import httpProc
 from backup.models import DBUsers
 from plogical.securityUtils import is_safe_sql_identifier
+import re
+
+# MySQL host literal: IPs, hostnames, CIDR and the '%' wildcard are valid, but
+# never quotes/spaces/semicolons that could break out of the '...'@'host' literal.
+_MYSQL_HOST_RE = re.compile(r"^[A-Za-z0-9_.:%/-]{1,255}$")
 
 class DatabaseManager:
 
@@ -321,6 +326,9 @@ class DatabaseManager:
 
             userName = data['dbUserName']
             remoteIP = data['remoteIP']
+
+            if not is_safe_sql_identifier(userName) or not _MYSQL_HOST_RE.match(str(remoteIP)):
+                return ACLManager.loadErrorJson('changePasswordStatus', 0)
 
             db = Databases.objects.filter(dbUser=userName)
 

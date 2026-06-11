@@ -175,6 +175,15 @@ class FileManager:
         except:
             return False
 
+    def notInside(self, path, root):
+        # Returns True when `path` is NOT safely contained within `root`.
+        # Rejects literal '..' and, after resolving symlinks/'..', any path that
+        # escapes `root`. This fixes the previous substring check which could be
+        # bypassed via symlinks or a non-prefix match of the home path.
+        if '..' in str(path):
+            return True
+        return not self.pathInside(path, root)
+
     def changeOwner(self, path):
         try:
             domainName = self.data['domainName']
@@ -201,8 +210,7 @@ class FileManager:
 
                 pathCheck = '/home/%s' % (domainName)
 
-                if self.data['completeStartingPath'].find(pathCheck) == -1 or self.data['completeStartingPath'].find(
-                        '..') > -1:
+                if self.notInside(self.data['completeStartingPath'], pathCheck):
                     return self.ajaxPre(0, 'Not allowed to browse this path, going back home!')
 
                 command = "ls -la --group-directories-first " + self.returnPathEnclosed(
@@ -212,8 +220,7 @@ class FileManager:
             except:
                 pathCheck = '/'
 
-                if self.data['completeStartingPath'].find(pathCheck) == -1 or self.data['completeStartingPath'].find(
-                        '..') > -1:
+                if self.notInside(self.data['completeStartingPath'], pathCheck):
                     return self.ajaxPre(0, 'Not allowed to browse this path, going back home!')
 
                 command = "ls -la --group-directories-first " + self.returnPathEnclosed(
@@ -329,7 +336,7 @@ class FileManager:
                 website = Websites.objects.get(domain=domainName)
                 homePath = '/home/%s' % (domainName)
 
-                if self.data['fileName'].find('..') > -1 or self.data['fileName'].find(homePath) == -1:
+                if self.notInside(self.data['fileName'], homePath):
                     return self.ajaxPre(0, 'Not allowed to move in this path, please choose location inside home!')
 
                 command = "touch " + self.returnPathEnclosed(self.data['fileName'])
@@ -338,7 +345,7 @@ class FileManager:
             except:
                 homePath = '/'
 
-                if self.data['fileName'].find('..') > -1 or self.data['fileName'].find(homePath) == -1:
+                if self.notInside(self.data['fileName'], homePath):
                     return self.ajaxPre(0, 'Not allowed to move in this path, please choose location inside home!')
 
                 command = "touch " + self.returnPathEnclosed(self.data['fileName'])
@@ -360,7 +367,7 @@ class FileManager:
 
                 homePath = '/home/%s' % (domainName)
 
-                if self.data['folderName'].find('..') > -1 or self.data['folderName'].find(homePath) == -1:
+                if self.notInside(self.data['folderName'], homePath):
                     return self.ajaxPre(0, 'Not allowed to move in this path, please choose location inside home!')
 
                 command = "mkdir " + self.returnPathEnclosed(self.data['folderName'])
@@ -370,7 +377,7 @@ class FileManager:
             except:
                 homePath = '/'
 
-                if self.data['folderName'].find('..') > -1 or self.data['folderName'].find(homePath) == -1:
+                if self.notInside(self.data['folderName'], homePath):
                     return self.ajaxPre(0, 'Not allowed to move in this path, please choose location inside home!')
 
                 command = "mkdir " + self.returnPathEnclosed(self.data['folderName'])
@@ -417,8 +424,7 @@ class FileManager:
 
                 for item in self.data['fileAndFolders']:
 
-                    if (self.data['path'] + '/' + item).find('..') > -1 or (self.data['path'] + '/' + item).find(
-                            self.homePath) == -1:
+                    if self.notInside(self.data['path'] + '/' + item, self.homePath):
                         return self.ajaxPre(0, 'Not allowed to move in this path, please choose location inside home!')
 
                     if skipTrash:
@@ -467,8 +473,7 @@ class FileManager:
 
                 for item in self.data['fileAndFolders']:
 
-                    if (self.data['path'] + '/' + item).find('..') > -1 or (self.data['path'] + '/' + item).find(
-                            self.homePath) == -1:
+                    if self.notInside(self.data['path'] + '/' + item, self.homePath):
                         return self.ajaxPre(0, 'Not allowed to move in this path, please choose location inside home!')
 
                     if skipTrash:
@@ -503,8 +508,7 @@ class FileManager:
 
             for item in self.data['fileAndFolders']:
 
-                if (self.data['path'] + '/' + item).find('..') > -1 or (self.data['path'] + '/' + item).find(
-                        self.homePath) == -1:
+                if self.notInside(self.data['path'] + '/' + item, self.homePath):
                     return self.ajaxPre(0, 'Not allowed to move in this path, please choose location inside home!')
 
                 trashPath = '%s/.trash' % (self.homePath)
@@ -534,13 +538,12 @@ class FileManager:
 
                 homePath = '/home/%s' % (domainName)
 
-                if self.data['newPath'].find('..') > -1 or self.data['newPath'].find(homePath) == -1:
+                if self.notInside(self.data['newPath'], homePath):
                     return self.ajaxPre(0, 'Not allowed to move in this path, please choose location inside home!')
 
                 if len(self.data['fileAndFolders']) == 1:
 
-                    if (self.data['basePath'] + '/' + self.data['fileAndFolders'][0]).find('..') > -1 or (
-                            self.data['basePath'] + '/' + self.data['fileAndFolders'][0]).find(homePath) == -1:
+                    if self.notInside(self.data['basePath'] + '/' + self.data['fileAndFolders'][0], homePath):
                         return self.ajaxPre(0, 'Not allowed to move in this path, please choose location inside home!')
 
                     command = 'yes| cp -Rf %s %s' % (
@@ -555,8 +558,7 @@ class FileManager:
                 ProcessUtilities.executioner(command, website.externalApp)
 
                 for item in self.data['fileAndFolders']:
-                    if (self.data['basePath'] + '/' + item).find('..') > -1 or (self.data['basePath'] + '/' + item).find(
-                            homePath) == -1:
+                    if self.notInside(self.data['basePath'] + '/' + item, homePath):
                         return self.ajaxPre(0, 'Not allowed to move in this path, please choose location inside home!')
 
                     command = '%scp -Rf ' % ('yes |') + self.returnPathEnclosed(
@@ -569,13 +571,12 @@ class FileManager:
 
                 homePath = '/'
 
-                if self.data['newPath'].find('..') > -1 or self.data['newPath'].find(homePath) == -1:
+                if self.notInside(self.data['newPath'], homePath):
                     return self.ajaxPre(0, 'Not allowed to move in this path, please choose location inside home!')
 
                 if len(self.data['fileAndFolders']) == 1:
 
-                    if (self.data['basePath'] + '/' + self.data['fileAndFolders'][0]).find('..') > -1 or (
-                            self.data['basePath'] + '/' + self.data['fileAndFolders'][0]).find(homePath) == -1:
+                    if self.notInside(self.data['basePath'] + '/' + self.data['fileAndFolders'][0], homePath):
                         return self.ajaxPre(0, 'Not allowed to move in this path, please choose location inside home!')
 
                     command = 'yes| cp -Rf %s %s' % (
@@ -590,9 +591,7 @@ class FileManager:
                 ProcessUtilities.executioner(command)
 
                 for item in self.data['fileAndFolders']:
-                    if (self.data['basePath'] + '/' + item).find('..') > -1 or (
-                            self.data['basePath'] + '/' + item).find(
-                            homePath) == -1:
+                    if self.notInside(self.data['basePath'] + '/' + item, homePath):
                         return self.ajaxPre(0, 'Not allowed to move in this path, please choose location inside home!')
 
                     command = '%scp -Rf ' % ('yes |') + self.returnPathEnclosed(
@@ -623,12 +622,10 @@ class FileManager:
 
                 for item in self.data['fileAndFolders']:
 
-                    if (self.data['basePath'] + '/' + item).find('..') > -1 or (self.data['basePath'] + '/' + item).find(
-                            homePath) == -1:
+                    if self.notInside(self.data['basePath'] + '/' + item, homePath):
                         return self.ajaxPre(0, 'Not allowed to move in this path, please choose location inside home!')
 
-                    if (self.data['newPath'] + '/' + item).find('..') > -1 or (self.data['newPath'] + '/' + item).find(
-                            homePath) == -1:
+                    if self.notInside(self.data['newPath'] + '/' + item, homePath):
                         return self.ajaxPre(0, 'Not allowed to move in this path, please choose location inside home!')
 
                     command = 'mv ' + self.returnPathEnclosed(
@@ -649,13 +646,10 @@ class FileManager:
 
                 for item in self.data['fileAndFolders']:
 
-                    if (self.data['basePath'] + '/' + item).find('..') > -1 or (
-                            self.data['basePath'] + '/' + item).find(
-                            homePath) == -1:
+                    if self.notInside(self.data['basePath'] + '/' + item, homePath):
                         return self.ajaxPre(0, 'Not allowed to move in this path, please choose location inside home!')
 
-                    if (self.data['newPath'] + '/' + item).find('..') > -1 or (self.data['newPath'] + '/' + item).find(
-                            homePath) == -1:
+                    if self.notInside(self.data['newPath'] + '/' + item, homePath):
                         return self.ajaxPre(0, 'Not allowed to move in this path, please choose location inside home!')
 
                     command = 'mv ' + self.returnPathEnclosed(
@@ -683,11 +677,10 @@ class FileManager:
 
                 homePath = '/home/%s' % (domainName)
 
-                if (self.data['basePath'] + '/' + self.data['existingName']).find('..') > -1 or (
-                        self.data['basePath'] + '/' + self.data['existingName']).find(homePath) == -1:
+                if self.notInside(self.data['basePath'] + '/' + self.data['existingName'], homePath):
                     return self.ajaxPre(0, 'Not allowed to move in this path, please choose location inside home!')
 
-                if (self.data['newFileName']).find('..') > -1 or (self.data['basePath']).find(homePath) == -1:
+                if '..' in str(self.data['newFileName']) or self.notInside(self.data['basePath'], homePath):
                     return self.ajaxPre(0, 'Not allowed to move in this path, please choose location inside home!')
 
                 command = 'mv ' + self.returnPathEnclosed(
@@ -699,11 +692,10 @@ class FileManager:
             except:
                 homePath = '/'
 
-                if (self.data['basePath'] + '/' + self.data['existingName']).find('..') > -1 or (
-                        self.data['basePath'] + '/' + self.data['existingName']).find(homePath) == -1:
+                if self.notInside(self.data['basePath'] + '/' + self.data['existingName'], homePath):
                     return self.ajaxPre(0, 'Not allowed to move in this path, please choose location inside home!')
 
-                if (self.data['newFileName']).find('..') > -1 or (self.data['basePath']).find(homePath) == -1:
+                if '..' in str(self.data['newFileName']) or self.notInside(self.data['basePath'], homePath):
                     return self.ajaxPre(0, 'Not allowed to move in this path, please choose location inside home!')
 
                 command = 'mv ' + self.returnPathEnclosed(
@@ -730,7 +722,7 @@ class FileManager:
 
                 pathCheck = '/home/%s' % (domainName)
 
-                if self.data['fileName'].find(pathCheck) == -1 or self.data['fileName'].find('..') > -1:
+                if self.notInside(self.data['fileName'], pathCheck):
                     return self.ajaxPre(0, 'Not allowed.')
 
                 # Ensure proper UTF-8 handling for file reading
@@ -740,7 +732,7 @@ class FileManager:
             except:
                 pathCheck = '/'
 
-                if self.data['fileName'].find(pathCheck) == -1 or self.data['fileName'].find('..') > -1:
+                if self.notInside(self.data['fileName'], pathCheck):
                     return self.ajaxPre(0, 'Not allowed.')
 
                 # Ensure proper UTF-8 handling for file reading
@@ -850,8 +842,7 @@ class FileManager:
                 if ACLManager.commandInjectionCheck(self.data['completePath'] + '/' + myfile.name) == 1:
                     return self.ajaxPre(0, 'Not allowed to move in this path, please choose location inside home!')
 
-                if (self.data['completePath'] + '/' + myfile.name).find(pathCheck) == -1 or (
-                        (self.data['completePath'] + '/' + myfile.name)).find('..') > -1:
+                if self.notInside(self.data['completePath'] + '/' + myfile.name, pathCheck):
                     return self.ajaxPre(0, 'Not allowed to move in this path, please choose location inside home!')
 
                 command = 'cp ' + self.returnPathEnclosed(
@@ -872,8 +863,7 @@ class FileManager:
                 if ACLManager.commandInjectionCheck(self.data['completePath'] + '/' + myfile.name) == 1:
                     return self.ajaxPre(0, 'Not allowed to move in this path, please choose location inside home!')
 
-                if (self.data['completePath'] + '/' + myfile.name).find(pathCheck) == -1 or (
-                        (self.data['completePath'] + '/' + myfile.name)).find('..') > -1:
+                if self.notInside(self.data['completePath'] + '/' + myfile.name, pathCheck):
                     return self.ajaxPre(0, 'Not allowed to move in this path, please choose location inside home!')
 
                 command = 'cp ' + self.returnPathEnclosed(
@@ -913,10 +903,10 @@ class FileManager:
 
                 homePath = '/home/%s' % (domainName)
 
-                if self.data['extractionLocation'].find('..') > -1 or self.data['extractionLocation'].find(homePath) == -1:
+                if self.notInside(self.data['extractionLocation'], homePath):
                     return self.ajaxPre(0, 'Not allowed to move in this path, please choose location inside home!')
 
-                if self.data['fileToExtract'].find('..') > -1 or self.data['fileToExtract'].find(homePath) == -1:
+                if self.notInside(self.data['fileToExtract'], homePath):
                     return self.ajaxPre(0, 'Not allowed to move in this path, please choose location inside home!')
 
                 if self.data['extractionType'] == 'zip':
@@ -933,11 +923,10 @@ class FileManager:
 
                 homePath = '/'
 
-                if self.data['extractionLocation'].find('..') > -1 or self.data['extractionLocation'].find(
-                        homePath) == -1:
+                if self.notInside(self.data['extractionLocation'], homePath):
                     return self.ajaxPre(0, 'Not allowed to move in this path, please choose location inside home!')
 
-                if self.data['fileToExtract'].find('..') > -1 or self.data['fileToExtract'].find(homePath) == -1:
+                if self.notInside(self.data['fileToExtract'], homePath):
                     return self.ajaxPre(0, 'Not allowed to move in this path, please choose location inside home!')
 
                 if self.data['extractionType'] == 'zip':
@@ -978,8 +967,7 @@ class FileManager:
 
                 for item in self.data['listOfFiles']:
 
-                    if (self.data['basePath'] + item).find('..') > -1 or (self.data['basePath'] + item).find(
-                            homePath) == -1:
+                    if self.notInside(self.data['basePath'] + item, homePath):
                         return self.ajaxPre(0, 'Not allowed to move in this path, please choose location inside home!')
 
                     command = '%s%s ' % (command, self.returnPathEnclosed(item))
@@ -1003,8 +991,7 @@ class FileManager:
 
                 for item in self.data['listOfFiles']:
 
-                    if (self.data['basePath'] + item).find('..') > -1 or (self.data['basePath'] + item).find(
-                            homePath) == -1:
+                    if self.notInside(self.data['basePath'] + item, homePath):
                         return self.ajaxPre(0, 'Not allowed to move in this path, please choose location inside home!')
                     command = '%s%s ' % (command, self.returnPathEnclosed(item))
 
